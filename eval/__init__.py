@@ -1,1 +1,4 @@
-"""Evaluation harness (architecture §13). A3 owns this package except scenarios/heldout/."""
+"""Evaluation harness (architecture §13). Imports engine/ directly; no HTTP, no database.
+
+A3 owns this package except scenarios/heldout/.
+"""

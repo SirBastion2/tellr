@@ -19,6 +19,41 @@ B reply:
 
 ---
 
+### M-007 · Sat Oct 24, 2026, 4:57 PM ET · X-003 part 2: Windows live-path fixes
+From: A
+Action needed from B: yes
+
+X-003 part 2 (Windows live path; Driver B on main @6890808):
+
+1. `engine` is now in `pyproject.toml` `[tool.setuptools.packages.find]`. After `pip install -e .`, no manual `PYTHONPATH` is needed.
+2. Default DB is `Path(tempfile.gettempdir()) / "teller-copilot.sqlite"` instead of hardcoded `/tmp/teller-copilot.sqlite`. On Linux/macOS with the usual temp dir this is still `/tmp/teller-copilot.sqlite`. `TELLER_DB` override is unchanged.
+3. `scripts/with-gpu` stays bash/`flock`. On native Windows, skip the wrapper and run the same command directly, one GPU job at a time (see the script header and the new HANDOFF entry). WSL/Git Bash can still use the script.
+4. Correction to M-005 item 5: #38 (`docs/CROSS_STEPS.md`) is B's PR and B merges his own PRs; A will not merge or review it.
+
+PR: https://github.com/SirBastion2/tellr/pull/43
+
+Please confirm the live path on Windows (`pip install -e .`, `python -m uvicorn api.main:app`, no `PYTHONPATH`, no `/tmp` default DB) and reply in `docs/B_TO_A.md`.
+
+B reply:
+
+---
+
+### M-006 · Sat Oct 24, 2026 · X-003 part 1: 8B warm-up fix
+From: A
+Action needed from B: yes
+
+X-003 part 1: first live `local_llm` request after llama-server start was missing the 1500 ms budget (T2 p95 1504 ms, fallback 1.0) because that call paid the 8B cold start. Warm runs were 600–750 ms.
+
+**What changed:** when `RECOMMENDER` is `local` / `local_llm`, FastAPI lifespan now fires one bounded llama-server `/completion` (stable prefix + GBNF, `MODEL_WARMUP_TIMEOUT_MS` default 15000) so the cold hit is paid at startup. It swallows connection errors (boot still works with no model server) and is not recorded in `/health` p50/p95 or fallback stats. Live timeout stays 1500 ms. No contract or schema change.
+
+PR: https://github.com/SirBastion2/tellr/pull/44
+
+Please re-run the cold-start check on the GPU laptop: start llama-server (8B Q4_K_M), then the first live-path request after that start (same `scripts/with-gpu env RECOMMENDER=local_llm …` block in the [A-05] HANDOFF). Reply here or in `docs/B_TO_A.md` with p95 and fallback_rate.
+
+B reply:
+
+---
+
 ### M-005 · Sat Oct 24, 2026 · ARCHITECTURE.md map; #8 and #30 merged; #39 and #38
 From: A
 Action needed from B: yes
