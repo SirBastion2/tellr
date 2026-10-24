@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import reference_impl as ref
 import yaml
 
-import reference_impl as ref
 from engine import project
 from engine.library import load_library
 from engine.score import reasons
@@ -106,10 +106,10 @@ def test_stated_purpose_does_not_change_score_or_pattern() -> None:
     rows = ref.run_case(
         context,
         "home_repair",
-        dict(purpose="specific", counterparty_identity="vague"),
+        {"purpose": "specific", "counterparty_identity": "vague"},
     )
     # Only the context + opener (specific). Purpose is a fact; it must not score.
-    opener = [row for row in rows if row["qid"] == "q.purpose.open"][0]
+    opener = next(row for row in rows if row["qid"] == "q.purpose.open")
     home = project(_events_for(context, "home_repair", rows[:2], 1), lib)
     vehicle = project(_events_for(context, "vehicle", rows[:2], 1), lib)
     assert home["risk"]["score"] == vehicle["risk"]["score"] == opener["score"]

@@ -6,9 +6,9 @@ import time
 from itertools import combinations
 from pathlib import Path
 
+import reference_impl as ref
 import yaml
 
-import reference_impl as ref
 from engine.hypotheses import displayed, pattern_scores
 from engine.score import Tables, effective, level, reasons, score, shown
 
