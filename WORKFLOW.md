@@ -253,6 +253,11 @@ contract question. Neither one is a frontend workaround.
   opens a PR; R runs `prompts/R-review.md`; a driver merges. The agents own disjoint directories, so
   merges should be conflict-free. A conflict anywhere other than `docs/` means someone crossed a
   boundary, and that is the thing to fix.
+- **Cross-lane findings** go in `docs/CROSS_LANE.md`: log the problem; do not fix the other lane's
+  files. The owning driver triages at each phase end. Contract or golden-test changes go through
+  `contract/CHANGES.md`; spec ambiguities still go in `docs/QUESTIONS.md`. An agent that finds a
+  problem must log it there **and** call out the `X-id` in its HANDOFF entry — do not report it
+  only in chat.
 - **Integration runs** at hours 8, 15, and 20. Start the API and web in tmux and walk T1 and T2
   through the real UI with the chips from their fixtures. The screen should show exactly what the
   fixture says at every step.

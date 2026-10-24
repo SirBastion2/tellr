@@ -24,6 +24,7 @@ git diff main...$B -- contract/ reference_impl.py docs/architecture.md tests/gol
   - `web/` contains no risk arithmetic (no thresholds 25/60, no weights, no level logic);
   - no outcome button is ever `disabled`;
   - model output is parsed as a question ID and nothing else.
+- [ ] Read `docs/CROSS_LANE.md`.
 - [ ] The HANDOFF entry exists and matches the diff.
 - [ ] Every new dependency is justified in HANDOFF.
 
