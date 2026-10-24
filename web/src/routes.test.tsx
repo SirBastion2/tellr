@@ -5,16 +5,14 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { AppShell } from './App'
 import { APP_ROUTES } from './routes'
-import { HealthScreen } from './screens/HealthScreen'
-import { SettingsScreen } from './screens/SettingsScreen'
 import type { Library, SessionState } from './types'
 
 const library = libraryJson as Library
 const session = t2.steps[0]?.response as SessionState
 
 describe('routes', () => {
-  it('mounts the eight screens', () => {
-    expect(APP_ROUTES).toHaveLength(8)
+  it('mounts the screens', () => {
+    expect(APP_ROUTES).toHaveLength(7)
     for (const route of APP_ROUTES) {
       const path = route.path.replace(':id', 'fixture-T2')
       render(
@@ -34,16 +32,30 @@ describe('routes', () => {
     }
   })
 
-  it('keeps settings UI-only and does not write health', () => {
+  it('keeps health read-only and sends /settings there', async () => {
     const spy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'))
-    render(<SettingsScreen />)
-    render(<HealthScreen />)
+    render(
+      <MemoryRouter initialEntries={['/settings']}>
+        <AppShell
+          library={library}
+          session={session}
+          issues={[]}
+          scenarios={[{ id: 'T2', label: 'T2' }]}
+          onStartPractice={() => undefined}
+          onStartLive={() => undefined}
+        />
+      </MemoryRouter>,
+    )
+    expect(screen.getByTestId('health-screen')).toBeTruthy()
+    expect(screen.queryByTestId('settings-screen')).toBeNull()
+    await screen.findByTestId('health-config-note')
     const calls = spy.mock.calls.map((call) => ({
       url: String(call[0]),
       method: ((call[1] as RequestInit | undefined)?.method ?? 'GET').toUpperCase(),
     }))
     expect(calls.some((call) => call.url.includes('/settings'))).toBe(false)
     expect(calls.some((call) => call.url.includes('/health') && call.method !== 'GET')).toBe(false)
+    expect(calls.some((call) => call.url.includes('/health') && call.method === 'GET')).toBe(true)
     spy.mockRestore()
   })
 })

@@ -20,8 +20,8 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `eval/` except `heldout/` | A3 | Validator, 30 dev scenarios, harness (§13) | `validate.py`, `PREREGISTRATION.md`, `scenarios/dev/`, `run.py`, `arms/` |
 | `eval/scenarios/heldout/` | H | Held-out set, written once (B-07) | created at hour 20 |
 | `tests/eval/` | A3 | Scenario, validator, and harness tests | `test_validate.py`, `test_dev_scenarios.py`, `test_run.py` |
-| `web/` | B1 | React UI, mock, eight screens (§12) | `src/App.tsx`, `src/screens/`, `src/index.css`, `src/a11y.test.tsx`, `mock/`, `src/talkTrack.test.tsx`, `src/undo.test.tsx`, `src/modes.test.tsx` |
-| `web/src/screens/history/` `…/settings/` `web/e2e/` | B2 | Leaf screens + e2e if added at hour 8 | — |
+| `web/` | B1 | React UI, mock, screens (§12) | `src/App.tsx`, `src/screens/`, `src/index.css`, `src/a11y.test.tsx`, `src/history.test.tsx`, `src/health.test.tsx`, `mock/`, `src/talkTrack.test.tsx`, `src/undo.test.tsx`, `src/modes.test.tsx` |
+| `web/src/screens/history/` `…/settings/` `web/e2e/` | B2 | Leaf screens + e2e if added at hour 8. Not created. B-06 filled history and health in `web/src/screens/` | — |
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json`, `fixtures/T1–T7.json`, `CHANGES.md` |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |
 | `docs/` | mixed | Spec and logs (see below) | `architecture.md`, `ROSTER.md`, `HANDOFF.md`, `CP3_GPU_RUN.md` |
@@ -30,6 +30,21 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `WORKFLOW.md` | — | How the build is run | §3 loop, §5 contract, §8 gates |
 | `ARCHITECTURE.md` | all | This map | update in the same PR that moves files |
 | root config | A2 | Python project + import rules | `pyproject.toml`, `Makefile`, `.importlinter`, `tests/conftest.py` |
+
+### `web/` after B-06
+
+History and the read-only recommender view live in the existing screen files. There is no Settings screen.
+
+| File | What it is |
+|---|---|
+| `web/src/screens/HistoryScreen.tsx` | `GET /sessions` (live only). Practice is a second request, `GET /sessions?mode=practice`. Renders `session_id`, `mode`, `opened_at`, `closed_at`, `library_version`. |
+| `web/src/screens/HealthScreen.tsx` | `GET /health` only. Shows recommender, model id, p50, p95, last p95, fallback rate, rejection count, agreement rate. The recommender follows process config from startup. |
+| `web/src/screens/HandoffScreen.tsx` | Unchanged. Outcome and actor come from the typed `GET /sessions/{id}/handoff` body (CHANGE-004). |
+| `web/src/history.test.tsx` | Added. Practice rows stay off the default list and appear after the practice request. |
+| `web/src/health.test.tsx` | Added. Health is a GET of `/health` with no recommender control and no `/settings` call. |
+| `web/src/screens/SettingsScreen.tsx` | Removed. `/settings` redirects to `/health` (`web/src/App.tsx`). It is not in `web/src/routes.ts`. |
+| `web/mock/replay.ts` | Also serves `GET /sessions` (live by default, `mode=practice`, `mode=all`) and `GET /health`. |
+| `web/mock/plugin.ts` | Dev server forwards `/health` to that mock. |
 
 ## Task cards (`prompts/`)
 
