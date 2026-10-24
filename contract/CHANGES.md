@@ -61,7 +61,7 @@ and POST-enum schemas (`amount_band`, `outcome`, `actor`, `chip`, `scenario_id`)
 stay deferred. API code and fixtures are not changed in this proposal.
 
 Proposer: Agent A
-Approved: Driver A ☑ · Driver B ☐ · Rejected ☐
+Approved: Driver A ☑ · Driver B ☑ (Jonathan) · Rejected ☐
 
 ### Approval of contract-v1
 Driver A ☑ · Driver B ☑
