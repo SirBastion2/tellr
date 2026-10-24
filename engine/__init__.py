@@ -1,4 +1,4 @@
-"""engine-api-v1 (docs/ROSTER.md §5.1). Signatures are frozen; the fold lands later."""
+"""engine-api-v1 (docs/ROSTER.md §5.1). Signatures are frozen."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any, Literal
 
 from engine.library import Library, LibraryBootError, export_library, load_library
+from engine.reduce import project
 
 QuestionId = str
 Stage = Literal["opener", "verify", "probe"]
@@ -22,11 +23,6 @@ class CommandRejected(Exception):
         self.code = code
         self.message = message
         super().__init__(f"{code}: {message}" if message else code)
-
-
-def project(events: list[Event], lib: Library) -> SessionState:
-    """§4, §6, §7.1: the fold. Implemented in A-02."""
-    raise NotImplementedError("engine.project lands in A-02")
 
 
 def candidates(state: SessionState, lib: Library) -> tuple[Stage, list[QuestionId]]:
