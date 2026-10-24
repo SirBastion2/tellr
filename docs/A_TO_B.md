@@ -19,6 +19,38 @@ B reply:
 
 ---
 
+### M-016 · Sat Oct 24, 2026, 7:38 PM ET · X-005 fixed; re-record T1/T3 on the GPU laptop with the live 8B
+From: A
+Action needed from B: yes
+
+X-005 is fixed in PR #66 (https://github.com/SirBastion2/tellr/pull/66). `python -m api.replay record` now honors `RECOMMENDER` (env or `--recommender`) plus `LLAMA_SERVER` and `MODEL_ID`, and writes `gpu` / `recommender` / `model_id` / `note` from the app that actually recorded. Replay stays fake. Default (no env) is still fake; the committed CPU logs stay valid until you replace them.
+
+Please re-record on the GPU laptop with the live 8B Q4_K_M (`llama-server -ngl 99 -c 4096 -np 1`) and open a PR that only updates `api/replays/t1_legitimate.json` and `api/replays/t3_coached.json`. Do not redo the scripts from scratch.
+
+Git Bash / WSL (one GPU job at a time):
+
+```
+scripts/with-gpu env RECOMMENDER=local \
+  MODEL_ID=Meta-Llama-3.1-8B-Instruct-Q4_K_M \
+  LLAMA_SERVER=http://127.0.0.1:8080 \
+  python -m api.replay record --recommender local
+```
+
+Native Windows (skip the wrapper):
+
+```
+$env:RECOMMENDER='local'
+$env:MODEL_ID='Meta-Llama-3.1-8B-Instruct-Q4_K_M'
+$env:LLAMA_SERVER='http://127.0.0.1:8080'
+python -m api.replay record --recommender local
+```
+
+`--recommender local` is optional if `RECOMMENDER=local` is already set. Then `python -m api.replay replay` (playback is still fake) and open the PR with the new logs.
+
+B reply:
+
+---
+
 ### M-015 · Sat Oct 24, 2026, 7:30 PM ET · B-017–B-019 read; #62/#63 merged; A cards done
 From: A
 Action needed from B: no

@@ -9,16 +9,42 @@ from fastapi.testclient import TestClient
 from tests.api.conftest import assert_session_state, comparable
 
 from api.main import create_app
-from api.replay import LOG_NAMES, REPLAY_DIR, parse_log, replay_steps
+from api.replay import LOG_NAMES, REPLAY_DIR, parse_log, record_practice, replay_steps
+from recommenders.fake import FakeRecommender
 
 ROOT = Path(__file__).resolve().parents[2]
+_FAKE = frozenset({"fake", "fake_llm"})
+_GPU = frozenset({"local", "local_llm"})
+
+
+def assert_recommender_metadata(log: dict) -> None:
+    """gpu / model_id / note must match the recommender that recorded the log."""
+    rec = log["recommender"]
+    gpu = log["gpu"]
+    model_id = log["model_id"]
+    note = str(log["note"]).lower()
+    assert rec
+    assert model_id
+    assert log["note"]
+    assert isinstance(gpu, bool)
+    if rec in _FAKE:
+        assert gpu is False
+        assert model_id == FakeRecommender.MODEL_ID
+        assert "fake" in note
+    elif rec in _GPU:
+        assert gpu is True
+        assert model_id != FakeRecommender.MODEL_ID
+        assert "gpu" in note or rec in note
+    else:
+        assert gpu is False
+        assert model_id != FakeRecommender.MODEL_ID
 
 
 @pytest.mark.parametrize("name", LOG_NAMES)
 def test_replay_log_parses_and_replays_live_path(name: str, tmp_path: Path) -> None:
     log = parse_log(REPLAY_DIR / name)
     assert log["mode"] == "practice"
-    assert log["gpu"] is False
+    assert_recommender_metadata(log)
     assert "heldout" not in str(log["scenario_id"])
     assert (ROOT / "eval" / "scenarios" / "heldout") not in Path(log.get("script", "")).parents
     assert log["steps"], f"{name} has no web --replay steps"
@@ -28,11 +54,13 @@ def test_replay_log_parses_and_replays_live_path(name: str, tmp_path: Path) -> N
     with TestClient(app) as client:
         states = replay_steps(client, log)
     assert len(states) == len(log["steps"])
+    fake_recorded = log["recommender"] in _FAKE
     for index, (got, step) in enumerate(zip(states, log["steps"], strict=True)):
         assert_session_state(got)
-        assert comparable(got) == comparable(step["response"]), (
-            f"{name} step {index} {step['endpoint']} diverged from the recorded live run"
-        )
+        if fake_recorded:
+            assert comparable(got) == comparable(step["response"]), (
+                f"{name} step {index} {step['endpoint']} diverged from the recorded live run"
+            )
 
 
 def test_replay_logs_are_one_coached_and_one_legitimate() -> None:
@@ -58,3 +86,87 @@ def test_event_log_replays_through_live_get(name: str, tmp_path: Path) -> None:
     last = log["steps"][-1]["response"]
     assert comparable(body) == comparable(last)
     assert body["session_id"] == session_id
+
+
+def test_recommender_metadata_accepts_real_model_log() -> None:
+    assert_recommender_metadata(
+        {
+            "recommender": "local",
+            "gpu": True,
+            "model_id": "Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+            "note": (
+                "Recorded with RECOMMENDER=local against llama-server "
+                "(model_id=Meta-Llama-3.1-8B-Instruct-Q4_K_M). gpu=true."
+            ),
+        }
+    )
+
+
+def test_record_practice_fake_labels_without_gpu(monkeypatch: pytest.MonkeyPatch) -> None:
+    from api.replay import SCRIPTS
+
+    monkeypatch.delenv("RECOMMENDER", raising=False)
+    monkeypatch.delenv("MODEL_ID", raising=False)
+    monkeypatch.delenv("LLAMA_SERVER", raising=False)
+    log = record_practice(SCRIPTS["T1"], case="T1")
+    assert log["recommender"] == "fake"
+    assert log["gpu"] is False
+    assert log["model_id"] == FakeRecommender.MODEL_ID
+    assert "fake" in str(log["note"]).lower()
+    assert_recommender_metadata(log)
+
+
+def test_record_practice_passes_env_into_create_app(monkeypatch: pytest.MonkeyPatch) -> None:
+    from api.replay import SCRIPTS
+
+    captured: dict[str, object] = {}
+    real = create_app
+
+    def spy(**kwargs: object) -> object:
+        captured.update(kwargs)
+        return real(
+            db_path=kwargs.get("db_path"),
+            recommender="fake",
+            warmup=False,
+        )
+
+    monkeypatch.setenv("RECOMMENDER", "local")
+    monkeypatch.setenv("LLAMA_SERVER", "http://127.0.0.1:8080")
+    monkeypatch.setenv("MODEL_ID", "Meta-Llama-3.1-8B-Instruct-Q4_K_M")
+    monkeypatch.setattr("api.replay.create_app", spy)
+    record_practice(SCRIPTS["T1"], case="T1")
+    assert captured.get("recommender") == "local"
+    assert captured.get("llama_server") == "http://127.0.0.1:8080"
+    assert captured.get("model_id") == "Meta-Llama-3.1-8B-Instruct-Q4_K_M"
+
+
+def test_record_practice_recommender_flag_overrides_env(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from api.replay import SCRIPTS
+
+    captured: dict[str, object] = {}
+    real = create_app
+
+    def spy(**kwargs: object) -> object:
+        captured.update(kwargs)
+        return real(
+            db_path=kwargs.get("db_path"),
+            recommender="fake",
+            warmup=False,
+        )
+
+    monkeypatch.setenv("RECOMMENDER", "local")
+    monkeypatch.setenv("LLAMA_SERVER", "http://example:9")
+    monkeypatch.setenv("MODEL_ID", "other-model")
+    monkeypatch.setattr("api.replay.create_app", spy)
+    record_practice(
+        SCRIPTS["T1"],
+        case="T1",
+        recommender="fake",
+        llama_server="http://127.0.0.1:8080",
+        model_id="Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+    )
+    assert captured.get("recommender") == "fake"
+    assert captured.get("llama_server") == "http://127.0.0.1:8080"
+    assert captured.get("model_id") == "Meta-Llama-3.1-8B-Instruct-Q4_K_M"

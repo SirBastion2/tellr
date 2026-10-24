@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
@@ -43,6 +44,8 @@ FILENAMES = {
     "T3": "t3_coached.json",
 }
 LOG_NAMES = tuple(FILENAMES[case] for case in ("T1", "T3"))
+_GPU_RECS = frozenset({"local", "local_llm"})
+_FAKE_RECS = frozenset({"fake", "fake_llm"})
 
 
 class ReplayError(ValueError):
@@ -192,14 +195,68 @@ def _answer_body(
     return body
 
 
-def record_practice(scenario_path: Path, *, case: str) -> dict[str, Any]:
+def resolve_record_settings(
+    *,
+    recommender: str | None = None,
+    llama_server: str | None = None,
+    model_id: str | None = None,
+) -> tuple[str, str | None, str | None]:
+    """Record uses env + optional CLI; default stays fake (same as a CPU-only VM)."""
+    rec = recommender or os.environ.get("RECOMMENDER") or "fake"
+    server = llama_server if llama_server is not None else os.environ.get("LLAMA_SERVER")
+    mid = model_id if model_id is not None else os.environ.get("MODEL_ID")
+    return rec, server, mid
+
+
+def log_fields_from_app(app: Any) -> dict[str, Any]:
+    """gpu / recommender / model_id / note from the app that actually recorded."""
+    rec = str(getattr(app.state, "recommender", "fake"))
+    model_id = getattr(app.state, "model_id", None)
+    impl = getattr(app.state, "recommender_impl", None)
+    impl_name = type(impl).__name__ if impl is not None else ""
+    gpu = rec in _GPU_RECS or impl_name == "LocalLLM"
+    if not model_id and rec in _FAKE_RECS:
+        model_id = FakeRecommender.MODEL_ID
+    if rec in _FAKE_RECS or impl_name == "FakeRecommender":
+        note = CPU_NOTE
+    elif gpu:
+        note = (
+            f"Recorded with RECOMMENDER={rec} against llama-server "
+            f"(model_id={model_id}). gpu=true."
+        )
+    else:
+        note = f"Recorded with RECOMMENDER={rec} (model_id={model_id}). gpu=false."
+    return {
+        "gpu": bool(gpu),
+        "recommender": rec,
+        "model_id": model_id,
+        "note": note,
+    }
+
+
+def record_practice(
+    scenario_path: Path,
+    *,
+    case: str,
+    recommender: str | None = None,
+    llama_server: str | None = None,
+    model_id: str | None = None,
+) -> dict[str, Any]:
     """Drive the live API in practice mode with a committed dev scenario script."""
     refuse_heldout(scenario_path)
     scenario = load_script(scenario_path)
     library = load_library(ROOT / "library")
+    rec, server, mid = resolve_record_settings(
+        recommender=recommender, llama_server=llama_server, model_id=model_id
+    )
     steps: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory() as tmp:
-        app = create_app(db_path=Path(tmp) / "teller.sqlite", recommender="fake")
+        app = create_app(
+            db_path=Path(tmp) / "teller.sqlite",
+            recommender=rec,
+            llama_server=server,
+            model_id=mid,
+        )
         with TestClient(app) as client:
             open_req = {
                 "mode": "practice",
@@ -262,6 +319,7 @@ def record_practice(scenario_path: Path, *, case: str) -> dict[str, Any]:
 
             events = store.load_events(app.state.db, session_id)
             row = store.get_session(app.state.db, session_id)
+            meta = log_fields_from_app(app)
 
     if row is None:
         raise ReplayError("recorded session missing from the store")
@@ -273,12 +331,12 @@ def record_practice(scenario_path: Path, *, case: str) -> dict[str, Any]:
         "scenario_id": scenario["id"],
         "script": str(scenario_path.relative_to(ROOT)),
         "mode": "practice",
-        "gpu": False,
-        "recommender": "fake",
-        "model_id": FakeRecommender.MODEL_ID,
+        "gpu": meta["gpu"],
+        "recommender": meta["recommender"],
+        "model_id": meta["model_id"],
         "recorded_at": datetime.now(UTC).replace(tzinfo=None).strftime("%Y-%m-%dT%H:%M:%S"),
         "library_version": library.library_version,
-        "note": CPU_NOTE,
+        "note": meta["note"],
         "session": {
             "session_id": session_id,
             "mode": row["mode"],
@@ -298,13 +356,15 @@ def write_log(path: Path, log: dict[str, Any]) -> Path:
     return path
 
 
-def record_demo_logs(out_dir: Path | None = None) -> list[Path]:
+def record_demo_logs(
+    out_dir: Path | None = None, *, recommender: str | None = None
+) -> list[Path]:
     dest = out_dir or REPLAY_DIR
     dest.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
     for case, script in SCRIPTS.items():
         path = dest / FILENAMES[case]
-        write_log(path, record_practice(script, case=case))
+        write_log(path, record_practice(script, case=case, recommender=recommender))
         written.append(path)
     return written
 
@@ -327,9 +387,14 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="single log to replay (default: both committed logs)",
     )
+    parser.add_argument(
+        "--recommender",
+        default=None,
+        help="record only: override $RECOMMENDER (default: env, else fake). Replay stays fake.",
+    )
     args = parser.parse_args(argv)
     if args.command == "record":
-        paths = record_demo_logs(Path(args.out))
+        paths = record_demo_logs(Path(args.out), recommender=args.recommender)
         for path in paths:
             print(f"wrote {path}")
         return 0
