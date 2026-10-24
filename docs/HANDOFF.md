@@ -580,3 +580,78 @@ GATE PASS (a)
 - **Decisions I made, and the section that justified each:** none. Driver instruction: append-only shared docs; main for contract/api/engine/store/goldens/fixtures/`reference_impl.py`; branch for `web/`.
 - **Questions logged:** none
 - **The next agent needs to know:** This is a merge of `origin/main` (`b2db873`) into `b-01-scaffold`. No new branch or PR. Q-012 is still in `docs/QUESTIONS.md`. Both CROSS_LANE X-001 entries are present (main: missing outcome/actor, resolved; branch: schema description still said not applied, still open in the log). The schema file on this tree is main's `CHANGE-004 (applied).` wording.
+
+---
+
+### [A-05] Model path — Agent A2 — 2026-10-24 20:40
+- **Status:** done (implementation and gate). **Live-path p95: PENDING Driver B** (no GPU here; fakes only).
+- **Gate:** `scripts/gate.sh a` → PASS (`RECOMMENDER=rules`)
+
+```
+── ruff
+All checks passed!
+
+── pytest
+94 passed, 1 warning in 12.26s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `recommenders/**`, `engine/prompt.py`, `api/main.py` (`/health` + recommender wiring in `render`/`create_app` only), `tests/recommenders/**`, `.importlinter` (`recommenders` is now a root package), `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Default local model ID is `Meta-Llama-3.1-8B-Instruct-Q4_K_M` when `RECOMMENDER` is `local`/`local_llm`/`hosted`/`hosted_llm` (DECISIONS Hour 6; §15 `MODEL_ID`). The 3B (`Llama-3.2-3B-Instruct-Q4_K_M`) is the operational fallback: restart `llama-server` on that GGUF and set `MODEL_ID`.
+  - `RECOMMENDER=rules` (default) does not construct a model client and does not append `RecommendationIssued`, so T1–T7 replay and goldens stay identical (§7.3 floor).
+  - Prompt builder is an allowlist (`engine/prompt.py`, §8.1 / §10.2). Notes, `amount_band`, and `account_ref` are never copied in. Adding a SessionState field does not add it to the prompt.
+  - Validator is shared (`recommenders.validate`); LocalLLM sends a per-request GBNF (§8.2); HostedLLM does not assume a grammar. Timeout is 1500 ms (§8.3). Strict mode forces `signals_asserted=[]` and skips the call outside probe or after any stop (§7.4, §9).
+  - `/health` adds `p50`, `p95`, `rejection_count` and keeps `last_p95` as an alias of `p95` (card step 7; §16). Agreement is model-output vs `rule_choice`; timeouts are fallbacks, not agreement samples.
+  - No new dependency.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Boot: `RECOMMENDER=rules|local_llm|hosted_llm`, `MODEL_ID`, `MODEL_TIMEOUT_MS=1500`, `STRICT_MODE=true`, `LLAMA_SERVER=http://127.0.0.1:8080`, `HOSTED_LLM_URL`, `HOSTED_LLM_API_KEY`.
+  - Inject a fake in tests: `create_app(..., recommender="local_llm", recommender_impl=fake, metrics=Metrics())`.
+  - This environment did not run a real model. Do not treat `/health` p50/p95 from the unit tests as the live number.
+
+  **PENDING Driver B — live-path p95 (not `scripts/bench_llm.py`).** On the GPU laptop, start `llama-server` with the 8B Q4_K_M (same flags as A-03: `-ngl 99 -c 4096 -np 1`), then:
+
+```
+scripts/with-gpu env RECOMMENDER=local_llm \
+  MODEL_ID=Meta-Llama-3.1-8B-Instruct-Q4_K_M \
+  MODEL_TIMEOUT_MS=1500 \
+  LLAMA_SERVER=http://127.0.0.1:8080 \
+  python3 - <<'PY'
+import json
+from pathlib import Path
+from fastapi.testclient import TestClient
+from api.main import create_app
+
+app = create_app(
+    db_path=Path("/tmp/teller-live-8b.sqlite"),
+    recommender="local_llm",
+    model_id="Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+)
+steps = json.loads(Path("contract/fixtures/T2.json").read_text())["steps"]
+with TestClient(app) as client:
+    session_id = None
+    for step in steps:
+        endpoint, body = step["endpoint"], step["request"]
+        if endpoint == "POST /sessions":
+            session_id = client.post("/sessions", json=body).json()["session_id"]
+        elif endpoint.endswith("/context"):
+            client.post(f"/sessions/{session_id}/context", json=body)
+        else:
+            client.post(f"/sessions/{session_id}/answers", json=body)
+    print(json.dumps(client.get("/health").json(), indent=2))
+PY
+```
+
+  Paste `p50` / `p95` from that `/health` into a new HANDOFF line. That is the live-path number the card wants.
+
+  **PENDING — 8B vs 3B quality (DECISIONS Hour 6).** Driver B must not read `eval/scenarios/dev/` (ROSTER §2). Repeat the block above after switching `llama-server` to `Llama-3.2-3B-Instruct-Q4_K_M` and `MODEL_ID=Llama-3.2-3B-Instruct-Q4_K_M` (use `/tmp/teller-live-3b.sqlite`). Compare T2 probe `question.id` values and `agreement_rate`. Driver A can run the same API against A3's `eval/scenarios/dev` once those exist. Prefer 8B if it picks a different valid probe that better splits the leading pattern; otherwise 8B stays the default and 3B stays the VRAM/fallback.
+

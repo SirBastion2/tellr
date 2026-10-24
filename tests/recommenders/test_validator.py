@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from tests.recommenders.conftest import FakeRecommender, events_from_steps, t2_steps
+
 from engine import candidates, project, rule_choice, stop
 from engine.library import Library
-
-from tests.recommenders.conftest import FakeRecommender, events_from_steps, t2_steps
 
 
 def test_validator_drops_fabricated_ids(library: Library) -> None:

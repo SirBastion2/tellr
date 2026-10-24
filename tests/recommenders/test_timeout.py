@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import time
 
+from tests.recommenders.conftest import FakeRecommender, events_from_steps, t2_steps
+
 from engine import candidates, project, rule_choice, stop
 from engine.library import Library
-
-from tests.recommenders.conftest import FakeRecommender, events_from_steps, t2_steps
 
 
 def test_timeout_falls_back_to_rules(library: Library) -> None:
