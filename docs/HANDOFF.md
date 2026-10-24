@@ -418,3 +418,44 @@ GATE PASS (a)
   - `GET /sessions/{id}/handoff` now validates against `contract/handoff.schema.json` via `assert_handoff()`. Before `POST /outcome`, `outcome` and `actor` are null and `ManagerRequested` is appended. After outcome they equal the posted values. SessionState still omits `outcome` / `actor` / `closed`.
   - B1 can render the recorded outcome and actor from the handoff projection. Do not merge this PR unless a driver says so.
   - No new dependency.
+
+---
+
+### [CHANGE-004] Handoff schema description wording — Agent R — 2026-10-24 20:32
+- **Status:** done
+- **Gate:** `scripts/gate.sh contract` → PASS; `scripts/gate.sh a` → PASS
+
+```
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (contract)
+```
+
+```
+── ruff
+All checks passed!
+
+── pytest
+85 passed, 1 warning in 10.54s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `contract/handoff.schema.json` (top-level `description` string only); `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Replaced leftover `Pending CHANGE-004 (not applied).` with `CHANGE-004 (applied).` in the schema description. CHANGE-004 is already applied and approved (PRs #22, #23, #24; `contract/CHANGES.md`, `contract/api.md`).
+  - Left the 20:13 HANDOFF proposal entry as written (this file is append-only; that entry was accurate at proposal time).
+  - Did not edit `api/`, `web/`, fixtures, `reference_impl.py`, or `tests/golden/`. Schema fields, required keys, and `CONTRACT_VERSION` are unchanged.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR #27 is wording-only. Do not merge unless a driver says so.
+  - `contract/` and `docs/` have no remaining live “pending CHANGE-004” / “not applied” wording. `handoff.schema.json` is not in `contract/oracle.sha256`.
+  - No new dependency.
