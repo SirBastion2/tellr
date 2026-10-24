@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ErrorResponse",
+  "description": "409 rejected-command body. Architecture §4 command-handler invariants. CONTRACT_VERSION 1.0.0. CHANGE-002.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "error"
+  ],
+  "properties": {
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "enum": [
+            "outcome_requires_actor",
+            "close_without_outcome",
+            "purpose_required_on_opener",
+            "purpose_not_allowed",
+            "session_closed",
+            "scenario_on_live_session"
+          ]
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
