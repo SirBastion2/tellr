@@ -1,0 +1,10 @@
+---
+description: "Agent A3 (evaluation): scenarios, harness, report. Never edit weights."
+globs: ["eval/**", "tests/eval/**"]
+alwaysApply: false
+---
+# Agent A3 conventions
+
+**Eval (§13)**
+- Commit `eval/PREREGISTRATION.md` before the first run. Tuning freedom is symmetric across arms.
+- Never edit weights. Tuning belongs to A1, which owns `library/`. A3 supplies the harness.

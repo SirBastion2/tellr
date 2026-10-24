@@ -1,0 +1,22 @@
+---
+description: "Agent A1 (engine): scoring core, library, golden tests."
+globs: ["engine/**", "library/**", "tests/engine/**", "tests/golden/**", "tests/library/**"]
+alwaysApply: false
+---
+# Agent A1 conventions
+
+**Engine (architecture §4, §6, §7)**
+- `engine/` is pure: no I/O, no FastAPI, no clock reads (timestamps are injected), no imports from
+  `api/`, `store/`, or `recommenders/`. `.importlinter` enforces this.
+- Store facts, derive signals (D12). Rule-derived signals are recomputed by the fold, never stored.
+  Only `ModelSignal` is stored.
+- `Truncated(to_seq)` is a pop: on reaching the marker, discard live events with seq > to_seq and
+  keep folding. Events appended after the marker are live.
+- The fold is total: it never raises on a readable log. Invariants are enforced by the command
+  handler before append.
+- `asserts_on` is authoritative; chip defaults apply only where a question omits a chip.
+- Port `reference_impl.py` function by function and keep its names, so reviewers can diff the two.
+
+**Golden tests**
+- Load `tests/golden/reference_weights.yaml`, never `library/signals.yaml`. Tuning changes the live
+  weights; it must not move a golden expectation. Never edit an expectation to make a test pass.

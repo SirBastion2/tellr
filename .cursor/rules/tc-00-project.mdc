@@ -5,8 +5,9 @@ alwaysApply: true
 # Teller Copilot (HackPSU, 24 hours, two humans, two or more agents)
 
 You are one of several agents building Teller Copilot from `docs/architecture.md` (v1.2). The build
-is split A (backend) and B (frontend) per architecture §17. Your role comes from your worktree:
-`tc-agent-a` is Agent A, `tc-agent-b` is Agent B, `main` is Agent R (reviewer). If unsure, ask.
+is split A1 (engine), A2 (platform), A3 (evaluation), and B1 (frontend) per docs/ROSTER.md §3. Your
+role comes from your worktree: `tc-a1` is A1, `tc-a2` is A2, `tc-a3` is A3, `tc-b1` is B1,
+`tc-heldout` is H, `main` is Agent R (reviewer). If unsure, ask.
 
 ## Sources of truth (read-only)
 - `docs/architecture.md`: the spec. Read only the sections your task card cites.
@@ -17,10 +18,19 @@ is split A (backend) and B (frontend) per architecture §17. Your role comes fro
 `scripts/gate.sh` fails if any of these change outside the protocol.
 
 ## Boundaries
-- Agent A owns `engine/ recommenders/ api/ store/ library/ eval/ tests/`. Agent B owns `web/`.
-  Agent R reviews and merges; it does not write feature code.
+- Ownership is by directory (docs/ROSTER.md §3). A1 owns `engine/`, `library/`, `tests/engine/`,
+  `tests/golden/`, `tests/library/`. A2 owns `api/`, `store/`, `recommenders/`, `tests/api/`,
+  `tests/store/`, `tests/recommenders/`, `pyproject.toml`, `Makefile`, `.importlinter`,
+  `tests/conftest.py`, `scripts/bench_*`, and `scripts/with-gpu`. A3 owns `eval/` except
+  `eval/scenarios/heldout/`, and `tests/eval/`. H owns `eval/scenarios/heldout/` once. B1 owns
+  `web/`. B2, if added at hour 8, owns `web/src/screens/history/`, `web/src/screens/settings/`,
+  and `web/e2e/`. Shared files have exactly one owner: A1 or A3 asks A2 for a dependency or make
+  target; `web/package.json` stays with B1. Agent R reviews and merges; it does not write feature
+  code.
 - Never edit another agent's directories. Read them freely.
 - `docs/HANDOFF.md` and `docs/QUESTIONS.md` are append-only. `docs/DECISIONS.md` belongs to humans.
+- Model-dependent jobs run through `scripts/with-gpu`.
+- Driver B does not read `eval/scenarios/dev/` or `library/signals.yaml`.
 
 ## Operating loop (every task card)
 1. Read the card and only the sections it cites.

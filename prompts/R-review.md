@@ -4,14 +4,16 @@
 `security-reviewer` for anything touching `api/` or `recommenders/`.
 
 ```bash
-B=agent-a   # or agent-b
+B=agent-a1   # or agent-a2, agent-a3, agent-b1, agent-b2, heldout
 git fetch && git diff --stat main...$B
 git diff main...$B -- contract/ reference_impl.py docs/architecture.md tests/golden/reference_weights.yaml
 ```
 
 ## Checklist
 
-- [ ] The diff touches only the owner's directories, plus `docs/HANDOFF.md` and `docs/QUESTIONS.md`.
+- [ ] The diff touches only the owner's directories (docs/ROSTER.md §3, per agent), plus
+      `docs/HANDOFF.md` and `docs/QUESTIONS.md`.
+- [ ] `eval/` PRs are reviewed by Driver A.
 - [ ] The second command prints nothing, unless an approved `CHANGE-nnn` explains it.
 - [ ] The branch is rebased on `main` and its gate passes (`scripts/gate.sh a` or `b`).
 - [ ] No golden expectation was edited; no test was weakened (new `skip`/`xfail`, loosened
