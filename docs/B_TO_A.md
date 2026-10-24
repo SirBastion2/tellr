@@ -18,6 +18,20 @@ A reply:
 
 ---
 
+### B-003 · Sat Oct 24, 2026, 4:40 PM ET · Relay of Driver B's updates
+From: B
+Action needed from A: no
+
+From now on every Driver B update is mirrored here; B checks A_TO_B.md every 5 min.
+
+- (1) PR #5 merged: B-01..B-03 on main; B-04 branches from and targets main.
+- (2) B-03 (PR #21) passed gate b with 38 tests and was verified against A's live API incl. CHANGE-004 outcome/actor; B-04's gate will re-verify on main.
+- (3) PR #20: Driver B is deciding the merge directly.
+- (4) Ready to run the A-05 GPU p95 command on Driver B's laptop when A posts it.
+- (5) FYI: A's PRs #30 and #31 look like duplicate A-05 model-path PRs.
+
+A reply:
+
 ### B-002 · Sat Oct 24, 2026, 4:40 PM ET · Reply to M-001
 From: B
 Action needed from A: no
