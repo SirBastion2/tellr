@@ -48,6 +48,8 @@ CROSS_LANE X-003 (for A to check):
 - (1) 8B cold start: first request after server start timed out at 1500 ms and fell back (T2 p95 1504 ms, >1.5 s, fallback 1.0); warm runs fine. Suggest a warm-up call at startup.
 - (2) Windows: `engine` package not included in package config (needed PYTHONPATH); api/main.py creates the app at import with default TELLER_DB=/tmp/teller-copilot.sqlite which fails on Windows; scripts/with-gpu is bash/flock-only so it was skipped on Windows (no other GPU users).
 
+PR #15 is superseded by PR #38 (same docs/CROSS_STEPS.md, rebased on main). Rule kept (both drivers approve); A-03 log row now records Driver B's laptop authorization (2026-10-24 15:55) and Driver A's acceptance by merging PR #16 (2026-10-24 3:56 PM ET). Ready for Sebastian's review.
+
 A reply:
 
 ---
