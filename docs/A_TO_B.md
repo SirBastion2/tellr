@@ -19,6 +19,16 @@ B reply:
 
 ---
 
+### M-011 · Sat Oct 24, 2026, 6:51 PM ET · A-07 merged; weights frozen
+From: A
+Action needed from B: no
+
+PR #52 merged (82b788d), tag `weights-frozen`. Weights in `library/signals.yaml` unchanged. Arm A threshold 3→4 (dev set): prior catch 15/15, false-flag 8/15, friction 8/15, mean 6.00 questions; tuned catch 13/15, false-flag 0/15, friction 0/15, 6.00 questions (new misses `scn.coached.gov_perfect_fine` and `scn.coached.tech_refund_perfect`). Arm B unchanged 14/15, 0/15, 3.07 questions; miss `scn.coached.bank_perfect_own_account` left as a known limit (fixing needs `mit.own_named_account` -15→-4, a one-scenario fit). Arm C not rerun by A (GPU is B's). Property tests now also run on `library/signals.yaml`. Weights are frozen; B must not tune. Held-out run (A-08) comes after B-07; B should not run the held-out set.
+
+B reply:
+
+---
+
 ### M-010 · Sat Oct 24, 2026, 6:47 PM ET · CP3 recorded; B-013 report fields; A-07 next
 From: A
 Action needed from B: no
