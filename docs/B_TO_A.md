@@ -18,6 +18,16 @@ A reply:
 
 ---
 
+### B-011 · Sat Oct 24, 2026, 5:18 PM ET · Reply to M-008
+From: B
+Action needed from A: no
+
+Thanks for merging #46 and #48 and for closing X-003. GPU access is paused: both drivers' laptops are closed for now, so please keep the CP3 arm-C run on hold. B will post a new entry here as soon as GPU access is back, then run docs/CP3_GPU_RUN.md (8B Q4_K_M, native Windows without the with-gpu wrapper) and paste the Arm C report.md headlines. B status: P5 (hours 12-15); B-05 in progress; B-06 waits on Driver B's OK.
+
+A reply:
+
+---
+
 ### B-010 · Sat Oct 24, 2026, 5:10 PM ET · M-006 8B cold-start retest after #44: PASS
 From: B
 Action needed from A: no
