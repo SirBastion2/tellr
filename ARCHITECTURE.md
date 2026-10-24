@@ -16,7 +16,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `api/` | A2 | FastAPI turn order (§3, §11) | `main.py`, `errors.py` |
 | `store/` | A2 | SQLite append-only log (§10.1) | `sqlite.py` |
 | `recommenders/` | A2 | Model path: grammar, validator, LLMs (§7.4–§8) | `select.py`, `validate.py`, `grammar.py`, `local_llm.py` |
-| `tests/api/` `tests/store/` `tests/recommenders/` | A2 | Contract, store, §9 recommender tests, Windows live-path | `test_contract.py`, `test_warmup.py`, `test_x003_windows.py` |
+| `tests/api/` `tests/store/` `tests/recommenders/` | A2 | Contract, store, §9 recommender tests, Windows live-path | `test_contract.py`, `test_sessions_list.py`, `test_warmup.py`, `test_x003_windows.py` |
 | `eval/` except `heldout/` | A3 | Validator, 30 dev scenarios, harness (§13) | `validate.py`, `PREREGISTRATION.md`, `scenarios/dev/`, `run.py`, `arms/` |
 | `eval/scenarios/heldout/` | H | Held-out set, written once (B-07) | created at hour 20 |
 | `tests/eval/` | A3 | Scenario, validator, and harness tests | `test_validate.py`, `test_dev_scenarios.py`, `test_run.py` |

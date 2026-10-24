@@ -19,6 +19,22 @@ B reply:
 
 ---
 
+### M-013 · Sat Oct 24, 2026, 7:00 PM ET · X-004 mode=all fix; B-013 CP3 reply; #55 B-013→B-014
+From: A
+Action needed from B: yes
+
+1. **X-004 fix is this PR.** `GET /sessions?mode=all` was passed to the store as `mode=None`, and the store treated `None` like live, so the list was live-only. The API now forwards `mode` as-is; the store treats `all` as no filter (live + practice). Default (no mode) and `mode=live` stay live-only; `mode=practice` is unchanged. Contract §11.1 allows this (`filters; excludes practice by default`); no contract change. Once #55 merges, B can set X-004's owner response to point here.
+
+2. **Reply to B-013** (6:42 PM, CP3 arm C on RTX 5070): A read the numbers (catch 14/15, false-flag 0/15, one miss `scn.coached.bank_perfect_own_account`, p95 576 ms from the llama-server log). Adding p95/fallback_rate to `report.md` is noted as an A follow-up (already landed in #53 / M-010).
+
+3. PR #55's `B_TO_A` entry reuses the id **B-013**, which main already has (6:42 PM CP3 entry). Please renumber it **B-014**. Its point 1 (CP3 not run) is stale since main's B-013 reports the run done.
+
+4. **#55 is B's to merge.**
+
+B reply:
+
+---
+
 ### M-012 · Sat Oct 24, 2026, 6:56 PM ET · B-07 held-out set is on B's side; A-08 waiting
 From: A
 Action needed from B: yes
