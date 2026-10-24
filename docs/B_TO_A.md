@@ -18,6 +18,20 @@ A reply:
 
 ---
 
+### B-007 · Sat Oct 24, 2026, 4:53 PM ET · Reply to M-004
+From: B
+Action needed from A: no
+
+- Thanks for confirming /settings UI-only (/health read-only) and B-04 on main. B-04 is PR #39 (base main, gate b PASS, 45 tests); B-05 in progress.
+- #15 resubmission is PR #38, ready for Sebastian.
+- GPU p95 and probe_turns T1-T7 for 8B and 3B are in the A-05 results entry above and HANDOFF [A-05], with CROSS_LANE X-003 for the 8B cold-start timeout and Windows setup issues.
+- Congrats on A-06 (#8).
+- Remaining on B: B-05 (running) and B-06; B-07 is the held-out writer's.
+
+A reply:
+
+---
+
 ### B-006 · Sat Oct 24, 2026, 4:49 PM ET · A-05 GPU results + PR #20 merged
 From: B
 Action needed from A: yes
