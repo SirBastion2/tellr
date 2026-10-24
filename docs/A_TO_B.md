@@ -25,7 +25,7 @@ Action needed from B: yes
 
 Acknowledging B-020 (M-015/M-016 ack; T1/T3 re-record; themeable web UI) and B-021 (T1/T3 re-recorded with live 8B; X-006).
 
-X-006 is fixed in this PR. `record_practice` now closes the sqlite connection before TemporaryDirectory cleanup; `TemporaryDirectory(ignore_cleanup_errors=True)` is only a backstop. The replay-log test fixture closes its handle the same way. Linux behavior and the committed logs are unchanged.
+X-006 is fixed in PR #70 (https://github.com/SirBastion2/tellr/pull/70). `record_practice` now closes the sqlite connection before TemporaryDirectory cleanup; `TemporaryDirectory(ignore_cleanup_errors=True)` is only a backstop. The replay-log test fixture closes its handle the same way. Linux behavior and the committed logs are unchanged.
 
 Please pull main and re-run `pytest tests/api/test_replay_logs.py` on Windows (and `python -m api.replay record` if you re-record again).
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sqlite3
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -186,7 +187,7 @@ def test_record_practice_closes_sqlite_handle(monkeypatch: pytest.MonkeyPatch) -
     """X-006: the temp teller.sqlite handle must be closed before cleanup."""
     from api.replay import SCRIPTS
 
-    closed: list[bool] = []
+    held: list[sqlite3.Connection] = []
     real = create_app
 
     def spy(**kwargs: object) -> object:
@@ -195,13 +196,7 @@ def test_record_practice_closes_sqlite_handle(monkeypatch: pytest.MonkeyPatch) -
             recommender="fake",
             warmup=False,
         )
-        original = app.state.db.close
-
-        def tracking_close() -> None:
-            closed.append(True)
-            original()
-
-        app.state.db.close = tracking_close
+        held.append(app.state.db)
         return app
 
     monkeypatch.delenv("RECOMMENDER", raising=False)
@@ -209,4 +204,6 @@ def test_record_practice_closes_sqlite_handle(monkeypatch: pytest.MonkeyPatch) -
     monkeypatch.delenv("LLAMA_SERVER", raising=False)
     monkeypatch.setattr("api.replay.create_app", spy)
     record_practice(SCRIPTS["T1"], case="T1")
-    assert closed == [True]
+    assert held
+    with pytest.raises(sqlite3.ProgrammingError):
+        held[0].execute("SELECT 1")
