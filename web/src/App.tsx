@@ -20,8 +20,9 @@ export function AppShell({
   library,
   session,
   issues,
-  cases,
-  onStart,
+  scenarios,
+  onStartPractice,
+  onStartLive,
   postedChipIds = [],
   onPostContext,
   onAnswer,
@@ -34,8 +35,9 @@ export function AppShell({
   library: Library | null
   session: SessionState | null
   issues: readonly SchemaIssue[]
-  cases: readonly { id: string }[]
-  onStart: (caseId: string) => void
+  scenarios: readonly { id: string; label?: string }[]
+  onStartPractice: (scenarioId: string) => void
+  onStartLive: () => void
   postedChipIds?: readonly string[]
   onPostContext?: (chips: string[]) => void
   onAnswer?: (answer: AnswerPost) => void
@@ -76,13 +78,23 @@ export function AppShell({
           )
         })}
         {session ? (
-          <button type="button" onClick={() => onUndo?.()}>
-            POST /undo
+          <button type="button" data-testid="undo" onClick={() => onUndo?.()}>
+            Undo
           </button>
         ) : null}
       </nav>
       <Routes>
-        <Route path="/" element={<HomeScreen library={library} cases={cases} onStart={onStart} />} />
+        <Route
+          path="/"
+          element={
+            <HomeScreen
+              library={library}
+              scenarios={scenarios}
+              onStartPractice={onStartPractice}
+              onStartLive={onStartLive}
+            />
+          }
+        />
         <Route path="/sessions" element={<HistoryScreen />} />
         <Route
           path="/sessions/:id/context"
@@ -131,12 +143,19 @@ function ConnectedShell() {
       library={teller.library}
       session={teller.session}
       issues={import.meta.env.DEV ? teller.issues : []}
-      cases={listCases()}
+      scenarios={listCases()}
       postedChipIds={teller.postedChipIds}
       httpStatus={teller.httpStatus}
       error={teller.error}
-      onStart={(caseId) => {
-        void teller.startCase(caseId).then((next) => {
+      onStartPractice={(scenarioId) => {
+        void teller.startCase(scenarioId).then((next) => {
+          if (next) {
+            void navigate(`/sessions/${next.session_id}/context`)
+          }
+        })
+      }}
+      onStartLive={() => {
+        void teller.startLive().then((next) => {
           if (next) {
             void navigate(`/sessions/${next.session_id}/context`)
           }

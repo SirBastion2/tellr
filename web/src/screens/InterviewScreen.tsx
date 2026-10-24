@@ -30,6 +30,46 @@ function counterpointPrefix(level: Level): string {
   return level === 'clear' ? 'Still noted:' : 'In their favor:'
 }
 
+function TalkTrack({ library, session }: { library: Library | null; session: SessionState }) {
+  const stage = library?.talk_tracks.find((track) => track.id === session.talk_track.stage)
+  const patternDisplayed = session.risk.pattern?.kind === 'pattern'
+  const patternTrack =
+    patternDisplayed && session.talk_track.pattern
+      ? library?.talk_tracks.find((track) => track.id === session.talk_track.pattern)
+      : undefined
+  const stageLines = stage?.lines ?? session.talk_track.lines
+  const patternLines = stage && patternTrack ? patternTrack.lines : []
+  const avoid = stage?.avoid ?? session.talk_track.avoid
+
+  return (
+    <section data-testid="talk-track" className="space-y-2">
+      <ul data-testid="talk-stage-lines">
+        {stageLines.map((line, index) => (
+          <li key={`stage-${index}`} data-testid="talk-stage-line">
+            {line}
+          </li>
+        ))}
+      </ul>
+      {patternLines.length > 0 ? (
+        <ul data-testid="talk-pattern-lines">
+          {patternLines.map((line, index) => (
+            <li key={`pattern-${index}`} data-testid="talk-pattern-line">
+              {line}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <ul data-testid="talk-avoid">
+        {avoid.map((phrase, index) => (
+          <li key={`avoid-${index}`} data-testid="avoid-phrase">
+            {phrase}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
 function QuestionCard({
   library,
   question,
@@ -194,6 +234,7 @@ export function InterviewScreen({
               {counterpointPrefix(session.risk.level)} {session.risk.counterpoint.label}
             </p>
           ) : null}
+          <TalkTrack library={library} session={session} />
           {session.stop?.kind === 'recommended' ? (
             <p data-testid="recommended-stop" data-reason={session.stop.reason}>
               {RECOMMENDED_STOP}

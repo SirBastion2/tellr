@@ -272,8 +272,9 @@ describe('Interview screen', () => {
           library={library}
           session={{ ...session, mode }}
           issues={[]}
-          cases={[]}
-          onStart={() => undefined}
+          scenarios={[]}
+          onStartPractice={() => undefined}
+          onStartLive={() => undefined}
         />
       </MemoryRouter>
     )

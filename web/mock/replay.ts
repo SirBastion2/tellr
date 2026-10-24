@@ -15,6 +15,7 @@ type FixtureStep = {
 
 type Fixture = {
   case: string
+  label?: string
   steps: FixtureStep[]
 }
 
@@ -27,6 +28,7 @@ type Replay = {
   closed: boolean
   outcome: string | null
   actor: string | null
+  mode: 'live' | 'practice'
 }
 
 const OUTCOME_IDS = new Set(['proceed', 'slow_down', 'escalate', 'report'])
@@ -43,8 +45,8 @@ export function resetMock(): void {
   sessions.clear()
 }
 
-export function listCases(): { id: string }[] {
-  return fixtures.map((fixture) => ({ id: fixture.case }))
+export function listCases(): { id: string; label: string }[] {
+  return fixtures.map((fixture) => ({ id: fixture.case, label: fixture.label ?? fixture.case }))
 }
 
 export function openingRequest(caseId: string): unknown {
@@ -90,8 +92,39 @@ function liveScenario(body: unknown): boolean {
   return record.mode === 'live' && typeof record.scenario_id === 'string'
 }
 
-function currentBody(fixture: Fixture, index: number): unknown {
-  return fixture.steps[index]?.response ?? null
+function recordOf(body: unknown): Record<string, unknown> | null {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return null
+  }
+  return body as Record<string, unknown>
+}
+
+function openedMode(body: unknown): 'live' | 'practice' {
+  return recordOf(body)?.mode === 'live' ? 'live' : 'practice'
+}
+
+function comparableOpen(body: unknown): unknown {
+  const record = recordOf(body)
+  if (!record) {
+    return body
+  }
+  const copy = { ...record }
+  delete copy.scenario_id
+  if (copy.mode === 'live') {
+    copy.mode = 'practice'
+  }
+  return copy
+}
+
+function present(body: unknown, mode: 'live' | 'practice'): unknown {
+  if (mode !== 'live' || !body || typeof body !== 'object') {
+    return body ?? null
+  }
+  return { ...(body as Record<string, unknown>), mode: 'live' }
+}
+
+function currentBody(fixture: Fixture, index: number, mode: 'live' | 'practice'): unknown {
+  return present(fixture.steps[index]?.response ?? null, mode)
 }
 
 export function mockRequest(method: string, url: string, body?: unknown): MockResult {
@@ -104,15 +137,6 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
   }
 
   if (verb === 'POST' && path === '/sessions') {
-    const caseId = parsed.searchParams.get('case')
-    if (!caseId) {
-      return { status: 404, body: null, warnings: ['case query is required'] }
-    }
-    const fixture = byCase.get(caseId)
-    const first = fixture?.steps[0]
-    if (!fixture || !first) {
-      return { status: 404, body: null, warnings: [`unknown case ${caseId}`] }
-    }
     if (liveScenario(body)) {
       return {
         status: 409,
@@ -125,18 +149,31 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
         warnings: [],
       }
     }
+    const record = recordOf(body)
+    const scenarioId = typeof record?.scenario_id === 'string' ? record.scenario_id : null
+    const caseId = parsed.searchParams.get('case') ?? scenarioId ?? (record?.mode === 'live' ? 'T1' : null)
+    if (!caseId) {
+      return { status: 404, body: null, warnings: ['case query is required'] }
+    }
+    const fixture = byCase.get(caseId)
+    const first = fixture?.steps[0]
+    if (!fixture || !first) {
+      return { status: 404, body: null, warnings: [`unknown case ${caseId}`] }
+    }
     const warnings: string[] = []
-    if (!same(body, first.request)) {
+    if (!same(comparableOpen(body), first.request)) {
       warnings.push('payload differs from the fixture request')
     }
+    const mode = openedMode(body)
     sessions.set(first.response.session_id, {
       caseId,
       index: 0,
       closed: false,
       outcome: null,
       actor: null,
+      mode,
     })
-    return { status: 200, body: first.response, warnings }
+    return { status: 200, body: present(first.response, mode), warnings }
   }
 
   const match = /^\/sessions\/([^/]+)(?:\/(context|answers|undo|outcome|handoff))?$/.exec(path)
@@ -163,11 +200,11 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
   }
 
   if (verb === 'GET' && !action) {
-    return { status: 200, body: currentBody(fixture, replay.index), warnings: [] }
+    return { status: 200, body: currentBody(fixture, replay.index, replay.mode), warnings: [] }
   }
 
   if (verb === 'GET' && action === 'handoff') {
-    const response = currentBody(fixture, replay.index)
+    const response = currentBody(fixture, replay.index, replay.mode)
     if (!response || typeof response !== 'object') {
       return { status: 404, body: null, warnings: ['no fixture step'] }
     }
@@ -216,7 +253,7 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
     replay.actor = actor
     return {
       status: 200,
-      body: currentBody(fixture, replay.index),
+      body: currentBody(fixture, replay.index, replay.mode),
       warnings: ['outcome is not in the fixture; returning the current SessionState'],
     }
   }
@@ -225,12 +262,12 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
     if (replay.index <= 0) {
       return {
         status: 200,
-        body: currentBody(fixture, replay.index),
+        body: currentBody(fixture, replay.index, replay.mode),
         warnings: ['no previous step'],
       }
     }
     replay.index -= 1
-    return { status: 200, body: currentBody(fixture, replay.index), warnings: [] }
+    return { status: 200, body: currentBody(fixture, replay.index, replay.mode), warnings: [] }
   }
 
   if (verb === 'POST' && (action === 'context' || action === 'answers')) {
@@ -238,7 +275,7 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
     if (!next) {
       return {
         status: 200,
-        body: currentBody(fixture, replay.index),
+        body: currentBody(fixture, replay.index, replay.mode),
         warnings: ['no further fixture step'],
       }
     }
@@ -250,7 +287,7 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
       warnings.push('payload differs from the fixture request')
     }
     replay.index += 1
-    return { status: 200, body: next.response, warnings }
+    return { status: 200, body: present(next.response, replay.mode), warnings }
   }
 
   return { status: 404, body: null, warnings: ['not a replay route'] }

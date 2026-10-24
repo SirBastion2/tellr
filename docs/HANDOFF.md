@@ -609,3 +609,25 @@ GATE PASS (a)
   - `make dev-web` runs `npm run dev` from `web/` in tmux session `teller-web`, matching `make dev-api` and WORKFLOW §2.4 / B-01. Vite already binds 127.0.0.1:5173; the mock is middleware on that server; `VITE_API_URL` overrides the API base (B-01 HANDOFF, PR #5).
 - **Questions logged:** none (Q-012 is route paths, not this target)
 - **The next agent needs to know:** `make dev-web` starts Vite detached in tmux (`teller-web`). Empty `VITE_API_URL` uses the Vite origin (mock). Set `VITE_API_URL=http://127.0.0.1:8000` to hit `make dev-api`. No `web/` edits. Do not merge unless a driver says so. No new dependency.
+
+---
+
+### [B-04] Talk tracks, undo, practice mode — Agent B — 2026-10-24 20:49
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  14 passed (14)
+       Tests  45 passed (45)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/screens/InterviewScreen.tsx`, `web/src/screens/HomeScreen.tsx`, `web/src/App.tsx`, `web/src/teller.tsx`, `web/mock/replay.ts`, `web/src/talkTrack.test.tsx`, `web/src/undo.test.tsx`, `web/src/modes.test.tsx`, `web/src/home.test.tsx`, `web/src/interview.test.tsx`, `web/src/routes.test.tsx`, `web/src/mockReplay.test.ts`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - The talk-track panel shows the stage lines from `GET /library` for `talk_track.stage`. Pattern lines from the library track named by `talk_track.pattern` are added only when `risk.pattern.kind` is `pattern`. Avoid phrases are that stage track's `avoid` list (§7.1, §11.2; tc-20: copy comes from the library). A look-alike on screen does not add pattern lines. The panel does not recompute the score or which pattern is displayed.
+  - Undo is `POST /sessions/{id}/undo` with no body. The screen renders the `SessionState` from that response, including a body that is not the previous fixture step. Posted context chips still drop one client batch after a successful undo, because `SessionState` does not include them and removal is only through undo (Q-010, §11.1).
+  - Practice mode shows a scenario picker. The choices are contract fixture cases T1–T7, with the fixture labels. Starting one posts the fixture open body plus `scenario_id`. Live mode hides the picker and posts `{mode: "live", amount_band}` with no `scenario_id`. The shell shows `LIVE — no scenario loaded` on every route while `session.mode` is `live` (§12, §14.1).
+  - There is no `GET /scenarios` (Q-006). Empty `VITE_API_URL` uses the mock, which replays the chosen fixture. A live open with no case replays T1's steps with `mode` set to `live`, because the fixtures have no live trace (Q-009). A's API stores `scenario_id` and does not replay the fixture; the teller still taps chips.
+  - Settings stays a UI page with no `/settings` call. The health screen does not write `/health` (CHANGE-001; M-002). `make dev-web` was already on main and was not edited.
+- **Questions logged:** none
+- **The next agent needs to know:** This branch is from current `main` (`d3919f2`), not `b-01-scaffold`. Do not push to `b-01-scaffold`. Screenshots of the talk track, undo, and the live badge were skipped (driver). Those checks are `web/src/talkTrack.test.tsx`, `web/src/undo.test.tsx`, and `web/src/modes.test.tsx`. A TestClient call against `api/main.py` (`RECOMMENDER=rules`) opened a live session, rejected `scenario_id` on live with 409 `scenario_on_live_session`, opened practice with `scenario_id` `T2`, and undo restored the opened score and question. Talk-track lines and avoid phrases matched `GET /library`, and those five tracks match `contract/library.json`. No UI patch. `docs/CROSS_LANE.md` has no open A→B items. No new X-id. M-002 items left for another card: PR #32 (`docs/B_TO_A.md` BA-001), PR #20, and PR #15. No new dependency.
