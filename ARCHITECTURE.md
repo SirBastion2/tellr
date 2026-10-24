@@ -24,7 +24,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `web/src/screens/history/` `…/settings/` `web/e2e/` | B2 | Leaf screens + e2e if added at hour 8. Not created. B-06 filled history and health in `web/src/screens/` | — |
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json`, `fixtures/T1–T7.json`, `CHANGES.md` |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |
-| `docs/` | mixed | Spec and logs (see below) | `architecture.md`, `ROSTER.md`, `HANDOFF.md`, `CP3_GPU_RUN.md`, `A08_HELDOUT_RUN.md` |
+| `docs/` | mixed | Spec and logs (see below) | `architecture.md`, `ROSTER.md`, `HANDOFF.md`, `CP3_GPU_RUN.md`, `A08_HELDOUT_RUN.md`, `WRITEUP_NUMBERS.md` |
 | `scripts/` | A2* | Gates; A2 owns `bench_*` + `with-gpu` | `gate.sh`, `with-gpu`, `bench_llm.py`, `check_contract.py` |
 | `reference_impl.py` | — | Executable spec of §6–§8 | never edit |
 | `WORKFLOW.md` | — | How the build is run | §3 loop, §5 contract, §8 gates |
@@ -52,7 +52,7 @@ History and the read-only recommender view live in the existing screen files. Th
 |---|---|
 | A1 | `A-01` (library half), `A-02`, `A-04` (engine half), `A-07` (weights) |
 | A2 | `A-01` (platform half), `A-03`, `A-04` (API half), `A-05`, `J-01` |
-| A3 | `A-06`, `A-08` |
+| A3 | `A-06`, `A-08`, `J-01` (writeup numbers) |
 | B1 | `B-01`–`B-06` (`B-06` moves to B2 if B2 exists) |
 | H | `B-07` (held-out; isolated worktree, `WORKFLOW.md` §10) |
 | R | `R-review`, `P0-contract` |
@@ -76,6 +76,7 @@ History and the read-only recommender view live in the existing screen files. Th
 | What the last card shipped | `docs/HANDOFF.md` (append-only) |
 | GPU arm-C / CP3 run (Driver B laptop) | `docs/CP3_GPU_RUN.md` |
 | A-08 held-out run (Driver B GPU laptop, once) | `docs/A08_HELDOUT_RUN.md` |
+| Writeup counts (J-01 steps 3–4) | `docs/WRITEUP_NUMBERS.md` |
 
 **`docs/architecture.md` section index** (cite; do not copy): §0 how to read · §1 drivers · §2 key decisions · §3 system overview · §4 event log/reducer · §5 domain model · §6 risk scoring · §7 question selection · §8 reasoning layer · §9 safety · §10 data/privacy · §11 API · §12 frontend · §13 eval · §14 demo · §15 deploy · §16 observability · §17 24-hour plan · §18 draft issues · §19 open questions.
 
