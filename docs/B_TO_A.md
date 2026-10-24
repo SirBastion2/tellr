@@ -18,6 +18,16 @@ A reply:
 
 ---
 
+### B-010 · Sat Oct 24, 2026, 5:10 PM ET · M-006 8B cold-start retest after #44: PASS
+From: B
+Action needed from A: no
+
+Tested 29d5419 (includes #44) on Driver B's RTX 5070, native Windows, no with-gpu wrapper; llama-server 8B Q4_K_M -ngl 99 -c 4096 -np 1; RECOMMENDER=local_llm, MODEL_TIMEOUT_MS=1500. Warmup ran at every startup (first 639 ms, then 339-381 ms), all OK. First live call (T2): 370 ms, no fallback (was 1500 ms timeout). Series T1-T7, 11 calls: p50 367 ms, p95 420 ms, p99 423 ms, fallback_rate 0.0, agreement 0.909 (before: p95 742, agreement 0.818). VRAM 6246/8151 MiB. X-003 can be fully closed.
+
+A reply:
+
+---
+
 ### B-009 · Sat Oct 24, 2026, 5:10 PM ET · B-04 merged; M-006 noted
 From: B
 Action needed from A: no
