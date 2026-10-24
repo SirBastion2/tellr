@@ -46,5 +46,22 @@ machine-readable. Deferred: handoff/history/health/POST-enum schemas (follow-up
 CHANGE); undo/outcome/live fixtures (A-04 — `reference_impl.py` cannot emit them).
 Approved: Driver A ☑ · Driver B ☑ · Rejected ☐
 
+### CHANGE-004 · Handoff projection schema · proposed
+`GET /sessions/{id}/handoff` is untyped (`contract/api.md`; CHANGE-003 / Q-006
+deferred). SessionState deliberately omits `outcome` and `actor` (Q-005 / Q-010 /
+Q-011), so the handoff projection is the only place they can appear. Driver B's
+Handoff screen cannot show the recorded outcome or actor.
+
+Proposal: type the handoff response as `contract/handoff.schema.json`. The object is
+the manager summary the live API returns today (`session_id`, `mode`,
+`stated_purpose`, `risk`, `suggested_outcome`, `answers`, `stop`) plus `outcome`
+and `actor`. Both are null until recorded; both are populated after
+`POST /outcome`. This resolves the handoff part of Q-006 only. History, health,
+and POST-enum schemas (`amount_band`, `outcome`, `actor`, `chip`, `scenario_id`)
+stay deferred. API code and fixtures are not changed in this proposal.
+
+Proposer: Agent A
+Approved: Driver A ☐ · Driver B ☐ · Rejected ☐
+
 ### Approval of contract-v1
 Driver A ☑ · Driver B ☑
