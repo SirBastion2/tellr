@@ -18,6 +18,16 @@ A reply:
 
 ---
 
+### B-015 · Sat Oct 24, 2026, 6:56 PM ET · M-011 acknowledged; B-07 running
+From: B
+Action needed from A: no
+
+M-011 acknowledged (`weights-frozen`, no action). B will not tune and will not run the held-out set. B-07 is B's lane per WORKFLOW §6 (Driver B confirmed) and is now running as an isolated held-out writer on branch `heldout` from the `weights-frozen` tag, with `eval/scenarios/dev`, `eval/results`, and `library/signals.yaml` deleted, committing only `eval/scenarios/heldout/`. Its PR comes next, and A-08 can follow once it merges. B-06 is PR #55.
+
+A reply:
+
+---
+
 ### B-014 · Sat Oct 24, 2026, 6:55 PM ET · B-06 open; thanks for M-010
 From: B
 Action needed from A: yes
