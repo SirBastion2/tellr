@@ -1028,3 +1028,67 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/49. Do not merge. Main now includes A-06 hours 12–15 (#48) and B-009–B-012 (#47). Official CP3 GPU arm-C run is still on hold (`docs/CP3_GPU_RUN.md`).
 
+---
+
+### [A-07] Tune and freeze — Agent A1 — 2026-10-24 22:50
+- **Status:** done (no `weights-frozen` tag; driver tags after merge)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+148 passed, 1 warning in 22.32s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `tests/engine/test_properties.py` (live-weights parametrization); `library/signals.yaml` (comment only; numbers kept); `eval/arms/static.py` (`THRESHOLD` 3→4); `eval/PREREGISTRATION.md` (Tuning section, labelled tuned); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Property walk now parametrizes `reference_weights` and `library/signals.yaml`, plus a cap/sign check (card A-07 step 1; architecture §6.2). Goldens and the oracle test still use `tests/golden/reference_weights.yaml` only.
+  - Arm A threshold **3 → 4** (§13.4 same freedom as the weights). Runtime constant lives in `eval/arms/static.py` (A3-owned; file comment said "Tune only in A-07"); prior 3 stays in the frozen PREREGISTRATION section.
+  - Live weights **kept** at §6.2 starting values. The remaining product miss cannot be caught without a one-scenario knife-edge (below).
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR https://github.com/SirBastion2/tellr/pull/52
+  - Do **not** tag `weights-frozen` in this PR; driver tags after merge.
+  - Do not run held-out. Arm C skipped (GPU). CP3 already reported B/C identical on this set.
+  - `eval/arms/static.py` is the only A3-owned code edit (one integer). A3 tests still pass (`concerning_count >= 3` on T2).
+
+**Eval command:** `python -m eval.run --scenarios eval/scenarios/dev --out /tmp/x --arms A,B --model fake` (library 1.2.0)
+
+**Change 1 — live-weights property parametrization** (no score change)
+
+| | Catch | False-flag | Friction | Mean Q | Misses |
+|---|---|---|---|---:|---|
+| A before = after | 15/15 | 8/15 | 8/15 | 6.00 | none |
+| B before = after | 14/15 | 0/15 | 0/15 | 3.07 | `scn.coached.bank_perfect_own_account` |
+
+**Change 2 — weight trials, not applied** (in-memory only; §13.4 / do not overfit)
+
+| Trial | Catch | FF | Friction | Miss score | Why rejected |
+|---|---|---|---|---:|---|
+| `mit.own_named_account` −15→−4 | 15/15 | 0/15 | 0/15 | 14→25 | one-scenario knife-edge on Caution; only t5 else moves (−45→−34, still Clear) |
+| own −8 + `sig.third_party_call` 14→18 | 15/15 | 0/15 | 0/15 | 14→25 | same catch, plus two other Caution→High flips; built to fit this miss |
+| `mit.purpose_specific` −10→0 | 14/15 | 0/15 | 1/15 | 14→24 | miss remains; T7 becomes Caution (friction). §19.3 left as Clear |
+
+**Change 3 — arm A threshold 3→4** (applied; labelled tuned)
+
+| Arm | Catch | False-flag | Friction | Mean Q | Misses |
+|---|---|---|---|---:|---|
+| A before (3) | 15/15 | 8/15 | 8/15 | 6.00 | none |
+| A after (4) | 13/15 | 0/15 | 0/15 | 6.00 | `scn.coached.gov_perfect_fine`, `scn.coached.tech_refund_perfect` |
+| B before = after | 14/15 | 0/15 | 0/15 | 3.07 | `scn.coached.bank_perfect_own_account` |
+
+All eight A false flags had concerning-count 3. Threshold 4 clears them. The two new A misses are perfectly coached sheets that also sit at 3; keeping 15/15 catch on A requires those eight legitimate High flags. Threshold 5 would also drop the two coached rows at 4.
+
+**Miss left on the product:** `scn.coached.bank_perfect_own_account` (phone + cash + refused check + specific own-account; score 14). Look-alike `look.own_account_transfer` is not refuted (`secrecy` denied), so `mit.own_named_account` (−15) still counts. Payment family is already at cap 25, so raising cash weights does nothing. Catching it without a property break or a new false flag is possible, but only by overfitting that one development row. Left it.
+

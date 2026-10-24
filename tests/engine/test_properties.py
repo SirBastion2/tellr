@@ -13,7 +13,15 @@ import yaml
 
 from engine.hypotheses import displayed, pattern_scores
 from engine.library import load_library
-from engine.score import Tables, effective, level, reasons, score, shown, tables_from_library
+from engine.score import (
+    Tables,
+    effective,
+    level,
+    reasons,
+    score,
+    shown,
+    tables_from_library,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 REF_WEIGHTS = ROOT / "tests" / "golden" / "reference_weights.yaml"
