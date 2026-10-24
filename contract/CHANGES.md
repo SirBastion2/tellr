@@ -15,7 +15,7 @@ keeps §11.2's rule that `question` is null only on a hard stop. Appears in T1's
 write path. Settings are read-only through `GET /health` (recommender, model ID, last p95,
 fallback rate, agreement rate) plus a boot flag that selects the recommender. B-06 shows
 `/health` read-only; the fallback switch is config-only.
-Approved: Driver A ☑ · Driver B ☑ · Rejected ☑
+Decision: Rejected ☑ · signed off by Driver A ☑ · Driver B ☑ (both drivers agree to reject for v1)
 
 ### CHANGE-002 · Error response shape · applied in 1.0.0
 Rejected commands return `409 {"error": {"code", "message"}}` (`error.schema.json`).
@@ -47,4 +47,4 @@ CHANGE); undo/outcome/live fixtures (A-04 — `reference_impl.py` cannot emit th
 Approved: Driver A ☑ · Driver B ☑ · Rejected ☐
 
 ### Approval of contract-v1
-Driver A ☐ · Driver B ☑
+Driver A ☑ · Driver B ☑
