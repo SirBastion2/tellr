@@ -1,0 +1,14 @@
+id: scn.coached.tech_family_cover
+label: "Coached — tech-support refund, helping-family cover"
+population: coached
+pattern_truth: pat.tech_support
+stated_purpose: purpose.family_help
+context_chips: [chip.on_phone, chip.someone_directing, chip.cash_only]
+answers:
+  purpose: relayed_by_caller
+  counterparty_identity: vague
+  secrecy: confirmed
+  payment_flexibility: denied
+default: vague
+tags: [cover_story]
+source: "FTC tech-support life-savings alert; FBI Phantom Hacker PSA"

@@ -1,0 +1,14 @@
+id: scn.legitimate.vehicle_from_friend
+label: "Legitimate — buying a vehicle from a known private seller"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.vehicle
+context_chips: [chip.above_threshold]
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  payment_flexibility: confirmed
+  secrecy: denied
+default: vague
+tags: []
+source: "architecture §18.16 genuine vehicle purchase; FTC private-party vehicle guidance"

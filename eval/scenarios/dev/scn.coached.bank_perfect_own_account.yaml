@@ -1,0 +1,14 @@
+id: scn.coached.bank_perfect_own_account
+label: "Coached — bank impersonation, perfectly coached own-account story"
+population: coached
+pattern_truth: pat.bank_impersonation
+stated_purpose: purpose.moving_money
+context_chips: [chip.on_phone, chip.cash_only]
+answers:
+  purpose: specific
+  receiving_account: specific
+  secrecy: denied
+  payment_flexibility: denied
+default: vague
+tags: [perfectly_coached]
+source: "FTC/FBI: never move money to a 'safe account' to protect it"

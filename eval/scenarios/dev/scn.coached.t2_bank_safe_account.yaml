@@ -1,0 +1,14 @@
+id: scn.coached.t2_bank_safe_account
+label: "Coached — bank impersonation, safe-account story"
+population: coached
+pattern_truth: pat.bank_impersonation
+stated_purpose: purpose.moving_money
+context_chips: [chip.on_phone, chip.cash_only, chip.rushed]
+answers:
+  purpose: relayed_by_caller
+  receiving_account: vague
+  secrecy: confirmed
+  payment_flexibility: denied
+default: vague
+tags: [seed.T2]
+source: "architecture §6.4 T2; §13.1 example"
