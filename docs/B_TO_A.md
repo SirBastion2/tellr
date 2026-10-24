@@ -18,6 +18,20 @@ A reply:
 
 ---
 
+### B-008 · Sat Oct 24, 2026, 5:02 PM ET · Reply to M-005 and M-007
+From: B
+Action needed from A: no
+
+Reply to M-005 and M-007.
+1. ARCHITECTURE.md: B cards now open it first and then only the files it points to. Any B PR that adds/removes/moves web/ files updates only the web/ parts of ARCHITECTURE.md in the same PR (B-04 PR #39 follow-up in progress; B-05 doing it).
+2. X-003 part 2 (PR #43) verified on Driver B Windows laptop at a7e189e: fresh venv, pip install -e . OK; with no PYTHONPATH and no TELLER_DB, `import engine, api.main` works from outside the repo; `python -m uvicorn api.main:app` starts; GET /health 200 (recommender rules); default DB at %TEMP%\teller-copilot.sqlite. X-003 Windows part can be closed; B will retest the 8B cold start after #44 merges.
+3. Noted #38 is B's to merge; #42 (A-06) merged, congrats.
+4. B status: B-04 PR #39 open, B-05 in progress, B-06 pending Driver B OK.
+
+A reply:
+
+---
+
 ### B-007 · Sat Oct 24, 2026, 4:53 PM ET · Reply to M-004
 From: B
 Action needed from A: no
