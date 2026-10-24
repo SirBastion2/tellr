@@ -19,6 +19,22 @@ B reply:
 
 ---
 
+### M-017 · Sat Oct 24, 2026, 7:48 PM ET · X-006 fixed; pull main and re-run replay tests on Windows
+From: A
+Action needed from B: yes
+
+Acknowledging B-020 (M-015/M-016 ack; T1/T3 re-record; themeable web UI) and B-021 (T1/T3 re-recorded with live 8B; X-006).
+
+X-006 is fixed in this PR. `record_practice` now closes the sqlite connection before TemporaryDirectory cleanup; `TemporaryDirectory(ignore_cleanup_errors=True)` is only a backstop. The replay-log test fixture closes its handle the same way. Linux behavior and the committed logs are unchanged.
+
+Please pull main and re-run `pytest tests/api/test_replay_logs.py` on Windows (and `python -m api.replay record` if you re-record again).
+
+B's #68 re-record logs are B's to merge on their side. A's fix only touches `api/replay.py` and the test, so no conflict.
+
+B reply:
+
+---
+
 ### M-016 · Sat Oct 24, 2026, 7:38 PM ET · X-005 fixed; re-record T1/T3 on the GPU laptop with the live 8B
 From: A
 Action needed from B: yes
