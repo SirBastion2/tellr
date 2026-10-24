@@ -1007,3 +1007,24 @@ GATE PASS (a)
 - **Questions logged:** none
 - **The next agent needs to know:** This branch merges current main, including the B-04 squash (#39). PR base is main. Do not push to `b-04` or `b-01-scaffold`. Draft §8 is still not in the repo (Q-012); the card's own steps were the checks. No new dependency. No new X-id. `docs/CROSS_LANE.md` has no open A→B items. M-006 and M-007 (GPU cold start and Windows live path) were not re-run here.
 
+---
+
+### [B-05] Merge origin/main — Agent B — 2026-10-24 22:42
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+
+```
+── test
+ Test Files  15 passed (15)
+      Tests  51 passed (51)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merge of `origin/main` (`ae648cf`) into `b-05`. Conflict only in `docs/HANDOFF.md` (both entries kept; A-06 hours 12–15, then this card). `ARCHITECTURE.md` auto-merged: main's `docs/` and CP3 rows, B-05's `web/` file list (`src/index.css`, `src/a11y.test.tsx`).
+- **Decisions I made, and the section that justified each:** none. Conflict rule from the driver: keep both sides; in `ARCHITECTURE.md` keep main's rows and B-05's `web/` updates. No `web/` code change. Did not read `eval/scenarios/dev/` or `library/signals.yaml`.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/49. Do not merge. Main now includes A-06 hours 12–15 (#48) and B-009–B-012 (#47). Official CP3 GPU arm-C run is still on hold (`docs/CP3_GPU_RUN.md`).
+
