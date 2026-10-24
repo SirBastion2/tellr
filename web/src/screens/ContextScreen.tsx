@@ -1,5 +1,16 @@
 import { useState } from 'react'
+import type { CSSProperties } from 'react'
 import type { Library, SessionState } from '../types'
+
+const tap: CSSProperties = {
+  minHeight: '48px',
+  minWidth: '48px',
+  boxSizing: 'border-box',
+  color: '#1c1917',
+  border: '1px solid #1c1917',
+  backgroundColor: 'transparent',
+  padding: '0 12px',
+}
 
 export function ContextScreen({
   library,
@@ -29,7 +40,12 @@ export function ContextScreen({
               type="button"
               data-testid="context-chip"
               data-posted={postedChipIds.includes(chip.id) ? 'true' : 'false'}
-              className="min-h-12 border border-stone-900 px-3"
+              data-selected={selected.includes(chip.id) ? 'true' : 'false'}
+              aria-pressed={selected.includes(chip.id)}
+              style={{
+                ...tap,
+                backgroundColor: selected.includes(chip.id) ? '#e7e5e4' : 'transparent',
+              }}
               onClick={() => toggle(chip.id)}
             >
               {chip.label}
@@ -37,8 +53,8 @@ export function ContextScreen({
           </li>
         ))}
       </ul>
-      <button type="button" data-testid="post-context" className="min-h-12 border px-3" onClick={() => onPost?.(selected)}>
-        {selected.join(' ')}
+      <button type="button" data-testid="post-context" style={tap} onClick={() => onPost?.(selected)}>
+        Add
       </button>
       {session ? (
         <>

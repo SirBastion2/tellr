@@ -16,6 +16,20 @@ import { TellerProvider, useTeller } from './teller'
 import type { AnswerPost, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import type { SchemaIssue } from './validate'
 
+const tap = {
+  minHeight: '48px',
+  minWidth: '48px',
+  boxSizing: 'border-box' as const,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '0 12px',
+  flex: '0 0 auto',
+  color: '#1c1917',
+  backgroundColor: 'transparent',
+  border: '1px solid #1c1917',
+}
+
 export function AppShell({
   library,
   session,
@@ -47,10 +61,70 @@ export function AppShell({
   httpStatus?: number | null
   error?: ErrorResponse | null
 }) {
+  const location = useLocation()
   return (
-    <main className="min-h-screen bg-stone-50 p-6 text-stone-900">
-      <h1 className="text-xl font-semibold">Teller Copilot</h1>
-      <LiveBadge mode={session?.mode ?? null} />
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundColor: '#fafaf9',
+        color: '#1c1917',
+        padding: '8px 12px',
+        boxSizing: 'border-box',
+      }}
+    >
+      <header
+        data-testid="app-header"
+        style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: '8px', minHeight: '48px' }}
+      >
+        <h1 style={{ margin: 0, fontSize: '20px', lineHeight: 1.2, flex: '0 0 auto' }}>Teller Copilot</h1>
+        <LiveBadge mode={session?.mode ?? null} />
+        <nav
+          aria-label="Screens"
+          data-testid="app-nav"
+          style={{
+            display: 'flex',
+            flexWrap: 'nowrap',
+            gap: '8px',
+            overflowX: 'auto',
+            minHeight: '48px',
+            flex: '1 1 auto',
+          }}
+        >
+          {APP_ROUTES.map((route) => {
+            if (route.path.includes(':id')) {
+              if (!session) {
+                return null
+              }
+              const path = route.path.replace(':id', session.session_id)
+              return (
+                <Link
+                  key={route.id}
+                  to={path}
+                  aria-current={location.pathname === path ? 'page' : undefined}
+                  style={{ ...tap, textDecoration: 'underline' }}
+                >
+                  {path}
+                </Link>
+              )
+            }
+            return (
+              <Link
+                key={route.id}
+                to={route.path}
+                aria-current={location.pathname === route.path ? 'page' : undefined}
+                style={{ ...tap, textDecoration: 'underline' }}
+              >
+                {route.path}
+              </Link>
+            )
+          })}
+        </nav>
+        {session ? (
+          <button type="button" data-testid="undo" style={tap} onClick={() => onUndo?.()}>
+            Undo
+          </button>
+        ) : null}
+      </header>
       {import.meta.env.DEV ? <SchemaBanner issues={issues} /> : null}
       {httpStatus != null && httpStatus !== 200 ? <p data-testid="http-status">{httpStatus}</p> : null}
       {error ? (
@@ -58,31 +132,7 @@ export function AppShell({
           {error.error.code} {error.error.message}
         </p>
       ) : null}
-      <nav className="my-4 flex flex-wrap gap-3 text-sm">
-        {APP_ROUTES.map((route) => {
-          if (route.path.includes(':id')) {
-            if (!session) {
-              return null
-            }
-            const path = route.path.replace(':id', session.session_id)
-            return (
-              <Link key={route.id} to={path}>
-                {path}
-              </Link>
-            )
-          }
-          return (
-            <Link key={route.id} to={route.path}>
-              {route.path}
-            </Link>
-          )
-        })}
-        {session ? (
-          <button type="button" data-testid="undo" onClick={() => onUndo?.()}>
-            Undo
-          </button>
-        ) : null}
-      </nav>
+      <main>
       <Routes>
         <Route
           path="/"
@@ -122,7 +172,8 @@ export function AppShell({
         <Route path="/health" element={<HealthScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
       </Routes>
-    </main>
+      </main>
+    </div>
   )
 }
 

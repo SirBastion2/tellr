@@ -20,7 +20,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `eval/` except `heldout/` | A3 | Validator, 30 dev scenarios, harness (§13) | `validate.py`, `PREREGISTRATION.md`, `scenarios/dev/`, `run.py`, `arms/` |
 | `eval/scenarios/heldout/` | H | Held-out set, written once (B-07) | created at hour 20 |
 | `tests/eval/` | A3 | Scenario, validator, and harness tests | `test_validate.py`, `test_dev_scenarios.py`, `test_run.py` |
-| `web/` | B1 | React UI, mock, eight screens (§12) | `src/App.tsx`, `src/screens/`, `mock/`, `src/talkTrack.test.tsx`, `src/undo.test.tsx`, `src/modes.test.tsx` |
+| `web/` | B1 | React UI, mock, eight screens (§12) | `src/App.tsx`, `src/screens/`, `src/index.css`, `src/a11y.test.tsx`, `mock/`, `src/talkTrack.test.tsx`, `src/undo.test.tsx`, `src/modes.test.tsx` |
 | `web/src/screens/history/` `…/settings/` `web/e2e/` | B2 | Leaf screens + e2e if added at hour 8 | — |
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json`, `fixtures/T1–T7.json`, `CHANGES.md` |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |

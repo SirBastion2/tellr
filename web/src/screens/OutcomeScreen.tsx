@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { CSSProperties } from 'react'
 import type { OutcomeId, SessionState } from '../types'
 
 const OUTCOME_LABEL: Record<OutcomeId, string> = {
@@ -9,6 +10,17 @@ const OUTCOME_LABEL: Record<OutcomeId, string> = {
 }
 
 const HIGHLIGHT = '#fef3c7'
+const INK = '#1c1917'
+
+const tap: CSSProperties = {
+  minHeight: '48px',
+  minWidth: '48px',
+  boxSizing: 'border-box',
+  color: INK,
+  border: `1px solid ${INK}`,
+  backgroundColor: 'transparent',
+  padding: '0 12px',
+}
 
 export function OutcomeScreen({
   session,
@@ -47,8 +59,8 @@ export function OutcomeScreen({
                     onClick={() => {
                       setChosen(outcome)
                     }}
-                    className="min-h-12 border border-stone-900 px-3"
-                    style={{ backgroundColor: highlighted ? HIGHLIGHT : 'transparent' }}
+                    aria-pressed={chosen === outcome}
+                    style={{ ...tap, backgroundColor: highlighted ? HIGHLIGHT : 'transparent' }}
                   >
                     {OUTCOME_LABEL[outcome]}
                   </button>
@@ -64,7 +76,7 @@ export function OutcomeScreen({
               onChange={(event) => {
                 setActor(event.target.value)
               }}
-              className="ml-2 border border-stone-900 px-2 py-1"
+              style={{ ...tap, marginLeft: '8px', backgroundColor: '#ffffff' }}
             />
           </label>
           <button
@@ -72,7 +84,7 @@ export function OutcomeScreen({
             data-testid="outcome-submit"
             disabled={!ready}
             onClick={submit}
-            className="min-h-12 border border-stone-900 px-3"
+            style={tap}
           >
             Submit
           </button>

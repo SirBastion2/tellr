@@ -984,3 +984,47 @@ GATE PASS (a)
   - Official CP3 numbers wait on `docs/CP3_GPU_RUN.md` after B posts GPU-access-back in `docs/B_TO_A.md`.
   - A-07 (weights) is next non-GPU work. Do not run held-out. Checkpoint: stop for official GPU `report.md` when B can run it.
 
+---
+
+### [B-05] Polish and accessibility — Agent B — 2026-10-24 21:18
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  15 passed (15)
+       Tests  51 passed (51)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/App.tsx`, `web/src/index.css`, `web/src/LiveBadge.tsx`, `web/src/screens/InterviewScreen.tsx`, `web/src/screens/HomeScreen.tsx`, `web/src/screens/ContextScreen.tsx`, `web/src/screens/OutcomeScreen.tsx`, `web/src/a11y.test.tsx` (new), `ARCHITECTURE.md` (web row only), `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Every button, link, and text field is at least 48×48 px (§12 large buttons; card B-05). The opener purpose categories stay one 48 px row that scrolls sideways, then the five answer chips stay a 72 px row, so the level, question, and chips sit together (§12 two-tap opener).
+  - Those three sit in a fold above the talk track. The question's why line is under the chips, so it does not push them down. At 1024×768 and 1280×800 a headless check of the T1 opener showed all three inside the viewport and no page scroll. Screenshots, video, and optional Playwright were skipped (driver).
+  - A recommended stop still shows the question at opacity below 1. Opacity is 0.7 so the de-emphasized ink on the page background stays at or above WCAG AA 4.5:1. Level colours are unchanged.
+  - Opener chips stay buttons in the tab order. `aria-disabled` blocks a chip until a purpose is chosen. Context chips use `aria-pressed`. The context post control is named Add; it used to show raw chip ids and was empty before a selection. Outcome buttons stay enabled. Settings makes no API call. Health is not written (CHANGE-001).
+  - Keyboard focus is a 2 px inset `#1c1917` ring. `prefers-reduced-motion: reduce` zeros animation and transition duration. No new motion was added.
+  - `ARCHITECTURE.md` web row now also points at `src/index.css` (the focus ring and reduced-motion rules) and `src/a11y.test.tsx` (the new checks). It still points at `src/App.tsx`, `src/screens/`, `mock/`, and the B-04 tests `src/talkTrack.test.tsx`, `src/undo.test.tsx`, `src/modes.test.tsx`.
+- **Questions logged:** none
+- **The next agent needs to know:** This branch merges current main, including the B-04 squash (#39). PR base is main. Do not push to `b-04` or `b-01-scaffold`. Draft §8 is still not in the repo (Q-012); the card's own steps were the checks. No new dependency. No new X-id. `docs/CROSS_LANE.md` has no open A→B items. M-006 and M-007 (GPU cold start and Windows live path) were not re-run here.
+
+---
+
+### [B-05] Merge origin/main — Agent B — 2026-10-24 22:42
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+
+```
+── test
+ Test Files  15 passed (15)
+      Tests  51 passed (51)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merge of `origin/main` (`ae648cf`) into `b-05`. Conflict only in `docs/HANDOFF.md` (both entries kept; A-06 hours 12–15, then this card). `ARCHITECTURE.md` auto-merged: main's `docs/` and CP3 rows, B-05's `web/` file list (`src/index.css`, `src/a11y.test.tsx`).
+- **Decisions I made, and the section that justified each:** none. Conflict rule from the driver: keep both sides; in `ARCHITECTURE.md` keep main's rows and B-05's `web/` updates. No `web/` code change. Did not read `eval/scenarios/dev/` or `library/signals.yaml`.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/49. Do not merge. Main now includes A-06 hours 12–15 (#48) and B-009–B-012 (#47). Official CP3 GPU arm-C run is still on hold (`docs/CP3_GPU_RUN.md`).
+
