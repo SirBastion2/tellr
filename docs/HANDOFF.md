@@ -44,6 +44,25 @@ Append-only, newest at the bottom. One entry per card, or per stop.
 
 ---
 
+### [A-06] Evaluation hours 2–6 (validate + 15 scenarios) — Agent A3 — 2026-10-24 19:25
+- **Status:** partial (hours 2–6 slice done; hours 6–8 still own the last 15 scenarios and the solo `PREREGISTRATION.md` commit)
+- **Gate:** `scripts/gate.sh a` → FAIL at `.importlinter missing (card A-01 creates it).` Ruff and pytest on `eval/` + `tests/eval/` pass (`21 passed`). Did not add `.importlinter` or `pyproject.toml` (A2).
+- **Changed:** `eval/validate.py`; `eval/__init__.py`; `eval/PREREGISTRATION.md` (draft, no run); `eval/scenarios/dev/` (15 YAML); `tests/eval/`; `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Scenario IDs and answers for T1–T7 copied from `reference_impl.py` CASES / §6.4; extras from public FTC/FBI/AARP imposter guidance and the §13.1 / §18.16 cover-story shapes.
+  - `pattern_truth` is `pat.*` for coached and `null` for legitimate. Validator does **not** require those ids in `contract/library.json` patterns (Q-008: that file is T1–T7 display copy; A1 loads the real library). Two scenarios use `pat.government_impersonation` and `pat.tech_support`.
+  - Cover story = stated purpose’s usual pattern ≠ `pattern_truth` (T3, §13.1). `purpose.vehicle` / `purpose.gift_or_travel` have no pattern, so any `pat.*` truth counts as a cover.
+  - Arm A draft prior threshold is 3 concerning items; the sheet is binary (High at/above, Clear below, no Caution column). §13.2 is a yes-count threshold; mapping the flag to Caution only would recreate the §18.2 game. Official freeze is a solo commit at hours 6–8.
+  - `tags` / `source` are eval bookkeeping, not engine inputs. No age, appearance, or name fields.
+- **Questions logged:** none (Q-008 already covers the two extra pattern ids)
+- **The next agent needs to know:**
+  - **A2:** please add `pytest`, `ruff`, and `pyyaml` to `pyproject.toml` when it lands. A3 ran them from a user install. Also `.importlinter` (A-01) is what blocks `scripts/gate.sh a`.
+  - **Hours 6–8 (A3):** add 7 coached + 8 legitimate to reach 15/15. The first 15 already meet the §5.2 minima (8 coached / 7 legitimate; 4 covers; 3 perfectly coached; 4 innocent red-flag; 3 vague-but-genuine). Then **commit `eval/PREREGISTRATION.md` alone** before any run.
+  - **A1:** real library should include `pat.government_impersonation` and `pat.tech_support` (and `pat.family_emergency`) so later arms can label those truths.
+  - Do not write `eval/scenarios/heldout/`. Do not commit this draft with results. Driver A reviews `eval/` PRs.
+
+---
+
 ### [A-01] Library + engine-api-v1 — Agent A1 — 2026-10-24 19:26
 - **Status:** done (A1 half). Gate `a` blocked on A2 files, not on this diff.
 - **Gate:** `scripts/gate.sh a` → FAIL at `.importlinter missing (card A-01 creates it).` Ruff on `engine/` `tests/engine/` `tests/library/` PASS. `pytest -q tests/library tests/engine` → 20 passed. Contract oracles untouched.
@@ -121,7 +140,6 @@ GATE PASS (a)
 
 ---
 
-
 ### [A2 hours 4–6] API on FakeEngine — Agent A2 — 2026-10-24 19:34
 - **Status:** done (hours 4–6). Stopped before A-03.
 - **Gate:** `scripts/gate.sh a` → PASS
@@ -161,6 +179,39 @@ GATE PASS (a)
   - Live traces that match a practice fixture prefix replay after rewriting `SessionOpened.mode` to `practice` (comment in `api/main.py`). Remove that adapter in A-04.
   - `make dev-api` still starts uvicorn on `127.0.0.1:8000`. Default DB is `/tmp/teller-copilot.sqlite` (`TELLER_DB` overrides).
   - New dep: `httpx` — required by FastAPI `TestClient`. No other new dependency.
+
+---
+
+### [A-06] Merge main + gate a — Agent A3 — 2026-10-24 19:45
+- **Status:** partial (hours 2–6 still; hours 6–8 still own the last 15 scenarios and the solo `PREREGISTRATION.md` commit)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+51 passed in 0.49s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `docs/HANDOFF.md` only (merge kept A-06 + all three A-01 sections; this entry). No edits in `eval/` or `tests/eval`.
+- **Decisions I made, and the section that justified each:**
+  - Merged `origin/main` (A1 #9, A2 #10) rather than rebasing. HANDOFF conflict resolved by keeping every existing section (append-only).
+  - Gate was green after the merge; no `eval/` or `tests/eval` fixes. Did not add scenarios, did not run the eval, did not touch `eval/heldout`, `contract/`, `reference_impl.py`, or goldens.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Gate a is green on this branch (PR #8). Hours 6–8 still add 7 coached + 8 legitimate, then commit `eval/PREREGISTRATION.md` alone before any run.
+  - A1 already landed `pat.government_impersonation`, `pat.tech_support`, and `pat.family_emergency` (stubs). A2 landed `pyproject.toml` / `.importlinter`.
+  - Do not write `eval/scenarios/heldout/`. Driver A reviews `eval/` PRs.
 
 ---
 
@@ -348,8 +399,6 @@ curl -sS -X POST http://127.0.0.1:8010/sessions/$SID/answers \
 # Q3: answers=3 score=80 level=high stop={kind:recommended, reason:enough to escalate}
 # question=q.alternative.cashiers_check suggested_outcome=escalate
 ```
-
-
 
 ### [A-03] Latency benchmark — Agent A (run on Jonathan's laptop) — 2026-10-24 15:55
 - **Status:** done
@@ -746,4 +795,3 @@ X-003 (A to check): (1) 8B cold start: first request after server start timed ou
 - **Decisions I made, and the section that justified each:** none. No weight or threshold change.
 - **Questions logged:** none new (X-003 already logged)
 - **The next agent needs to know:** Second independent run, all T1-T7 calls pooled, n=11 model calls per model. 8B p50 663, p95 742, p99 760, min/max 622/765; 3B p50 255, p95 342, p99 364, min/max 233/370; fallback 0.0 and rejections 0 for both; agreement with rules 9/11 for both; T2 /health p50/p95 8B 691/691, 3B 278/278. In this run the models split on T3 (8B estimate vs 3B secrecy.told_not_to_tell) and T6 (8B secrecy then cashiers_check vs 3B cashiers_check twice). Live p95 is ~260 ms above A-03's bench for 8B (483) and ~46 ms above for 3B (296).
-

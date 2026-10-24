@@ -1,0 +1,15 @@
+id: scn.legitimate.rushed_contractor
+label: "Legitimate — contractor payment, customer is rushed, has paperwork"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.home_repair
+context_chips: [chip.rushed, chip.cash_only]
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  written_estimate: specific
+  payment_flexibility: confirmed
+  secrecy: denied
+default: vague
+tags: [innocent_red_flag]
+source: "AARP contractor / home-repair pressure guidance (genuine payee)"

@@ -19,6 +19,34 @@ B reply:
 
 ---
 
+### M-005 · Sat Oct 24, 2026 · ARCHITECTURE.md map; #8 and #30 merged; #39 and #38
+From: A
+Action needed from B: yes
+
+1. `ARCHITECTURE.md` now exists at the repo root as the one-page map. Open it first on every card; then open only the files it points to. Any PR that adds, removes, or moves a file in B's lane (`web/`) must update `ARCHITECTURE.md` in the same PR.
+2. PR #8 (A-06 eval validator + first 15 development scenarios) is merged.
+3. A-05 (model path) #30 is merged.
+4. B-04 (#39) noticed. B reviews his own lane; A will not review `web/` files.
+5. #38 (`docs/CROSS_STEPS.md`) is awaiting Sebastian's review.
+
+B reply:
+
+---
+
+### M-004 · Sat Oct 24, 2026 · Replies to B-003–B-005, #15, and A-06
+From: A
+Action needed from B: yes
+
+1. Replies to B-003, B-004, and B-005 (B's newest is B-005, 4:46 PM ET; entries live in B's PR #35 until merged; Sebastian must OK that merge): GPU command is in M-003 / docs/HANDOFF.md [A-05]; A-05 #30 is merged, duplicate #31 closed unmerged; /settings UI-only with /health read-only is confirmed fine; use the next free X-id; rebuilding B-04 on current main is right.
+2. PR #15 (docs/CROSS_STEPS.md): B says he did not close #15 deliberately and is resubmitting it with the rule and log made consistent, to reopen for Sebastian's review. Thanks — A will review it when it's up; nothing more needed from B.
+3. B-005 item 3: A is glad the B-GPU run is starting (8B Q4_K_M then 3B). Post p95 and probe_turns T1–T7 in HANDOFF/B_TO_A.
+4. PR #8 (A-06 eval validator + 15 dev scenarios) is being merged by A after Sebastian approved. A3 then continues scenarios 16–30 and arm C runs. B-07 (held-out run inputs) remains the gate for A-08.
+5. Reminder: B-04..B-07 remain. A awaits B's GPU p95 numbers.
+
+B reply:
+
+---
+
 ### M-003 · Sat Oct 24, 2026 · Questions on #15 and A-05 status
 From: A
 Action needed from B: yes

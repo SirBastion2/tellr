@@ -1,0 +1,14 @@
+id: scn.coached.gov_gift_cover
+label: "Coached — government impersonation, gift-or-travel cover"
+population: coached
+pattern_truth: pat.government_impersonation
+stated_purpose: purpose.gift_or_travel
+context_chips: [chip.on_phone, chip.urgency_secrecy, chip.cash_only]
+answers:
+  purpose: specific
+  counterparty_identity: no_answer
+  secrecy: confirmed
+  payment_flexibility: denied
+default: vague
+tags: [cover_story]
+source: "FTC government-imposter / gift-card payment guidance; FBI government impersonation PSA"
