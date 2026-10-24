@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from eval.metrics import (
     summarize,
     wilson_interval,
@@ -73,3 +75,61 @@ def test_trivial_baselines_are_published() -> None:
     assert summary.baselines["always-High"].false_flag == (1, 1)
     assert summary.baselines["always-Caution"].friction == (1, 1)
     assert summary.baselines["always-Caution"].false_flag == (0, 1)
+
+
+def test_summarize_without_timings_is_not_applicable() -> None:
+    """Arms A/B and FakeModel: latency and fallback_rate stay n/a (§13.3)."""
+    results = [
+        _result("scn.coached.a", "coached", "High"),
+        _result("scn.legitimate.a", "legitimate", "Clear"),
+    ]
+    summary = summarize(results)
+    assert summary.latency_p50_ms is None
+    assert summary.latency_p95_ms is None
+    assert summary.latency_max_ms is None
+    assert summary.fallback_rate is None
+    assert summary.fallbacks is None
+    for baseline in summary.baselines.values():
+        assert baseline.latency_p50_ms is None
+        assert baseline.fallback_rate is None
+
+
+def test_summarize_local_llm_timings() -> None:
+    """Arm C LocalLLM: p50/p95/max and fallback_rate from recorded timings."""
+    from eval.metrics import percentile
+
+    results = [
+        _result("scn.coached.a", "coached", "High"),
+        _result("scn.legitimate.a", "legitimate", "Clear"),
+    ]
+    samples = [486, 500, 576, 619]
+    summary = summarize(
+        results,
+        latencies_ms=samples,
+        fallbacks=0,
+    )
+    assert summary.latency_p50_ms == percentile(samples, 50)
+    assert summary.latency_p95_ms == percentile(samples, 95)
+    assert summary.latency_max_ms == 619
+    assert summary.fallbacks == (0, 4)
+    assert summary.fallback_rate == 0.0
+    assert summary.validator_rejections == 0
+
+
+def test_summarize_fallback_rate_from_recorded_fallbacks() -> None:
+    results = [_result("scn.coached.a", "coached", "High")]
+    summary = summarize(results, latencies_ms=[1500, 620, 580], fallbacks=1)
+    assert summary.fallbacks == (1, 3)
+    assert summary.fallback_rate == pytest.approx(1 / 3)
+    assert summary.latency_max_ms == 1500
+
+
+def test_percentile_matches_linear_interpolation() -> None:
+    from eval.metrics import percentile
+
+    assert percentile([], 50) is None
+    assert percentile([486], 50) == 486.0
+    assert percentile([486], 95) == 486.0
+    samples = [486, 500, 619]
+    assert percentile(samples, 50) == 500.0
+    assert percentile(samples, 95) == pytest.approx(500 + 119 * 0.9)
