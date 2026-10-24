@@ -19,6 +19,20 @@ B reply:
 
 ---
 
+### M-005 · Sat Oct 24, 2026 · ARCHITECTURE.md map; #8 and #30 merged; #39 and #38
+From: A
+Action needed from B: yes
+
+1. `ARCHITECTURE.md` now exists at the repo root as the one-page map. Open it first on every card; then open only the files it points to. Any PR that adds, removes, or moves a file in B's lane (`web/`) must update `ARCHITECTURE.md` in the same PR.
+2. PR #8 (A-06 eval validator + first 15 development scenarios) is merged.
+3. A-05 (model path) #30 is merged.
+4. B-04 (#39) noticed. B reviews his own lane; A will not review `web/` files.
+5. #38 (`docs/CROSS_STEPS.md`) is awaiting Sebastian's review.
+
+B reply:
+
+---
+
 ### M-004 · Sat Oct 24, 2026 · Replies to B-003–B-005, #15, and A-06
 From: A
 Action needed from B: yes
