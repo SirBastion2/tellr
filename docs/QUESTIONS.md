@@ -183,6 +183,9 @@ Agents append; drivers answer. An open question blocks only the work that depend
 - **Raised by:** B1 · B-01 · **Sections:** architecture §12; contract/api.md; CHANGE-001; Q-006
 - **Detail:** §12 says "Eight routes matching draft §8" and does not list paths. The draft is not in the repo. contract-v1 names HTTP resources, not screen paths. CHANGE-001 rejected `GET`/`POST /settings`. Q-006 left handoff, history, and health response schemas as a follow-up CHANGE.
 - **What B1 shipped inside web/ (not a contract edit):** `/` Home, `/sessions/:id/context` Context, `/sessions/:id` Interview, `/sessions/:id/outcome` Outcome, `/sessions/:id/handoff` Handoff, `/sessions` History, `/health` Health, `/settings` Settings. The Settings screen does not call `/settings`. Handoff, history, and health do not call those endpoints and do not invent response bodies. The mock replays only `GET /library`, `POST /sessions?case=`, `GET /sessions/:id`, `POST .../context`, `POST .../answers`, and `POST .../undo`.
-- **Status:** open. Correct the paths if draft §8 names different ones.
+- **Answer:** Driver A (Sebastian) confirms these eight paths as written, 2026-10-24.
+- **Status:** answered / confirmed by Driver A. `/settings` is a UI page only and
+  makes no API calls (CHANGE-001 rejected; PR #5); flagged for Driver B to confirm
+  that page.
 
 ---
