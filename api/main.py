@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import sqlite3
 import uuid
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
@@ -103,6 +104,8 @@ def create_app(
     model_id: str | None = None,
     llama_server: str | None = None,
     hosted_url: str | None = None,
+    warmup: bool | None = None,
+    warmup_timeout_ms: int | None = None,
 ) -> FastAPI:
     db = Path(db_path) if db_path is not None else _DEFAULT_DB
     lib_path = Path(library_path) if library_path is not None else _DEFAULT_LIBRARY
@@ -113,6 +116,8 @@ def create_app(
         model_id = DEFAULT_MODEL_ID
     if timeout_ms is None:
         timeout_ms = int(os.environ.get("MODEL_TIMEOUT_MS", "1500"))
+    if warmup_timeout_ms is None:
+        warmup_timeout_ms = int(os.environ.get("MODEL_WARMUP_TIMEOUT_MS", "15000"))
     if strict_mode is None:
         strict_mode = os.environ.get("STRICT_MODE", "true").lower() not in {
             "0",
@@ -133,6 +138,7 @@ def create_app(
             or os.environ.get("LLAMA_SERVER", "http://127.0.0.1:8080"),
             model_id=model_id,
             timeout_ms=timeout_ms,
+            warmup_timeout_ms=warmup_timeout_ms,
             library=library,
         )
     elif impl is None and rec in {"hosted", "hosted_llm"}:
@@ -146,13 +152,27 @@ def create_app(
                 library=library,
             )
 
-    app = FastAPI(title="Teller Copilot", version="1.0.0")
+    do_warmup = warmup
+    if do_warmup is None:
+        do_warmup = rec in {"local", "local_llm"} and isinstance(impl, LocalLLM)
+    else:
+        do_warmup = bool(warmup) and isinstance(impl, LocalLLM)
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        client = getattr(app.state, "recommender_impl", None)
+        if getattr(app.state, "warmup", False) and isinstance(client, LocalLLM):
+            client.warmup()
+        yield
+
+    app = FastAPI(title="Teller Copilot", version="1.0.0", lifespan=lifespan)
     app.state.db = conn
     app.state.library = library
     app.state.recommender = rec
     app.state.model_id = model_id
     app.state.metrics = stats
     app.state.recommender_impl = impl
+    app.state.warmup = do_warmup
     app.add_exception_handler(CommandRejected, rejected_response)
 
     def stamp(state: dict[str, Any], session_id: str) -> dict[str, Any]:

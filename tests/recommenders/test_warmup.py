@@ -9,7 +9,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from fastapi.testclient import TestClient
-from tests.recommenders.conftest import t2_steps
+from tests.recommenders.conftest import FakeRecommender, t2_steps
 
 COLD_DELAY_S = 1.8
 WARM_BODY = {"content": '{"next_question_id": "q.secrecy.told_not_to_tell"}'}
@@ -25,7 +25,7 @@ class _FakeLlama:
         parent = self
 
         class Handler(BaseHTTPRequestHandler):
-            def do_POST(self) -> None:  # noqa: N802
+            def do_POST(self) -> None:
                 length = int(self.headers.get("Content-Length", "0"))
                 raw = self.rfile.read(length)
                 try:
@@ -162,7 +162,6 @@ def test_rules_recommender_does_not_warmup(tmp_path: Path) -> None:
 
 def test_injected_impl_does_not_warmup(tmp_path: Path) -> None:
     from api.main import create_app
-    from tests.recommenders.conftest import FakeRecommender
 
     fake = _FakeLlama(cold_delay_s=0.0)
     try:
