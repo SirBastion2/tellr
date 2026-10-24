@@ -75,6 +75,8 @@ def assert_session_state(payload: object) -> None:
     errors: list[str] = []
     validate(payload, SESSION_SCHEMA, "SessionState", errors)
     assert errors == [], errors
+    assert isinstance(payload, dict)
+    assert "_engine" not in payload
 
 
 def assert_error_body(payload: object) -> None:
