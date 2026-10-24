@@ -13,6 +13,7 @@ type TellerValue = {
   postedChipIds: string[]
   handoff: HandoffProjection | null
   startCase: (caseId: string) => Promise<SessionState | null>
+  startLive: () => Promise<SessionState | null>
   postContext: (chips: string[]) => Promise<void>
   postAnswer: (answer: AnswerPost) => Promise<void>
   postOutcome: (outcome: OutcomeId, actor: string) => Promise<void>
@@ -94,13 +95,26 @@ export function TellerProvider({ children }: { children: ReactNode }) {
 
   async function startCase(caseId: string): Promise<SessionState | null> {
     const request = openingRequest(caseId)
-    if (request === null) {
+    if (request === null || typeof request !== 'object' || Array.isArray(request)) {
       setHttpStatus(404)
       return null
     }
     setWrites([])
     setHandoff(null)
-    const result = await apiSend('POST', `/sessions?case=${encodeURIComponent(caseId)}`, request)
+    const body = { ...(request as Record<string, unknown>), scenario_id: caseId }
+    const result = await apiSend('POST', `/sessions?case=${encodeURIComponent(caseId)}`, body)
+    return takeSession(result)
+  }
+
+  async function startLive(): Promise<SessionState | null> {
+    const sample = openingRequest('T1')
+    const amountBand =
+      sample && typeof sample === 'object' && typeof (sample as { amount_band?: unknown }).amount_band === 'string'
+        ? (sample as { amount_band: string }).amount_band
+        : '5000_9999'
+    setWrites([])
+    setHandoff(null)
+    const result = await apiSend('POST', '/sessions', { mode: 'live', amount_band: amountBand })
     return takeSession(result)
   }
 
@@ -188,6 +202,7 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     postedChipIds: writes.flatMap((write) => (write.kind === 'context' ? write.chips : [])),
     handoff,
     startCase,
+    startLive,
     postContext,
     postAnswer,
     postOutcome,

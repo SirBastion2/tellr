@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { AppShell } from './App'
 import { APP_ROUTES } from './routes'
+import { HealthScreen } from './screens/HealthScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import type { Library, SessionState } from './types'
 
@@ -22,8 +23,9 @@ describe('routes', () => {
             library={library}
             session={session}
             issues={[]}
-            cases={[{ id: 'T2' }]}
-            onStart={() => undefined}
+            scenarios={[{ id: 'T2', label: 'T2' }]}
+            onStartPractice={() => undefined}
+            onStartLive={() => undefined}
           />
         </MemoryRouter>,
       )
@@ -32,11 +34,16 @@ describe('routes', () => {
     }
   })
 
-  it('does not call /settings', () => {
+  it('keeps settings UI-only and does not write health', () => {
     const spy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'))
     render(<SettingsScreen />)
-    const urls = spy.mock.calls.map((call) => String(call[0]))
-    expect(urls.some((url) => url.includes('/settings'))).toBe(false)
+    render(<HealthScreen />)
+    const calls = spy.mock.calls.map((call) => ({
+      url: String(call[0]),
+      method: ((call[1] as RequestInit | undefined)?.method ?? 'GET').toUpperCase(),
+    }))
+    expect(calls.some((call) => call.url.includes('/settings'))).toBe(false)
+    expect(calls.some((call) => call.url.includes('/health') && call.method !== 'GET')).toBe(false)
     spy.mockRestore()
   })
 })

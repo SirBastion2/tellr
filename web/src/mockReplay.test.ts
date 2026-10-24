@@ -124,6 +124,39 @@ describe('fixture replay', () => {
     expect(mockRequest('GET', `/sessions/${sessionId}`).body).toEqual(t1.steps[0]?.response)
   })
 
+  it('replays a live session without a scenario and keeps mode live', () => {
+    const amount = (t1.steps[0]?.request as { amount_band: string }).amount_band
+    const opened = mockRequest('POST', '/sessions', { mode: 'live', amount_band: amount })
+    expect(opened.status).toBe(200)
+    expect(opened.warnings).toEqual([])
+    expect(validateSessionState(opened.body)).toEqual([])
+    const sessionId = (opened.body as { session_id: string }).session_id
+    expect(opened.body).toEqual({ ...(t1.steps[0]?.response as object), mode: 'live' })
+    const context = t1.steps[1]
+    const posted = mockRequest('POST', `/sessions/${sessionId}/context`, context?.request)
+    expect(posted.warnings).toEqual([])
+    expect(posted.body).toEqual({ ...(context?.response as object), mode: 'live' })
+    const undone = mockRequest('POST', `/sessions/${sessionId}/undo`)
+    expect(undone.warnings).toEqual([])
+    expect(undone.body).toEqual({ ...(t1.steps[0]?.response as object), mode: 'live' })
+
+    resetMock()
+    const named = mockRequest('POST', '/sessions?case=T2', {
+      mode: 'live',
+      amount_band: (t2.steps[0]?.request as { amount_band: string }).amount_band,
+    })
+    expect(named.warnings).toEqual([])
+    expect(named.body).toEqual({ ...(t2.steps[0]?.response as object), mode: 'live' })
+
+    resetMock()
+    const practice = mockRequest('POST', '/sessions?case=T2', {
+      ...(t2.steps[0]?.request as object),
+      scenario_id: 'T2',
+    })
+    expect(practice.warnings).toEqual([])
+    expect(practice.body).toEqual(t2.steps[0]?.response)
+  })
+
   it('rejects scenario_id on a live session with the contract error', () => {
     const result = mockRequest('POST', '/sessions?case=T2', {
       mode: 'live',
