@@ -1,16 +1,9 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
+import { controlStyle, inputFill } from '../theme/controls'
 import type { Library, SessionState } from '../types'
 
-const tap: CSSProperties = {
-  minHeight: '48px',
-  minWidth: '48px',
-  boxSizing: 'border-box',
-  color: '#1c1917',
-  border: '1px solid #1c1917',
-  backgroundColor: 'transparent',
-  padding: '0 12px',
-}
+const tap: CSSProperties = controlStyle
 
 export function ContextScreen({
   library,
@@ -44,7 +37,7 @@ export function ContextScreen({
               aria-pressed={selected.includes(chip.id)}
               style={{
                 ...tap,
-                backgroundColor: selected.includes(chip.id) ? '#e7e5e4' : 'transparent',
+                backgroundColor: selected.includes(chip.id) ? inputFill : 'transparent',
               }}
               onClick={() => toggle(chip.id)}
             >

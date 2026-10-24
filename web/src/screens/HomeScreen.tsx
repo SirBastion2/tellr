@@ -1,16 +1,9 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
+import { controlStyle, inputFill } from '../theme/controls'
 import type { Library, Mode } from '../types'
 
-const tap: CSSProperties = {
-  minHeight: '48px',
-  minWidth: '48px',
-  boxSizing: 'border-box',
-  color: '#1c1917',
-  border: '1px solid #1c1917',
-  backgroundColor: 'transparent',
-  padding: '0 12px',
-}
+const tap: CSSProperties = controlStyle
 
 export function HomeScreen({
   library,
@@ -38,7 +31,7 @@ export function HomeScreen({
           type="button"
           data-testid="mode-practice"
           aria-pressed={mode === 'practice'}
-          style={{ ...tap, backgroundColor: mode === 'practice' ? '#e7e5e4' : 'transparent' }}
+          style={{ ...tap, backgroundColor: mode === 'practice' ? inputFill : 'transparent' }}
           onClick={() => setMode('practice')}
         >
           Practice
@@ -47,7 +40,7 @@ export function HomeScreen({
           type="button"
           data-testid="mode-live"
           aria-pressed={mode === 'live'}
-          style={{ ...tap, backgroundColor: mode === 'live' ? '#e7e5e4' : 'transparent' }}
+          style={{ ...tap, backgroundColor: mode === 'live' ? inputFill : 'transparent' }}
           onClick={() => setMode('live')}
         >
           Live

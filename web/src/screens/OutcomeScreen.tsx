@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
+import { buttonFill, buttonText, controlStyle, inputFill } from '../theme/controls'
 import type { OutcomeId, SessionState } from '../types'
 
 const OUTCOME_LABEL: Record<OutcomeId, string> = {
@@ -10,17 +11,9 @@ const OUTCOME_LABEL: Record<OutcomeId, string> = {
 }
 
 const HIGHLIGHT = '#fef3c7'
-const INK = '#1c1917'
+const SUGGESTED_INK = '#1c1917'
 
-const tap: CSSProperties = {
-  minHeight: '48px',
-  minWidth: '48px',
-  boxSizing: 'border-box',
-  color: INK,
-  border: `1px solid ${INK}`,
-  backgroundColor: 'transparent',
-  padding: '0 12px',
-}
+const tap: CSSProperties = controlStyle
 
 export function OutcomeScreen({
   session,
@@ -60,7 +53,12 @@ export function OutcomeScreen({
                       setChosen(outcome)
                     }}
                     aria-pressed={chosen === outcome}
-                    style={{ ...tap, backgroundColor: highlighted ? HIGHLIGHT : 'transparent' }}
+                    style={{
+                      ...tap,
+                      backgroundColor: highlighted ? HIGHLIGHT : 'transparent',
+                      color: highlighted ? SUGGESTED_INK : tap.color,
+                      borderColor: highlighted ? SUGGESTED_INK : undefined,
+                    }}
                   >
                     {OUTCOME_LABEL[outcome]}
                   </button>
@@ -76,7 +74,7 @@ export function OutcomeScreen({
               onChange={(event) => {
                 setActor(event.target.value)
               }}
-              style={{ ...tap, marginLeft: '8px', backgroundColor: '#ffffff' }}
+              style={{ ...tap, marginLeft: '8px', backgroundColor: inputFill }}
             />
           </label>
           <button
@@ -84,7 +82,7 @@ export function OutcomeScreen({
             data-testid="outcome-submit"
             disabled={!ready}
             onClick={submit}
-            style={tap}
+            style={{ ...tap, backgroundColor: buttonFill, color: buttonText, borderColor: 'transparent' }}
           >
             Submit
           </button>

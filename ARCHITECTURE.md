@@ -21,7 +21,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `eval/` except `heldout/` | A3 | Validator, 30 dev scenarios, harness (§13) | `validate.py`, `PREREGISTRATION.md`, `scenarios/dev/`, `run.py`, `arms/` |
 | `eval/scenarios/heldout/` | H | Held-out set, written once (B-07) | created at hour 20 |
 | `tests/eval/` | A3 | Scenario, validator, and harness tests | `test_validate.py`, `test_dev_scenarios.py`, `test_run.py` |
-| `web/` | B1 | React UI, mock, screens (§12) | `src/App.tsx`, `src/screens/`, `src/index.css`, `src/a11y.test.tsx`, `src/history.test.tsx`, `src/health.test.tsx`, `mock/`, `src/talkTrack.test.tsx`, `src/undo.test.tsx`, `src/modes.test.tsx` |
+| `web/` | B1 | React UI, mock, screens, bank themes (§12) | `src/App.tsx`, `src/screens/`, `src/theme/`, `src/assets/tellr-wordmark.png`, `src/index.css`, `src/a11y.test.tsx`, `src/theme.test.tsx`, `src/history.test.tsx`, `src/health.test.tsx`, `mock/`, `src/talkTrack.test.tsx`, `src/undo.test.tsx`, `src/modes.test.tsx` |
 | `web/src/screens/history/` `…/settings/` `web/e2e/` | B2 | Leaf screens + e2e if added at hour 8. Not created. B-06 filled history and health in `web/src/screens/` | — |
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json`, `fixtures/T1–T7.json`, `CHANGES.md` |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |
@@ -46,6 +46,28 @@ History and the read-only recommender view live in the existing screen files. Th
 | `web/src/screens/SettingsScreen.tsx` | Removed. `/settings` redirects to `/health` (`web/src/App.tsx`). It is not in `web/src/routes.ts`. |
 | `web/mock/replay.ts` | Also serves `GET /sessions` (live by default, `mode=practice`, `mode=all`) and `GET /health`. |
 | `web/mock/plugin.ts` | Dev server forwards `/health` to that mock. |
+
+### `web/` themes
+
+Bank chrome is one typed theme plus CSS variables. Screens still render server state only; they read tokens (`--tc-text`, `--tc-muted`, `--tc-input`, `--tc-accent`, `--tc-button`, `--tc-button-text`) and do not branch on the bank id. `?theme=<id>` selects a registered id and stores it in `localStorage` (`teller.theme`). An unknown id falls back to the stored id, then to `tellr`.
+
+| File | What it is |
+|---|---|
+| `web/src/theme/types.ts` | `BankTheme`: name, wordmark, mark, background, glass fill/border/blur, text, muted text, input fill, accent, button, progress dots, Poppins, footer. |
+| `web/src/theme/tokens.ts` | Default id `tellr`, storage key, footer string, UI font. |
+| `web/src/theme/resolve.ts` | `resolveThemeId` (query, then storage, then `tellr`). |
+| `web/src/theme/registry.ts` | Loads every `web/src/theme/themes/*.ts`. Adding a bank is adding one file that exports `theme`. |
+| `web/src/theme/themes/tellr.ts` | Base. Navy-to-indigo gradient, frosted glass, logo top-left, footer centered. |
+| `web/src/theme/themes/mtb.ts` | M&T example. Green gradient plus `web/src/assets/weave.svg`, green glass, text wordmark bottom-left, footer bottom-right. |
+| `web/src/theme/themes/fnb.ts` | F.N.B. Navy field, gold wordmark, light-blue accent. Text wordmark, no logo file. |
+| `web/src/theme/themes/pnc.ts` | PNC. Orange `#EF7622` on slate `#4D5964` to navy `#002D72`. Text wordmark, no logo file. |
+| `web/src/theme/vars.ts` | Maps a `BankTheme` onto the `--tc-*` custom properties. |
+| `web/src/theme/ThemeProvider.tsx` | Reads `?theme=` and `localStorage`, provides the theme. |
+| `web/src/theme/ThemeRoot.tsx` | Full-bleed background, glass card, wordmark, footer, progress dots. Dots show `session.answers` from the server. |
+| `web/src/theme/controls.ts` | Shared control styles that point at those variables. |
+| `web/src/assets/tellr-wordmark.png` | Tellr wordmark (transparent). `mark: 'logo'` paints it with `--tc-logo` (periwinkle on the tellr theme). |
+| `web/src/theme.test.tsx` | Selection, unknown-id fallback, storage, and the registered theme objects. |
+| `web/index.html` | Loads Poppins. The theme `fontFamily` is Poppins. |
 
 ## Task cards (`prompts/`)
 

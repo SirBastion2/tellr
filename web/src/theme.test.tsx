@@ -1,0 +1,132 @@
+import libraryJson from '../../contract/library.json'
+import t1 from '../../contract/fixtures/T1.json'
+import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { describe, expect, it } from 'vitest'
+import { App, AppShell } from './App'
+import { THEME_IDS, THEMES } from './theme/registry'
+import { resolveThemeId } from './theme/resolve'
+import { DEFAULT_THEME_ID, FOOTER_TEXT, THEME_STORAGE_KEY } from './theme/tokens'
+import type { Library, SessionState } from './types'
+
+const library = libraryJson as Library
+const opener = t1.steps[0]?.response as SessionState
+const known = ['tellr', 'mtb', 'fnb', 'pnc'] as const
+
+function at(search: string) {
+  const path = search.length > 0 ? `/${search}` : '/'
+  window.history.replaceState({}, '', path)
+  return render(<App />)
+}
+
+describe('theme selection', () => {
+  it('resolves the query, then storage, then tellr', () => {
+    expect(resolveThemeId(null, null, known)).toBe(DEFAULT_THEME_ID)
+    expect(resolveThemeId('mtb', 'fnb', known)).toBe('mtb')
+    expect(resolveThemeId('MTB', null, known)).toBe('mtb')
+    expect(resolveThemeId('  pnc  ', 'tellr', known)).toBe('pnc')
+    expect(resolveThemeId(null, 'fnb', known)).toBe('fnb')
+    expect(resolveThemeId('', 'pnc', known)).toBe('pnc')
+    expect(resolveThemeId('not-a-bank', null, known)).toBe(DEFAULT_THEME_ID)
+    expect(resolveThemeId('not-a-bank', 'fnb', known)).toBe('fnb')
+    expect(resolveThemeId('not-a-bank', 'also-missing', known)).toBe(DEFAULT_THEME_ID)
+  })
+
+  it('registers one theme file per bank', () => {
+    expect([...THEME_IDS]).toEqual(['fnb', 'mtb', 'pnc', 'tellr'])
+    for (const id of THEME_IDS) {
+      const theme = THEMES[id]
+      expect(theme?.id, id).toBe(id)
+      expect(theme?.footerText, id).toBe(FOOTER_TEXT)
+      expect(theme?.fontFamily.startsWith('Poppins'), id).toBe(true)
+      expect(theme?.name.length, id).toBeGreaterThan(0)
+      expect(theme?.wordmark.length, id).toBeGreaterThan(0)
+      expect(theme?.background.image.length, id).toBeGreaterThan(0)
+      expect(theme?.glass.fill.length, id).toBeGreaterThan(0)
+      expect(theme?.glass.border.length, id).toBeGreaterThan(0)
+      expect(theme?.glass.blur.length, id).toBeGreaterThan(0)
+      expect(theme?.text.length, id).toBeGreaterThan(0)
+      expect(theme?.mutedText.length, id).toBeGreaterThan(0)
+      expect(theme?.inputFill.length, id).toBeGreaterThan(0)
+      expect(theme?.accent.length, id).toBeGreaterThan(0)
+      expect(theme?.button.length, id).toBeGreaterThan(0)
+      expect(theme?.progress.active.length, id).toBeGreaterThan(0)
+      expect(theme?.progress.inactive.length, id).toBeGreaterThan(0)
+    }
+    expect(THEMES.tellr?.mark).toBe('logo')
+    expect(THEMES.mtb?.mark).toBe('text')
+    expect(THEMES.mtb?.markPlacement).toBe('bottom-left')
+    expect(THEMES.mtb?.footerPlacement).toBe('end')
+  })
+
+  it('uses tellr when nothing is chosen', () => {
+    window.localStorage.clear()
+    at('')
+    const root = screen.getByTestId('theme-root')
+    expect(root.getAttribute('data-theme')).toBe('tellr')
+    expect(root.style.getPropertyValue('--tc-text')).toBe(THEMES.tellr?.text)
+    expect(root.style.getPropertyValue('--tc-accent')).toBe(THEMES.tellr?.accent)
+    expect(root.style.getPropertyValue('--tc-font')).toContain('Poppins')
+    expect(screen.getByTestId('theme-wordmark').textContent).toContain('tellr')
+    expect(screen.getByTestId('theme-logo')).toBeTruthy()
+    expect(screen.getByTestId('theme-footer').textContent).toBe(FOOTER_TEXT)
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBeNull()
+  })
+
+  it('selects a theme from the query and stores it', () => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, 'fnb')
+    at('?theme=mtb')
+    const root = screen.getByTestId('theme-root')
+    expect(root.getAttribute('data-theme')).toBe('mtb')
+    expect(root.style.getPropertyValue('--tc-text')).toBe(THEMES.mtb?.text)
+    expect(root.style.getPropertyValue('--tc-glass-fill')).toBe(THEMES.mtb?.glass.fill)
+    expect(root.style.getPropertyValue('--tc-button')).toBe(THEMES.mtb?.button)
+    expect(screen.getByTestId('theme-wordmark').textContent).toContain('M&T Bank')
+    expect(screen.queryByTestId('theme-logo')).toBeNull()
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('mtb')
+  })
+
+  it('uses the stored theme when the query is missing', () => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, 'pnc')
+    at('')
+    expect(screen.getByTestId('theme-root').getAttribute('data-theme')).toBe('pnc')
+    expect(screen.getByTestId('theme-wordmark').textContent).toContain('PNC')
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('pnc')
+  })
+
+  it('falls back to the stored theme when the query is unknown', () => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, 'fnb')
+    at('?theme=not-a-bank')
+    expect(screen.getByTestId('theme-root').getAttribute('data-theme')).toBe('fnb')
+    expect(screen.getByTestId('theme-wordmark').textContent).toContain('F.N.B.')
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('fnb')
+  })
+
+  it('falls back to tellr when the query and storage are both unknown', () => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, 'casino')
+    at('?theme=nope')
+    expect(screen.getByTestId('theme-root').getAttribute('data-theme')).toBe('tellr')
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('casino')
+  })
+
+  it('marks the progress dot from the server answer count', () => {
+    const session = { ...opener, answers: 2 }
+    render(
+      <MemoryRouter>
+        <AppShell
+          library={library}
+          session={session}
+          issues={[]}
+          scenarios={[]}
+          onStartPractice={() => undefined}
+          onStartLive={() => undefined}
+        />
+      </MemoryRouter>,
+    )
+    const dots = screen.getAllByTestId('theme-progress-dot')
+    expect(dots).toHaveLength(5)
+    expect(dots.map((dot) => dot.getAttribute('data-active'))).toEqual(['false', 'false', 'true', 'false', 'false'])
+    expect(screen.getByTestId('theme-card')).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Teller Copilot' })).toBeTruthy()
+  })
+})
