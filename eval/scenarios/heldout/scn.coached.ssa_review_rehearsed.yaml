@@ -1,0 +1,25 @@
+# Perfectly coached. FTC and SSA OIG impersonation warnings: the caller
+# supplies an office name, a badge number, and a fake case number so every
+# answer sounds specific, and tells the victim nobody asked them to hide it.
+id: scn.coached.ssa_review_rehearsed
+label: Coached — Social Security review, rehearsed plausible details
+population: coached
+pattern_truth: pat.government_impersonation
+stated_purpose: purpose.government_payment
+context_chips:
+  - chip.above_threshold
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  written_estimate: specific
+  receiving_account: specific
+  secrecy: denied
+  payment_flexibility: confirmed
+default: specific
+tags:
+  - perfectly_coached
+source: >
+  FTC and Social Security Administration Office of the Inspector General
+  impersonation alerts. The caller rehearses a full script (office, badge,
+  case number, where the payment goes) and tells the victim to agree to a
+  cashier's check and to deny that anyone asked for secrecy.

@@ -1,0 +1,23 @@
+# Vague but genuine. The customer is short on itemized details and is not
+# repeating a caller's script, hiding the payment, or refusing a check.
+id: scn.legitimate.shelter_adoption_fuzzy
+label: Legitimate — shelter adoption fee, details not itemized
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.other
+context_chips: []
+answers:
+  purpose: vague
+  counterparty_identity: vague
+  written_estimate: vague
+  receiving_account: vague
+  secrecy: denied
+  payment_flexibility: confirmed
+default: vague
+tags:
+  - vague_genuine
+source: >
+  Legitimate contrast. FTC materials separate "does not know the details
+  yet" from a coached script. The customer is paying an animal-shelter
+  adoption fee plus supplies, cannot itemize them, is not on a call, denies
+  any secrecy instruction, and will take a cashier's check.
