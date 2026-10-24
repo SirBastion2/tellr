@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import tempfile
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -37,8 +38,15 @@ _MODEL_KINDS = frozenset({"local", "local_llm", "hosted", "hosted_llm"})
 
 _REPO = Path(__file__).resolve().parents[1]
 _DEFAULT_LIBRARY = _REPO / "library"
-_DEFAULT_DB = Path(os.environ.get("TELLER_DB", "/tmp/teller-copilot.sqlite"))
 _TELLER = frozenset({"ContextAdded", "AnswerRecorded"})
+
+
+def default_db_path() -> Path:
+    """SQLite path: TELLER_DB if set, else <tempdir>/teller-copilot.sqlite."""
+    override = os.environ.get("TELLER_DB")
+    if override:
+        return Path(override)
+    return Path(tempfile.gettempdir()) / "teller-copilot.sqlite"
 
 
 class OpenBody(BaseModel):
@@ -104,7 +112,7 @@ def create_app(
     llama_server: str | None = None,
     hosted_url: str | None = None,
 ) -> FastAPI:
-    db = Path(db_path) if db_path is not None else _DEFAULT_DB
+    db = Path(db_path) if db_path is not None else default_db_path()
     lib_path = Path(library_path) if library_path is not None else _DEFAULT_LIBRARY
     rec = recommender or os.environ.get("RECOMMENDER", "rules")
     if model_id is None:
