@@ -1,0 +1,34 @@
+# Architecture §5.3. Category routes questions only; it never enters the score.
+purposes:
+  - id: purpose.home_repair
+    label: Home repair or contractor
+    routes_to: pat.home_repair
+    verifies: look.contractor_with_estimate
+  - id: purpose.moving_money
+    label: Moving money to another account
+    routes_to: pat.bank_impersonation
+    verifies: look.own_account_transfer
+  - id: purpose.government_payment
+    label: Paying a government agency or fine
+    routes_to: pat.government_impersonation
+    verifies: look.official_fine_payment
+  - id: purpose.family_help
+    label: Helping family or a friend
+    routes_to: pat.family_emergency
+    verifies: look.relative_spoken_directly
+  - id: purpose.computer_or_refund
+    label: Computer repair or a refund
+    routes_to: pat.tech_support
+    verifies: look.known_repair_shop
+  - id: purpose.vehicle
+    label: Buying a vehicle
+    routes_to: null
+    verifies: null
+  - id: purpose.gift_or_travel
+    label: Gift or travel
+    routes_to: null
+    verifies: null
+  - id: purpose.other
+    label: Something else
+    routes_to: null
+    verifies: null
