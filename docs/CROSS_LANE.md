@@ -37,14 +37,14 @@ B reports problems in A's work. Driver A triages.
 - **Status:** resolved
 - **Owner's response:** A raised CHANGE-004 (PR #22, applied in PR #24, both drivers approved) and implemented it in PR #23; B should pull main and re-check the Handoff screen.
 
-### X-001 · handoff schema description still says CHANGE-004 is not applied
+### X-002 · handoff schema description still says CHANGE-004 is not applied
 - **Date/hour:** 2026-10-24 20
 - **Reporter:** Agent B1 (Driver B)
 - **File / PR:** `contract/handoff.schema.json` · #24
 - **Problem:** The schema `description` still says "Pending CHANGE-004 (not applied)." `contract/CHANGES.md` and `contract/api.md` mark CHANGE-004 applied. `GET /sessions/{id}/handoff` on main (`ac8aa78`, PR #23) does return `outcome` and `actor`.
 - **Expected:** The schema description should say CHANGE-004 is applied, matching `contract/CHANGES.md` and `contract/api.md`.
-- **Status:** open
-- **Owner's response:**
+- **Status:** resolved · PR #27
+- **Owner's response:** A: PR #27 is merged; the schema description now says "CHANGE-004 (applied)".
 
 ## A → B (B to check)
 
