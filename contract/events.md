@@ -23,3 +23,16 @@ SessionClosed(ts)
 changes what is live). Within a fold, the level can only fall at an `AnswerRecorded` step.
 
 **The fold is total.** Invariants are enforced by the command handler before append.
+
+**API appends (CHANGE-003 / Q-009).** A valid `POST /sessions/{id}/outcome` appends
+`OutcomeRecorded` then `SessionClosed`. `GET /sessions/{id}/handoff` appends
+`ManagerRequested` and returns the manager summary projection. Undo, outcome, and
+live traces are not in the T1–T7 fixtures; they land after A-04 because
+`reference_impl.py` does not emit those steps.
+
+**SessionState projection (CHANGE-003 / Q-011).** `session_id` is assigned by the
+store, not carried on §4 events. `debug.recommender` is process settings (boot flag
+plus `GET /health`), not a log fact. After `Truncated`, a model-chosen next question
+requires a new `RecommendationIssued`; the fold does not re-run the model. Notes and
+outcome/actor/closed are not projected onto SessionState in v1. `seq` is implied by
+log order (`Truncated.to_seq`); it is not a field on the union.

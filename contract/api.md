@@ -28,6 +28,33 @@ returns a full `SessionState` (`session_state.schema.json`).
   `outcome_requires_actor`, `close_without_outcome`, `purpose_required_on_opener`,
   `purpose_not_allowed`, `session_closed`, `scenario_on_live_session`. Malformed bodies
   return `422`.
+- **T2 source of truth (CHANGE-003 / Q-004).** Architecture §11.2's example is
+  illustrative. `contract/fixtures/T2.json` from `reference_impl.py` is the oracle
+  (`mode` practice, `question.source` rules, `debug.recommender` rules). Cross-field
+  rules (`question` is null only on a hard stop; reasons share the level's direction)
+  live in `scripts/check_contract.py`. `debug`, when present, is exactly
+  `{recommender, latency_ms, rejections}`.
+- **Interview composition (CHANGE-003 / Q-005, Q-010).** The Interview screen renders
+  `SessionState` plus copy from `GET /library` plus the client's last posted context
+  chips and purpose. SessionState does not carry observed chips, chip labels,
+  purpose-category rows, `amount_band`, outcome, actor, closed, or an undo flag. B
+  loads chip and purpose labels from `GET /library` and keeps posted context chips in
+  client memory. `stop.reason` stays machine-readable (`enough to escalate`,
+  `enough to proceed; nothing left to ask`); teller-facing stop copy is not in v1.
+- **Library is a UI projection (CHANGE-003 / Q-007, Q-008).** `library.schema.json` is
+  the display subset B renders from, not the §5 fold library. `library.json` is T1–T7
+  display copy (two of five §5.3 patterns). A loads the real backend library.
+- **Untyped projections (CHANGE-003 / Q-006, deferred).** Request/response schemas for
+  handoff, history, health, and POST enums (`amount_band`, `outcome`, `actor`, `chip`,
+  `scenario_id`) are a follow-up CHANGE. Session and Interview work do not wait on them.
+- **Outcome and handoff appends (CHANGE-003 / Q-009, Q-011).** A valid
+  `POST /sessions/{id}/outcome` appends `OutcomeRecorded` then `SessionClosed`.
+  `GET /sessions/{id}/handoff` appends `ManagerRequested` and returns the manager
+  summary projection. `session_id` is store-assigned. `debug.recommender` is process
+  settings (boot flag + `GET /health`). After undo, a model-chosen next question
+  requires a new `RecommendationIssued`. Notes and outcome are not projected onto
+  SessionState in v1. Undo, outcome, and live fixture steps land after A-04;
+  `reference_impl.py` does not emit them.
 
 ## Fixtures
 

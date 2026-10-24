@@ -34,5 +34,17 @@ matching §11.1 rejects (not an open "such as" list):
 Malformed bodies return 422.
 Approved: Driver A ☑ · Driver B ☐ · Rejected ☐
 
+### CHANGE-003 · Q-004–Q-011 clarifications · applied in 1.0.0
+Driver A accepted every one-line recommendation. Applied: constrain `debug` to
+`{recommender, latency_ms, rejections}`; T2 fixtures stay the `reference_impl.py`
+oracle; Interview = SessionState + `GET /library` + client-posted chips/purpose;
+`library.schema.json` / `library.json` are the UI / T1–T7 display projection;
+`POST /outcome` appends `SessionClosed`; `GET /handoff` appends `ManagerRequested`;
+`session_id` is store-assigned; `debug.recommender` is process settings; the model
+re-issues after undo; notes/outcome stay off SessionState; `stop.reason` stays
+machine-readable. Deferred: handoff/history/health/POST-enum schemas (follow-up
+CHANGE); undo/outcome/live fixtures (A-04 — `reference_impl.py` cannot emit them).
+Approved: Driver A ☑ · Driver B ☐ · Rejected ☐
+
 ### Approval of contract-v1
 Driver A ☐ · Driver B ☐

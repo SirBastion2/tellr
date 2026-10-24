@@ -2,6 +2,7 @@
 """Regenerate contract/library.json and contract/fixtures/T*.json from reference_impl.py.
 
 Never hand-edit the output. Library copy here is DRAFT and needs compliance review (draft §7.3).
+contract/library.json is T1–T7 display copy, not the full §5 must-have set (CHANGE-003 / Q-008).
 """
 import json, sys
 from pathlib import Path
