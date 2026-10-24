@@ -1,11 +1,11 @@
-# Evaluation pre-registration (DRAFT)
+# Evaluation pre-registration
 
-**Status:** DRAFT for A-06 hours 2–6. This file is not a run and must not be
-committed with results. The official freeze is a **solo commit at hours 6–8**,
-before any `eval/results/` (architecture §13.4, card A-06 step 1). The commit
-order is the evidence it came first.
+**Status:** FROZEN at A-06 hours 6–8. This file is not a run and contains no
+scores. It is committed alone, before any `eval/results/` (architecture §13.4,
+card A-06 step 1, ROSTER hours 6–8). The commit order is the evidence it came
+first.
 
-Tuning freedom is symmetric across arms (§13.4). This draft records arm A's
+Tuning freedom is symmetric across arms (§13.4). This freeze records arm A's
 questions, polarity map, a prior threshold, and the metric definitions. A-07
 may retune the threshold together with the weights on the 30 development
 scenarios; that later figure is labelled tuned. Held-out numbers are the
@@ -95,24 +95,25 @@ An item the engine never asked, and whose intent is missing from `answers`,
 contributes the scenario `default` through the open-intent table (usually
 `vague` → concerning). Context items are not defaulted.
 
-## Arm A threshold (draft prior)
+## Arm A threshold (prior)
 
 **3** concerning items.
 
-This is a prior, not a tuned value and not a result. It will be committed
-alone at hours 6–8. If A-07 retunes it on the 30 development scenarios, report
-that number as tuned and keep this prior in git history.
+This is a prior, not a tuned value and not a result. If A-07 retunes it on the
+30 development scenarios, report that number as tuned and keep this prior in
+git history.
 
 Scoring: count concerning interview answers (after defaulting) plus concerning
 context chips. Arm A labels **High** at or above the threshold, **Clear**
 below it. Arm A has no Caution band; the confusion-matrix Caution column is
-0/15 for this arm. That is a property of the sheet, not a finding.
+empty for this arm until a run. That is a property of the sheet, not a
+finding.
 
 ## Metric definitions (§13.3, §18.2)
 
 Primary: full confusion matrix on the **final raw level** at stop, both
-populations, all three levels. Fifteen scenarios per population in the full
-set. This hours 2–6 slice has 15 scenarios total; the matrix is not run yet.
+populations, all three levels. Thirty development scenarios: 15 coached and
+15 legitimate. The matrix is not run yet.
 
 Headline pair, as **counts**, never percentages:
 
@@ -136,9 +137,9 @@ Report `13/15`, not `86.7%`. Do not call an arm-C-minus-arm-B difference
 significant on 15 scenarios. If that difference matters, list which scenarios
 flipped.
 
-## What this draft does not decide
+## What this freeze does not decide
 
 - Live weights (A1 / A-07)
-- The remaining 15 development scenarios (hours 6–8)
 - Held-out scenarios (H, card B-07)
 - Arm C model choice (CP1)
+- Any arm result, score, or confusion-matrix cell

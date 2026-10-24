@@ -1,0 +1,14 @@
+id: scn.legitimate.vague_gift
+label: "Legitimate — gift or travel, genuine but vague on the recipient"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.gift_or_travel
+context_chips: []
+answers:
+  purpose: specific
+  counterparty_identity: vague
+  payment_flexibility: confirmed
+  secrecy: denied
+default: vague
+tags: [vague_but_genuine]
+source: "AARP gift-and-travel guidance (under-specified recipient)"
