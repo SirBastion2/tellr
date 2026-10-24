@@ -240,3 +240,41 @@ GATE PASS (a)
   - API still uses `FakeEngine` until A-04. `engine.project` is real on this branch; `question` and `stop` stay null.
   - One Starlette warning: `httpx` with `starlette.testclient` is deprecated; A2 owns that path.
 
+---
+
+### [A-04] Eligibility, stop, rules, golden traces — Agent A1 — 2026-10-24 19:45
+- **Status:** done (A1 engine half). A2 still swaps the real engine for CP2.
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+74 passed, 1 warning in 9.83s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `engine/eligibility.py`, `engine/stop.py`, `engine/rules.py`, `engine/reduce.py`, `engine/__init__.py`, `tests/golden/test_traces.py`, `tests/engine/test_commands.py`, `tests/engine/test_interface.py`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Ported `eligible`, `stop_check`, `signals_for` with the oracle names (A-04; tc-11). `RuleEngine.run_case` matches `reference_impl.run_case` row-for-row, including the pre-CHANGE-000 stop tuple.
+  - `engine.stop` / `project` apply CHANGE-000: when a recommended stop and empty candidates coincide, hard wins `kind` and `reason` names both; `question` is null (§8.4, §11.2, T1/T5 last steps).
+  - Display snaps to raw at any stop (§8.4 / oracle `run_case`). Talk tracks take stage lines from the shown-level outcome and add pattern lines only while a pattern is displayed (§7.1; `gen_fixtures.py`).
+  - `check_command` raises `CommandRejected` with the six CHANGE-002 codes. Command `type` accepts both the A2 HTTP verbs (`answer`/`outcome`/`close`) and the event names.
+  - `project` attaches an `_engine` bag (`asked`, `evidence`, `purpose`, `story_failed`, `context`) so `candidates(state, lib)` and `stop(state, lib, cands)` stay on the frozen signatures. `engine.public_state` strips it. Did not add those fields to the SessionState schema.
+  - Did not edit weights, goldens, `reference_impl.py`, `contract/`, `api/`, or `store/`.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - **A2 (swap):** `from engine import project, candidates, stop, rule_choice, check_command, public_state`. Replace `FakeEngine` with these. `RECOMMENDER=rules` can use `project` as the complete rules-path fold (question / stop / talk_track filled). Before HTTP, `public_state(state)` — `_engine` is not in `session_state.schema.json`. Drop the live-mode rewrite adapter in `api/main.py`.
+  - **T1 last step:** `stop.kind=hard`, `reason=enough to proceed; nothing left to ask`, `question=null` (CHANGE-000). T2 last step keeps `q.alternative.cashiers_check` under a recommended escalate stop.
+  - **Goldens** still load `tests/golden/reference_weights.yaml`, never `library/signals.yaml`.
+  - Checkpoint CP2 is A2's: hour-8 integration against the real API. A1 is stopped here.
+

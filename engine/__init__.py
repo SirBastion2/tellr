@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from typing import Any, Literal
 
+from engine.eligibility import candidates
 from engine.library import Library, LibraryBootError, export_library, load_library
 from engine.reduce import project
+from engine.rules import RuleEngine, check_command, public_state, rule_choice
+from engine.stop import stop
 
 QuestionId = str
 Stage = Literal["opener", "verify", "probe"]
@@ -25,28 +28,6 @@ class CommandRejected(Exception):
         super().__init__(f"{code}: {message}" if message else code)
 
 
-def candidates(state: SessionState, lib: Library) -> tuple[Stage, list[QuestionId]]:
-    """§7.2: eligibility. Implemented in A-04."""
-    raise NotImplementedError("engine.candidates lands in A-04")
-
-
-def stop(
-    state: SessionState, lib: Library, cands: Sequence[QuestionId]
-) -> Stop:
-    """§8.4 + CHANGE-000 precedence. Implemented in A-04."""
-    raise NotImplementedError("engine.stop lands in A-04")
-
-
-def rule_choice(cands: Sequence[QuestionId]) -> QuestionId:
-    """§7.3: rule-engine pick. Implemented in A-04."""
-    raise NotImplementedError("engine.rule_choice lands in A-04")
-
-
-def check_command(events: list[Event], command: Command, lib: Library) -> None:
-    """Raise CommandRejected(code) when the command is illegal. Implemented in A-04."""
-    raise NotImplementedError("engine.check_command lands in A-04")
-
-
 __all__ = [
     "Command",
     "CommandRejected",
@@ -54,6 +35,7 @@ __all__ = [
     "Library",
     "LibraryBootError",
     "QuestionId",
+    "RuleEngine",
     "SessionState",
     "Stage",
     "Stop",
@@ -62,6 +44,7 @@ __all__ = [
     "export_library",
     "load_library",
     "project",
+    "public_state",
     "rule_choice",
     "stop",
 ]
