@@ -760,3 +760,39 @@ GATE PASS (a)
 - **Decisions I made, and the section that justified each:** none. Driver instruction: keep both HANDOFF sides; keep main's `make dev-web`; take main for contract/reference_impl/goldens/fixtures/web/CROSS_LANE/QUESTIONS/A_TO_B/B_TO_A; keep the branch for recommenders/, engine/prompt.py, api health/recommender wiring, tests/recommenders. Did not change A-05 logic.
 - **Questions logged:** none
 - **The next agent needs to know:** Merge of `origin/main` (`d3919f2`) into `cursor/a2-a05-model-path-9aea` (PR #30). No new PR. Live-path p95 and 8B vs 3B quality are still PENDING Driver B (see the `[A-05]` entry). No new dependency.
+
+---
+
+### [A-06] Evaluation hours 6–8 (30 scenarios + pre-register) — Agent A3 — 2026-10-24 20:55
+- **Status:** partial (hours 6–8 slice done; hours 8–12 still own the harness and arms)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+115 passed, 1 warning in 12.24s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `eval/scenarios/dev/` (15 new YAML); `tests/eval/test_dev_scenarios.py`; `eval/PREREGISTRATION.md` (solo freeze commit `cd21c1d`); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Added 7 coached + 8 legitimate so the set is 15/15 (ROSTER §5.2, architecture §13.1). New files are seeded from the remaining §5.3 purposes and public FTC/FBI/AARP guidance, not from held-out or live weights.
+  - Cover story still means the stated purpose’s usual pattern ≠ `pattern_truth` (T3, §13.1), including `purpose.vehicle` / `purpose.gift_or_travel` which route to no pattern. Mix on disk: 6 covers, 5 perfectly coached, 6 innocent red-flag, 5 vague-but-genuine.
+  - Froze arm A’s prior threshold at 3 in a solo commit with no scores and no `eval/results/` (card A-06 step 1, §13.2 / §13.4). A-07 may retune it with the weights; that later figure is labelled tuned.
+  - Empty `tags: []` on scenarios that are neither cover, perfect, red-flag, nor vague. No age, appearance, or name fields.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Dev set is 30. `python3 -m eval.validate` prints `30 scenario(s) valid` and no scores. Do not write `eval/scenarios/heldout/`.
+  - **Hours 8–12 (A3):** `eval/run.py`, arms A and B, determinism tests (same scenario twice; arm B on T1–T7 reproduces goldens). Do not run arm C until A2’s model path is ready (ROSTER hour 12).
+  - Pre-registration freeze is `cd21c1d` (`docs(eval): freeze PREREGISTRATION.md before any run`). That commit is the file alone. Do not commit results into it.
+  - Driver A reviews `eval/` PRs. No new dependency.
