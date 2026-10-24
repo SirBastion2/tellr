@@ -207,3 +207,36 @@ Property test (65,536 evidence sets) ran inside that 8.98s suite; well under 60s
   - **A4 / A1 next:** eligibility, stop rule (including CHANGE-000 and the snap), and talk tracks. Do not retouch weights.
   - Goldens overlay `tests/golden/reference_weights.yaml` onto a loaded library so A-07 tuning cannot move them.
 
+---
+
+### [A-02] Merge origin/main (#11 API) — Agent A1 — 2026-10-24 19:50
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+60 passed, 1 warning in 9.48s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `docs/HANDOFF.md` (merge kept both the A2 hours 4–6 section and the A1 A-02 section; this entry)
+- **Decisions I made, and the section that justified each:**
+  - Merged `origin/main` (A2 PR #11) rather than rebasing. The only conflict was `docs/HANDOFF.md`; resolved by keeping every section (append-only).
+  - Incoming A2 files (`api/`, `store/`, `tests/api/`, `pyproject.toml`) merged cleanly. Did not edit A2 paths, `reference_impl.py`, `contract/`, or `tests/golden/reference_weights.yaml`.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Gate a is green on this branch after the merge (60 tests: A1 engine/library/golden + A2 api/store).
+  - API still uses `FakeEngine` until A-04. `engine.project` is real on this branch; `question` and `stop` stay null.
+  - One Starlette warning: `httpx` with `starlette.testclient` is deprecated; A2 owns that path.
+
