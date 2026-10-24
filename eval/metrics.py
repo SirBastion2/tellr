@@ -29,7 +29,25 @@ class ArmSummary:
     time_max_s: int
     catch_wilson: tuple[float, float]
     false_flag_wilson: tuple[float, float]
+    latency_p50_ms: float | None = None
+    latency_p95_ms: float | None = None
+    latency_max_ms: float | None = None
+    fallback_rate: float | None = None
+    fallbacks: tuple[int, int] | None = None
     baselines: dict[str, ArmSummary] = field(default_factory=dict)
+
+
+def percentile(samples: Sequence[int | float], pct: float) -> float | None:
+    """Linear interpolation, same rule as recommenders.metrics (A2 /health)."""
+    if not samples:
+        return None
+    ordered = sorted(float(item) for item in samples)
+    if len(ordered) == 1:
+        return ordered[0]
+    rank = (len(ordered) - 1) * pct / 100
+    low = int(rank)
+    high = min(low + 1, len(ordered) - 1)
+    return ordered[low] + (ordered[high] - ordered[low]) * (rank - low)
 
 
 def wilson_interval(
@@ -54,7 +72,11 @@ def _label(pair: tuple[int, int]) -> str:
 
 
 def summarize(
-    results: Sequence[ArmResult], *, with_baselines: bool = True
+    results: Sequence[ArmResult],
+    *,
+    with_baselines: bool = True,
+    latencies_ms: Sequence[int] | None = None,
+    fallbacks: int | None = None,
 ) -> ArmSummary:
     matrix = {"coached": _empty_row(), "legitimate": _empty_row()}
     misses: list[str] = []
@@ -95,6 +117,21 @@ def summarize(
     q_mean = sum(questions) / len(questions) if questions else 0.0
     q_max = max(questions) if questions else 0
 
+    latency_p50_ms = None
+    latency_p95_ms = None
+    latency_max_ms = None
+    fallback_rate = None
+    fallback_pair = None
+    if latencies_ms is not None:
+        samples = [max(0, int(item)) for item in latencies_ms]
+        latency_p50_ms = percentile(samples, 50)
+        latency_p95_ms = percentile(samples, 95)
+        latency_max_ms = float(max(samples)) if samples else None
+        attempts = len(samples)
+        fallback_n = 0 if fallbacks is None else max(0, int(fallbacks))
+        fallback_pair = (fallback_n, attempts)
+        fallback_rate = (fallback_n / attempts) if attempts else None
+
     summary = ArmSummary(
         matrix=matrix,
         catch=catch,
@@ -112,6 +149,11 @@ def summarize(
         time_max_s=q_max * SECONDS_PER_QUESTION,
         catch_wilson=wilson_interval(*catch),
         false_flag_wilson=wilson_interval(*false_flag),
+        latency_p50_ms=latency_p50_ms,
+        latency_p95_ms=latency_p95_ms,
+        latency_max_ms=latency_max_ms,
+        fallback_rate=fallback_rate,
+        fallbacks=fallback_pair,
     )
     if with_baselines:
         object.__setattr__(

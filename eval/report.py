@@ -16,6 +16,26 @@ def _pct(interval: tuple[float, float]) -> str:
     return f"{lo * 100:.0f}–{hi * 100:.0f}%"
 
 
+def _latency_line(summary: ArmSummary) -> str:
+    if (
+        summary.latency_p50_ms is None
+        or summary.latency_p95_ms is None
+        or summary.latency_max_ms is None
+    ):
+        return "n/a"
+    return (
+        f"{summary.latency_p50_ms:.0f} / {summary.latency_p95_ms:.0f} / "
+        f"{summary.latency_max_ms:.0f} ms"
+    )
+
+
+def _fallback_line(summary: ArmSummary) -> str:
+    if summary.fallbacks is None:
+        return "n/a"
+    fired, attempts = summary.fallbacks
+    return f"{fired}/{attempts}"
+
+
 def _matrix_block(summary: ArmSummary) -> str:
     lines = [
         "| | Clear | Caution | High |",
@@ -47,6 +67,11 @@ def _summary_json(summary: ArmSummary, *, include_baselines: bool) -> dict[str, 
         "time_max_s": summary.time_max_s,
         "default_fired_rate": list(summary.default_fired_rate),
         "validator_rejections": summary.validator_rejections,
+        "latency_p50_ms": summary.latency_p50_ms,
+        "latency_p95_ms": summary.latency_p95_ms,
+        "latency_max_ms": summary.latency_max_ms,
+        "fallback_rate": summary.fallback_rate,
+        "fallbacks": list(summary.fallbacks) if summary.fallbacks is not None else None,
         "catch_wilson": list(summary.catch_wilson),
         "false_flag_wilson": list(summary.false_flag_wilson),
     }
@@ -151,6 +176,8 @@ def render_report(
                 ),
                 f"- default_fired_rate: {fired}/{asked}",
                 f"- Validator rejections: {summary.validator_rejections}",
+                f"- Latency p50/p95/max: {_latency_line(summary)}",
+                f"- fallback_rate: {_fallback_line(summary)}",
                 "",
             ]
         )
