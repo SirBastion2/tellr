@@ -1198,7 +1198,24 @@ GATE PASS (a)
 
 ### [A-08] Held-out run PREP — Agent A3 — 2026-10-24 23:15
 - **Status:** partial (prep done; held-out run pending on Driver B's GPU laptop)
-- **Gate:** `scripts/gate.sh a` → pending (will record after the run in this PR)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+156 passed, 1 warning in 22.11s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
 - **Changed:** `eval/report.py`, `eval/run.py`, `eval/scenarios.py`, `tests/eval/test_run.py`, `tests/eval/test_dev_scenarios.py`, `docs/A08_HELDOUT_RUN.md` (new), `ARCHITECTURE.md`, `docs/A_TO_B.md` (M-014), `docs/HANDOFF.md` (this entry)
 - **Decisions I made, and the section that justified each:**
   - Did not run the held-out set, not even `--model fake`. Arm C needs the local 8B; this VM has no GPU. Architecture §13.4 / A-08: one run, later, on Driver B's laptop.
