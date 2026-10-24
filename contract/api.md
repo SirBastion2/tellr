@@ -12,7 +12,7 @@ returns a full `SessionState` (`session_state.schema.json`).
 | `POST` | `/sessions/{id}/undo` | — (undoes the most recent answer or chip) | `SessionState` |
 | `GET` | `/sessions/{id}` | — | `SessionState` |
 | `POST` | `/sessions/{id}/outcome` | `{outcome, actor, note?}` | `SessionState` |
-| `GET` | `/sessions/{id}/handoff` | — | Manager summary projection (`handoff.schema.json`, pending CHANGE-004) |
+| `GET` | `/sessions/{id}/handoff` | — | Manager summary projection (`handoff.schema.json`, CHANGE-004 applied) |
 | `GET` | `/sessions` | filters; excludes `practice` by default | list |
 | `GET` | `/health` | — | recommender, model ID, last p95, fallback rate, agreement rate (read-only; set at boot) |
 
@@ -47,11 +47,10 @@ returns a full `SessionState` (`session_state.schema.json`).
 - **Untyped projections (CHANGE-003 / Q-006, deferred).** Request/response schemas for
   history, health, and POST enums (`amount_band`, `outcome`, `actor`, `chip`,
   `scenario_id`) remain a follow-up CHANGE. Session and Interview work do not wait
-  on them. The handoff response is proposed separately as CHANGE-004 (not applied).
-- **Handoff projection (CHANGE-004, pending).** `GET /sessions/{id}/handoff` is
-  `handoff.schema.json`: today's manager summary fields plus `outcome` and `actor`
-  (null until `POST /outcome` records them). Resolves the handoff part of Q-006
-  only. Do not treat this CHANGE as applied.
+  on them. Only the handoff part of Q-006 is resolved.
+- **Handoff projection (CHANGE-004, applied).** `GET /sessions/{id}/handoff` is
+  typed as `handoff.schema.json`. `outcome` and `actor` are null until
+  `POST /outcome`. Resolves the handoff part of Q-006 only.
 - **Outcome and handoff appends (CHANGE-003 / Q-009, Q-011).** A valid
   `POST /sessions/{id}/outcome` appends `OutcomeRecorded` then `SessionClosed`.
   `GET /sessions/{id}/handoff` appends `ManagerRequested` and returns the manager
