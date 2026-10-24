@@ -13,13 +13,15 @@ Agents append; drivers answer. An open question blocks only the work that depend
 - **Raised by:** kit build · **Sections:** architecture §7.4, §11.1, §12
 - **Detail:** §7.4 makes the recommender "swappable at runtime from Settings" and §12 lists a
   Settings screen, but §11.1 has no endpoint for it. B-06 cannot be built as specified.
-- **Status:** open → CHANGE-001, decide in P0.
+- **Status:** answered by CHANGE-001 (rejected, Driver A). Settings are read-only
+  through `/health` plus a boot flag.
 
 ### Q-003 · No error response shape
 - **Raised by:** kit build · **Sections:** architecture §4 (command handler), §11.1
 - **Detail:** The command handler rejects invalid commands, but the architecture never says what
   B receives when it does, so B has nothing to render.
-- **Status:** open → CHANGE-002, decide in P0.
+- **Status:** answered by CHANGE-002 (accepted, Driver A). Exhaustive 409 codes in
+  `contract/error.schema.json`; malformed bodies return 422.
 
 ### Q-002 / CHANGE-001 · Driver note (neutral; not a decision)
 - **Raised by:** Agent R · P0 steps 1–4 · **Sections:** architecture §11.1, §12; WORKFLOW.md §5; contract/CHANGES.md
@@ -32,7 +34,7 @@ Agents append; drivers answer. An open question blocks only the work that depend
   exposes the current recommender; a read-only Settings page plus a boot flag would cover
   the demo with no write endpoint. The proposed enum (`rules` | `local_llm` | `hosted_llm`)
   is not named in §11.1.
-- **Status:** open. Drivers decide. R will not apply or tick approvals.
+- **Status:** decided. CHANGE-001 rejected by Driver A (read-only `/health` + boot flag).
 
 ### Q-003 / CHANGE-002 · Driver note (neutral; not a decision)
 - **Raised by:** Agent R · P0 steps 1–4 · **Sections:** architecture §4, §11.1; contract/CHANGES.md
@@ -45,7 +47,7 @@ Agents append; drivers answer. An open question blocks only the work that depend
   A and B can still drift. 409 vs 400 vs 403 for "session closed" / "purpose required" is
   an unstated product choice. B must handle two envelopes. A single 400 with the same
   `{error: {code, message}}` would be smaller. No fixture today exercises a reject.
-- **Status:** open. Drivers decide. R will not apply or tick approvals.
+- **Status:** decided. CHANGE-002 accepted by Driver A with an exhaustive `code` enum.
 
 ### Q-004 · SessionState schema vs §11.2
 - **Raised by:** Agent R · P0 step 2 · **Sections:** architecture §11.2; contract/session_state.schema.json
@@ -60,7 +62,9 @@ Agents append; drivers answer. An open question blocks only the work that depend
   second answer; `contract/fixtures/T2.json` at answers=2 differs (`mode` practice vs
   live, `question.source` rules vs model, `debug.recommender` rules vs local_llm,
   `latency_ms` 0 vs 640).
-- **Status:** open.
+- **Recommended:** Constrain `debug` to `{recommender, latency_ms, rejections}` and treat
+  `reference_impl.py` as source of truth for T2; leave cross-field rules to the checker.
+- **Status:** deferred: pending drivers.
 
 ### Q-005 · SessionState is not enough to render the Interview
 - **Raised by:** Agent R · P0 step 2/3 · **Sections:** architecture §11.2, §12; contract/session_state.schema.json
@@ -70,7 +74,9 @@ Agents append; drivers answer. An open question blocks only the work that depend
   row, no answer-chip labels, no `amount_band`, no outcome/closed/actor, and no
   undo-available flag. Either §11.2 is overstated (Interview = SessionState + library +
   client memory) or those fields are missing from the schema.
-- **Status:** open.
+- **Recommended:** Treat Interview as SessionState + `GET /library` + the client's last
+  posted chips/purpose; do not add those fields to SessionState in v1.
+- **Status:** deferred: pending drivers.
 
 ### Q-006 · Untyped endpoints and missing request enums
 - **Raised by:** Agent R · P0 step 2 · **Sections:** architecture §11.1; contract/api.md
@@ -81,7 +87,9 @@ Agents append; drivers answer. An open question blocks only the work that depend
   `outcome`/`actor`/`chip` enums, no `scenario_id` field documented on `POST /sessions`
   even though live mode must reject it. B cannot build handoff, history, or health from
   the contract as frozen.
-- **Status:** open.
+- **Recommended:** Add request/response schemas for handoff, history, health, and POST
+  enums in a follow-up CHANGE; do not block session or interview work.
+- **Status:** deferred: pending drivers.
 
 ### Q-007 · library.schema.json is a display subset of §5
 - **Raised by:** Agent R · P0 step 2 · **Sections:** architecture §5; contract/library.schema.json
@@ -95,7 +103,9 @@ Agents append; drivers answer. An open question blocks only the work that depend
   route-to-pattern / verify-look-alike columns. Extra: `copy_status`. Naming split:
   library `role` vs SessionState `stage`. Fine for a UI projection; not a §5 Library the
   fold can use.
-- **Status:** open.
+- **Recommended:** Keep `library.schema.json` as the UI projection; the fold uses the
+  backend library, not this schema.
+- **Status:** deferred: pending drivers.
 
 ### Q-008 · Sample library.json covers two of five §5.3 patterns
 - **Raised by:** Agent R · P0 step 2 · **Sections:** architecture §5.3; contract/library.json
@@ -106,7 +116,9 @@ Agents append; drivers answer. An open question blocks only the work that depend
   `pat.tech_support` / `look.known_repair_shop`. Question bank is six items. Schema does
   not require the five must-have patterns. A fold that only loads `library.json` cannot
   route those purposes.
-- **Status:** open.
+- **Recommended:** Treat `contract/library.json` as T1–T7 display copy, not the full §5
+  must-have set; A loads the real library.
+- **Status:** deferred: pending drivers.
 
 ### Q-009 · Events without API surface; fixtures omit undo, outcome, live
 - **Raised by:** Agent R · P0 step 2 · **Sections:** architecture §4, §11.1; contract/events.md; contract/api.md; contract/fixtures
@@ -118,7 +130,9 @@ Agents append; drivers answer. An open question blocks only the work that depend
   No endpoint for `SessionClosed` or `ManagerRequested`. No fixture step hits `undo`,
   `outcome`, `note`, `mode=live`, `scenario_id` rejection, or any error. CHANGE-000's
   combined `stop.reason` appears in T1's last step as specified.
-- **Status:** open.
+- **Recommended:** Append `SessionClosed` after a valid `POST /outcome` and
+  `ManagerRequested` on `GET /handoff`; add undo/outcome/live fixtures after A-04.
+- **Status:** deferred: pending drivers.
 
 ### Q-010 · B check: T1.json and T3.json cannot stand alone
 - **Raised by:** Agent R · P0 step 3 · **Sections:** architecture §11.2, §12; contract/fixtures/T1.json; contract/fixtures/T3.json
@@ -138,7 +152,9 @@ Agents append; drivers answer. An open question blocks only the work that depend
   `stage=opener` or `q.purpose.open`; (9) outcome/closed/finish confirmation; (10) the
   LIVE badge path — both fixtures are `practice`. Handoff, history, settings, and health
   have no fixture at all.
-- **Status:** open.
+- **Recommended:** B loads chip/purpose labels from `GET /library` and keeps posted
+  context chips in client memory; leave `stop.reason` machine-readable.
+- **Status:** deferred: pending drivers.
 
 ### Q-011 · A check: fold gaps for SessionState
 - **Raised by:** Agent R · P0 step 4 · **Sections:** architecture §4, §8.4, §11.2; contract/session_state.schema.json; contract/events.md
@@ -157,6 +173,9 @@ Agents append; drivers answer. An open question blocks only the work that depend
   needs a new `RecommendationIssued`; the fold cannot re-run the model (§4).
   (5) Observed chips, `amount_band`, notes, outcome, actor, closed are in the log
   and are not projected. (6) `seq` is implied, not declared.
-- **Status:** open.
+- **Recommended:** `session_id` is store-assigned; `debug.recommender` is process
+  settings (boot + `/health`); the model re-issues after undo; do not project
+  notes/outcome onto SessionState in v1.
+- **Status:** deferred: pending drivers.
 
 ---

@@ -10,17 +10,29 @@ Architecture §8.4 doesn't say what happens when a recommended stop and the empt
 coincide. Resolution: the hard stop wins `kind`; `reason` names both; `question` is null. This
 keeps §11.2's rule that `question` is null only on a hard stop. Appears in T1's final step.
 
-### CHANGE-001 · Settings endpoint · proposed
-`GET /settings` → `{recommender: "rules" | "local_llm" | "hosted_llm", model_id, strict_mode}`;
-`POST /settings {recommender}` → the same. Needed for architecture §7.4's runtime switch and §12's
-Settings screen. The switch shows up in later `RecommendationIssued.source` values.
-Approved: Driver A ☐ · Driver B ☐ · Rejected ☐
+### CHANGE-001 · Settings endpoint · rejected
+`GET /settings` / `POST /settings` will not ship in v1. Architecture §11.1 has no settings
+write path. Settings are read-only through `GET /health` (recommender, model ID, last p95,
+fallback rate, agreement rate) plus a boot flag that selects the recommender. B-06 shows
+`/health` read-only; the fallback switch is config-only.
+Approved: Driver A ☑ · Driver B ☐ · Rejected ☑
 
-### CHANGE-002 · Error response shape · proposed
-Rejected commands return `409 {"error": {"code", "message"}}`, with codes such as
-`outcome_requires_actor`, `close_without_outcome`, `purpose_required_on_opener`,
-`purpose_not_allowed`, `session_closed`, `scenario_on_live_session`. Malformed bodies return 422.
-Approved: Driver A ☐ · Driver B ☐ · Rejected ☐
+### CHANGE-002 · Error response shape · applied in 1.0.0
+Rejected commands return `409 {"error": {"code", "message"}}` (`error.schema.json`).
+`code` is an exhaustive enum derived from the §4 command-handler invariants and the
+matching §11.1 rejects (not an open "such as" list):
+
+| code | Rejects |
+|---|---|
+| `outcome_requires_actor` | `OutcomeRecorded` without an `actor` |
+| `close_without_outcome` | `SessionClosed` without a preceding outcome |
+| `purpose_required_on_opener` | opener `AnswerRecorded` without a `purpose` |
+| `purpose_not_allowed` | `purpose` on a non-opener answer |
+| `session_closed` | `ContextAdded` (or any append) on a closed session |
+| `scenario_on_live_session` | `scenario_id` when `mode = "live"` |
+
+Malformed bodies return 422.
+Approved: Driver A ☑ · Driver B ☐ · Rejected ☐
 
 ### Approval of contract-v1
 Driver A ☐ · Driver B ☐

@@ -14,16 +14,20 @@ returns a full `SessionState` (`session_state.schema.json`).
 | `POST` | `/sessions/{id}/outcome` | `{outcome, actor, note?}` | `SessionState` |
 | `GET` | `/sessions/{id}/handoff` | — | Manager summary projection |
 | `GET` | `/sessions` | filters; excludes `practice` by default | list |
-| `GET` | `/health` | — | recommender, model ID, last p95, fallback rate, agreement rate |
+| `GET` | `/health` | — | recommender, model ID, last p95, fallback rate, agreement rate (read-only; set at boot) |
 
 ## Clarifications (see CHANGES.md)
 
 - **Stop precedence (CHANGE-000, applied).** When a recommended stop and a hard stop hold at once,
   `stop.kind` is `hard`, `stop.reason` names both, and `question` is null. The suggested outcome
   still follows the level.
-- **Settings (CHANGE-001, proposed).** `GET /settings`, `POST /settings {recommender}`.
-- **Errors (CHANGE-002, proposed).** Rejected commands return `409` with
-  `{"error": {"code": "...", "message": "..."}}`; malformed requests return FastAPI's `422`.
+- **Settings (CHANGE-001, rejected).** No `GET`/`POST /settings`. The recommender is a boot flag.
+  `GET /health` is the read-only view.
+- **Errors (CHANGE-002, applied).** Rejected commands return `409` with
+  `{"error": {"code", "message"}}` (`error.schema.json`). Exhaustive `code` values:
+  `outcome_requires_actor`, `close_without_outcome`, `purpose_required_on_opener`,
+  `purpose_not_allowed`, `session_closed`, `scenario_on_live_session`. Malformed bodies
+  return `422`.
 
 ## Fixtures
 
