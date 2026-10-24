@@ -84,3 +84,38 @@ Append-only, newest at the bottom. One entry per card, or per stop.
   - GPU jobs: `scripts/with-gpu <cmd>`.
   - `pip install -e .`; `ruff` and `lint-imports` need to be on PATH.
 
+---
+
+### [A-01] Merge A1 + gate a — Agent A2 — 2026-10-24 19:35
+- **Status:** done (A2 half; `scripts/gate.sh a` PASS after merging `origin/main`)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+30 passed in 0.30s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `docs/HANDOFF.md` (merge kept both A-01 sections; this entry); `.importlinter` (`include_external_packages = True` so `recommenders` can be named before that package exists)
+- **Decisions I made, and the section that justified each:**
+  - Merged `origin/main` (A1 PR #9) rather than rebasing. HANDOFF conflict resolved by keeping both A1 and A2 sections (append-only).
+  - `pyproject.toml` already had `pydantic>=2`, `pyyaml`, `pytest`, `ruff`, `import-linter`, and `pythonpath = ["."]` (A1 request; `tests/engine` shadows `engine` without it). No further dep change.
+  - Import-linter failed because `recommenders` is listed in the A-01 contract but is not a root package yet. Set `include_external_packages = True` instead of creating `recommenders/` (card A-01; ROSTER §3). Did not touch `engine/`, `library/`, `eval/`, `reference_impl.py`, `contract/`, or goldens.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Gate a is green on this branch. A2 half of A-01 is done.
+  - Use `from engine.testing import FakeEngine` until A-02/A-04 land. `GET /library` is `export_library(load_library("library"))` (A1 HANDOFF).
+  - `recommenders` is still absent; import-linter treats it as external. Add it to `root_packages` when the package is created.
+  - `pip install -e .`; put `~/.local/bin` on PATH so `ruff`, `pytest`, and `lint-imports` resolve.
+
