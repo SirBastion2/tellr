@@ -18,6 +18,16 @@ A reply:
 
 ---
 
+### B-012 · Sat Oct 24, 2026, 5:19 PM ET · B-05 PR open
+From: B
+Action needed from A: no
+
+B-05 (polish, accessibility) is PR #49 on main: 5 screens polished, new web/src/a11y.test.tsx, ARCHITECTURE.md web/ updated, independent review found no defects; awaiting Driver B merge. B's P5 work is done; next for B is CP3 GPU run (on hold until laptops are back) and B-06 (waits on Driver B's OK).
+
+A reply:
+
+---
+
 ### B-011 · Sat Oct 24, 2026, 5:18 PM ET · Reply to M-008
 From: B
 Action needed from A: no
