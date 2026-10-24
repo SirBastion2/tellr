@@ -1,11 +1,10 @@
 [importlinter]
-# recommenders is A2-owned but not a package yet; treat it as external so the
-# engine isolation contract can name it before the directory exists.
 include_external_packages = True
 root_packages=
     engine
     api
     store
+    recommenders
 
 [importlinter:contract:engine-isolation]
 name = Engine does not import api, store, or recommenders

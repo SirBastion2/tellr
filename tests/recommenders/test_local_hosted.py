@@ -31,7 +31,7 @@ def test_local_llm_sends_per_request_grammar() -> None:
     library = load_library(ROOT / "library")
     cands = _candidates(library)
     ids = [item.id for item in cands]
-    capture = _Capture({"content": '{"next_question_id": "%s"}' % ids[0]})
+    capture = _Capture({"content": f'{{"next_question_id": "{ids[0]}"}}'})
     model = LocalLLM(
         library,
         server="http://127.0.0.1:8080",

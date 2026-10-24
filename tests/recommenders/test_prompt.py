@@ -4,9 +4,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests.recommenders.conftest import (
+    events_to_prompt_inputs,
+    load_cases,
+    request_events,
+)
+
 from engine import load_library, project
 from engine.prompt import ALLOWED_FIELDS, build_prompt
-from tests.recommenders.conftest import events_to_prompt_inputs, load_cases, request_events
 
 NOTE = "NOTE_INJECT_AGE_77_FRECKLES_JANE_DOE"
 ACCOUNT = "ACC_SECRET_999"

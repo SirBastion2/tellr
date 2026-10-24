@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from recommenders.orchestrate import choose
 from tests.recommenders.conftest import load_case, make_client, replay
 from tests.recommenders.fakes import FakeRecommender
+
+from recommenders.orchestrate import choose
 
 
 def test_strict_mode_signals_asserted_always_empty() -> None:

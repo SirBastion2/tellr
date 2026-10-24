@@ -60,7 +60,7 @@ def test_health_records_rejection_and_agreement(tmp_path: Path) -> None:
         assert health["agreement_rate"] == 1.0
         assert health["rejection_count"] == 0
 
-    def pick_other(state, candidates):  # noqa: ARG001
+    def pick_other(state, candidates):
         from recommenders.base import Recommendation
 
         ids = [getattr(item, "id", item) for item in candidates]

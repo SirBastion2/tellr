@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from store import sqlite as store
 from tests.recommenders.conftest import load_case, make_client, replay
 from tests.recommenders.fakes import FakeRecommender
+
+from store import sqlite as store
 
 FABRICATED = "q.fabricated.not_in_library"
 

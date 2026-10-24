@@ -24,6 +24,10 @@ from engine import (
     rule_choice,
     stop,
 )
+from engine.rules import question_view
+from recommenders import DEFAULT_MODEL_ID, MODEL_NAMES, build_recommender
+from recommenders.metrics import Metrics
+from recommenders.orchestrate import choose, extract_fields, live_events, turn_decision
 from store import sqlite as store
 
 _REPO = Path(__file__).resolve().parents[1]
@@ -82,48 +86,131 @@ def _undo_to_seq(events: list[dict[str, Any]]) -> int | None:
     return teller[-1] - 1
 
 
+def _rejection_count(events: list[dict[str, Any]]) -> int:
+    return sum(1 for event in live_events(events) if event.get("type") == "ValidationRejected")
+
+
 def create_app(
     *,
     db_path: Path | str | None = None,
     library_path: Path | str | None = None,
     recommender: str | None = None,
+    recommender_impl: Any = None,
+    model_id: str | None = None,
+    timeout_ms: int | None = None,
 ) -> FastAPI:
     db = Path(db_path) if db_path is not None else _DEFAULT_DB
     lib_path = Path(library_path) if library_path is not None else _DEFAULT_LIBRARY
     rec = recommender or os.environ.get("RECOMMENDER", "rules")
-    model_id = os.environ.get("MODEL_ID") or None
+    if model_id is None:
+        env_model = os.environ.get("MODEL_ID") or None
+        model_id = env_model or (DEFAULT_MODEL_ID if rec in MODEL_NAMES else None)
+    if timeout_ms is None:
+        timeout_ms = int(os.environ.get("MODEL_TIMEOUT_MS", "1500"))
 
     library = load_library(lib_path)
     conn = store.connect(db)
     if not store.initialized(conn):
         store.initialize(conn)
 
+    impl = build_recommender(rec, library=library, model_id=model_id, impl=recommender_impl)
+    metrics = Metrics()
+
     app = FastAPI(title="Teller Copilot", version="1.0.0")
     app.state.db = conn
     app.state.library = library
     app.state.recommender = rec
     app.state.model_id = model_id
+    app.state.recommender_impl = impl
+    app.state.metrics = metrics
     app.add_exception_handler(CommandRejected, rejected_response)
 
-    def stamp(state: dict[str, Any], session_id: str) -> dict[str, Any]:
+    def stamp(
+        state: dict[str, Any], session_id: str, latency_ms: int, rejections: int
+    ) -> dict[str, Any]:
         out = dict(state)
         out["session_id"] = session_id
         out["debug"] = {
             "recommender": rec,
-            "latency_ms": int((state.get("debug") or {}).get("latency_ms") or 0),
-            "rejections": int((state.get("debug") or {}).get("rejections") or 0),
+            "latency_ms": int(latency_ms),
+            "rejections": int(rejections),
         }
         return out
+
+    def _apply_model_question(state: dict[str, Any], question_id: str, stage: str) -> dict[str, Any]:
+        if state.get("question") is None:
+            return state
+        updated = dict(state)
+        updated["question"] = question_view(question_id, stage, library)
+        updated["question"]["source"] = "model"
+        return updated
 
     def render(session_id: str) -> dict[str, Any]:
         events = store.load_events(conn, session_id)
         state = project(events, library)
-        # ROSTER §5.1: fold, then candidates/stop; rules pick is already in project().
-        _stage, cands = candidates(state, library)
-        stop(state, library, cands)
-        if rec == "rules" and cands:
-            rule_choice(cands)
-        return stamp(public_state(state), session_id)
+        # ROSTER §5.1: fold, then candidates/stop; recommender only in probe, never after stop.
+        stage, cands = candidates(state, library)
+        stop_obj = stop(state, library, cands)
+        if rec == "rules" or impl is None:
+            if cands:
+                rule_choice(cands)
+            return stamp(public_state(state), session_id, 0, _rejection_count(events))
+
+        issued, rejected_turn = turn_decision(events)
+        latency = int(issued.get("latency_ms") or 0) if issued else 0
+        if issued and issued.get("source") == "model" and issued.get("question_id"):
+            state = _apply_model_question(state, str(issued["question_id"]), stage)
+        elif (
+            stage == "probe"
+            and stop_obj is None
+            and cands
+            and issued is None
+            and not rejected_turn
+        ):
+            rule_id = rule_choice(cands)
+            by_id = {item.id: item for item in library.questions}
+            questions = [by_id[item] for item in cands if item in by_id]
+            fields = extract_fields(state, events, questions)
+            prompt_state = {**dict(state), **fields}
+            choice = choose(
+                impl,
+                prompt_state,
+                questions,
+                rule_id=rule_id,
+                timeout_ms=timeout_ms,
+                library_ids={item.id for item in library.questions},
+            )
+            metrics.record(choice)
+            latency = choice.latency_ms
+            ts = _timestamp()
+            if choice.rejected:
+                store.append_event(
+                    conn,
+                    session_id,
+                    {
+                        "type": "ValidationRejected",
+                        "ts": ts,
+                        "field": "next_question_id",
+                        "raw_value": choice.raw_value,
+                    },
+                )
+            else:
+                store.append_event(
+                    conn,
+                    session_id,
+                    {
+                        "type": "RecommendationIssued",
+                        "ts": ts,
+                        "question_id": choice.question_id,
+                        "model_id": model_id,
+                        "latency_ms": choice.latency_ms,
+                        "source": choice.source,
+                    },
+                )
+                if choice.source == "model":
+                    state = _apply_model_question(state, choice.question_id, stage)
+            events = store.load_events(conn, session_id)
+        return stamp(public_state(state), session_id, latency, _rejection_count(events))
 
     def require_session(session_id: str) -> dict[str, Any]:
         row = store.get_session(conn, session_id)
@@ -137,12 +224,16 @@ def create_app(
 
     @app.get("/health")
     def health() -> dict[str, object]:
+        snap = metrics.snapshot()
         return {
             "recommender": rec,
             "model_id": model_id,
-            "last_p95": None,
-            "fallback_rate": 0.0,
-            "agreement_rate": None,
+            "p50": snap["p50"],
+            "p95": snap["p95"],
+            "last_p95": snap["last_p95"],
+            "fallback_rate": snap["fallback_rate"],
+            "rejection_count": snap["rejection_count"],
+            "agreement_rate": snap["agreement_rate"],
         }
 
     @app.post("/sessions")
