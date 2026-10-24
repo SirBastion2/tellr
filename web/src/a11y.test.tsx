@@ -96,7 +96,14 @@ function tapSize(element: Element): { minHeight: number; minWidth: number } {
 
 describe('counter polish', () => {
   it('gives buttons, links, and fields a 48px target', () => {
-    const paths = ['/', `/sessions/${opener.session_id}`, `/sessions/${opener.session_id}/context`, `/sessions/${opener.session_id}/outcome`]
+    const paths = [
+      '/',
+      '/sessions',
+      '/health',
+      `/sessions/${opener.session_id}`,
+      `/sessions/${opener.session_id}/context`,
+      `/sessions/${opener.session_id}/outcome`,
+    ]
     for (const path of paths) {
       const { unmount } = render(shell(path))
       const controls = [

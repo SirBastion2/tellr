@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link, BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Link, BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { listCases } from '../mock/replay'
 import { LiveBadge } from './LiveBadge'
 import { SchemaBanner } from './SchemaBanner'
@@ -11,7 +11,6 @@ import { HistoryScreen } from './screens/HistoryScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { InterviewScreen } from './screens/InterviewScreen'
 import { OutcomeScreen } from './screens/OutcomeScreen'
-import { SettingsScreen } from './screens/SettingsScreen'
 import { TellerProvider, useTeller } from './teller'
 import type { AnswerPost, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import type { SchemaIssue } from './validate'
@@ -170,7 +169,7 @@ export function AppShell({
           element={<InterviewScreen library={library} session={session} onAnswer={onAnswer} />}
         />
         <Route path="/health" element={<HealthScreen />} />
-        <Route path="/settings" element={<SettingsScreen />} />
+        <Route path="/settings" element={<Navigate to="/health" replace />} />
       </Routes>
       </main>
     </div>

@@ -168,4 +168,36 @@ describe('fixture replay', () => {
     expect(result.body).toMatchObject({ error: { code: 'scenario_on_live_session' } })
     expect(mockRequest('GET', '/sessions/fixture-T2').status).toBe(404)
   })
+
+  it('lists live sessions by default and practice on request', () => {
+    const liveBody = {
+      mode: 'live' as const,
+      amount_band: (t1.steps[0]?.request as { amount_band: string }).amount_band,
+    }
+    const live = mockRequest('POST', '/sessions', liveBody)
+    expect(live.status).toBe(200)
+    const practice = mockRequest('POST', '/sessions?case=T2', {
+      ...(t2.steps[0]?.request as object),
+      scenario_id: 'T2',
+    })
+    expect(practice.status).toBe(200)
+    const liveId = (live.body as { session_id: string }).session_id
+    const practiceId = (practice.body as { session_id: string }).session_id
+    const listed = mockRequest('GET', '/sessions')
+    expect(listed.status).toBe(200)
+    const liveIds = (listed.body as { sessions: { session_id: string; mode: string }[] }).sessions.map(
+      (row) => row.session_id,
+    )
+    expect(liveIds).toContain(liveId)
+    expect(liveIds).not.toContain(practiceId)
+    const practiceList = mockRequest('GET', '/sessions?mode=practice')
+    const practiceIds = (practiceList.body as { sessions: { session_id: string; mode: string }[] }).sessions.map(
+      (row) => row.session_id,
+    )
+    expect(practiceIds).toEqual([practiceId])
+    const health = mockRequest('GET', '/health')
+    expect(health.status).toBe(200)
+    expect(health.body).toMatchObject({ recommender: 'rules', model_id: null, fallback_rate: 0 })
+    expect(mockRequest('POST', '/health').status).toBe(404)
+  })
 })

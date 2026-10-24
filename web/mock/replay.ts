@@ -29,7 +29,12 @@ type Replay = {
   outcome: string | null
   actor: string | null
   mode: 'live' | 'practice'
+  openedAt: string
+  closedAt: string | null
+  libraryVersion: string
 }
+
+let openedCount = 0
 
 const OUTCOME_IDS = new Set(['proceed', 'slow_down', 'escalate', 'report'])
 
@@ -43,6 +48,17 @@ export type MockResult = {
 
 export function resetMock(): void {
   sessions.clear()
+  openedCount = 0
+}
+
+function nextOpenedAt(): string {
+  openedCount += 1
+  return `2026-10-24T00:00:${String(openedCount).padStart(2, '0')}`
+}
+
+function libraryVersionOf(body: unknown): string {
+  const record = recordOf(body)
+  return typeof record?.library_version === 'string' ? record.library_version : ''
 }
 
 export function listCases(): { id: string; label: string }[] {
@@ -165,6 +181,7 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
       warnings.push('payload differs from the fixture request')
     }
     const mode = openedMode(body)
+    const presented = present(first.response, mode)
     sessions.set(first.response.session_id, {
       caseId,
       index: 0,
@@ -172,8 +189,51 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
       outcome: null,
       actor: null,
       mode,
+      openedAt: nextOpenedAt(),
+      closedAt: null,
+      libraryVersion: libraryVersionOf(presented),
     })
-    return { status: 200, body: present(first.response, mode), warnings }
+    return { status: 200, body: presented, warnings }
+  }
+
+  if (verb === 'GET' && path === '/health') {
+    return {
+      status: 200,
+      body: {
+        recommender: 'rules',
+        model_id: null,
+        p50: null,
+        p95: null,
+        last_p95: null,
+        fallback_rate: 0,
+        rejection_count: 0,
+        agreement_rate: null,
+      },
+      warnings: [],
+    }
+  }
+
+  if (verb === 'GET' && path === '/sessions') {
+    const mode = parsed.searchParams.get('mode')
+    const rows = [...sessions.entries()]
+      .filter(([, replay]) => {
+        if (mode === 'practice') {
+          return replay.mode === 'practice'
+        }
+        if (mode === 'all') {
+          return true
+        }
+        return replay.mode === 'live'
+      })
+      .sort(([, left], [, right]) => right.openedAt.localeCompare(left.openedAt))
+      .map(([sessionId, replay]) => ({
+        session_id: sessionId,
+        mode: replay.mode,
+        opened_at: replay.openedAt,
+        closed_at: replay.closedAt,
+        library_version: replay.libraryVersion,
+      }))
+    return { status: 200, body: { sessions: rows }, warnings: [] }
   }
 
   const match = /^\/sessions\/([^/]+)(?:\/(context|answers|undo|outcome|handoff))?$/.exec(path)
@@ -249,6 +309,7 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
       return { status: 422, body: null, warnings: ['outcome is not one of the four'] }
     }
     replay.closed = true
+    replay.closedAt = '2026-10-24T00:01:00'
     replay.outcome = outcome
     replay.actor = actor
     return {
