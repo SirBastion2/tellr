@@ -1,0 +1,325 @@
+{
+  "contract_version": "1.0.0",
+  "case": "T5",
+  "label": "Own-account transfer, no red-flag chips",
+  "population": "legitimate",
+  "steps": [
+    {
+      "endpoint": "POST /sessions",
+      "request": {
+        "mode": "practice",
+        "amount_band": "5000_9999"
+      },
+      "response": {
+        "session_id": "fixture-T5",
+        "mode": "practice",
+        "answers": 0,
+        "library_version": "1.2.0",
+        "stated_purpose": null,
+        "risk": {
+          "level": "clear",
+          "raw_level": "clear",
+          "score": 0,
+          "reasons": [],
+          "counterpoint": null,
+          "pattern": null,
+          "pattern_label": "Pattern unclear"
+        },
+        "question": {
+          "id": "q.purpose.open",
+          "text": "What's the money for today?",
+          "why": "A neutral opener. Every customer gets this one.",
+          "kind": "open",
+          "chips": [
+            "specific",
+            "vague",
+            "no_answer",
+            "changed",
+            "relayed_by_caller"
+          ],
+          "stage": "opener",
+          "source": "fixed"
+        },
+        "stop": null,
+        "talk_track": {
+          "stage": "tt.proceed",
+          "pattern": null,
+          "lines": [
+            "Thanks for walking me through that."
+          ],
+          "avoid": []
+        },
+        "suggested_outcome": "proceed",
+        "available_outcomes": [
+          "proceed",
+          "slow_down",
+          "escalate",
+          "report"
+        ],
+        "debug": {
+          "recommender": "rules",
+          "latency_ms": 0,
+          "rejections": 0
+        }
+      }
+    },
+    {
+      "endpoint": "POST /sessions/{id}/context",
+      "request": {
+        "chips": []
+      },
+      "response": {
+        "session_id": "fixture-T5",
+        "mode": "practice",
+        "answers": 0,
+        "library_version": "1.2.0",
+        "stated_purpose": null,
+        "risk": {
+          "level": "clear",
+          "raw_level": "clear",
+          "score": 0,
+          "reasons": [],
+          "counterpoint": null,
+          "pattern": null,
+          "pattern_label": "Pattern unclear"
+        },
+        "question": {
+          "id": "q.purpose.open",
+          "text": "What's the money for today?",
+          "why": "A neutral opener. Every customer gets this one.",
+          "kind": "open",
+          "chips": [
+            "specific",
+            "vague",
+            "no_answer",
+            "changed",
+            "relayed_by_caller"
+          ],
+          "stage": "opener",
+          "source": "fixed"
+        },
+        "stop": null,
+        "talk_track": {
+          "stage": "tt.proceed",
+          "pattern": null,
+          "lines": [
+            "Thanks for walking me through that."
+          ],
+          "avoid": []
+        },
+        "suggested_outcome": "proceed",
+        "available_outcomes": [
+          "proceed",
+          "slow_down",
+          "escalate",
+          "report"
+        ],
+        "debug": {
+          "recommender": "rules",
+          "latency_ms": 0,
+          "rejections": 0
+        }
+      }
+    },
+    {
+      "endpoint": "POST /sessions/{id}/answers",
+      "request": {
+        "question_id": "q.purpose.open",
+        "chip": "specific",
+        "purpose": "purpose.moving_money"
+      },
+      "response": {
+        "session_id": "fixture-T5",
+        "mode": "practice",
+        "answers": 1,
+        "library_version": "1.2.0",
+        "stated_purpose": "purpose.moving_money",
+        "risk": {
+          "level": "clear",
+          "raw_level": "clear",
+          "score": -10,
+          "reasons": [
+            {
+              "id": "mit.purpose_specific",
+              "label": "Clear purpose",
+              "rationale": "The customer described the purpose in their own specific terms."
+            }
+          ],
+          "counterpoint": null,
+          "pattern": null,
+          "pattern_label": "Pattern unclear"
+        },
+        "question": {
+          "id": "q.recipient.account_details",
+          "text": "Tell me about the account it's going to. Whose name is it in, and which bank?",
+          "why": "Moving money between your own accounts has details a 'safe account' story lacks.",
+          "kind": "open",
+          "chips": [
+            "specific",
+            "vague",
+            "no_answer",
+            "changed",
+            "relayed_by_caller"
+          ],
+          "stage": "verify",
+          "source": "rules"
+        },
+        "stop": null,
+        "talk_track": {
+          "stage": "tt.proceed",
+          "pattern": null,
+          "lines": [
+            "Thanks for walking me through that."
+          ],
+          "avoid": []
+        },
+        "suggested_outcome": "proceed",
+        "available_outcomes": [
+          "proceed",
+          "slow_down",
+          "escalate",
+          "report"
+        ],
+        "debug": {
+          "recommender": "rules",
+          "latency_ms": 0,
+          "rejections": 0
+        }
+      }
+    },
+    {
+      "endpoint": "POST /sessions/{id}/answers",
+      "request": {
+        "question_id": "q.recipient.account_details",
+        "chip": "specific"
+      },
+      "response": {
+        "session_id": "fixture-T5",
+        "mode": "practice",
+        "answers": 2,
+        "library_version": "1.2.0",
+        "stated_purpose": "purpose.moving_money",
+        "risk": {
+          "level": "clear",
+          "raw_level": "clear",
+          "score": -25,
+          "reasons": [
+            {
+              "id": "mit.own_named_account",
+              "label": "Account in their own name",
+              "rationale": "Money moving between the customer's own accounts at a bank they chose."
+            },
+            {
+              "id": "mit.purpose_specific",
+              "label": "Clear purpose",
+              "rationale": "The customer described the purpose in their own specific terms."
+            }
+          ],
+          "counterpoint": null,
+          "pattern": null,
+          "pattern_label": "Pattern unclear"
+        },
+        "question": {
+          "id": "q.alternative.cashiers_check",
+          "text": "Would a cashier's check made out to them work instead? It's safer than carrying cash.",
+          "why": "Legitimate payees take checks. Refusing one without a reason is a coaching signature.",
+          "kind": "yes_no",
+          "chips": [
+            "confirmed",
+            "denied",
+            "no_answer",
+            "changed",
+            "relayed_by_caller"
+          ],
+          "stage": "probe",
+          "source": "rules"
+        },
+        "stop": null,
+        "talk_track": {
+          "stage": "tt.proceed",
+          "pattern": null,
+          "lines": [
+            "Thanks for walking me through that."
+          ],
+          "avoid": []
+        },
+        "suggested_outcome": "proceed",
+        "available_outcomes": [
+          "proceed",
+          "slow_down",
+          "escalate",
+          "report"
+        ],
+        "debug": {
+          "recommender": "rules",
+          "latency_ms": 0,
+          "rejections": 0
+        }
+      }
+    },
+    {
+      "endpoint": "POST /sessions/{id}/answers",
+      "request": {
+        "question_id": "q.alternative.cashiers_check",
+        "chip": "confirmed"
+      },
+      "response": {
+        "session_id": "fixture-T5",
+        "mode": "practice",
+        "answers": 3,
+        "library_version": "1.2.0",
+        "stated_purpose": "purpose.moving_money",
+        "risk": {
+          "level": "clear",
+          "raw_level": "clear",
+          "score": -45,
+          "reasons": [
+            {
+              "id": "mit.accepts_alternative",
+              "label": "Accepted a cashier's check",
+              "rationale": "Willingness to use a traceable payment is strong evidence the payee is real."
+            },
+            {
+              "id": "mit.own_named_account",
+              "label": "Account in their own name",
+              "rationale": "Money moving between the customer's own accounts at a bank they chose."
+            },
+            {
+              "id": "mit.purpose_specific",
+              "label": "Clear purpose",
+              "rationale": "The customer described the purpose in their own specific terms."
+            }
+          ],
+          "counterpoint": null,
+          "pattern": null,
+          "pattern_label": "Pattern unclear"
+        },
+        "question": null,
+        "stop": {
+          "kind": "hard",
+          "reason": "enough to proceed; nothing left to ask"
+        },
+        "talk_track": {
+          "stage": "tt.proceed",
+          "pattern": null,
+          "lines": [
+            "Thanks for walking me through that."
+          ],
+          "avoid": []
+        },
+        "suggested_outcome": "proceed",
+        "available_outcomes": [
+          "proceed",
+          "slow_down",
+          "escalate",
+          "report"
+        ],
+        "debug": {
+          "recommender": "rules",
+          "latency_ms": 0,
+          "rejections": 0
+        }
+      }
+    }
+  ]
+}

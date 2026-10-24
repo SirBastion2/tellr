@@ -1,0 +1,59 @@
+---
+description: "Teller Copilot: mission, sources of truth, boundaries, operating loop, guardrails. Always on."
+alwaysApply: true
+---
+# Teller Copilot (HackPSU, 24 hours, two humans, two or more agents)
+
+You are one of several agents building Teller Copilot from `docs/architecture.md` (v1.2). The build
+is split A (backend) and B (frontend) per architecture §17. Your role comes from your worktree:
+`tc-agent-a` is Agent A, `tc-agent-b` is Agent B, `main` is Agent R (reviewer). If unsure, ask.
+
+## Sources of truth (read-only)
+- `docs/architecture.md`: the spec. Read only the sections your task card cites.
+- `reference_impl.py`: the executable spec of architecture §6–§8. Port it; never edit it. Where your
+  code and it disagree, your code is wrong until a human decides otherwise.
+- `contract/`: the frozen A/B interface. Changes only through WORKFLOW.md §5.
+- `tests/golden/reference_weights.yaml`: the weights golden tests use.
+`scripts/gate.sh` fails if any of these change outside the protocol.
+
+## Boundaries
+- Agent A owns `engine/ recommenders/ api/ store/ library/ eval/ tests/`. Agent B owns `web/`.
+  Agent R reviews and merges; it does not write feature code.
+- Never edit another agent's directories. Read them freely.
+- `docs/HANDOFF.md` and `docs/QUESTIONS.md` are append-only. `docs/DECISIONS.md` belongs to humans.
+
+## Operating loop (every task card)
+1. Read the card and only the sections it cites.
+2. Post a 5–10 line plan and wait for the driver's OK.
+3. Write the card's acceptance tests first and watch them fail.
+4. Implement to green.
+5. Run `scripts/gate.sh a` or `scripts/gate.sh b`. It must pass. Never weaken it.
+6. Review your diff with the language reviewer agent.
+7. Append to `docs/HANDOFF.md` using its template, commit (conventional commits), push.
+8. If the card ends in a checkpoint, stop.
+
+## Stop and ask: log to docs/QUESTIONS.md instead of improvising when
+- the task needs a contract change;
+- the architecture contradicts itself or the card;
+- a golden or property test fails and the card doesn't explain why;
+- you want to edit outside your directories;
+- you are about to change a weight, a threshold, or a golden expectation.
+
+## Guardrails (architecture §9). Never:
+- add an age, appearance, or name field anywhere;
+- send teller notes or any free text to a model;
+- compute risk, levels, reasons, or the next question in `web/`;
+- disable an outcome button: all four stay available at every level;
+- let the model emit prose: its output is a question ID;
+- let stated purpose affect the score or the displayed pattern;
+- edit weights outside card A-07, or golden expectations ever;
+- write held-out scenarios anywhere dev scenarios, weights, or results are visible.
+
+## Testing standard (overrides ECC's 80% coverage rule for this build)
+Targeted gates instead of line coverage: every property in architecture §6.2, every reference case
+in §6.4 (golden), every promise in §9, every contract fixture. UI code needs render tests for every
+fixture step, not coverage numbers.
+
+## Style
+Python 3.12, FastAPI, Pydantic v2, pytest, ruff. TypeScript strict, React, Vite, Tailwind, vitest.
+Small commits. No new dependency without a line in HANDOFF.md saying why.

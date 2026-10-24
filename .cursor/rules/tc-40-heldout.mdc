@@ -1,0 +1,23 @@
+---
+description: "Held-out scenario writing only. Attach manually in the B-07 chat."
+alwaysApply: false
+---
+# Held-out isolation (architecture §13.4, WORKFLOW.md §10)
+
+You are writing the 10 held-out evaluation scenarios. Their value depends on you never having seen
+the development scenarios, the tuned weights, or any results.
+
+**You may read:** `docs/architecture.md` §13.1 (format), `contract/library.json` and
+`library/questions.yaml` / `library/purposes.yaml` (intents, chips, purposes), `eval/validate.py`.
+
+**You must not open, search, or summarize:** `eval/scenarios/dev/`, `eval/results/`,
+`library/signals.yaml`, `tests/golden/`, `eval/PREREGISTRATION.md`, or any weight or threshold.
+If one of them exists in this worktree, stop and tell the driver: the isolation setup is broken.
+
+**Composition:** 5 coached (at least 2 cover stories whose `stated_purpose` differs from
+`pattern_truth`, at least 1 perfectly coached with plausible details throughout) and 5 legitimate
+(at least 1 with a red-flag chip that is innocent, at least 1 vague but genuine). Base them on public
+scam guidance (AARP, FTC, FBI), not on anything you remember from this project.
+
+**Validate** with `python3 -m eval.validate eval/scenarios/heldout`. **Commit only**
+`eval/scenarios/heldout/`.

@@ -1,0 +1,101 @@
+# Weights the golden tests use (architecture §6.2, reference_impl.py).
+# Read-only. Tuning (card A-07) changes library/signals.yaml, never this file.
+{
+  "weights": {
+    "sig.third_party_call": [
+      14,
+      "third_party",
+      false
+    ],
+    "sig.someone_directing": [
+      16,
+      "third_party",
+      false
+    ],
+    "sig.cash_insistence": [
+      12,
+      "payment_channel",
+      false
+    ],
+    "sig.rushed": [
+      6,
+      "urgency",
+      false
+    ],
+    "sig.urgency_secrecy_mentioned": [
+      18,
+      "secrecy",
+      false
+    ],
+    "sig.unusual_for_customer": [
+      8,
+      "story_quality",
+      false
+    ],
+    "sig.answer_relayed": [
+      18,
+      "third_party",
+      true
+    ],
+    "sig.secrecy_bank": [
+      22,
+      "secrecy",
+      true
+    ],
+    "sig.specificity_gap": [
+      18,
+      "story_quality",
+      true
+    ],
+    "sig.story_drift": [
+      12,
+      "story_quality",
+      true
+    ],
+    "sig.cash_refusal_unexplained": [
+      14,
+      "payment_channel",
+      true
+    ],
+    "mit.purpose_specific": [
+      -10,
+      "mitigating",
+      true
+    ],
+    "mit.named_counterparty": [
+      -15,
+      "mitigating",
+      true
+    ],
+    "mit.written_estimate": [
+      -15,
+      "mitigating",
+      true
+    ],
+    "mit.own_named_account": [
+      -15,
+      "mitigating",
+      true
+    ],
+    "mit.accepts_alternative": [
+      -20,
+      "mitigating",
+      true
+    ]
+  },
+  "caps": {
+    "third_party": 22,
+    "secrecy": 28,
+    "story_quality": 30,
+    "payment_channel": 25,
+    "urgency": 10,
+    "mitigating": -45
+  },
+  "thresholds": {
+    "caution": 25,
+    "high": 60,
+    "margin": 10,
+    "observation_cap": 45,
+    "display_lead": 8
+  }
+}

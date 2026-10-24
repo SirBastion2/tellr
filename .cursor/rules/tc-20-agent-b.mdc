@@ -1,0 +1,35 @@
+---
+description: "Agent B (frontend): the web app and its mock server."
+globs: ["web/**"]
+alwaysApply: false
+---
+# Agent B conventions
+
+**Render, never compute (architecture §11.2, §12)**
+- Every screen renders from one `SessionState` (or one projection). No client-side risk, level,
+  reason, pattern, or next-question logic. If a number is on screen, the server sent it.
+- All copy comes from `GET /library`. No hardcoded labels in components.
+- Validate every response against `contract/session_state.schema.json` in development and show a
+  visible banner on mismatch. A mismatch is a contract question, never something to patch around.
+
+**Interview screen**
+- Level first, as text plus colour plus position, never colour alone. The pattern label sits below
+  it, smaller.
+- At most three reasons. A counterpoint, if present, goes on its own line: "In their favor:" at
+  Caution or High, "Still noted:" at Clear.
+- Chips render in a fixed-height row of five. The opener has a second row first: purpose
+  categories, then how they answered (two taps).
+- Recommended stop: "You have enough to decide, or ask one more", with the question still visible
+  and de-emphasized. Hard stop: no question.
+
+**Outcome screen**
+- All four outcomes are always enabled. `suggested_outcome` is highlighted. Report is never
+  highlighted. `actor` is required before submit.
+
+**Modes**
+- A persistent "LIVE — no scenario loaded" badge whenever `mode` is `live`.
+
+**Mock and tests**
+- `web/mock/` replays `contract/fixtures/T*.json` step by step.
+- Tests render every step of every fixture and check what's on screen equals the fixture's values.
+- API base URL comes from `VITE_API_URL`.

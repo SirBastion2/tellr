@@ -1,0 +1,376 @@
+{
+  "library_version": "1.2.0",
+  "copy_status": "DRAFT: compliance review required before use (draft §7.3)",
+  "chips": [
+    {
+      "id": "specific",
+      "label": "Gave specific details",
+      "used_on": "open"
+    },
+    {
+      "id": "vague",
+      "label": "Vague or unsure",
+      "used_on": "open"
+    },
+    {
+      "id": "no_answer",
+      "label": "Wouldn't say",
+      "used_on": "any"
+    },
+    {
+      "id": "changed",
+      "label": "Story changed",
+      "used_on": "any"
+    },
+    {
+      "id": "relayed_by_caller",
+      "label": "Answer came from the caller",
+      "used_on": "any"
+    },
+    {
+      "id": "confirmed",
+      "label": "Yes",
+      "used_on": "yes_no"
+    },
+    {
+      "id": "denied",
+      "label": "No",
+      "used_on": "yes_no"
+    }
+  ],
+  "purposes": [
+    {
+      "id": "purpose.home_repair",
+      "label": "Home repair or contractor"
+    },
+    {
+      "id": "purpose.moving_money",
+      "label": "Moving money to another account"
+    },
+    {
+      "id": "purpose.government_payment",
+      "label": "Paying a government agency or fine"
+    },
+    {
+      "id": "purpose.family_help",
+      "label": "Helping family or a friend"
+    },
+    {
+      "id": "purpose.computer_or_refund",
+      "label": "Computer repair or a refund"
+    },
+    {
+      "id": "purpose.vehicle",
+      "label": "Buying a vehicle"
+    },
+    {
+      "id": "purpose.gift_or_travel",
+      "label": "Gift or travel"
+    },
+    {
+      "id": "purpose.other",
+      "label": "Something else"
+    }
+  ],
+  "context_chips": [
+    {
+      "id": "chip.on_phone",
+      "label": "On the phone during the transaction",
+      "signal": "sig.third_party_call",
+      "probe": "q.secrecy.told_not_to_tell"
+    },
+    {
+      "id": "chip.someone_directing",
+      "label": "Someone else is directing them",
+      "signal": "sig.someone_directing",
+      "probe": "q.secrecy.told_not_to_tell"
+    },
+    {
+      "id": "chip.cash_only",
+      "label": "Insists on cash",
+      "signal": "sig.cash_insistence",
+      "probe": "q.alternative.cashiers_check"
+    },
+    {
+      "id": "chip.urgency_secrecy",
+      "label": "Mentions urgency, secrecy, or being told what to say",
+      "signal": "sig.urgency_secrecy_mentioned",
+      "probe": "q.secrecy.told_not_to_tell"
+    },
+    {
+      "id": "chip.rushed",
+      "label": "Seems rushed",
+      "signal": "sig.rushed",
+      "probe": null
+    },
+    {
+      "id": "chip.unusual_for_customer",
+      "label": "Unusual for this customer",
+      "signal": "sig.unusual_for_customer",
+      "probe": null
+    },
+    {
+      "id": "chip.above_threshold",
+      "label": "Cash withdrawal above the branch threshold",
+      "signal": null,
+      "probe": null
+    }
+  ],
+  "questions": [
+    {
+      "id": "q.purpose.open",
+      "intent": "purpose",
+      "kind": "open",
+      "role": "opener",
+      "text": "What's the money for today?",
+      "why": "A neutral opener. Every customer gets this one.",
+      "chips": [
+        "specific",
+        "vague",
+        "no_answer",
+        "changed",
+        "relayed_by_caller"
+      ]
+    },
+    {
+      "id": "q.homerepair.contractor_name",
+      "intent": "counterparty_identity",
+      "kind": "open",
+      "role": "verify",
+      "text": "Who's doing the work? I might know them.",
+      "why": "A real job has a named contractor. A cover story usually doesn't.",
+      "chips": [
+        "specific",
+        "vague",
+        "no_answer",
+        "changed",
+        "relayed_by_caller"
+      ]
+    },
+    {
+      "id": "q.homerepair.estimate",
+      "intent": "written_estimate",
+      "kind": "open",
+      "role": "verify",
+      "text": "Do you have a written estimate from them?",
+      "why": "Real contract work normally comes with paperwork the customer can describe.",
+      "chips": [
+        "specific",
+        "vague",
+        "no_answer",
+        "changed",
+        "relayed_by_caller"
+      ]
+    },
+    {
+      "id": "q.recipient.account_details",
+      "intent": "receiving_account",
+      "kind": "open",
+      "role": "verify",
+      "text": "Tell me about the account it's going to. Whose name is it in, and which bank?",
+      "why": "Moving money between your own accounts has details a 'safe account' story lacks.",
+      "chips": [
+        "specific",
+        "vague",
+        "no_answer",
+        "changed",
+        "relayed_by_caller"
+      ]
+    },
+    {
+      "id": "q.secrecy.told_not_to_tell",
+      "intent": "secrecy",
+      "kind": "yes_no",
+      "role": "probe",
+      "text": "Has anyone asked you to keep this between you and them?",
+      "why": "Scammers warn victims the bank will try to stop them.",
+      "chips": [
+        "confirmed",
+        "denied",
+        "no_answer",
+        "changed",
+        "relayed_by_caller"
+      ]
+    },
+    {
+      "id": "q.alternative.cashiers_check",
+      "intent": "payment_flexibility",
+      "kind": "yes_no",
+      "role": "probe",
+      "text": "Would a cashier's check made out to them work instead? It's safer than carrying cash.",
+      "why": "Legitimate payees take checks. Refusing one without a reason is a coaching signature.",
+      "chips": [
+        "confirmed",
+        "denied",
+        "no_answer",
+        "changed",
+        "relayed_by_caller"
+      ]
+    }
+  ],
+  "signals": [
+    {
+      "id": "sig.third_party_call",
+      "label": "On the phone during the visit",
+      "rationale": "Scammers often stay on the line to coach the customer through the withdrawal.",
+      "direction": "concern"
+    },
+    {
+      "id": "sig.someone_directing",
+      "label": "Someone else directing them",
+      "rationale": "Another person steering the transaction can mean the customer isn't acting freely.",
+      "direction": "concern"
+    },
+    {
+      "id": "sig.cash_insistence",
+      "label": "Insists on cash",
+      "rationale": "Scams favour cash because it can't be traced or reversed.",
+      "direction": "concern"
+    },
+    {
+      "id": "sig.rushed",
+      "label": "Seems rushed",
+      "rationale": "Urgency is a pressure tactic, though it's common in ordinary errands too.",
+      "direction": "concern"
+    },
+    {
+      "id": "sig.urgency_secrecy_mentioned",
+      "label": "Mentioned urgency or secrecy",
+      "rationale": "Being told to hurry or keep quiet is a hallmark of coaching.",
+      "direction": "concern"
+    },
+    {
+      "id": "sig.unusual_for_customer",
+      "label": "Unusual for this customer",
+      "rationale": "The teller's knowledge of the customer is a real but weak signal.",
+      "direction": "concern"
+    },
+    {
+      "id": "sig.answer_relayed",
+      "label": "Answer relayed by caller",
+      "rationale": "The customer repeated what someone on the phone told them to say.",
+      "direction": "concern"
+    },
+    {
+      "id": "sig.secrecy_bank",
+      "label": "Told not to discuss with the bank",
+      "rationale": "Scammers warn victims the bank will try to stop them. Being told to keep it quiet is one of the strongest single indicators.",
+      "direction": "concern"
+    },
+    {
+      "id": "sig.specificity_gap",
+      "label": "Missing details",
+      "rationale": "A plausible purpose with none of the details a real one would have.",
+      "direction": "concern"
+    },
+    {
+      "id": "sig.story_drift",
+      "label": "Story changed",
+      "rationale": "Answers that shift between questions suggest a rehearsed story under strain.",
+      "direction": "concern"
+    },
+    {
+      "id": "sig.cash_refusal_unexplained",
+      "label": "Turned down a safer option",
+      "rationale": "Legitimate payees take checks. Refusing one without a reason is a coaching signature.",
+      "direction": "concern"
+    },
+    {
+      "id": "mit.purpose_specific",
+      "label": "Clear purpose",
+      "rationale": "The customer described the purpose in their own specific terms.",
+      "direction": "mitigating"
+    },
+    {
+      "id": "mit.named_counterparty",
+      "label": "Named the payee",
+      "rationale": "A real job or purchase has a named person or business behind it.",
+      "direction": "mitigating"
+    },
+    {
+      "id": "mit.written_estimate",
+      "label": "Written estimate exists",
+      "rationale": "A real contract job normally has paperwork the customer can describe.",
+      "direction": "mitigating"
+    },
+    {
+      "id": "mit.own_named_account",
+      "label": "Account in their own name",
+      "rationale": "Money moving between the customer's own accounts at a bank they chose.",
+      "direction": "mitigating"
+    },
+    {
+      "id": "mit.accepts_alternative",
+      "label": "Accepted a cashier's check",
+      "rationale": "Willingness to use a traceable payment is strong evidence the payee is real.",
+      "direction": "mitigating"
+    }
+  ],
+  "patterns": [
+    {
+      "id": "pat.home_repair",
+      "label": "home repair pressure"
+    },
+    {
+      "id": "pat.bank_impersonation",
+      "label": "bank impersonation"
+    }
+  ],
+  "look_alikes": [
+    {
+      "id": "look.contractor_with_estimate",
+      "label": "contractor with estimate",
+      "pattern": "pat.home_repair"
+    },
+    {
+      "id": "look.own_account_transfer",
+      "label": "own-account transfer",
+      "pattern": "pat.bank_impersonation"
+    }
+  ],
+  "talk_tracks": [
+    {
+      "id": "tt.proceed",
+      "lines": [
+        "Thanks for walking me through that."
+      ],
+      "avoid": []
+    },
+    {
+      "id": "tt.slow_down",
+      "lines": [
+        "We see a lot of calls like this lately. Mind if I ask a couple of quick questions?",
+        "A cashier's check made out to them is safer than carrying cash.",
+        "Would you call them back on a number from your own records before we finish?"
+      ],
+      "avoid": [
+        "You're being scammed.",
+        "Who told you to say that?"
+      ]
+    },
+    {
+      "id": "tt.escalate",
+      "lines": [
+        "I'd like my manager to take a quick look. It's routine for larger cash withdrawals."
+      ],
+      "avoid": [
+        "Anything accusatory",
+        "Anything the caller warned them the bank would say"
+      ]
+    },
+    {
+      "id": "tt.bank_impersonation",
+      "lines": [
+        "Your bank will never ask you to move money to keep it safe."
+      ],
+      "avoid": []
+    },
+    {
+      "id": "tt.home_repair",
+      "lines": [
+        "Reputable contractors take checks and give written estimates."
+      ],
+      "avoid": []
+    }
+  ]
+}
