@@ -1,17 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { apiSend } from '../api'
+import { controlStyle, inputFill } from '../theme/controls'
 import type { Mode } from '../types'
 
-const tap: CSSProperties = {
-  minHeight: '48px',
-  minWidth: '48px',
-  boxSizing: 'border-box',
-  color: '#1c1917',
-  border: '1px solid #1c1917',
-  backgroundColor: 'transparent',
-  padding: '0 12px',
-}
+const tap: CSSProperties = controlStyle
 
 export type HistorySession = {
   session_id: string
@@ -116,7 +109,7 @@ export function HistoryScreen() {
           type="button"
           data-testid="history-live"
           aria-pressed={!showPractice}
-          style={{ ...tap, backgroundColor: showPractice ? 'transparent' : '#e7e5e4' }}
+          style={{ ...tap, backgroundColor: showPractice ? 'transparent' : inputFill }}
           onClick={() => choose(false)}
         >
           Live
@@ -125,7 +118,7 @@ export function HistoryScreen() {
           type="button"
           data-testid="history-practice"
           aria-pressed={showPractice}
-          style={{ ...tap, backgroundColor: showPractice ? '#e7e5e4' : 'transparent' }}
+          style={{ ...tap, backgroundColor: showPractice ? inputFill : 'transparent' }}
           onClick={() => choose(true)}
         >
           Practice
