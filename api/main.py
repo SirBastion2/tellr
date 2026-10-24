@@ -286,6 +286,15 @@ def create_app(
             session_id,
             {"type": "ManagerRequested", "ts": _timestamp()},
         )
+        events = store.load_events(conn, session_id)
+        recorded = next(
+            (
+                event
+                for event in reversed(events)
+                if event.get("type") == "OutcomeRecorded"
+            ),
+            None,
+        )
         state = render(session_id)
         return {
             "session_id": session_id,
@@ -295,6 +304,8 @@ def create_app(
             "suggested_outcome": state["suggested_outcome"],
             "answers": state["answers"],
             "stop": state["stop"],
+            "outcome": recorded.get("outcome") if recorded is not None else None,
+            "actor": recorded.get("actor") if recorded is not None else None,
         }
 
     @app.get("/sessions")

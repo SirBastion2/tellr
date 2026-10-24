@@ -8,6 +8,7 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 from tests.api.conftest import (
     assert_error_body,
+    assert_handoff,
     assert_session_state,
     comparable,
     load_cases,
@@ -124,6 +125,41 @@ def test_outcome_appends_closed_and_keeps_session_state(client: TestClient) -> N
     row = store.get_session(client.app.state.db, session_id)
     assert row is not None
     assert row["closed_at"]
+
+
+def test_handoff_before_outcome_is_null_and_appends_manager_requested(
+    client: TestClient,
+) -> None:
+    session_id, _states = _replay(client, T1, through=1)
+    response = client.get(f"/sessions/{session_id}/handoff")
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert_handoff(body)
+    assert body["outcome"] is None
+    assert body["actor"] is None
+    kinds = [event["type"] for event in _events(client, session_id)]
+    assert kinds[-1] == "ManagerRequested"
+
+
+def test_handoff_after_outcome_matches_posted_values(client: TestClient) -> None:
+    session_id, _states = _replay(client, T1, through=1)
+    recorded = client.post(
+        f"/sessions/{session_id}/outcome",
+        json={"outcome": "escalate", "actor": "teller", "note": "manager needed"},
+    )
+    assert recorded.status_code == 200, recorded.text
+    state = recorded.json()
+    assert_session_state(state)
+    assert "outcome" not in state
+    assert "actor" not in state
+    assert "closed" not in state
+    response = client.get(f"/sessions/{session_id}/handoff")
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert_handoff(body)
+    assert body["outcome"] == "escalate"
+    assert body["actor"] == "teller"
+    assert "note" not in body
 
 
 def test_outcome_after_undo_uses_restored_fold(client: TestClient) -> None:
