@@ -1,0 +1,83 @@
+# Six-question bank from reference_impl.py; copy from contract/library.json.
+questions:
+  - id: q.purpose.open
+    intent: purpose
+    text: What's the money for today?
+    why: A neutral opener. Every customer gets this one.
+    kind: open
+    role: opener
+    fixed_opener: true
+    records_purpose: true
+    chips: [specific, vague, no_answer, changed, relayed_by_caller]
+    asserts_on:
+      specific: [mit.purpose_specific]
+      vague: [sig.specificity_gap]
+      no_answer: [sig.specificity_gap]
+
+  - id: q.homerepair.contractor_name
+    intent: counterparty_identity
+    text: Who's doing the work? I might know them.
+    why: A real job has a named contractor. A cover story usually doesn't.
+    kind: open
+    role: verify
+    pattern: pat.home_repair
+    tests: [pat.home_repair, look.contractor_with_estimate]
+    chips: [specific, vague, no_answer, changed, relayed_by_caller]
+    asserts_on:
+      specific: [mit.named_counterparty]
+      vague: [sig.specificity_gap]
+      no_answer: [sig.specificity_gap]
+
+  - id: q.homerepair.estimate
+    intent: written_estimate
+    text: Do you have a written estimate from them?
+    why: Real contract work normally comes with paperwork the customer can describe.
+    kind: open
+    role: verify
+    pattern: pat.home_repair
+    tests: [pat.home_repair, look.contractor_with_estimate]
+    chips: [specific, vague, no_answer, changed, relayed_by_caller]
+    asserts_on:
+      specific: [mit.written_estimate]
+      vague: [sig.specificity_gap]
+      no_answer: [sig.specificity_gap]
+
+  - id: q.recipient.account_details
+    intent: receiving_account
+    text: Tell me about the account it's going to. Whose name is it in, and which bank?
+    why: Moving money between your own accounts has details a 'safe account' story lacks.
+    kind: open
+    role: verify
+    pattern: pat.bank_impersonation
+    tests: [pat.bank_impersonation, look.own_account_transfer]
+    chips: [specific, vague, no_answer, changed, relayed_by_caller]
+    asserts_on:
+      specific: [mit.own_named_account]
+      vague: [sig.specificity_gap]
+      no_answer: [sig.specificity_gap]
+
+  - id: q.secrecy.told_not_to_tell
+    intent: secrecy
+    text: Has anyone asked you to keep this between you and them?
+    why: Scammers warn victims the bank will try to stop them.
+    kind: yes_no
+    role: probe
+    pattern: pat.bank_impersonation
+    tests: [pat.bank_impersonation, look.own_account_transfer]
+    chips: [confirmed, denied, no_answer, changed, relayed_by_caller]
+    asserts_on:
+      confirmed: [sig.secrecy_bank]
+
+  - id: q.alternative.cashiers_check
+    intent: payment_flexibility
+    text: Would a cashier's check made out to them work instead? It's safer than carrying cash.
+    why: Legitimate payees take checks. Refusing one without a reason is a coaching signature.
+    kind: yes_no
+    role: probe
+    generic: true
+    tests: [pat.home_repair, look.contractor_with_estimate,
+            pat.bank_impersonation, look.own_account_transfer]
+    chips: [confirmed, denied, no_answer, changed, relayed_by_caller]
+    asserts_on:
+      confirmed: [mit.accepts_alternative]
+      denied: [sig.cash_refusal_unexplained]
