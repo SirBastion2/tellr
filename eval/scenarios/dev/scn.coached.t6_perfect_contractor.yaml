@@ -1,0 +1,15 @@
+id: scn.coached.t6_perfect_contractor
+label: "Coached — perfectly coached invented contractor, claims an estimate"
+population: coached
+pattern_truth: pat.home_repair
+stated_purpose: purpose.home_repair
+context_chips: [chip.on_phone, chip.cash_only]
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  written_estimate: specific
+  payment_flexibility: denied
+  secrecy: denied
+default: vague
+tags: [seed.T6, perfectly_coached]
+source: "architecture §6.4 T6"

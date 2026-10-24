@@ -43,3 +43,23 @@ Append-only, newest at the bottom. One entry per card, or per stop.
 - **The next agent needs to know:** Interview = SessionState + `GET /library` + client-posted chips/purpose. `debug` is `{recommender, latency_ms, rejections}`. Library contract files are UI / T1–T7 display copy. Do not tag `contract-v1` or tick Driver B. Do not edit `reference_impl.py`.
 
 ---
+
+### [A-06] Evaluation hours 2–6 (validate + 15 scenarios) — Agent A3 — 2026-10-24 19:25
+- **Status:** partial (hours 2–6 slice done; hours 6–8 still own the last 15 scenarios and the solo `PREREGISTRATION.md` commit)
+- **Gate:** `scripts/gate.sh a` → FAIL at `.importlinter missing (card A-01 creates it).` Ruff and pytest on `eval/` + `tests/eval/` pass (`21 passed`). Did not add `.importlinter` or `pyproject.toml` (A2).
+- **Changed:** `eval/validate.py`; `eval/__init__.py`; `eval/PREREGISTRATION.md` (draft, no run); `eval/scenarios/dev/` (15 YAML); `tests/eval/`; `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Scenario IDs and answers for T1–T7 copied from `reference_impl.py` CASES / §6.4; extras from public FTC/FBI/AARP imposter guidance and the §13.1 / §18.16 cover-story shapes.
+  - `pattern_truth` is `pat.*` for coached and `null` for legitimate. Validator does **not** require those ids in `contract/library.json` patterns (Q-008: that file is T1–T7 display copy; A1 loads the real library). Two scenarios use `pat.government_impersonation` and `pat.tech_support`.
+  - Cover story = stated purpose’s usual pattern ≠ `pattern_truth` (T3, §13.1). `purpose.vehicle` / `purpose.gift_or_travel` have no pattern, so any `pat.*` truth counts as a cover.
+  - Arm A draft prior threshold is 3 concerning items; the sheet is binary (High at/above, Clear below, no Caution column). §13.2 is a yes-count threshold; mapping the flag to Caution only would recreate the §18.2 game. Official freeze is a solo commit at hours 6–8.
+  - `tags` / `source` are eval bookkeeping, not engine inputs. No age, appearance, or name fields.
+- **Questions logged:** none (Q-008 already covers the two extra pattern ids)
+- **The next agent needs to know:**
+  - **A2:** please add `pytest`, `ruff`, and `pyyaml` to `pyproject.toml` when it lands. A3 ran them from a user install. Also `.importlinter` (A-01) is what blocks `scripts/gate.sh a`.
+  - **Hours 6–8 (A3):** add 7 coached + 8 legitimate to reach 15/15. The first 15 already meet the §5.2 minima (8 coached / 7 legitimate; 4 covers; 3 perfectly coached; 4 innocent red-flag; 3 vague-but-genuine). Then **commit `eval/PREREGISTRATION.md` alone** before any run.
+  - **A1:** real library should include `pat.government_impersonation` and `pat.tech_support` (and `pat.family_emergency`) so later arms can label those truths.
+  - Do not write `eval/scenarios/heldout/`. Do not commit this draft with results. Driver A reviews `eval/` PRs.
+
+---
+

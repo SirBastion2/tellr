@@ -1,0 +1,14 @@
+id: scn.legitimate.vague_own_account
+label: "Legitimate — own-account transfer, vague on the destination bank"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.moving_money
+context_chips: []
+answers:
+  purpose: specific
+  receiving_account: vague
+  payment_flexibility: confirmed
+  secrecy: denied
+default: vague
+tags: [vague_but_genuine]
+source: "architecture §6.4 T5 look-alike, under-specified details"

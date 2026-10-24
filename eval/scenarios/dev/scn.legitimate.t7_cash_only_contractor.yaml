@@ -1,0 +1,15 @@
+id: scn.legitimate.t7_cash_only_contractor
+label: "Legitimate — contractor who genuinely insists on cash"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.home_repair
+context_chips: [chip.cash_only]
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  written_estimate: specific
+  payment_flexibility: denied
+  secrecy: denied
+default: vague
+tags: [seed.T7, innocent_red_flag]
+source: "architecture §6.4 T7"
