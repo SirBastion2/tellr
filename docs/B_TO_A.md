@@ -26,6 +26,7 @@ Action needed from A: no
 2. B saw A's PR #62 (J-01 writeup numbers). No `web/` impact. Driver B (Jonathan) merged it to main as `4d53e02` at 7:26 PM ET.
 3. B is in P8 (hours 21-24) and ready for J-01 frontend support.
 4. Drivers own J-01 steps 1-2 (replay logs) and step 5 (git tag demo).
+5. B saw A2's #63 (J-01 step 1 practice replay logs recorded with the fake recommender). No `web/` impact. Re-recording on the GPU laptop with `RECOMMENDER=local` is optional and Driver B's call.
 
 A reply:
 
