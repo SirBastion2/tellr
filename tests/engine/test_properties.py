@@ -3,17 +3,29 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from itertools import combinations
 from pathlib import Path
 
+import pytest
 import reference_impl as ref
 import yaml
 
 from engine.hypotheses import displayed, pattern_scores
-from engine.score import Tables, effective, level, reasons, score, shown
+from engine.library import load_library
+from engine.score import (
+    Tables,
+    effective,
+    level,
+    reasons,
+    score,
+    shown,
+    tables_from_library,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 REF_WEIGHTS = ROOT / "tests" / "golden" / "reference_weights.yaml"
+LIVE_LIBRARY = ROOT / "library"
 ORDER = ["Clear", "Caution", "High concern"]
 
 
@@ -31,6 +43,11 @@ def reference_tables() -> Tables:
         observation_cap=thresholds["observation_cap"],
         display_lead=thresholds["display_lead"],
     )
+
+
+def live_tables() -> Tables:
+    """A-07: the same §6.2 walk over library/signals.yaml, not the golden pin."""
+    return tables_from_library(load_library(LIVE_LIBRARY))
 
 
 def _check_properties(tables: Tables) -> tuple[int, dict[str, int]]:
@@ -85,13 +102,35 @@ def _check_properties(tables: Tables) -> tuple[int, dict[str, int]]:
     return subsets, bad
 
 
-def test_properties_over_all_65536_evidence_sets() -> None:
-    tables = reference_tables()
+def _assert_weights_respect_caps_and_signs(tables: Tables) -> None:
+    """A-07: a sign flip or a cap below a weight is a property failure."""
+    for sid, (weight, family, _interview) in tables.weights.items():
+        cap = tables.caps[family]
+        if cap >= 0:
+            assert weight <= cap, f"{sid} weight {weight} exceeds family cap {cap}"
+        else:
+            assert weight >= cap, f"{sid} weight {weight} is below family floor {cap}"
+        if sid.startswith("mit."):
+            assert weight < 0, f"{sid} sign-flipped to {weight}"
+            assert family == "mitigating", f"{sid} left the mitigating family"
+        else:
+            assert weight > 0, f"{sid} sign-flipped to {weight}"
+            assert family != "mitigating", f"{sid} joined the mitigating family"
+
+
+@pytest.mark.parametrize(
+    "tables_fn",
+    [reference_tables, live_tables],
+    ids=["reference_weights", "live_signals"],
+)
+def test_properties_over_all_65536_evidence_sets(tables_fn: Callable[[], Tables]) -> None:
+    tables = tables_fn()
+    _assert_weights_respect_caps_and_signs(tables)
     started = time.perf_counter()
     subsets, bad = _check_properties(tables)
     elapsed = time.perf_counter() - started
-    print(f"\nproperty test over {subsets:,} sets in {elapsed:.2f}s")
-    assert subsets == 65_536
+    print(f"\nproperty test ({tables_fn.__name__}) over {subsets:,} sets in {elapsed:.2f}s")
+    assert subsets == 2 ** len(tables.weights)
     assert all(count == 0 for count in bad.values()), bad
     # Card A-02: report duration in HANDOFF if this exceeds 60s; do not drop subsets.
     if elapsed >= 60:

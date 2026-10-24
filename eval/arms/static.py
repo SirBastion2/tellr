@@ -1,7 +1,7 @@
 """Arm A — static yes/no sheet (architecture §13.2).
 
-Chip → concerning mapping and threshold are the hours 2–8 prior from
-eval/PREREGISTRATION.md (draft / freeze). This module does not change them.
+Chip → concerning mapping is the hours 2–8 prior from
+eval/PREREGISTRATION.md. The concerning-count threshold was retuned in A-07.
 """
 
 from __future__ import annotations
@@ -64,8 +64,8 @@ INTENT_MAP = {
     "payment_flexibility": FLEXIBILITY_CONCERNING,
 }
 
-# Prior threshold from PREREGISTRATION.md. Tune only in A-07, with the weights.
-THRESHOLD = 3
+# A-07 tuned threshold (prior was 3; see eval/PREREGISTRATION.md Tuning).
+THRESHOLD = 4
 
 
 def _concerning_chip(intent: str, chip: str, *, mapped: bool) -> bool:

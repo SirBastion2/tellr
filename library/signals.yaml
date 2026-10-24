@@ -1,5 +1,8 @@
 # Live weights. Golden tests load tests/golden/reference_weights.yaml, never this file.
-# Starting values from reference_impl.py / architecture §6.2. Tune only in A-07.
+# Starting values from reference_impl.py / architecture §6.2.
+# A-07 reviewed these on the 30 development scenarios and kept them: the remaining
+# miss (scn.coached.bank_perfect_own_account) only reaches Caution via a one-scenario
+# knife-edge on mit.own_named_account. See eval/PREREGISTRATION.md Tuning and HANDOFF.
 signals:
   - id: sig.third_party_call
     name: On the phone during the visit
