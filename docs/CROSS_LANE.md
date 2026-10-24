@@ -63,8 +63,8 @@ B reports problems in A's work. Driver A triages.
 - **File / PR:** `api/main.py` (`list_sessions`), `store/sqlite.py` (`list_sessions`) · main `2181419`
 - **Problem:** `GET /sessions?mode=all` is passed into the store as `mode=None`. The store treats `None` the same as `live`, so the body is live sessions only. `GET /sessions` and `GET /sessions?mode=live` are live-only, which matches §11.1. `GET /sessions?mode=practice` returns practice sessions. B-06 uses that query for the practice list (PR #55). A combined live-plus-practice list has no working query.
 - **Expected:** `mode=all` returns live and practice rows. The default and `mode=live` stay live-only.
-- **Status:** open
-- **Owner's response:**
+- **Status:** resolved · PR #57
+- **Owner's response:** Fixed by A in #57 (b917657); mode=all now returns live and practice.
 
 ## A → B (B to check)
 
