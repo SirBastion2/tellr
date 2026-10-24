@@ -1,0 +1,26 @@
+# Cover story. FTC tech-support and refund scams: a pop-up "refund" caller
+# coaches the victim to describe the payment as a government charge so it
+# will not sound like a computer scam.
+id: scn.coached.tech_support_posed_as_fine
+label: Coached — tech-support refund, told to call it a government fine
+population: coached
+pattern_truth: pat.tech_support
+stated_purpose: purpose.government_payment
+context_chips:
+  - chip.on_phone
+  - chip.someone_directing
+  - chip.cash_only
+answers:
+  purpose: changed
+  counterparty_identity: relayed_by_caller
+  written_estimate: vague
+  receiving_account: no_answer
+  secrecy: confirmed
+  payment_flexibility: denied
+default: vague
+tags:
+  - cover
+source: >
+  FTC tech-support and refund-scam guidance. The victim first mentions a
+  computer pop-up, then repeats the caller's instruction to call the cash
+  a government fine, and will not take a check.

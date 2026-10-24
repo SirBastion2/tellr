@@ -1,0 +1,27 @@
+# Classic coaching, purpose aligned with the scam. FTC family-emergency
+# guidance: the caller pretends a relative was hurt, feeds the answers,
+# and says not to tell other family before the money moves.
+id: scn.coached.relative_hospital_caller
+label: Coached — caller claims a relative was hospitalized
+population: coached
+pattern_truth: pat.family_emergency
+stated_purpose: purpose.family_help
+context_chips:
+  - chip.on_phone
+  - chip.someone_directing
+  - chip.urgency_secrecy
+  - chip.rushed
+answers:
+  purpose: relayed_by_caller
+  counterparty_identity: vague
+  written_estimate: no_answer
+  receiving_account: relayed_by_caller
+  secrecy: confirmed
+  payment_flexibility: denied
+default: relayed_by_caller
+tags:
+  - coached
+source: >
+  FTC family-emergency scam guidance. A caller claims a relative was in an
+  accident in another state, stays on the line to supply the hospital and
+  account, demands secrecy, and refuses a cashier's check.

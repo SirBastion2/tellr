@@ -1,0 +1,24 @@
+# Specific genuine vehicle purchase above the branch cash threshold.
+# Dealer, stock number, and salesperson are known; a check is fine.
+id: scn.legitimate.dealer_trailer_stock_number
+label: Legitimate — dealer trailer, stock number known, above threshold
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.vehicle
+context_chips:
+  - chip.above_threshold
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  written_estimate: specific
+  receiving_account: specific
+  secrecy: denied
+  payment_flexibility: confirmed
+default: specific
+tags:
+  - legitimate
+source: >
+  Legitimate vehicle purchase. The customer is buying a trailer from a
+  dealer, can give the stock number and salesperson, the amount is above
+  the branch cash threshold, nobody asked for secrecy, and a cashier's
+  check payable to the dealer is acceptable.

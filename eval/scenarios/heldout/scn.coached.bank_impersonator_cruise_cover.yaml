@@ -1,0 +1,28 @@
+# Cover story. FTC imposter-scam guidance: a fake bank fraud department
+# tells the victim what harmless purpose to give the teller, stays on the
+# line, and warns that the bank will try to stop the withdrawal.
+id: scn.coached.bank_impersonator_cruise_cover
+label: Coached — fake fraud desk, cover story is a cruise gift
+population: coached
+pattern_truth: pat.bank_impersonation
+stated_purpose: purpose.gift_or_travel
+context_chips:
+  - chip.on_phone
+  - chip.urgency_secrecy
+  - chip.rushed
+  - chip.above_threshold
+answers:
+  purpose: relayed_by_caller
+  counterparty_identity: vague
+  written_estimate: no_answer
+  receiving_account: vague
+  secrecy: confirmed
+  payment_flexibility: denied
+default: relayed_by_caller
+tags:
+  - cover
+source: >
+  FTC imposter-scam guidance. A caller pretending to be the bank's fraud
+  department instructs the victim to say the cash is a gift for a cruise,
+  to keep the call secret, and to refuse any payment the caller cannot
+  collect in cash.
