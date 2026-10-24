@@ -24,7 +24,16 @@ from engine import (
     rule_choice,
     stop,
 )
+from recommenders import DEFAULT_MODEL_ID, HostedLLM, LocalLLM, Metrics
+from recommenders.select import (
+    apply_recommendation,
+    last_recommendation,
+    needs_recommendation,
+    select_question,
+)
 from store import sqlite as store
+
+_MODEL_KINDS = frozenset({"local", "local_llm", "hosted", "hosted_llm"})
 
 _REPO = Path(__file__).resolve().parents[1]
 _DEFAULT_LIBRARY = _REPO / "library"
@@ -87,22 +96,63 @@ def create_app(
     db_path: Path | str | None = None,
     library_path: Path | str | None = None,
     recommender: str | None = None,
+    recommender_impl: object | None = None,
+    metrics: Metrics | None = None,
+    timeout_ms: int | None = None,
+    strict_mode: bool | None = None,
+    model_id: str | None = None,
+    llama_server: str | None = None,
+    hosted_url: str | None = None,
 ) -> FastAPI:
     db = Path(db_path) if db_path is not None else _DEFAULT_DB
     lib_path = Path(library_path) if library_path is not None else _DEFAULT_LIBRARY
     rec = recommender or os.environ.get("RECOMMENDER", "rules")
-    model_id = os.environ.get("MODEL_ID") or None
+    if model_id is None:
+        model_id = os.environ.get("MODEL_ID") or None
+    if rec in _MODEL_KINDS and not model_id:
+        model_id = DEFAULT_MODEL_ID
+    if timeout_ms is None:
+        timeout_ms = int(os.environ.get("MODEL_TIMEOUT_MS", "1500"))
+    if strict_mode is None:
+        strict_mode = os.environ.get("STRICT_MODE", "true").lower() not in {
+            "0",
+            "false",
+            "no",
+        }
+    stats = metrics if metrics is not None else Metrics()
 
     library = load_library(lib_path)
     conn = store.connect(db)
     if not store.initialized(conn):
         store.initialize(conn)
 
+    impl = recommender_impl
+    if impl is None and rec in {"local", "local_llm"}:
+        impl = LocalLLM(
+            server=llama_server
+            or os.environ.get("LLAMA_SERVER", "http://127.0.0.1:8080"),
+            model_id=model_id,
+            timeout_ms=timeout_ms,
+            library=library,
+        )
+    elif impl is None and rec in {"hosted", "hosted_llm"}:
+        url = hosted_url or os.environ.get("HOSTED_LLM_URL")
+        if url:
+            impl = HostedLLM(
+                url=url,
+                model_id=model_id,
+                api_key=os.environ.get("HOSTED_LLM_API_KEY") or None,
+                timeout_ms=timeout_ms,
+                library=library,
+            )
+
     app = FastAPI(title="Teller Copilot", version="1.0.0")
     app.state.db = conn
     app.state.library = library
     app.state.recommender = rec
     app.state.model_id = model_id
+    app.state.metrics = stats
+    app.state.recommender_impl = impl
     app.add_exception_handler(CommandRejected, rejected_response)
 
     def stamp(state: dict[str, Any], session_id: str) -> dict[str, Any]:
@@ -118,12 +168,41 @@ def create_app(
     def render(session_id: str) -> dict[str, Any]:
         events = store.load_events(conn, session_id)
         state = project(events, library)
-        # ROSTER §5.1: fold, then candidates/stop; rules pick is already in project().
-        _stage, cands = candidates(state, library)
-        stop(state, library, cands)
-        if rec == "rules" and cands:
-            rule_choice(cands)
-        return stamp(public_state(state), session_id)
+        # ROSTER §5.1: fold, candidates, stop; recommender only in probe (§7.4).
+        stage, cands = candidates(state, library)
+        stop_obj = stop(state, library, cands)
+        if impl is None:
+            if rec == "rules" and cands:
+                rule_choice(cands)
+            return stamp(public_state(state), session_id)
+
+        if needs_recommendation(events):
+            selection = select_question(
+                impl,
+                state,
+                cands,
+                library,
+                stage=stage,
+                stopped=stop_obj is not None,
+                events=events,
+                metrics=stats,
+                timeout_ms=timeout_ms,
+                strict=strict_mode,
+                model_id=model_id,
+            )
+            for event in selection.events:
+                store.append_event(conn, session_id, event)
+            events = store.load_events(conn, session_id)
+
+        state = apply_recommendation(state, events, library, stage)
+        out = stamp(public_state(state), session_id)
+        out["debug"]["rejections"] = sum(
+            1 for event in events if event.get("type") == "ValidationRejected"
+        )
+        issued = last_recommendation(events)
+        if issued and issued.get("latency_ms") is not None:
+            out["debug"]["latency_ms"] = int(issued["latency_ms"])
+        return out
 
     def require_session(session_id: str) -> dict[str, Any]:
         row = store.get_session(conn, session_id)
@@ -137,12 +216,16 @@ def create_app(
 
     @app.get("/health")
     def health() -> dict[str, object]:
+        snap = stats.snapshot()
         return {
             "recommender": rec,
             "model_id": model_id,
-            "last_p95": None,
-            "fallback_rate": 0.0,
-            "agreement_rate": None,
+            "p50": snap["p50"],
+            "p95": snap["p95"],
+            "last_p95": snap["p95"],
+            "fallback_rate": snap["fallback_rate"],
+            "rejection_count": snap["rejection_count"],
+            "agreement_rate": snap["agreement_rate"],
         }
 
     @app.post("/sessions")

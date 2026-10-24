@@ -1,0 +1,15 @@
+id: scn.legitimate.t4_contractor_forgot_name
+label: "Legitimate — contractor, can't recall the name, has an estimate"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.home_repair
+context_chips: [chip.cash_only]
+answers:
+  purpose: specific
+  counterparty_identity: vague
+  written_estimate: specific
+  payment_flexibility: confirmed
+  secrecy: denied
+default: vague
+tags: [seed.T4, innocent_red_flag, vague_but_genuine]
+source: "architecture §6.4 T4"

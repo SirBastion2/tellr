@@ -1,0 +1,14 @@
+id: scn.legitimate.gift_for_travel
+label: "Legitimate — gift or travel, named recipient, no red-flag chips"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.gift_or_travel
+context_chips: []
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  payment_flexibility: confirmed
+  secrecy: denied
+default: vague
+tags: []
+source: "AARP gift-and-travel guidance (genuine payee contrast)"

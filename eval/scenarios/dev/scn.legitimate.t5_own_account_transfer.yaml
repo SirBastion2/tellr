@@ -1,0 +1,14 @@
+id: scn.legitimate.t5_own_account_transfer
+label: "Legitimate — own-account transfer, no red-flag chips"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.moving_money
+context_chips: []
+answers:
+  purpose: specific
+  receiving_account: specific
+  payment_flexibility: confirmed
+  secrecy: denied
+default: vague
+tags: [seed.T5]
+source: "architecture §6.4 T5"

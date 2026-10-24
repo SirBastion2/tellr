@@ -44,6 +44,25 @@ Append-only, newest at the bottom. One entry per card, or per stop.
 
 ---
 
+### [A-06] Evaluation hours 2–6 (validate + 15 scenarios) — Agent A3 — 2026-10-24 19:25
+- **Status:** partial (hours 2–6 slice done; hours 6–8 still own the last 15 scenarios and the solo `PREREGISTRATION.md` commit)
+- **Gate:** `scripts/gate.sh a` → FAIL at `.importlinter missing (card A-01 creates it).` Ruff and pytest on `eval/` + `tests/eval/` pass (`21 passed`). Did not add `.importlinter` or `pyproject.toml` (A2).
+- **Changed:** `eval/validate.py`; `eval/__init__.py`; `eval/PREREGISTRATION.md` (draft, no run); `eval/scenarios/dev/` (15 YAML); `tests/eval/`; `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Scenario IDs and answers for T1–T7 copied from `reference_impl.py` CASES / §6.4; extras from public FTC/FBI/AARP imposter guidance and the §13.1 / §18.16 cover-story shapes.
+  - `pattern_truth` is `pat.*` for coached and `null` for legitimate. Validator does **not** require those ids in `contract/library.json` patterns (Q-008: that file is T1–T7 display copy; A1 loads the real library). Two scenarios use `pat.government_impersonation` and `pat.tech_support`.
+  - Cover story = stated purpose’s usual pattern ≠ `pattern_truth` (T3, §13.1). `purpose.vehicle` / `purpose.gift_or_travel` have no pattern, so any `pat.*` truth counts as a cover.
+  - Arm A draft prior threshold is 3 concerning items; the sheet is binary (High at/above, Clear below, no Caution column). §13.2 is a yes-count threshold; mapping the flag to Caution only would recreate the §18.2 game. Official freeze is a solo commit at hours 6–8.
+  - `tags` / `source` are eval bookkeeping, not engine inputs. No age, appearance, or name fields.
+- **Questions logged:** none (Q-008 already covers the two extra pattern ids)
+- **The next agent needs to know:**
+  - **A2:** please add `pytest`, `ruff`, and `pyyaml` to `pyproject.toml` when it lands. A3 ran them from a user install. Also `.importlinter` (A-01) is what blocks `scripts/gate.sh a`.
+  - **Hours 6–8 (A3):** add 7 coached + 8 legitimate to reach 15/15. The first 15 already meet the §5.2 minima (8 coached / 7 legitimate; 4 covers; 3 perfectly coached; 4 innocent red-flag; 3 vague-but-genuine). Then **commit `eval/PREREGISTRATION.md` alone** before any run.
+  - **A1:** real library should include `pat.government_impersonation` and `pat.tech_support` (and `pat.family_emergency`) so later arms can label those truths.
+  - Do not write `eval/scenarios/heldout/`. Do not commit this draft with results. Driver A reviews `eval/` PRs.
+
+---
+
 ### [A-01] Library + engine-api-v1 — Agent A1 — 2026-10-24 19:26
 - **Status:** done (A1 half). Gate `a` blocked on A2 files, not on this diff.
 - **Gate:** `scripts/gate.sh a` → FAIL at `.importlinter missing (card A-01 creates it).` Ruff on `engine/` `tests/engine/` `tests/library/` PASS. `pytest -q tests/library tests/engine` → 20 passed. Contract oracles untouched.
@@ -121,7 +140,6 @@ GATE PASS (a)
 
 ---
 
-
 ### [A2 hours 4–6] API on FakeEngine — Agent A2 — 2026-10-24 19:34
 - **Status:** done (hours 4–6). Stopped before A-03.
 - **Gate:** `scripts/gate.sh a` → PASS
@@ -161,6 +179,39 @@ GATE PASS (a)
   - Live traces that match a practice fixture prefix replay after rewriting `SessionOpened.mode` to `practice` (comment in `api/main.py`). Remove that adapter in A-04.
   - `make dev-api` still starts uvicorn on `127.0.0.1:8000`. Default DB is `/tmp/teller-copilot.sqlite` (`TELLER_DB` overrides).
   - New dep: `httpx` — required by FastAPI `TestClient`. No other new dependency.
+
+---
+
+### [A-06] Merge main + gate a — Agent A3 — 2026-10-24 19:45
+- **Status:** partial (hours 2–6 still; hours 6–8 still own the last 15 scenarios and the solo `PREREGISTRATION.md` commit)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+51 passed in 0.49s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `docs/HANDOFF.md` only (merge kept A-06 + all three A-01 sections; this entry). No edits in `eval/` or `tests/eval`.
+- **Decisions I made, and the section that justified each:**
+  - Merged `origin/main` (A1 #9, A2 #10) rather than rebasing. HANDOFF conflict resolved by keeping every existing section (append-only).
+  - Gate was green after the merge; no `eval/` or `tests/eval` fixes. Did not add scenarios, did not run the eval, did not touch `eval/heldout`, `contract/`, `reference_impl.py`, or goldens.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Gate a is green on this branch (PR #8). Hours 6–8 still add 7 coached + 8 legitimate, then commit `eval/PREREGISTRATION.md` alone before any run.
+  - A1 already landed `pat.government_impersonation`, `pat.tech_support`, and `pat.family_emergency` (stubs). A2 landed `pyproject.toml` / `.importlinter`.
+  - Do not write `eval/scenarios/heldout/`. Driver A reviews `eval/` PRs.
 
 ---
 
@@ -348,8 +399,6 @@ curl -sS -X POST http://127.0.0.1:8010/sessions/$SID/answers \
 # Q3: answers=3 score=80 level=high stop={kind:recommended, reason:enough to escalate}
 # question=q.alternative.cashiers_check suggested_outcome=escalate
 ```
-
-
 
 ### [A-03] Latency benchmark — Agent A (run on Jonathan's laptop) — 2026-10-24 15:55
 - **Status:** done
@@ -612,6 +661,108 @@ GATE PASS (a)
 
 ---
 
+### [A-05] Model path — Agent A2 — 2026-10-24 20:40
+- **Status:** done (implementation and gate). **Live-path p95: PENDING Driver B** (no GPU here; fakes only).
+- **Gate:** `scripts/gate.sh a` → PASS (`RECOMMENDER=rules`)
+
+```
+── ruff
+All checks passed!
+
+── pytest
+94 passed, 1 warning in 12.26s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `recommenders/**`, `engine/prompt.py`, `api/main.py` (`/health` + recommender wiring in `render`/`create_app` only), `tests/recommenders/**`, `.importlinter` (`recommenders` is now a root package), `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Default local model ID is `Meta-Llama-3.1-8B-Instruct-Q4_K_M` when `RECOMMENDER` is `local`/`local_llm`/`hosted`/`hosted_llm` (DECISIONS Hour 6; §15 `MODEL_ID`). The 3B (`Llama-3.2-3B-Instruct-Q4_K_M`) is the operational fallback: restart `llama-server` on that GGUF and set `MODEL_ID`.
+  - `RECOMMENDER=rules` (default) does not construct a model client and does not append `RecommendationIssued`, so T1–T7 replay and goldens stay identical (§7.3 floor).
+  - Prompt builder is an allowlist (`engine/prompt.py`, §8.1 / §10.2). Notes, `amount_band`, and `account_ref` are never copied in. Adding a SessionState field does not add it to the prompt.
+  - Validator is shared (`recommenders.validate`); LocalLLM sends a per-request GBNF (§8.2); HostedLLM does not assume a grammar. Timeout is 1500 ms (§8.3). Strict mode forces `signals_asserted=[]` and skips the call outside probe or after any stop (§7.4, §9).
+  - `/health` adds `p50`, `p95`, `rejection_count` and keeps `last_p95` as an alias of `p95` (card step 7; §16). Agreement is model-output vs `rule_choice`; timeouts are fallbacks, not agreement samples.
+  - No new dependency.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Boot: `RECOMMENDER=rules|local_llm|hosted_llm`, `MODEL_ID`, `MODEL_TIMEOUT_MS=1500`, `STRICT_MODE=true`, `LLAMA_SERVER=http://127.0.0.1:8080`, `HOSTED_LLM_URL`, `HOSTED_LLM_API_KEY`.
+  - Inject a fake in tests: `create_app(..., recommender="local_llm", recommender_impl=fake, metrics=Metrics())`.
+  - This environment did not run a real model. Do not treat `/health` p50/p95 from the unit tests as the live number.
+
+  **PENDING Driver B — live-path p95 (not `scripts/bench_llm.py`).** On the GPU laptop, start `llama-server` with the 8B Q4_K_M (same flags as A-03: `-ngl 99 -c 4096 -np 1`), then:
+
+```
+scripts/with-gpu env RECOMMENDER=local_llm \
+  MODEL_ID=Meta-Llama-3.1-8B-Instruct-Q4_K_M \
+  MODEL_TIMEOUT_MS=1500 \
+  LLAMA_SERVER=http://127.0.0.1:8080 \
+  python3 - <<'PY'
+import json
+from pathlib import Path
+from fastapi.testclient import TestClient
+from api.main import create_app
+
+app = create_app(
+    db_path=Path("/tmp/teller-live-8b.sqlite"),
+    recommender="local_llm",
+    model_id="Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+)
+steps = json.loads(Path("contract/fixtures/T2.json").read_text())["steps"]
+with TestClient(app) as client:
+    session_id = None
+    for step in steps:
+        endpoint, body = step["endpoint"], step["request"]
+        if endpoint == "POST /sessions":
+            session_id = client.post("/sessions", json=body).json()["session_id"]
+        elif endpoint.endswith("/context"):
+            client.post(f"/sessions/{session_id}/context", json=body)
+        else:
+            client.post(f"/sessions/{session_id}/answers", json=body)
+    print(json.dumps(client.get("/health").json(), indent=2))
+PY
+```
+
+  Paste `p50` / `p95` from that `/health` into a new HANDOFF line. That is the live-path number the card wants.
+
+  **PENDING — 8B vs 3B quality (DECISIONS Hour 6).** Driver B must not read `eval/scenarios/dev/` (ROSTER §2). Repeat the block above after switching `llama-server` to `Llama-3.2-3B-Instruct-Q4_K_M` and `MODEL_ID=Llama-3.2-3B-Instruct-Q4_K_M` (use `/tmp/teller-live-3b.sqlite`). Compare T2 probe `question.id` values and `agreement_rate`. Driver A can run the same API against A3's `eval/scenarios/dev` once those exist. Prefer 8B if it picks a different valid probe that better splits the leading pattern; otherwise 8B stays the default and 3B stays the VRAM/fallback.
+
+---
+
+### [merge] origin/main into a2-a05-model-path — Agent A2 — 2026-10-24 20:45
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+94 passed, 1 warning in 12.82s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** merge commit plus this entry. Conflicts: `docs/HANDOFF.md` only (kept main's `[A2] make dev-web` and the branch's `[A-05] Model path`, newest last). Auto-merged from main: `Makefile` (`make dev-web`), `docs/A_TO_B.md`, `docs/B_TO_A.md`, `docs/CROSS_LANE.md`, `docs/QUESTIONS.md`.
+- **Decisions I made, and the section that justified each:** none. Driver instruction: keep both HANDOFF sides; keep main's `make dev-web`; take main for contract/reference_impl/goldens/fixtures/web/CROSS_LANE/QUESTIONS/A_TO_B/B_TO_A; keep the branch for recommenders/, engine/prompt.py, api health/recommender wiring, tests/recommenders. Did not change A-05 logic.
+- **Questions logged:** none
+- **The next agent needs to know:** Merge of `origin/main` (`d3919f2`) into `cursor/a2-a05-model-path-9aea` (PR #30). No new PR. Live-path p95 and 8B vs 3B quality are still PENDING Driver B (see the `[A-05]` entry). No new dependency.
+
+---
+
 ### [B-04] Talk tracks, undo, practice mode — Agent B — 2026-10-24 20:49
 - **Status:** done
 - **Gate:** `scripts/gate.sh b` → PASS
@@ -631,3 +782,39 @@ GATE PASS (a)
   - Settings stays a UI page with no `/settings` call. The health screen does not write `/health` (CHANGE-001; M-002). `make dev-web` was already on main and was not edited.
 - **Questions logged:** none
 - **The next agent needs to know:** This branch is from current `main` (`d3919f2`), not `b-01-scaffold`. Do not push to `b-01-scaffold`. Screenshots of the talk track, undo, and the live badge were skipped (driver). Those checks are `web/src/talkTrack.test.tsx`, `web/src/undo.test.tsx`, and `web/src/modes.test.tsx`. A TestClient call against `api/main.py` (`RECOMMENDER=rules`) opened a live session, rejected `scenario_id` on live with 409 `scenario_on_live_session`, opened practice with `scenario_id` `T2`, and undo restored the opened score and question. Talk-track lines and avoid phrases matched `GET /library`, and those five tracks match `contract/library.json`. No UI patch. `docs/CROSS_LANE.md` has no open A→B items. No new X-id. M-002 items left for another card: PR #32 (`docs/B_TO_A.md` BA-001), PR #20, and PR #15. No new dependency.
+
+---
+
+### [A-06] Evaluation hours 6–8 (30 scenarios + pre-register) — Agent A3 — 2026-10-24 20:55
+- **Status:** partial (hours 6–8 slice done; hours 8–12 still own the harness and arms)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+115 passed, 1 warning in 12.24s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `eval/scenarios/dev/` (15 new YAML); `tests/eval/test_dev_scenarios.py`; `eval/PREREGISTRATION.md` (solo freeze commit `cd21c1d`); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Added 7 coached + 8 legitimate so the set is 15/15 (ROSTER §5.2, architecture §13.1). New files are seeded from the remaining §5.3 purposes and public FTC/FBI/AARP guidance, not from held-out or live weights.
+  - Cover story still means the stated purpose’s usual pattern ≠ `pattern_truth` (T3, §13.1), including `purpose.vehicle` / `purpose.gift_or_travel` which route to no pattern. Mix on disk: 6 covers, 5 perfectly coached, 6 innocent red-flag, 5 vague-but-genuine.
+  - Froze arm A’s prior threshold at 3 in a solo commit with no scores and no `eval/results/` (card A-06 step 1, §13.2 / §13.4). A-07 may retune it with the weights; that later figure is labelled tuned.
+  - Empty `tags: []` on scenarios that are neither cover, perfect, red-flag, nor vague. No age, appearance, or name fields.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Dev set is 30. `python3 -m eval.validate` prints `30 scenario(s) valid` and no scores. Do not write `eval/scenarios/heldout/`.
+  - **Hours 8–12 (A3):** `eval/run.py`, arms A and B, determinism tests (same scenario twice; arm B on T1–T7 reproduces goldens). Do not run arm C until A2’s model path is ready (ROSTER hour 12).
+  - Pre-registration freeze is `cd21c1d` (`docs(eval): freeze PREREGISTRATION.md before any run`). That commit is the file alone. Do not commit results into it.
+  - Driver A reviews `eval/` PRs. No new dependency.

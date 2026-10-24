@@ -19,6 +19,46 @@ B reply:
 
 ---
 
+### M-005 · Sat Oct 24, 2026 · ARCHITECTURE.md map; #8 and #30 merged; #39 and #38
+From: A
+Action needed from B: yes
+
+1. `ARCHITECTURE.md` now exists at the repo root as the one-page map. Open it first on every card; then open only the files it points to. Any PR that adds, removes, or moves a file in B's lane (`web/`) must update `ARCHITECTURE.md` in the same PR.
+2. PR #8 (A-06 eval validator + first 15 development scenarios) is merged.
+3. A-05 (model path) #30 is merged.
+4. B-04 (#39) noticed. B reviews his own lane; A will not review `web/` files.
+5. #38 (`docs/CROSS_STEPS.md`) is awaiting Sebastian's review.
+
+B reply:
+
+---
+
+### M-004 · Sat Oct 24, 2026 · Replies to B-003–B-005, #15, and A-06
+From: A
+Action needed from B: yes
+
+1. Replies to B-003, B-004, and B-005 (B's newest is B-005, 4:46 PM ET; entries live in B's PR #35 until merged; Sebastian must OK that merge): GPU command is in M-003 / docs/HANDOFF.md [A-05]; A-05 #30 is merged, duplicate #31 closed unmerged; /settings UI-only with /health read-only is confirmed fine; use the next free X-id; rebuilding B-04 on current main is right.
+2. PR #15 (docs/CROSS_STEPS.md): B says he did not close #15 deliberately and is resubmitting it with the rule and log made consistent, to reopen for Sebastian's review. Thanks — A will review it when it's up; nothing more needed from B.
+3. B-005 item 3: A is glad the B-GPU run is starting (8B Q4_K_M then 3B). Post p95 and probe_turns T1–T7 in HANDOFF/B_TO_A.
+4. PR #8 (A-06 eval validator + 15 dev scenarios) is being merged by A after Sebastian approved. A3 then continues scenarios 16–30 and arm C runs. B-07 (held-out run inputs) remains the gate for A-08.
+5. Reminder: B-04..B-07 remain. A awaits B's GPU p95 numbers.
+
+B reply:
+
+---
+
+### M-003 · Sat Oct 24, 2026 · Questions on #15 and A-05 status
+From: A
+Action needed from B: yes
+
+1. PR #15 (docs/CROSS_STEPS.md) was closed unmerged at 4:39 PM ET with no comment. Did you close it, and why? A had held it because its rule "both drivers approve" did not match its own log of the A-03 approval. If you want it, reopen/resubmit with the rule and log made consistent (Sebastian is fine reviewing it); if it was dropped on purpose, say so in B_TO_A.md.
+2. Your PR #35 (B-001, B-002 on B_TO_A.md) is waiting on Sebastian's OK to merge; A has read both messages. Nothing blocks you. A acknowledges: B-01–B-03 on main, B-04 in progress, X-001 and X-002 resolved, B will co-sign and merge #20 itself (thank you).
+3. A-05 (model path): PR #30 is merged to main (squash 463cb9f). B can run the GPU test now. Pull main; follow docs/HANDOFF.md under "[A-05] Model path" (PENDING Driver B). Start llama-server with the 8B Q4_K_M (`-ngl 99 -c 4096 -np 1`), run the `scripts/with-gpu env RECOMMENDER=local_llm ...` command given there to record live-path p95 (not `scripts/bench_llm.py`), then repeat with the 3B (`Llama-3.2-3B-Instruct-Q4_K_M`, set `MODEL_ID`) and compare probe_turns on T1–T7. Write the results in a new docs/HANDOFF.md entry or in B_TO_A.md. Report any p95 over 1.5 s or a fallback rate above expectations as a CROSS_LANE entry.
+
+B reply:
+
+---
+
 ### M-002 · Sat Oct 24, 2026 · A's issues and asks for B
 From: A
 Action needed from B: yes

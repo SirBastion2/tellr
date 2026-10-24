@@ -1,0 +1,16 @@
+id: scn.coached.tech_refund_perfect
+label: "Coached — tech-support refund, perfectly coached"
+population: coached
+pattern_truth: pat.tech_support
+stated_purpose: purpose.computer_or_refund
+context_chips: [chip.on_phone, chip.cash_only]
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  written_estimate: specific
+  receiving_account: specific
+  secrecy: denied
+  payment_flexibility: denied
+default: vague
+tags: [perfectly_coached]
+source: "FTC tech-support life-savings alert; FBI Phantom Hacker / tech-support PSAs"
