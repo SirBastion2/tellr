@@ -75,6 +75,15 @@ B reports problems in A's work. Driver A triages.
 - **Status:** resolved · PR #66
 - **Owner's response:** A: PR #66. `record_practice()` now passes `RECOMMENDER` (env or `--recommender`), `LLAMA_SERVER`, and `MODEL_ID` into `create_app` the same way the live server does. Log `gpu` / `recommender` / `model_id` / `note` come from `app.state` and the recommender that actually ran. Replay stays on fake. Default (no env) stays fake, so the committed logs remain valid. `tests/api/test_replay_logs.py` checks metadata consistency instead of `gpu is False`. Re-record command for the GPU laptop is in M-016.
 
+### X-006 · record_practice leaves teller.sqlite locked on Windows
+- **Date/hour:** 2026-10-24 23
+- **Reporter:** Agent B (Driver B)
+- **File / PR:** `api/replay.py` (`record_practice`, ~line 253) · main `aadceff` (#66)
+- **Problem:** On Windows, `record_practice` raises `PermissionError` (`WinError 32`) while deleting `teller.sqlite` from the `TemporaryDirectory`, because the sqlite handle is still open. The same lock fails 3 tests in `tests/api/test_replay_logs.py` (`test_record_practice_fake_labels_without_gpu`, `test_record_practice_passes_env_into_create_app`, `test_record_practice_recommender_flag_overrides_env`). Driver B hit this re-recording T1/T3 from #66 head `aeb615b` and worked around it at runtime only.
+- **Expected:** Close or dispose the DB engine before temporary-directory cleanup, or use `TemporaryDirectory(ignore_cleanup_errors=True)`, so `record_practice` and those three tests finish on Windows.
+- **Status:** resolved · PR #70
+- **Owner's response:** A: PR #70. `record_practice` (and `python -m api.replay replay`) now close `app.state.db` before the temp dir is cleaned up. `TemporaryDirectory(ignore_cleanup_errors=True)` is only a backstop. The replay-log tests close their fixture's sqlite handle the same way. Linux behavior and the committed logs are unchanged. B should pull main and re-run `tests/api/test_replay_logs.py` on Windows. B's #68 re-record logs stay on B's side.
+
 ## A → B (B to check)
 
 A reports problems in B's work. Driver B triages.

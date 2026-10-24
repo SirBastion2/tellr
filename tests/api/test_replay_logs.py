@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import sqlite3
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -15,6 +18,16 @@ from recommenders.fake import FakeRecommender
 ROOT = Path(__file__).resolve().parents[2]
 _FAKE = frozenset({"fake", "fake_llm"})
 _GPU = frozenset({"local", "local_llm"})
+
+
+@pytest.fixture
+def replay_app(tmp_path: Path) -> Iterator[Any]:
+    """Close the sqlite handle before pytest deletes tmp_path (X-006 / Windows)."""
+    app = create_app(db_path=tmp_path / "replay.sqlite", recommender="fake")
+    try:
+        yield app
+    finally:
+        app.state.db.close()
 
 
 def assert_recommender_metadata(log: dict) -> None:
@@ -41,7 +54,7 @@ def assert_recommender_metadata(log: dict) -> None:
 
 
 @pytest.mark.parametrize("name", LOG_NAMES)
-def test_replay_log_parses_and_replays_live_path(name: str, tmp_path: Path) -> None:
+def test_replay_log_parses_and_replays_live_path(name: str, replay_app: Any) -> None:
     log = parse_log(REPLAY_DIR / name)
     assert log["mode"] == "practice"
     assert_recommender_metadata(log)
@@ -50,8 +63,7 @@ def test_replay_log_parses_and_replays_live_path(name: str, tmp_path: Path) -> N
     assert log["steps"], f"{name} has no web --replay steps"
     assert log["events"], f"{name} has no §14.2 event log"
 
-    app = create_app(db_path=tmp_path / "live.sqlite", recommender="fake")
-    with TestClient(app) as client:
+    with TestClient(replay_app) as client:
         states = replay_steps(client, log)
     assert len(states) == len(log["steps"])
     fake_recorded = log["recommender"] in _FAKE
@@ -71,14 +83,13 @@ def test_replay_logs_are_one_coached_and_one_legitimate() -> None:
 
 
 @pytest.mark.parametrize("name", LOG_NAMES)
-def test_event_log_replays_through_live_get(name: str, tmp_path: Path) -> None:
+def test_event_log_replays_through_live_get(name: str, replay_app: Any) -> None:
     from api.replay import load_into_store
 
     log = parse_log(REPLAY_DIR / name)
-    app = create_app(db_path=tmp_path / "events.sqlite", recommender="fake")
-    load_into_store(app.state.db, log)
+    load_into_store(replay_app.state.db, log)
     session_id = log["session"]["session_id"]
-    with TestClient(app) as client:
+    with TestClient(replay_app) as client:
         fetched = client.get(f"/sessions/{session_id}")
     assert fetched.status_code == 200, fetched.text
     body = fetched.json()
@@ -170,3 +181,29 @@ def test_record_practice_recommender_flag_overrides_env(
     assert captured.get("recommender") == "fake"
     assert captured.get("llama_server") == "http://127.0.0.1:8080"
     assert captured.get("model_id") == "Meta-Llama-3.1-8B-Instruct-Q4_K_M"
+
+
+def test_record_practice_closes_sqlite_handle(monkeypatch: pytest.MonkeyPatch) -> None:
+    """X-006: the temp teller.sqlite handle must be closed before cleanup."""
+    from api.replay import SCRIPTS
+
+    held: list[sqlite3.Connection] = []
+    real = create_app
+
+    def spy(**kwargs: object) -> object:
+        app = real(
+            db_path=kwargs.get("db_path"),
+            recommender="fake",
+            warmup=False,
+        )
+        held.append(app.state.db)
+        return app
+
+    monkeypatch.delenv("RECOMMENDER", raising=False)
+    monkeypatch.delenv("MODEL_ID", raising=False)
+    monkeypatch.delenv("LLAMA_SERVER", raising=False)
+    monkeypatch.setattr("api.replay.create_app", spy)
+    record_practice(SCRIPTS["T1"], case="T1")
+    assert held
+    with pytest.raises(sqlite3.ProgrammingError):
+        held[0].execute("SELECT 1")

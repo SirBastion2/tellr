@@ -234,6 +234,16 @@ def log_fields_from_app(app: Any) -> dict[str, Any]:
     }
 
 
+def _close_app_db(app: Any) -> None:
+    """Release the sqlite handle so Windows can delete the temp database file."""
+    conn = getattr(getattr(app, "state", None), "db", None)
+    if conn is None:
+        return
+    close = getattr(conn, "close", None)
+    if close is not None:
+        close()
+
+
 def record_practice(
     scenario_path: Path,
     *,
@@ -250,76 +260,81 @@ def record_practice(
         recommender=recommender, llama_server=llama_server, model_id=model_id
     )
     steps: list[dict[str, Any]] = []
-    with tempfile.TemporaryDirectory() as tmp:
+    # ignore_cleanup_errors is a Windows backstop only; we close the sqlite
+    # handle first so teller.sqlite is not locked (X-006 / WinError 32).
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         app = create_app(
             db_path=Path(tmp) / "teller.sqlite",
             recommender=rec,
             llama_server=server,
             model_id=mid,
         )
-        with TestClient(app) as client:
-            open_req = {
-                "mode": "practice",
-                "amount_band": AMOUNT_BAND,
-                "scenario_id": scenario["id"],
-            }
-            response = client.post("/sessions", json=open_req)
-            if response.status_code != 200:
-                raise ReplayError(f"open failed: {response.text}")
-            state = response.json()
-            session_id = str(state["session_id"])
-            steps.append(
-                {"endpoint": "POST /sessions", "request": open_req, "response": state}
-            )
-
-            context_req = {"chips": list(scenario["context_chips"])}
-            response = client.post(f"/sessions/{session_id}/context", json=context_req)
-            if response.status_code != 200:
-                raise ReplayError(f"context failed: {response.text}")
-            state = response.json()
-            steps.append(
-                {
-                    "endpoint": "POST /sessions/{id}/context",
-                    "request": context_req,
-                    "response": state,
+        try:
+            with TestClient(app) as client:
+                open_req = {
+                    "mode": "practice",
+                    "amount_band": AMOUNT_BAND,
+                    "scenario_id": scenario["id"],
                 }
-            )
-
-            for _ in range(MAX_QUESTIONS):
-                if state.get("stop") or not state.get("question"):
-                    break
-                answer_req = _answer_body(state["question"]["id"], scenario, library)
-                response = client.post(
-                    f"/sessions/{session_id}/answers", json=answer_req
-                )
+                response = client.post("/sessions", json=open_req)
                 if response.status_code != 200:
-                    raise ReplayError(f"answer failed: {response.text}")
+                    raise ReplayError(f"open failed: {response.text}")
+                state = response.json()
+                session_id = str(state["session_id"])
+                steps.append(
+                    {"endpoint": "POST /sessions", "request": open_req, "response": state}
+                )
+
+                context_req = {"chips": list(scenario["context_chips"])}
+                response = client.post(f"/sessions/{session_id}/context", json=context_req)
+                if response.status_code != 200:
+                    raise ReplayError(f"context failed: {response.text}")
                 state = response.json()
                 steps.append(
                     {
-                        "endpoint": "POST /sessions/{id}/answers",
-                        "request": answer_req,
+                        "endpoint": "POST /sessions/{id}/context",
+                        "request": context_req,
                         "response": state,
                     }
                 )
 
-            outcome = str(state.get("suggested_outcome") or "proceed")
-            outcome_req = {"outcome": outcome, "actor": ACTOR}
-            response = client.post(f"/sessions/{session_id}/outcome", json=outcome_req)
-            if response.status_code != 200:
-                raise ReplayError(f"outcome failed: {response.text}")
-            state = response.json()
-            steps.append(
-                {
-                    "endpoint": "POST /sessions/{id}/outcome",
-                    "request": outcome_req,
-                    "response": state,
-                }
-            )
+                for _ in range(MAX_QUESTIONS):
+                    if state.get("stop") or not state.get("question"):
+                        break
+                    answer_req = _answer_body(state["question"]["id"], scenario, library)
+                    response = client.post(
+                        f"/sessions/{session_id}/answers", json=answer_req
+                    )
+                    if response.status_code != 200:
+                        raise ReplayError(f"answer failed: {response.text}")
+                    state = response.json()
+                    steps.append(
+                        {
+                            "endpoint": "POST /sessions/{id}/answers",
+                            "request": answer_req,
+                            "response": state,
+                        }
+                    )
 
-            events = store.load_events(app.state.db, session_id)
-            row = store.get_session(app.state.db, session_id)
-            meta = log_fields_from_app(app)
+                outcome = str(state.get("suggested_outcome") or "proceed")
+                outcome_req = {"outcome": outcome, "actor": ACTOR}
+                response = client.post(f"/sessions/{session_id}/outcome", json=outcome_req)
+                if response.status_code != 200:
+                    raise ReplayError(f"outcome failed: {response.text}")
+                state = response.json()
+                steps.append(
+                    {
+                        "endpoint": "POST /sessions/{id}/outcome",
+                        "request": outcome_req,
+                        "response": state,
+                    }
+                )
+
+                events = store.load_events(app.state.db, session_id)
+                row = store.get_session(app.state.db, session_id)
+                meta = log_fields_from_app(app)
+        finally:
+            _close_app_db(app)
 
     if row is None:
         raise ReplayError("recorded session missing from the store")
@@ -404,14 +419,17 @@ def main(argv: list[str] | None = None) -> int:
         if args.replay_path
         else [REPLAY_DIR / name for name in LOG_NAMES]
     )
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         for index, path in enumerate(targets):
             log = parse_log(path)
             app = create_app(
                 db_path=Path(tmp) / f"replay-{index}.sqlite", recommender="fake"
             )
-            with TestClient(app) as client:
-                states = replay_steps(client, log)
+            try:
+                with TestClient(app) as client:
+                    states = replay_steps(client, log)
+            finally:
+                _close_app_db(app)
             if len(states) != len(log["steps"]):
                 raise ReplayError(f"{path}: replay length mismatch")
             print(f"replayed {path} ({len(states)} steps, no network)")
