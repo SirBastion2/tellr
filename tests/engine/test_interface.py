@@ -37,10 +37,8 @@ def test_engine_api_v1_signatures() -> None:
     ]
 
 
-def test_fold_entrypoints_are_not_yet_the_real_engine() -> None:
-    """A-01 freezes signatures; the fold lands in A-02 / A-04."""
-    with pytest.raises(NotImplementedError):
-        engine.project([], None)  # type: ignore[arg-type]
+def test_a04_entrypoints_are_not_yet_the_real_engine() -> None:
+    """A-02 implements project; candidates / stop / rules / commands land in A-04."""
     with pytest.raises(NotImplementedError):
         engine.candidates(None, None)  # type: ignore[arg-type]
     with pytest.raises(NotImplementedError):
