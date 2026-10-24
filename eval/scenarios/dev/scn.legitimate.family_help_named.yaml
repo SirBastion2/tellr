@@ -1,0 +1,15 @@
+id: scn.legitimate.family_help_named
+label: "Legitimate — helping a relative spoken to directly"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.family_help
+context_chips: []
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  receiving_account: specific
+  payment_flexibility: confirmed
+  secrecy: denied
+default: vague
+tags: []
+source: "AARP family-help contrast to grandparent-scam guidance"

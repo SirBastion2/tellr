@@ -1,0 +1,14 @@
+id: scn.coached.family_vehicle_cover
+label: "Coached — family-emergency imposter, vehicle-purchase cover"
+population: coached
+pattern_truth: pat.family_emergency
+stated_purpose: purpose.vehicle
+context_chips: [chip.on_phone, chip.someone_directing, chip.cash_only]
+answers:
+  purpose: specific
+  counterparty_identity: vague
+  secrecy: confirmed
+  payment_flexibility: denied
+default: vague
+tags: [cover_story]
+source: "FTC family-member imposter scams; architecture §18.16 vehicle cover shape"

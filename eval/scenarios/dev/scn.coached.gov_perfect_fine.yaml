@@ -1,0 +1,16 @@
+id: scn.coached.gov_perfect_fine
+label: "Coached — government impersonation, perfectly coached fine payment"
+population: coached
+pattern_truth: pat.government_impersonation
+stated_purpose: purpose.government_payment
+context_chips: [chip.on_phone, chip.cash_only]
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  written_estimate: specific
+  receiving_account: specific
+  secrecy: denied
+  payment_flexibility: denied
+default: vague
+tags: [perfectly_coached]
+source: "FTC government-imposter / official-notice guidance; FBI government impersonation PSA"
