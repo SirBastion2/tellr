@@ -1,0 +1,25 @@
+---
+description: "Agent A2 (platform): API, store, recommenders, GPU lock."
+globs: ["api/**", "store/**", "recommenders/**", "tests/api/**", "tests/store/**", "tests/recommenders/**", "scripts/**", "pyproject.toml", "Makefile"]
+alwaysApply: false
+---
+# Agent A2 conventions
+
+**API and store (§10.1, §11)**
+- The API is thin: one `SessionState` per response, validated against
+  `contract/session_state.schema.json` in tests.
+- Every SQLite connection runs `PRAGMA foreign_keys = ON`. Use the §10.1 SQL and triggers verbatim.
+  Purge deletes events, then sessions, in one transaction.
+- Stop precedence follows `contract/CHANGES.md` CHANGE-000.
+
+**Model path (§7.4, §8, §10.2)**
+- The recommender is called only in the probe stage, never after a stop. Output is a question ID,
+  constrained by a per-turn GBNF grammar that enumerates the candidates. The validator still runs.
+- The prompt builder takes an allowlist. Notes and free text never reach it.
+- Live timeout is 1500 ms, falling back to the rule engine. Eval runs use no timeout, batch size 1,
+  no prefetch, temperature 0.
+
+**GPU lock**
+- A2 owns the GPU and `scripts/with-gpu`. Model-dependent jobs run through it:
+  `exec flock /tmp/tc-gpu.lock "$@"`. Without the lock, concurrent model requests corrupt latency
+  numbers and break evaluation determinism.

@@ -55,11 +55,17 @@ copy and branch, so they cannot overwrite each other's files mid-edit.
 ```bash
 mkdir teller-copilot && cd teller-copilot && git init
 unzip ../teller-copilot-cursor-kit.zip -d . && git add -A && git commit -m "chore: workflow kit"
-git worktree add ../tc-agent-a -b agent-a
-git worktree add ../tc-agent-b -b agent-b
-cursor .            # R  (main)
-cursor ../tc-agent-a  # A
-cursor ../tc-agent-b  # B
+for a in a1 a2 a3 b1; do
+  git worktree add ../tc-$a -b agent-$a
+  echo "{\"agentDataHome\": \"~/.cursor/ecc-agent-$a\"}" > ../tc-$a/.cursor/ecc-agent-data.json
+done
+# B2 at hour 8 only if needed:  git worktree add ../tc-b2 -b agent-b2   (and its own memory file)
+# H at hour 20:                 the tc-heldout worktree from WORKFLOW §10
+cursor .         # R  (main)
+cursor ../tc-a1  # A1
+cursor ../tc-a2  # A2
+cursor ../tc-a3  # A3
+cursor ../tc-b1  # B1
 ```
 
 ### 2.2 ECC for Cursor
@@ -85,16 +91,20 @@ cd ~/src/ECC && git checkout <pinned-sha>
 ### 2.3 Keep the agents' memories separate
 
 ECC's memory hooks write session summaries to one agent-data directory. Inside Cursor that defaults
-to `~/.cursor/ecc`, so **A and B would read each other's session notes.** Give each worktree its
-own, either via the project file ECC documents (not committed, since it differs per worktree):
+to `~/.cursor/ecc`, so **the agents would read each other's session notes.** Give each worktree its
+own, either via the project file ECC documents (not committed, since it differs per worktree). The
+§2.1 loop already writes that file; the same loop, memory only:
 
 ```bash
-echo '{"agentDataHome": "~/.cursor/ecc-agent-a"}' > ../tc-agent-a/.cursor/ecc-agent-data.json
-echo '{"agentDataHome": "~/.cursor/ecc-agent-b"}' > ../tc-agent-b/.cursor/ecc-agent-data.json
+for a in a1 a2 a3 b1; do
+  echo "{\"agentDataHome\": \"~/.cursor/ecc-agent-$a\"}" > ../tc-$a/.cursor/ecc-agent-data.json
+done
+# B2 at hour 8 only if needed:  its own memory file under ../tc-b2/.cursor/
+# H at hour 20:                 the tc-heldout worktree from WORKFLOW §10
 echo ".cursor/ecc-agent-data.json" >> .git/info/exclude
 ```
 
-or by launching each window with `ECC_AGENT_DATA_HOME=~/.cursor/ecc-agent-a cursor ../tc-agent-a`.
+or by launching each window with `ECC_AGENT_DATA_HOME=~/.cursor/ecc-agent-a1 cursor ../tc-a1`.
 
 ### 2.4 Hooks that will bite
 
