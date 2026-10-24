@@ -1,3 +1,5 @@
+These two boards are the A/B back-and-forth channel: A writes in [`A_TO_B.md`](A_TO_B.md), B writes in [`B_TO_A.md`](B_TO_A.md). Each replies in the other's **reply** line or by posting a new message.
+
 # A → B messages
 
 Driver B (Jonathan) reads this file at the start of every card and phase. Newest message first.
