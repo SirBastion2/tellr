@@ -421,6 +421,92 @@ GATE PASS (a)
 
 ---
 
+### [B-01] Scaffold, mock server, shells — Agent B1 — 2026-10-24 19:30
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  8 passed (8)
+       Tests  21 passed (21)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/**` (Vite + React + TypeScript strict + Tailwind + vitest + eslint; types; ajv banner; `web/mock` fixture replay; eight routes). Appended `docs/HANDOFF.md`, `docs/QUESTIONS.md`.
+- **Decisions I made, and the section that justified each:**
+  - Eight UI routes are `/`, `/sessions/:id/context`, `/sessions/:id`, `/sessions/:id/outcome`, `/sessions/:id/handoff`, `/sessions`, `/health`, `/settings`. §12 says eight routes and does not name them (Q-012).
+  - Interview and Context render `SessionState` plus labels from `GET /library`. Posted context chip ids stay in client memory (CHANGE-003 / Q-005, Q-010). `stop.reason` is shown raw; the §12 teller sentence is not substituted.
+  - The mock replays `contract/fixtures/T*.json` in order. A different body still returns the next fixture `SessionState` and warns. It does not score the posted chips. `POST /sessions?case=` rejects `scenario_id` when `mode` is `live` with `409` `scenario_on_live_session` (CHANGE-002). No live `SessionState` is synthesized; fixtures are practice (Q-009 deferred to A-04).
+  - Settings does not call `/settings` (CHANGE-001). Handoff, history, and health shells do not call those endpoints and do not invent bodies (Q-006 deferred).
+  - Unparseable JSON on the dev middleware returns `422` with body `null`. The UI does not invent a FastAPI `detail` array; that body is not in the contract.
+  - Screenshot of the Interview shell at T2's second answer was skipped (driver instruction). `web/src/interview.test.tsx` asserts that step's level, score, pattern label, question text, reasons, and library purpose label.
+- **Questions logged:** Q-012
+- **The next agent needs to know:** Branch is rebased on `contract-v1` (`5515060`). `VITE_API_URL` is the API base; empty uses the Vite origin, where the mock middleware serves `/library` and `/sessions`. Run `npm run dev` from `web/` (127.0.0.1:5173). A2 owns the Makefile, which is outside `web/`: please add `make dev-web` that runs that command. There is no `Makefile` in the repo yet. Chip memory pops one posted batch on a successful undo; answer posting is still B-02, so the shell's only client write is context.
+
+---
+
+### [B-02] Interview screen — Agent B1 — 2026-10-24 19:51
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  9 passed (9)
+       Tests  27 passed (27)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/screens/InterviewScreen.tsx`, `web/src/interview.test.tsx`, `web/src/teller.tsx`, `web/src/teller.test.tsx`, `web/src/App.tsx`, `web/src/types.ts`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Shown level is the words Clear, Caution, or High, a colour (`#166534` / `#b45309` / `#991b1b`), and a slot at position 0, 1, or 2. `data-level` is the fixture token. Score, reason labels, and `pattern_label` are the fixture strings. Nothing is derived from the score (§12, §11.2; card spot check "Caution" at 16). `raw_level` is not the label, so T1's first answer stays Caution while raw is clear (§6.3 hysteresis, as carried on `risk.level`).
+  - Counterpoint prefix is "In their favor:" at Caution or High and "Still noted:" at Clear, on its own line (§6.5). A recommended stop shows "You have enough to decide, or ask one more" and keeps the question at opacity 0.55 (§8.4, §12). A hard stop renders no question. Those three strings are not in `GET /library`; CHANGE-003 leaves `stop.reason` machine-readable, so it is on `data-reason` and, for a hard stop, is the visible text.
+  - The opener renders library purposes, then a 72px row of five answer chips. A chip posts only after a purpose is chosen, as `{question_id, chip, purpose}`. Later questions post `{question_id, chip}` and omit `purpose`. No `note` (§5.6, §11.1, §9).
+  - Client memory is a stack of context batches and answers. Undo pops one write, so undoing an answer does not drop posted context chips (§11.1).
+- **Questions logged:** none
+- **The next agent needs to know:** Screenshots of T1 Caution 16, T3 "Looks like: bank impersonation", and T6's hard stop were skipped (driver). Those three checks are tests in `web/src/interview.test.tsx`. Rendering and `POST /answers` were verified against contract fixtures through the web mock and a fetch stub, not against A's running API. The client still prefixes paths with `VITE_API_URL` (the stub used `http://api.test`). `docs/CROSS_LANE.md` is not on this branch; the copy on `cursor/cross-lane-log-760f` has no open A→B items, and this card logged no B→A items. Talk tracks are still not drawn on the interview screen. Outcome buttons stay on `/sessions/:id/outcome`.
+
+---
+
+### [B-03] Outcome, handoff, real API — Agent B1 — 2026-10-24 20:07
+- **Status:** done (CP2 awaits driver confirmation; do not merge)
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  11 passed (11)
+       Tests  37 passed (37)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/screens/OutcomeScreen.tsx`, `web/src/screens/HandoffScreen.tsx`, `web/src/outcome.test.tsx`, `web/src/handoff.test.tsx`, `web/src/App.tsx`, `web/src/teller.tsx`, `web/src/types.ts`, `web/src/validate.ts`, `web/mock/replay.ts`, `web/src/mockReplay.test.ts`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - All four outcome buttons stay enabled at every fixture step. The highlighted button is `suggested_outcome`. Report is never highlighted, including if a payload names it. Highlight is colour `#fef3c7` plus `data-highlighted` (§11.2, §18.1).
+  - Submit posts `{outcome, actor}` and omits `note`. The actor must be non-blank after trim, and the teller must choose an outcome; the suggestion is not pre-selected (§11.1, §11.2). Button words are Proceed, Slow down, Escalate, and Report from §18.1. The actor control is labeled Actor. Those strings are not in `GET /library` (Q-006).
+  - Handoff is `GET /sessions/:id/handoff`. The mock copies `session_id`, `mode`, `stated_purpose`, `risk`, `suggested_outcome`, `answers`, and `stop` off the current fixture step. The screen renders that projection. A shape mismatch shows the contract banner and does not invent fields (Q-006). Purpose labels still come from `GET /library`. Level words match the interview screen. `stop.reason` stays machine-readable.
+  - A successful mock `POST /outcome` returns the current `SessionState` and then rejects further posts with `409` `session_closed`. Outcome is not written onto the state (Q-011). Fixtures still have no outcome step (Q-009).
+- **Questions logged:** none
+- **The next agent needs to know:** **CP2 awaits driver confirmation.** Do not merge this PR until the drivers confirm CP2 with A. Screenshots of the outcome buttons and the handoff route were skipped (driver). Those checks are tests in `web/src/outcome.test.tsx` and `web/src/handoff.test.tsx`. Hour-8 integration ran A's API from `origin/main` (`7f4f546`, uvicorn on 127.0.0.1:8000, `RECOMMENDER=rules`). T1 and T2 were walked by posting each fixture request (the bodies the chips send). Every `SessionState` matched the fixture except `session_id`, which the API assigns. `GET /handoff` matched the same projection with that id. `GET /library` validated against `library.schema.json`. It has five patterns and five look-alikes; `contract/library.json` has two, which Q-008 already allows. Chip, purpose, and question copy for these steps matched. No UI patch. `docs/CROSS_LANE.md` is not on this branch; `cursor/cross-lane-log-760f` has no open A→B items, and this card logged no B→A items. The live handoff projection does not include the recorded outcome or actor. Talk tracks are still not drawn.
+
+---
+
+### [B-03] Handoff outcome and actor — Agent B1 — 2026-10-24 20:26
+- **Status:** done (CP2 still awaits driver confirmation; do not merge)
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  11 passed (11)
+       Tests  38 passed (38)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/types.ts`, `web/src/validate.ts`, `web/src/screens/HandoffScreen.tsx`, `web/src/handoff.test.tsx`, `web/src/teller.tsx`, `web/mock/replay.ts`, `web/src/mockReplay.test.ts`, `docs/HANDOFF.md`, `docs/CROSS_LANE.md`
+- **Decisions I made, and the section that justified each:**
+  - `HandoffProjection` matches applied `handoff.schema.json`: `outcome` is `proceed`, `slow_down`, `escalate`, `report`, or null; `actor` is a string or null. Both are null until `POST /outcome` (CHANGE-004, §11.1).
+  - The Handoff screen shows "Outcome: not recorded yet" and "Actor: not recorded yet" when those fields are null, and the outcome label plus the actor string when they are set (§12).
+  - `GET /handoff` is validated with Ajv against `contract/handoff.schema.json`. A body that omits the fields or names an unknown outcome is not rendered.
+  - The mock keeps the posted outcome and actor and returns them on the next `GET /handoff`. `SessionState` still omits both (Q-011). The handoff body does not include `note`.
+- **Questions logged:** none. X-001.
+- **The next agent needs to know:** This branch includes `origin/main` through `b94749b` (PR #23 and PR #24). The live API in that tree returns the fields. A TestClient call to `api/main.py` got `outcome: null` and `actor: null` before `POST /outcome`, then `outcome: "escalate"` and `actor: "teller-1"` after. Both bodies validated against `handoff.schema.json`. `SessionState` did not include the fields. **CP2 still awaits driver confirmation.** Do not merge. X-001: `contract/handoff.schema.json` description still says CHANGE-004 is not applied.
+
+---
+
 ### [CHANGE-004] Handoff schema description wording — Agent R — 2026-10-24 20:32
 - **Status:** done
 - **Gate:** `scripts/gate.sh contract` → PASS; `scripts/gate.sh a` → PASS
@@ -459,3 +545,67 @@ GATE PASS (a)
   - PR #27 is wording-only. Do not merge unless a driver says so.
   - `contract/` and `docs/` have no remaining live “pending CHANGE-004” / “not applied” wording. `handoff.schema.json` is not in `contract/oracle.sha256`.
   - No new dependency.
+
+---
+
+### [merge] origin/main into b-01-scaffold — Agent B1 — 2026-10-24 20:35
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS; `scripts/gate.sh a` → PASS
+
+```
+── typecheck
+── lint
+── test
+ Test Files  11 passed (11)
+      Tests  38 passed (38)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (b)
+```
+
+```
+── ruff
+All checks passed!
+── pytest
+85 passed, 1 warning in 10.99s
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (a)
+```
+
+- **Changed:** merge commit only. Conflicts: `docs/HANDOFF.md` (kept every section from both sides, newest last); `docs/CROSS_LANE.md` (kept both X-001 entries); `docs/DECISIONS.md` (main; Hour 8 filled, nothing unique on the branch); `contract/handoff.schema.json` (main, unchanged). `web/` stayed the branch version.
+- **Decisions I made, and the section that justified each:** none. Driver instruction: append-only shared docs; main for contract/api/engine/store/goldens/fixtures/`reference_impl.py`; branch for `web/`.
+- **Questions logged:** none
+- **The next agent needs to know:** This is a merge of `origin/main` (`b2db873`) into `b-01-scaffold`. No new branch or PR. Q-012 is still in `docs/QUESTIONS.md`. Both CROSS_LANE X-001 entries are present (main: missing outcome/actor, resolved; branch: schema description still said not applied, still open in the log). The schema file on this tree is main's `CHANGE-004 (applied).` wording.
+
+---
+
+### [A2] make dev-web — Agent A2 — 2026-10-24 20:37
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+85 passed, 1 warning in 10.34s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `Makefile`; `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - `make dev-web` runs `npm run dev` from `web/` in tmux session `teller-web`, matching `make dev-api` and WORKFLOW §2.4 / B-01. Vite already binds 127.0.0.1:5173; the mock is middleware on that server; `VITE_API_URL` overrides the API base (B-01 HANDOFF, PR #5).
+- **Questions logged:** none (Q-012 is route paths, not this target)
+- **The next agent needs to know:** `make dev-web` starts Vite detached in tmux (`teller-web`). Empty `VITE_API_URL` uses the Vite origin (mock). Set `VITE_API_URL=http://127.0.0.1:8000` to hit `make dev-api`. No `web/` edits. Do not merge unless a driver says so. No new dependency.
