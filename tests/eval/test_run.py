@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import ClassVar
 
 import pytest
 import yaml
@@ -158,7 +159,7 @@ def test_run_accepts_model_local(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 class _RecordedLocal(_StubLocal):
     """LocalLLM stand-in with the timings/fallbacks B-013 asked the report to show."""
 
-    latencies_ms = [486, 500, 576, 619]
+    latencies_ms: ClassVar[list[int]] = [486, 500, 576, 619]
     fallbacks = 0
 
 

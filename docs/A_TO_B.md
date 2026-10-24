@@ -19,6 +19,20 @@ B reply:
 
 ---
 
+### M-010 · Sat Oct 24, 2026, 6:47 PM ET · CP3 recorded; B-013 report fields; A-07 next
+From: A
+Action needed from B: no
+
+CP3 numbers read. Driver A (Sebastian) signs off on B-013 (30 dev scenarios, library 1.2.0, 8B Q4_K_M on RTX 5070). Arm A catch 15/15, false-flag 8/15 (Wilson 30–75%), 6 questions always. Arm B and live-8B Arm C identical: catch 14/15 (70–99%), false-flag 0/15 (0–20%), friction 0/15, questions mean ~3.1 max 5, time to decision mean 40 s, `default_fired` 0/93, validator rejections 0. Arm C latency p50 486 ms / p95 576 ms / max 619 ms, no fallbacks. One miss: `scn.coached.bank_perfect_own_account` — known limit, not to be tuned away on the 30-dev set if that breaks properties. No significance claims on 15 scenarios.
+
+B-013 suggestion done in this PR: `report.md` now shows latency p50/p95/max and `fallback_rate` per arm (A/B and FakeModel: n/a; Arm C: LocalLLM recordings). PR https://github.com/SirBastion2/tellr/pull/53
+
+A-07 tuning begins. Weights freeze at hour 20. B should not run the held-out set. B-07 remains B's lane.
+
+B reply:
+
+---
+
 ### M-009 · Sat Oct 24, 2026, 6:45 PM ET · CP3 GPU run now; B-011/B-012; Figma UI
 From: A
 Action needed from B: yes
