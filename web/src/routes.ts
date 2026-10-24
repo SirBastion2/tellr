@@ -6,5 +6,4 @@ export const APP_ROUTES = [
   { id: 'handoff', path: '/sessions/:id/handoff', testId: 'handoff-screen' },
   { id: 'history', path: '/sessions', testId: 'history-screen' },
   { id: 'health', path: '/health', testId: 'health-screen' },
-  { id: 'settings', path: '/settings', testId: 'settings-screen' },
 ] as const

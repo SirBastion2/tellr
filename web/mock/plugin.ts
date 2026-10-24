@@ -16,7 +16,7 @@ export function mockApiPlugin(): Plugin {
         const nodeReq = req as NodeRequest
         const url = nodeReq.url ?? ''
         const path = url.split('?')[0] ?? ''
-        if (path !== '/library' && !path.startsWith('/sessions')) {
+        if (path !== '/library' && path !== '/health' && !path.startsWith('/sessions')) {
           next()
           return
         }

@@ -1130,3 +1130,35 @@ All eight A false flags had concerning-count 3. Threshold 4 clears them. The two
 
 **Miss left on the product:** `scn.coached.bank_perfect_own_account` (phone + cash + refused check + specific own-account; score 14). Look-alike `look.own_account_transfer` is not refuted (`secrecy` denied), so `mit.own_named_account` (−15) still counts. Payment family is already at cap 25, so raising cash weights does nothing. Catching it without a property break or a new false flag is possible, but only by overfitting that one development row. Left it.
 
+
+---
+
+### [B-06] History and read-only health — Agent B — 2026-10-24 22:53
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+
+```
+── typecheck
+
+── lint
+
+── test
+ Test Files  17 passed (17)
+      Tests  54 passed (54)
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/screens/HistoryScreen.tsx`, `web/src/screens/HealthScreen.tsx`, `web/src/screens/SettingsScreen.tsx` (removed), `web/src/history.test.tsx` (added), `web/src/health.test.tsx` (added), `web/src/App.tsx`, `web/src/routes.ts`, `web/src/routes.test.tsx`, `web/src/a11y.test.tsx`, `web/src/mockReplay.test.ts`, `web/mock/replay.ts`, `web/mock/plugin.ts`, `ARCHITECTURE.md` (web section), `docs/HANDOFF.md`, `docs/B_TO_A.md` (B-014), `docs/CROSS_LANE.md` (X-004)
+- **Decisions I made, and the section that justified each:**
+  - CHANGE-001 was rejected (§7.4, §11.1, `contract/CHANGES.md`). There is no Settings screen and no `/settings` call. `GET /health` is read-only and shows recommender, model id, p50, p95, last p95, fallback rate, rejection count, and agreement rate. The recommender follows process config from startup. The fallback switch is config-only.
+  - `/settings` redirects to `/health`. It is not in the nav (`web/src/routes.ts`). Q-012's placeholder settings page is retired by this card.
+  - History's default request is `GET /sessions`, which excludes practice (§11.1, §14.1). Practice is a separate request, `GET /sessions?mode=practice`. The screen also hides the other mode, so a mixed payload cannot put practice on the default list. Rows show `session_id`, `mode`, `opened_at`, `closed_at`, and `library_version` from that list. History and health schemas stay deferred (Q-006). No contract edit.
+  - Handoff already renders `outcome` and `actor` from the typed `GET /sessions/{id}/handoff` body (CHANGE-004). `HandoffScreen.tsx` was not changed.
+  - Merged `origin/main`. Main's B-013 (CP3 on Driver B's GPU laptop, #51) is unchanged. This card's note is B-014. Thanks for the M-010 sign-off on CP3. B-05 is merged (#49).
+- **Questions logged:** X-004
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/55. Do not merge. No new dependency. Did not read `eval/scenarios/dev/` or `library/signals.yaml`. X-004: `GET /sessions?mode=all` returns live sessions only (`api/main.py` passes `None`, and `store/sqlite.py` treats `None` as live). Practice still loads with `?mode=practice`. `ARCHITECTURE.md` lists the added and removed web files under `web/` after B-06.
+
