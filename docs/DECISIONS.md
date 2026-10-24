@@ -3,6 +3,7 @@
 | When | Decision | Choice | Why | Who |
 |---|---|---|---|---|
 | Hour 2 | CHANGE-001 and CHANGE-002 (contract-v1 still open) | CHANGE-001 rejected; CHANGE-002 accepted with an exhaustive code list | Settings stay a boot flag plus read-only `GET /health`. B needs a closed 409 body derived from the §4 command-handler invariants; 422 stays for malformed bodies. Driver B has not ticked contract-v1. | Driver A |
+| Hour 2 | Q-004–Q-011 (CHANGE-003) | each one-line recommendation accepted; Q-006 and Q-009 deferred | Driver A accepted every recommended resolution. Schemas and copy that can land in v1 are recorded; handoff/history/health schemas and undo/outcome/live fixtures wait. | Driver A |
 | Hour 6 | Model size, from A-03's measured p95 | | | |
 | Hour 8 | Works end to end with no model? | | | |
 | Hour 15 | Do the numbers hold up? Pitch change? | | | |
@@ -19,3 +20,38 @@ Rejected commands return `409 {"error":{"code","message"}}`. `code` is exhaustiv
 `purpose_required_on_opener`, `purpose_not_allowed`, `session_closed`,
 `scenario_on_live_session`. Malformed bodies return 422. Applied to `contract/api.md` and
 `contract/error.schema.json`. Recorded 2026-10-24.
+
+### Hour 2 · Q-004 · SessionState schema vs §11.2 — ACCEPTED (Driver A)
+`debug` is constrained to `{recommender, latency_ms, rejections}`. Cross-field rules
+stay in `scripts/check_contract.py`. `reference_impl.py` is the source of truth for T2
+(the §11.2 example is illustrative). Recorded 2026-10-24.
+
+### Hour 2 · Q-005 · Interview composition — ACCEPTED (Driver A)
+Interview = SessionState + `GET /library` + the client's last posted chips/purpose.
+Those fields are not added to SessionState in v1. Recorded 2026-10-24.
+
+### Hour 2 · Q-006 · Untyped endpoints — DEFERRED (Driver A)
+Handoff, history, health, and POST-enum schemas are a follow-up CHANGE. Session and
+Interview work do not wait. Recorded 2026-10-24.
+
+### Hour 2 · Q-007 · library.schema.json is a UI projection — ACCEPTED (Driver A)
+`library.schema.json` stays the display subset. The fold uses the backend library, not
+this schema. Recorded 2026-10-24.
+
+### Hour 2 · Q-008 · library.json is T1–T7 display copy — ACCEPTED (Driver A)
+`contract/library.json` is T1–T7 display copy, not the five §5.3 must-have patterns.
+A loads the real library. Recorded 2026-10-24.
+
+### Hour 2 · Q-009 · Events without API surface / missing traces — DEFERRED (Driver A)
+`POST /outcome` appends `SessionClosed`; `GET /handoff` appends `ManagerRequested`.
+Undo, outcome, and live fixtures wait for A-04: `reference_impl.py` cannot emit those
+traces, and the oracle is not edited. Recorded 2026-10-24.
+
+### Hour 2 · Q-010 · B check: fixtures cannot stand alone — ACCEPTED (Driver A)
+B loads chip and purpose labels from `GET /library` and keeps posted context chips in
+client memory. `stop.reason` stays machine-readable. Recorded 2026-10-24.
+
+### Hour 2 · Q-011 · A check: fold gaps — ACCEPTED (Driver A)
+`session_id` is store-assigned. `debug.recommender` is process settings (boot +
+`/health`). The model re-issues after undo. Notes and outcome are not projected onto
+SessionState in v1. Recorded 2026-10-24.

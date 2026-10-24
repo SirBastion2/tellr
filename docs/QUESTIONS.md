@@ -64,7 +64,7 @@ Agents append; drivers answer. An open question blocks only the work that depend
   `latency_ms` 0 vs 640).
 - **Recommended:** Constrain `debug` to `{recommender, latency_ms, rejections}` and treat
   `reference_impl.py` as source of truth for T2; leave cross-field rules to the checker.
-- **Status:** deferred: pending drivers.
+- **Status:** answered: Driver A accepted recommendation.
 
 ### Q-005 · SessionState is not enough to render the Interview
 - **Raised by:** Agent R · P0 step 2/3 · **Sections:** architecture §11.2, §12; contract/session_state.schema.json
@@ -76,7 +76,7 @@ Agents append; drivers answer. An open question blocks only the work that depend
   client memory) or those fields are missing from the schema.
 - **Recommended:** Treat Interview as SessionState + `GET /library` + the client's last
   posted chips/purpose; do not add those fields to SessionState in v1.
-- **Status:** deferred: pending drivers.
+- **Status:** answered: Driver A accepted recommendation.
 
 ### Q-006 · Untyped endpoints and missing request enums
 - **Raised by:** Agent R · P0 step 2 · **Sections:** architecture §11.1; contract/api.md
@@ -89,7 +89,7 @@ Agents append; drivers answer. An open question blocks only the work that depend
   the contract as frozen.
 - **Recommended:** Add request/response schemas for handoff, history, health, and POST
   enums in a follow-up CHANGE; do not block session or interview work.
-- **Status:** deferred: pending drivers.
+- **Status:** deferred: follow-up CHANGE.
 
 ### Q-007 · library.schema.json is a display subset of §5
 - **Raised by:** Agent R · P0 step 2 · **Sections:** architecture §5; contract/library.schema.json
@@ -105,7 +105,7 @@ Agents append; drivers answer. An open question blocks only the work that depend
   fold can use.
 - **Recommended:** Keep `library.schema.json` as the UI projection; the fold uses the
   backend library, not this schema.
-- **Status:** deferred: pending drivers.
+- **Status:** answered: Driver A accepted recommendation.
 
 ### Q-008 · Sample library.json covers two of five §5.3 patterns
 - **Raised by:** Agent R · P0 step 2 · **Sections:** architecture §5.3; contract/library.json
@@ -118,7 +118,7 @@ Agents append; drivers answer. An open question blocks only the work that depend
   route those purposes.
 - **Recommended:** Treat `contract/library.json` as T1–T7 display copy, not the full §5
   must-have set; A loads the real library.
-- **Status:** deferred: pending drivers.
+- **Status:** answered: Driver A accepted recommendation.
 
 ### Q-009 · Events without API surface; fixtures omit undo, outcome, live
 - **Raised by:** Agent R · P0 step 2 · **Sections:** architecture §4, §11.1; contract/events.md; contract/api.md; contract/fixtures
@@ -132,7 +132,8 @@ Agents append; drivers answer. An open question blocks only the work that depend
   combined `stop.reason` appears in T1's last step as specified.
 - **Recommended:** Append `SessionClosed` after a valid `POST /outcome` and
   `ManagerRequested` on `GET /handoff`; add undo/outcome/live fixtures after A-04.
-- **Status:** deferred: pending drivers.
+- **Status:** deferred: A-04 — event-append rules recorded in `events.md` / `api.md`;
+  undo/outcome/live fixtures wait because `reference_impl.py` cannot emit those traces.
 
 ### Q-010 · B check: T1.json and T3.json cannot stand alone
 - **Raised by:** Agent R · P0 step 3 · **Sections:** architecture §11.2, §12; contract/fixtures/T1.json; contract/fixtures/T3.json
@@ -154,7 +155,7 @@ Agents append; drivers answer. An open question blocks only the work that depend
   have no fixture at all.
 - **Recommended:** B loads chip/purpose labels from `GET /library` and keeps posted
   context chips in client memory; leave `stop.reason` machine-readable.
-- **Status:** deferred: pending drivers.
+- **Status:** answered: Driver A accepted recommendation.
 
 ### Q-011 · A check: fold gaps for SessionState
 - **Raised by:** Agent R · P0 step 4 · **Sections:** architecture §4, §8.4, §11.2; contract/session_state.schema.json; contract/events.md
@@ -176,6 +177,6 @@ Agents append; drivers answer. An open question blocks only the work that depend
 - **Recommended:** `session_id` is store-assigned; `debug.recommender` is process
   settings (boot + `/health`); the model re-issues after undo; do not project
   notes/outcome onto SessionState in v1.
-- **Status:** deferred: pending drivers.
+- **Status:** answered: Driver A accepted recommendation.
 
 ---
