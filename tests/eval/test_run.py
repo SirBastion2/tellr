@@ -1,4 +1,4 @@
-"""eval/run.py writes results.json + report.md; refuses held-out (A-06; §13.4)."""
+"""eval/run.py writes results.json + report.md; labels held-out (A-08; §13.4)."""
 
 from __future__ import annotations
 
@@ -23,6 +23,9 @@ def _write_dev(tmp_path: Path, cases: tuple[str, ...] = ("T1", "T2")) -> Path:
     return dev
 
 
+HELDOUT_SECTION = "held-out, 5 per population, wide intervals"
+
+
 def test_run_writes_results_and_report(tmp_path: Path) -> None:
     dev = _write_dev(tmp_path)
     out = tmp_path / "results"
@@ -41,6 +44,7 @@ def test_run_writes_results_and_report(tmp_path: Path) -> None:
     assert rc == 0
     payload = json.loads((out / "results.json").read_text(encoding="utf-8"))
     report = (out / "report.md").read_text(encoding="utf-8")
+    assert HELDOUT_SECTION not in report
     assert payload["config"] == {
         "temperature": 0,
         "batch_size": 1,
@@ -65,17 +69,29 @@ def test_run_writes_results_and_report(tmp_path: Path) -> None:
     assert "T2" in report or "t2" in report.lower() or "scn.coached" in report
 
 
-def test_run_refuses_heldout_directory(tmp_path: Path) -> None:
+def test_run_labels_heldout_section_from_tmp_dir(tmp_path: Path) -> None:
+    """A-08: path containing 'heldout' labels the report. Uses a tmp dir, never the real set."""
     held = tmp_path / "heldout"
     held.mkdir()
     data = t_scenario("T2")
-    (held / "scn.coached.secret.yaml").write_text(
+    (held / "scn.coached.tmp_t2.yaml").write_text(
         yaml.safe_dump(data, sort_keys=False), encoding="utf-8"
     )
     out = tmp_path / "results"
-    with pytest.raises(SystemExit) as exc:
-        main(["--scenarios", str(held), "--out", str(out), "--arms", "B", "--model", "fake"])
-    assert exc.value.code != 0
+    rc = main(["--scenarios", str(held), "--out", str(out), "--arms", "B", "--model", "fake"])
+    assert rc == 0
+    report = (out / "report.md").read_text(encoding="utf-8")
+    assert f"## {HELDOUT_SECTION}" in report
+
+
+def test_run_dev_dir_does_not_use_heldout_label(tmp_path: Path) -> None:
+    """Dev (or any non-heldout tmp dir) keeps the ordinary report heading."""
+    dev = _write_dev(tmp_path)
+    out = tmp_path / "results"
+    rc = main(["--scenarios", str(dev), "--out", str(out), "--arms", "A", "--model", "fake"])
+    assert rc == 0
+    report = (out / "report.md").read_text(encoding="utf-8")
+    assert HELDOUT_SECTION not in report
 
 
 def test_run_does_not_import_api_or_recommenders() -> None:
@@ -97,12 +113,13 @@ def test_run_does_not_import_api_or_recommenders() -> None:
     assert "recommenders" not in sys.modules
 
 
-def test_no_heldout_directory_created(repo_root: Path) -> None:
-    heldout = repo_root / "eval" / "scenarios" / "heldout"
-    if not heldout.exists():
-        return
-    yamls = list(heldout.glob("*.yaml")) + list(heldout.glob("*.yml"))
-    assert yamls == [], "A3 must not write eval/scenarios/heldout/"
+def test_a3_tests_do_not_read_real_heldout() -> None:
+    """H owns eval/scenarios/heldout/. These tests use t_scenario / tmp dirs only."""
+    from tests.eval import helpers
+
+    source = Path(helpers.__file__).read_text(encoding="utf-8")
+    assert "eval/scenarios/heldout" not in source
+    assert "scenarios/heldout" not in source
 
 
 class _StubLocal:

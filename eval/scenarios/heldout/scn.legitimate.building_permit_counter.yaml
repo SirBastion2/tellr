@@ -1,0 +1,23 @@
+# Specific genuine government payment. A township permit bill, paid in
+# person, with no caller coaching the answers.
+id: scn.legitimate.building_permit_counter
+label: Legitimate — township building permit, bill in hand
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.government_payment
+context_chips: []
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  written_estimate: specific
+  receiving_account: specific
+  secrecy: denied
+  payment_flexibility: confirmed
+default: specific
+tags:
+  - legitimate
+source: >
+  Legitimate government payment, the contrast to FTC government-imposter
+  scams. The customer has a township building-permit bill with a permit
+  number and payee, is not on the phone, denies any secrecy instruction,
+  and will take a cashier's check.

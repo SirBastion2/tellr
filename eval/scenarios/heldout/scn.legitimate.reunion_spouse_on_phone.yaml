@@ -1,0 +1,26 @@
+# Innocent red-flag chips. The spouse is on the phone reading a real
+# reservation code, and a large withdrawal is unusual for this customer.
+# The customer still knows the trip and will take a check.
+id: scn.legitimate.reunion_spouse_on_phone
+label: Legitimate — reunion fare, spouse reading the reservation, unusual amount
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.gift_or_travel
+context_chips:
+  - chip.on_phone
+  - chip.unusual_for_customer
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  written_estimate: specific
+  receiving_account: specific
+  secrecy: denied
+  payment_flexibility: confirmed
+default: specific
+tags:
+  - innocent_red_flag
+source: >
+  Legitimate contrast to the on-the-phone and unusual-activity cues in FTC
+  imposter-scam warnings. The customer is paying a booked reunion trip,
+  can cite the reservation and who it is payable to, was not told to keep
+  it secret, and will take a cashier's check. The phone is their spouse.

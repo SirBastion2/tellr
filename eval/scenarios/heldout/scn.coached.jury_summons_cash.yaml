@@ -1,0 +1,27 @@
+# Classic coaching, purpose aligned with the scam. FBI and FTC jury-duty
+# alerts: pay a fine in cash today or a warrant will be issued, and do not
+# explain it to the teller.
+id: scn.coached.jury_summons_cash
+label: Coached — fake jury-duty warrant, cash fine, caller on the line
+population: coached
+pattern_truth: pat.government_impersonation
+stated_purpose: purpose.government_payment
+context_chips:
+  - chip.on_phone
+  - chip.urgency_secrecy
+  - chip.rushed
+  - chip.cash_only
+answers:
+  purpose: relayed_by_caller
+  counterparty_identity: vague
+  written_estimate: no_answer
+  receiving_account: no_answer
+  secrecy: confirmed
+  payment_flexibility: denied
+default: no_answer
+tags:
+  - coached
+source: >
+  FBI IC3 and FTC jury-duty scam alerts. A caller threatens arrest unless
+  the person pays a cash fine immediately, stays on the phone, and forbids
+  a check or any explanation at the window.

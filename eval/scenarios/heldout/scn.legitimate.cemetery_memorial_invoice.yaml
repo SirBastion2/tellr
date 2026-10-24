@@ -1,0 +1,22 @@
+# Specific genuine family payment. Invoice from the monument company is
+# in hand; no caller and no secrecy.
+id: scn.legitimate.cemetery_memorial_invoice
+label: Legitimate — shared memorial invoice, monument company named
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.family_help
+context_chips: []
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  written_estimate: specific
+  receiving_account: specific
+  secrecy: denied
+  payment_flexibility: confirmed
+default: specific
+tags:
+  - legitimate
+source: >
+  Legitimate family expense. The customer and a sibling are paying a
+  monument company for a headstone, the invoice names the company, nobody
+  asked them to hide it, and a cashier's check is acceptable.

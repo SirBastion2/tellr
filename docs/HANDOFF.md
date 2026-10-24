@@ -1130,7 +1130,6 @@ All eight A false flags had concerning-count 3. Threshold 4 clears them. The two
 
 **Miss left on the product:** `scn.coached.bank_perfect_own_account` (phone + cash + refused check + specific own-account; score 14). Look-alike `look.own_account_transfer` is not refuted (`secrecy` denied), so `mit.own_named_account` (−15) still counts. Payment family is already at cap 25, so raising cash weights does nothing. Catching it without a property break or a new false flag is possible, but only by overfitting that one development row. Left it.
 
-
 ---
 
 ### [B-06] History and read-only health — Agent B — 2026-10-24 22:53
@@ -1161,6 +1160,148 @@ GATE PASS (b)
   - Merged `origin/main`. Main's B-013 (CP3 on Driver B's GPU laptop, #51) is unchanged. This card's note is B-014. Thanks for the M-010 sign-off on CP3. B-05 is merged (#49).
 - **Questions logged:** X-004
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/55. Do not merge. No new dependency. Did not read `eval/scenarios/dev/` or `library/signals.yaml`. X-004: `GET /sessions?mode=all` returns live sessions only (`api/main.py` passes `None`, and `store/sqlite.py` treats `None` as live). Practice still loads with `?mode=practice`. `ARCHITECTURE.md` lists the added and removed web files under `web/` after B-06.
+
+---
+
+### [X-004] GET /sessions?mode=all returns live+practice — Agent A2 — 2026-10-24 23:00
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+155 passed, 1 warning in 22.92s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `api/main.py` (`list_sessions` forwards `mode`); `store/sqlite.py` (`mode=all` is no filter); `tests/api/test_sessions_list.py`; `ARCHITECTURE.md`; `docs/A_TO_B.md` (M-013); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Contract `api.md` / architecture §11.1: `GET /sessions` is filterable and excludes `practice` by default. That allows `mode=all` as live+practice without a contract change. Default and `mode=live` stay live-only; `mode=practice` unchanged.
+  - The API used to pass `mode=all` as `None`; the store treats `None` like live. Fix: pass `mode` through; store treats `"all"` as no WHERE clause.
+  - Did not edit `docs/CROSS_LANE.md` or `docs/B_TO_A.md` (X-004 lives in B's unmerged #55). M-013 tells B to point X-004's owner response here after #55 merges, and to renumber #55's reused B-013 to B-014.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Contract allowed the fix. No CHANGE protocol.
+  - #55 is B's to merge. B-07 / A-08 still B's held-out lane.
+
+---
+
+### [A-08] Held-out run PREP — Agent A3 — 2026-10-24 23:15
+- **Status:** partial (prep done; held-out run pending on Driver B's GPU laptop)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+156 passed, 1 warning in 22.11s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+- **Changed:** `eval/report.py`, `eval/run.py`, `eval/scenarios.py`, `tests/eval/test_run.py`, `tests/eval/test_dev_scenarios.py`, `docs/A08_HELDOUT_RUN.md` (new), `ARCHITECTURE.md`, `docs/A_TO_B.md` (M-014), `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Did not run the held-out set, not even `--model fake`. Arm C needs the local 8B; this VM has no GPU. Architecture §13.4 / A-08: one run, later, on Driver B's laptop.
+  - Isolation of B-07 #58: commit `14bb1cd`, parent `82b788d` (`weights-frozen`), only `eval/scenarios/heldout/`, 10 scenarios valid. `python3 -m eval.validate eval/scenarios/heldout` printed OK lines and `10 scenario(s) valid` — no scores.
+  - Report labels `## held-out, 5 per population, wide intervals` when the scenarios path contains `heldout` (§13.4: five per population, wide intervals, a check on generalization). Test uses a tmp dir / DEV helpers, never the real held-out YAML.
+  - Lifted the A-06 `refuse_heldout` so the A-08 command can run. The one-run rule is the runbook, not a harness lock.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - **Driver B:** run `docs/A08_HELDOUT_RUN.md` exactly once on the GPU laptop. Record the exact SHA and tag `weights-frozen` (`82b788d`) in this file. Paste the report section in `docs/B_TO_A.md`.
+  - Hard rule: run once, no reruns, no edits after seeing results.
+  - Do not touch `eval/scenarios/heldout/`, weights, goldens, or `web/`.
+
+---
+
+### [A-08] Run the held-out set once — Agent A3 — 2026-10-24 23:18
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+156 passed, 1 warning in 22.96s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `eval/results/heldout/results.json`, `eval/results/heldout/report.md`, `docs/HANDOFF.md`, `docs/B_TO_A.md` (B-018)
+- **Decisions I made, and the section that justified each:**
+  - Committed the single GPU-laptop run byte-for-byte. `eval/results/` is gitignored; force-added the two output files (`docs/A08_HELDOUT_RUN.md`, architecture §13.4, WORKFLOW.md §10).
+  - The harness recorded `git rev-parse HEAD` `82b788d1009fe775c3fc5edb20cb5413ee25068e` (`weights-frozen`). B saw #60 merged at `fe20c93`. The run used exactly that commit's runner files (`eval/run.py`, `eval/scenarios.py`, `eval/report.py`). `weights-frozen` `eval/scenarios.py` defines `refuse_heldout()`, which blocks held-out paths, so arm and model code, metrics, and the library stayed at weights-frozen.
+  - `report.md` already contains `## held-out, 5 per population, wide intervals`. Main `fe20c93` already emits that label from `eval/report.py` (A-08 PREP). Card A-08 step 5 is met by committing this report.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - [x] Exact `git rev-parse HEAD` of the tree the harness recorded: `82b788d1009fe775c3fc5edb20cb5413ee25068e`
+  - [x] Tag `weights-frozen` = `82b788d` (`82b788d1009fe775c3fc5edb20cb5413ee25068e`)
+  - [x] B-07 isolation commit `14bb1cd` (parent `82b788d`). A verified isolation in M-014. Merged held-out commit `b8a5ca234c0397c1739fa8477509746b7f8ee1cf`.
+  - [x] Output path `eval/results/heldout/`
+  - [x] run once; no reruns; no edits after seeing results
+  - B saw #60 merged at `fe20c93`. The run used exactly that commit's runner files. Command: `python -m eval.run --scenarios eval/scenarios/heldout --out eval/results/heldout --arms A,B,C --model local`. llama-server 8B Q4_K_M `-ngl 99 -c 4096 -np 1`. VRAM peak 7114/8151 MiB. One run, exit 0.
+  - Results: A catch 4/5, false-flag 1/5, questions 6.00; B 4/5, 0/5, questions 2.30; C 4/5, 0/5, questions 2.30, p50/p95/max 354/405/410 ms, fallback 0/13. All arms missed `scn.coached.ssa_review_rehearsed`.
+  - Jonathan approved. Agent A signs off. The report section is in `docs/B_TO_A.md` B-018.
+
+---
+
+### [J-01] Writeup numbers (steps 3–4) — Agent A3 — 2026-10-24 23:24
+- **Status:** done (J-01 steps 3–4 only; replay logs and `demo` tag are other owners)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+156 passed, 1 warning in 22.41s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `docs/WRITEUP_NUMBERS.md` (new), `ARCHITECTURE.md` (map), `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Counts only, no significance claims (§13.3). Held-out catch/false-flag and Wilson intervals copied from `eval/results/heldout/report.md` under the label `held-out, 5 per population, wide intervals` (§13.4).
+  - Dev-set counts from the CP3 / B-013 record in HANDOFF; A-07 arm A threshold 3→4 is `15/15`→`13/15` catch and `8/15`→`0/15` false-flag (HANDOFF A-07).
+  - Arm B versus arm C stated plainly (§19.1): identical catch/false-flag on both sets; questions 3.07 vs 3.10 (dev) and 2.30 vs 2.30 (held-out). The model did not beat the rule engine.
+  - All four §18.14 claims marked **remove**: the report has no AARP, Cuyahoga, Ohio coaching, or Senior Safe Act figure to cite.
+  - Did not rerun eval. Did not touch `eval/results/**` or any scenario.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR https://github.com/SirBastion2/tellr/pull/62
+  - Writeup numbers live in `docs/WRITEUP_NUMBERS.md`. Drivers still own J-01 steps 1–2 (replay logs) and 5 (`git tag demo`).
+  - No new dependency.
 
 ---
 
