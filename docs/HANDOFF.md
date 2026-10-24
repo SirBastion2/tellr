@@ -240,3 +240,475 @@ GATE PASS (a)
   - API still uses `FakeEngine` until A-04. `engine.project` is real on this branch; `question` and `stop` stay null.
   - One Starlette warning: `httpx` with `starlette.testclient` is deprecated; A2 owns that path.
 
+---
+
+### [A-04] Eligibility, stop, rules, golden traces — Agent A1 — 2026-10-24 19:45
+- **Status:** done (A1 engine half). A2 still swaps the real engine for CP2.
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+74 passed, 1 warning in 9.83s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `engine/eligibility.py`, `engine/stop.py`, `engine/rules.py`, `engine/reduce.py`, `engine/__init__.py`, `tests/golden/test_traces.py`, `tests/engine/test_commands.py`, `tests/engine/test_interface.py`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Ported `eligible`, `stop_check`, `signals_for` with the oracle names (A-04; tc-11). `RuleEngine.run_case` matches `reference_impl.run_case` row-for-row, including the pre-CHANGE-000 stop tuple.
+  - `engine.stop` / `project` apply CHANGE-000: when a recommended stop and empty candidates coincide, hard wins `kind` and `reason` names both; `question` is null (§8.4, §11.2, T1/T5 last steps).
+  - Display snaps to raw at any stop (§8.4 / oracle `run_case`). Talk tracks take stage lines from the shown-level outcome and add pattern lines only while a pattern is displayed (§7.1; `gen_fixtures.py`).
+  - `check_command` raises `CommandRejected` with the six CHANGE-002 codes. Command `type` accepts both the A2 HTTP verbs (`answer`/`outcome`/`close`) and the event names.
+  - `project` attaches an `_engine` bag (`asked`, `evidence`, `purpose`, `story_failed`, `context`) so `candidates(state, lib)` and `stop(state, lib, cands)` stay on the frozen signatures. `engine.public_state` strips it. Did not add those fields to the SessionState schema.
+  - Did not edit weights, goldens, `reference_impl.py`, `contract/`, `api/`, or `store/`.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - **A2 (swap):** `from engine import project, candidates, stop, rule_choice, check_command, public_state`. Replace `FakeEngine` with these. `RECOMMENDER=rules` can use `project` as the complete rules-path fold (question / stop / talk_track filled). Before HTTP, `public_state(state)` — `_engine` is not in `session_state.schema.json`. Drop the live-mode rewrite adapter in `api/main.py`.
+  - **T1 last step:** `stop.kind=hard`, `reason=enough to proceed; nothing left to ask`, `question=null` (CHANGE-000). T2 last step keeps `q.alternative.cashiers_check` under a recommended escalate stop.
+  - **Goldens** still load `tests/golden/reference_weights.yaml`, never `library/signals.yaml`.
+  - Checkpoint CP2 is A2's: hour-8 integration against the real API. A1 is stopped here.
+
+### [A-04] API swap to the real engine — Agent A2 — 2026-10-24 19:52
+- **Status:** done (A2 API half). **Checkpoint CP2:** stop until the drivers confirm the hour-8 integration run.
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+83 passed, 1 warning in 10.20s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `api/main.py`, `tests/api/test_q009.py`, `tests/api/conftest.py`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Replaced `FakeEngine` with `from engine import project, candidates, stop, rule_choice, check_command, public_state` (A1 A-04 HANDOFF; ROSTER §5.1). `RECOMMENDER=rules` uses `project` as the complete rules-path fold; the other helpers stay on the call path so the API is not on the stand-in.
+  - `public_state(state)` before HTTP. `_engine` is not in `session_state.schema.json` (A1 HANDOFF; CHANGE-003 / Q-011).
+  - Dropped the live-mode FakeEngine rewrite in `api/main.py`. Live sessions fold natively (§11.1; Q-009).
+  - `Truncated.to_seq` is the fold's 0-based log order (`engine.reduce._live_events` / `contract/events.md`), not the store's 1-based PK. Undo walks live events so a second undo pops again (§4).
+  - Outcome still appends `OutcomeRecorded` then `SessionClosed` (CHANGE-003 / Q-009). Notes/outcome/actor/closed stay off SessionState (Q-011).
+  - CHANGE-002 mapping is unchanged: `CommandRejected` → `409 {"error":{"code","message"}}`.
+- **Questions logged:** none. Q-009 coverage is now API tests (`tests/api/test_q009.py`), not contract fixtures (`reference_impl.py` still cannot emit undo/outcome/live).
+- **Cross-lane:** none. No `docs/CROSS_LANE.md` entry.
+- **The next agent needs to know:**
+  - **CP2:** this PR does not merge. Drivers walk T1/T2 on B's screen against this API. A2 is stopped here.
+  - T1–T7 contract replay is green against the real engine. Q-009: undo pops, two undos pop twice, answer-after-undo is live, outcome closes, live T2 matches the fixture except `mode`.
+  - `make dev-api` still starts uvicorn in tmux on `127.0.0.1:8000`. Default DB `/tmp/teller-copilot.sqlite` (`TELLER_DB` overrides).
+  - No new dependency.
+  - **T2 curl walkthrough** (scores 0 → 32 → 40 → 58 → 80; last step recommended escalate, question `q.alternative.cashiers_check`, `_engine` absent):
+
+```
+TELLER_DB=/tmp/teller-t2.sqlite python3 -m uvicorn api.main:app --host 127.0.0.1 --port 8010
+
+curl -sS http://127.0.0.1:8010/health
+# {"recommender":"rules","model_id":null,"last_p95":null,"fallback_rate":0.0,"agreement_rate":null}
+
+SID=$(curl -sS -X POST http://127.0.0.1:8010/sessions \
+  -H 'Content-Type: application/json' \
+  -d '{"mode":"practice","amount_band":"5000_9999"}' | python3 -c "import json,sys; print(json.load(sys.stdin)['session_id'])")
+# open: answers=0 score=0 question=q.purpose.open
+
+curl -sS -X POST http://127.0.0.1:8010/sessions/$SID/context \
+  -H 'Content-Type: application/json' \
+  -d '{"chips":["chip.on_phone","chip.cash_only","chip.rushed"]}'
+# context: answers=0 level=caution score=32
+
+curl -sS -X POST http://127.0.0.1:8010/sessions/$SID/answers \
+  -H 'Content-Type: application/json' \
+  -d '{"question_id":"q.purpose.open","chip":"relayed_by_caller","purpose":"purpose.moving_money"}'
+# Q1: answers=1 purpose.moving_money score=40 question=q.recipient.account_details
+
+curl -sS -X POST http://127.0.0.1:8010/sessions/$SID/answers \
+  -H 'Content-Type: application/json' \
+  -d '{"question_id":"q.recipient.account_details","chip":"vague"}'
+# Q2: answers=2 score=58 question=q.secrecy.told_not_to_tell
+
+curl -sS -X POST http://127.0.0.1:8010/sessions/$SID/answers \
+  -H 'Content-Type: application/json' \
+  -d '{"question_id":"q.secrecy.told_not_to_tell","chip":"confirmed"}'
+# Q3: answers=3 score=80 level=high stop={kind:recommended, reason:enough to escalate}
+# question=q.alternative.cashiers_check suggested_outcome=escalate
+```
+
+
+
+### [A-03] Latency benchmark — Agent A (run on Jonathan's laptop) — 2026-10-24 15:55
+- **Status:** done
+- **Gate:** not run (card's done-when is numbers in HANDOFF; no gate step named)
+- **Changed:** `scripts/bench_llm.py` (new), `docs/HANDOFF.md` (this entry)
+- **Setup:** NVIDIA GeForce RTX 5070 Laptop GPU, 8151 MiB VRAM, driver 592.01, Windows; llama.cpp b11865 win CUDA 13.4; `llama-server -ngl 99 -c 4096 -np 1`; bartowski GGUFs. Prompt: 947-token stable prefix + 348-token suffix (T2 transcript, context chips, evidence, leading pattern, 12 candidates); 12-way GBNF over question IDs; temperature 0; `cache_prompt`; 3 warm-up runs, then 50 timed. Total = client wall clock per request; prefill/decode = llama-server `timings`.
+- **Results (ms):**
+
+| Model | Total p50 | Total p95 | Prefill p50 | Prefill p95 | Decode p50 | Decode p95 | VRAM used | L1b ≤1.5 s | §8.3 ≈0.7 s |
+|---|---:|---:|---:|---:|---:|---:|---:|---|---|
+| Llama-3.2-3B-Instruct Q4_K_M | 273.2 | 296.3 | 86.6 | 92.2 | 174.4 | 184.0 | 4865 MiB | PASS | PASS |
+| Meta-Llama-3.1-8B-Instruct Q4_K_M | 463.6 | 482.7 | 166.4 | 171.7 | 285.2 | 291.9 | 7379 MiB | PASS | PASS |
+
+- **Decisions I made, and the section that justified each:** §8.1 names no model family, so Llama-3.2-3B / Llama-3.1-8B per the card. The library has 6 questions, so the 12-way grammar (§8.3) is the 5 non-opener library IDs plus 7 synthetic `q.bench.extra_NN` IDs. Suffix came out ~350 tokens, above the ~250 target, which is the conservative direction for prefill. Each run varies the suffix so prefill really processes the new tokens (~346) against the cached prefix.
+- **Questions logged:** none
+- **The next agent needs to know:** Both models fit L1b and the target with wide margin; decode (~15 tokens) dominates. 8B Q4_K_M at ctx 4096 uses ~7.4 of 8 GB, tight for anything else on the GPU. Both models picked `q.homerepair.contractor_name` for T2 (a bank-impersonation case) — a quality signal only, not measured here. Model choice is for the drivers (DECISIONS.md); A-05 not started.
+
+---
+
+### [CHANGE-004] Handoff projection schema — Agent A — 2026-10-24 20:13
+- **Status:** done (proposal only; not applied)
+- **Gate:** `scripts/gate.sh contract` → PASS
+
+```
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (contract)
+```
+
+- **Changed:** `contract/CHANGES.md`, `contract/api.md`, `contract/handoff.schema.json` (new), `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Proposed (did not apply) CHANGE-004: type `GET /sessions/{id}/handoff` as today's manager summary plus `outcome` and `actor`, both null until `POST /outcome` (WORKFLOW.md §5; CHANGE-003 / Q-006 deferred; Q-005 / Q-010 / Q-011 keep those fields off SessionState).
+  - Did not edit `api/`, `web/`, `reference_impl.py`, `tests/golden/`, or `contract/fixtures/`. History, health, and POST-enum schemas stay deferred.
+- **Questions logged:** none. Resolves the handoff part of Q-006 only, pending both drivers.
+- **The next agent needs to know:** PR is Proposed. Both driver boxes are unticked. After both drivers approve, R applies on main (bump `CONTRACT_VERSION`, tag). Then A2 adds `outcome`/`actor` to `api/main.py` `handoff()` from the latest `OutcomeRecorded` and validates with `tests/api` against `handoff.schema.json`. Do not project them onto SessionState. Do not merge this PR as applied.
+
+### [CHANGE-004] Handoff outcome/actor on GET /handoff — Agent A2 — 2026-10-24 20:18
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+85 passed, 1 warning in 10.50s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `api/main.py` (`handoff()` only), `tests/api/conftest.py`, `tests/api/test_q009.py`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - `handoff()` reads the latest `OutcomeRecorded` from `store.load_events` and adds `outcome` and `actor` (`None` until recorded) (CHANGE-004; Q-005 / Q-010 / Q-011 keep those fields off SessionState).
+  - Did not add them to `render()` / SessionState, did not change `POST /outcome`, did not return notes.
+  - Did not edit `web/`, `contract/`, `reference_impl.py`, `tests/golden/`, or fixtures.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - `GET /sessions/{id}/handoff` now validates against `contract/handoff.schema.json` via `assert_handoff()`. Before `POST /outcome`, `outcome` and `actor` are null and `ManagerRequested` is appended. After outcome they equal the posted values. SessionState still omits `outcome` / `actor` / `closed`.
+  - B1 can render the recorded outcome and actor from the handoff projection. Do not merge this PR unless a driver says so.
+  - No new dependency.
+
+---
+
+### [B-01] Scaffold, mock server, shells — Agent B1 — 2026-10-24 19:30
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  8 passed (8)
+       Tests  21 passed (21)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/**` (Vite + React + TypeScript strict + Tailwind + vitest + eslint; types; ajv banner; `web/mock` fixture replay; eight routes). Appended `docs/HANDOFF.md`, `docs/QUESTIONS.md`.
+- **Decisions I made, and the section that justified each:**
+  - Eight UI routes are `/`, `/sessions/:id/context`, `/sessions/:id`, `/sessions/:id/outcome`, `/sessions/:id/handoff`, `/sessions`, `/health`, `/settings`. §12 says eight routes and does not name them (Q-012).
+  - Interview and Context render `SessionState` plus labels from `GET /library`. Posted context chip ids stay in client memory (CHANGE-003 / Q-005, Q-010). `stop.reason` is shown raw; the §12 teller sentence is not substituted.
+  - The mock replays `contract/fixtures/T*.json` in order. A different body still returns the next fixture `SessionState` and warns. It does not score the posted chips. `POST /sessions?case=` rejects `scenario_id` when `mode` is `live` with `409` `scenario_on_live_session` (CHANGE-002). No live `SessionState` is synthesized; fixtures are practice (Q-009 deferred to A-04).
+  - Settings does not call `/settings` (CHANGE-001). Handoff, history, and health shells do not call those endpoints and do not invent bodies (Q-006 deferred).
+  - Unparseable JSON on the dev middleware returns `422` with body `null`. The UI does not invent a FastAPI `detail` array; that body is not in the contract.
+  - Screenshot of the Interview shell at T2's second answer was skipped (driver instruction). `web/src/interview.test.tsx` asserts that step's level, score, pattern label, question text, reasons, and library purpose label.
+- **Questions logged:** Q-012
+- **The next agent needs to know:** Branch is rebased on `contract-v1` (`5515060`). `VITE_API_URL` is the API base; empty uses the Vite origin, where the mock middleware serves `/library` and `/sessions`. Run `npm run dev` from `web/` (127.0.0.1:5173). A2 owns the Makefile, which is outside `web/`: please add `make dev-web` that runs that command. There is no `Makefile` in the repo yet. Chip memory pops one posted batch on a successful undo; answer posting is still B-02, so the shell's only client write is context.
+
+---
+
+### [B-02] Interview screen — Agent B1 — 2026-10-24 19:51
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  9 passed (9)
+       Tests  27 passed (27)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/screens/InterviewScreen.tsx`, `web/src/interview.test.tsx`, `web/src/teller.tsx`, `web/src/teller.test.tsx`, `web/src/App.tsx`, `web/src/types.ts`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Shown level is the words Clear, Caution, or High, a colour (`#166534` / `#b45309` / `#991b1b`), and a slot at position 0, 1, or 2. `data-level` is the fixture token. Score, reason labels, and `pattern_label` are the fixture strings. Nothing is derived from the score (§12, §11.2; card spot check "Caution" at 16). `raw_level` is not the label, so T1's first answer stays Caution while raw is clear (§6.3 hysteresis, as carried on `risk.level`).
+  - Counterpoint prefix is "In their favor:" at Caution or High and "Still noted:" at Clear, on its own line (§6.5). A recommended stop shows "You have enough to decide, or ask one more" and keeps the question at opacity 0.55 (§8.4, §12). A hard stop renders no question. Those three strings are not in `GET /library`; CHANGE-003 leaves `stop.reason` machine-readable, so it is on `data-reason` and, for a hard stop, is the visible text.
+  - The opener renders library purposes, then a 72px row of five answer chips. A chip posts only after a purpose is chosen, as `{question_id, chip, purpose}`. Later questions post `{question_id, chip}` and omit `purpose`. No `note` (§5.6, §11.1, §9).
+  - Client memory is a stack of context batches and answers. Undo pops one write, so undoing an answer does not drop posted context chips (§11.1).
+- **Questions logged:** none
+- **The next agent needs to know:** Screenshots of T1 Caution 16, T3 "Looks like: bank impersonation", and T6's hard stop were skipped (driver). Those three checks are tests in `web/src/interview.test.tsx`. Rendering and `POST /answers` were verified against contract fixtures through the web mock and a fetch stub, not against A's running API. The client still prefixes paths with `VITE_API_URL` (the stub used `http://api.test`). `docs/CROSS_LANE.md` is not on this branch; the copy on `cursor/cross-lane-log-760f` has no open A→B items, and this card logged no B→A items. Talk tracks are still not drawn on the interview screen. Outcome buttons stay on `/sessions/:id/outcome`.
+
+---
+
+### [B-03] Outcome, handoff, real API — Agent B1 — 2026-10-24 20:07
+- **Status:** done (CP2 awaits driver confirmation; do not merge)
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  11 passed (11)
+       Tests  37 passed (37)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/screens/OutcomeScreen.tsx`, `web/src/screens/HandoffScreen.tsx`, `web/src/outcome.test.tsx`, `web/src/handoff.test.tsx`, `web/src/App.tsx`, `web/src/teller.tsx`, `web/src/types.ts`, `web/src/validate.ts`, `web/mock/replay.ts`, `web/src/mockReplay.test.ts`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - All four outcome buttons stay enabled at every fixture step. The highlighted button is `suggested_outcome`. Report is never highlighted, including if a payload names it. Highlight is colour `#fef3c7` plus `data-highlighted` (§11.2, §18.1).
+  - Submit posts `{outcome, actor}` and omits `note`. The actor must be non-blank after trim, and the teller must choose an outcome; the suggestion is not pre-selected (§11.1, §11.2). Button words are Proceed, Slow down, Escalate, and Report from §18.1. The actor control is labeled Actor. Those strings are not in `GET /library` (Q-006).
+  - Handoff is `GET /sessions/:id/handoff`. The mock copies `session_id`, `mode`, `stated_purpose`, `risk`, `suggested_outcome`, `answers`, and `stop` off the current fixture step. The screen renders that projection. A shape mismatch shows the contract banner and does not invent fields (Q-006). Purpose labels still come from `GET /library`. Level words match the interview screen. `stop.reason` stays machine-readable.
+  - A successful mock `POST /outcome` returns the current `SessionState` and then rejects further posts with `409` `session_closed`. Outcome is not written onto the state (Q-011). Fixtures still have no outcome step (Q-009).
+- **Questions logged:** none
+- **The next agent needs to know:** **CP2 awaits driver confirmation.** Do not merge this PR until the drivers confirm CP2 with A. Screenshots of the outcome buttons and the handoff route were skipped (driver). Those checks are tests in `web/src/outcome.test.tsx` and `web/src/handoff.test.tsx`. Hour-8 integration ran A's API from `origin/main` (`7f4f546`, uvicorn on 127.0.0.1:8000, `RECOMMENDER=rules`). T1 and T2 were walked by posting each fixture request (the bodies the chips send). Every `SessionState` matched the fixture except `session_id`, which the API assigns. `GET /handoff` matched the same projection with that id. `GET /library` validated against `library.schema.json`. It has five patterns and five look-alikes; `contract/library.json` has two, which Q-008 already allows. Chip, purpose, and question copy for these steps matched. No UI patch. `docs/CROSS_LANE.md` is not on this branch; `cursor/cross-lane-log-760f` has no open A→B items, and this card logged no B→A items. The live handoff projection does not include the recorded outcome or actor. Talk tracks are still not drawn.
+
+---
+
+### [B-03] Handoff outcome and actor — Agent B1 — 2026-10-24 20:26
+- **Status:** done (CP2 still awaits driver confirmation; do not merge)
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  11 passed (11)
+       Tests  38 passed (38)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/types.ts`, `web/src/validate.ts`, `web/src/screens/HandoffScreen.tsx`, `web/src/handoff.test.tsx`, `web/src/teller.tsx`, `web/mock/replay.ts`, `web/src/mockReplay.test.ts`, `docs/HANDOFF.md`, `docs/CROSS_LANE.md`
+- **Decisions I made, and the section that justified each:**
+  - `HandoffProjection` matches applied `handoff.schema.json`: `outcome` is `proceed`, `slow_down`, `escalate`, `report`, or null; `actor` is a string or null. Both are null until `POST /outcome` (CHANGE-004, §11.1).
+  - The Handoff screen shows "Outcome: not recorded yet" and "Actor: not recorded yet" when those fields are null, and the outcome label plus the actor string when they are set (§12).
+  - `GET /handoff` is validated with Ajv against `contract/handoff.schema.json`. A body that omits the fields or names an unknown outcome is not rendered.
+  - The mock keeps the posted outcome and actor and returns them on the next `GET /handoff`. `SessionState` still omits both (Q-011). The handoff body does not include `note`.
+- **Questions logged:** none. X-001.
+- **The next agent needs to know:** This branch includes `origin/main` through `b94749b` (PR #23 and PR #24). The live API in that tree returns the fields. A TestClient call to `api/main.py` got `outcome: null` and `actor: null` before `POST /outcome`, then `outcome: "escalate"` and `actor: "teller-1"` after. Both bodies validated against `handoff.schema.json`. `SessionState` did not include the fields. **CP2 still awaits driver confirmation.** Do not merge. X-001: `contract/handoff.schema.json` description still says CHANGE-004 is not applied.
+
+---
+
+### [CHANGE-004] Handoff schema description wording — Agent R — 2026-10-24 20:32
+- **Status:** done
+- **Gate:** `scripts/gate.sh contract` → PASS; `scripts/gate.sh a` → PASS
+
+```
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (contract)
+```
+
+```
+── ruff
+All checks passed!
+
+── pytest
+85 passed, 1 warning in 10.54s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `contract/handoff.schema.json` (top-level `description` string only); `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Replaced leftover `Pending CHANGE-004 (not applied).` with `CHANGE-004 (applied).` in the schema description. CHANGE-004 is already applied and approved (PRs #22, #23, #24; `contract/CHANGES.md`, `contract/api.md`).
+  - Left the 20:13 HANDOFF proposal entry as written (this file is append-only; that entry was accurate at proposal time).
+  - Did not edit `api/`, `web/`, fixtures, `reference_impl.py`, or `tests/golden/`. Schema fields, required keys, and `CONTRACT_VERSION` are unchanged.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR #27 is wording-only. Do not merge unless a driver says so.
+  - `contract/` and `docs/` have no remaining live “pending CHANGE-004” / “not applied” wording. `handoff.schema.json` is not in `contract/oracle.sha256`.
+  - No new dependency.
+
+---
+
+### [merge] origin/main into b-01-scaffold — Agent B1 — 2026-10-24 20:35
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS; `scripts/gate.sh a` → PASS
+
+```
+── typecheck
+── lint
+── test
+ Test Files  11 passed (11)
+      Tests  38 passed (38)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (b)
+```
+
+```
+── ruff
+All checks passed!
+── pytest
+85 passed, 1 warning in 10.99s
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (a)
+```
+
+- **Changed:** merge commit only. Conflicts: `docs/HANDOFF.md` (kept every section from both sides, newest last); `docs/CROSS_LANE.md` (kept both X-001 entries); `docs/DECISIONS.md` (main; Hour 8 filled, nothing unique on the branch); `contract/handoff.schema.json` (main, unchanged). `web/` stayed the branch version.
+- **Decisions I made, and the section that justified each:** none. Driver instruction: append-only shared docs; main for contract/api/engine/store/goldens/fixtures/`reference_impl.py`; branch for `web/`.
+- **Questions logged:** none
+- **The next agent needs to know:** This is a merge of `origin/main` (`b2db873`) into `b-01-scaffold`. No new branch or PR. Q-012 is still in `docs/QUESTIONS.md`. Both CROSS_LANE X-001 entries are present (main: missing outcome/actor, resolved; branch: schema description still said not applied, still open in the log). The schema file on this tree is main's `CHANGE-004 (applied).` wording.
+
+---
+
+### [A2] make dev-web — Agent A2 — 2026-10-24 20:37
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+85 passed, 1 warning in 10.34s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `Makefile`; `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - `make dev-web` runs `npm run dev` from `web/` in tmux session `teller-web`, matching `make dev-api` and WORKFLOW §2.4 / B-01. Vite already binds 127.0.0.1:5173; the mock is middleware on that server; `VITE_API_URL` overrides the API base (B-01 HANDOFF, PR #5).
+- **Questions logged:** none (Q-012 is route paths, not this target)
+- **The next agent needs to know:** `make dev-web` starts Vite detached in tmux (`teller-web`). Empty `VITE_API_URL` uses the Vite origin (mock). Set `VITE_API_URL=http://127.0.0.1:8000` to hit `make dev-api`. No `web/` edits. Do not merge unless a driver says so. No new dependency.
+
+---
+
+### [A-05] Model path — Agent A2 — 2026-10-24 20:40
+- **Status:** done (implementation and gate). **Live-path p95: PENDING Driver B** (no GPU here; fakes only).
+- **Gate:** `scripts/gate.sh a` → PASS (`RECOMMENDER=rules`)
+
+```
+── ruff
+All checks passed!
+
+── pytest
+94 passed, 1 warning in 12.26s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `recommenders/**`, `engine/prompt.py`, `api/main.py` (`/health` + recommender wiring in `render`/`create_app` only), `tests/recommenders/**`, `.importlinter` (`recommenders` is now a root package), `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Default local model ID is `Meta-Llama-3.1-8B-Instruct-Q4_K_M` when `RECOMMENDER` is `local`/`local_llm`/`hosted`/`hosted_llm` (DECISIONS Hour 6; §15 `MODEL_ID`). The 3B (`Llama-3.2-3B-Instruct-Q4_K_M`) is the operational fallback: restart `llama-server` on that GGUF and set `MODEL_ID`.
+  - `RECOMMENDER=rules` (default) does not construct a model client and does not append `RecommendationIssued`, so T1–T7 replay and goldens stay identical (§7.3 floor).
+  - Prompt builder is an allowlist (`engine/prompt.py`, §8.1 / §10.2). Notes, `amount_band`, and `account_ref` are never copied in. Adding a SessionState field does not add it to the prompt.
+  - Validator is shared (`recommenders.validate`); LocalLLM sends a per-request GBNF (§8.2); HostedLLM does not assume a grammar. Timeout is 1500 ms (§8.3). Strict mode forces `signals_asserted=[]` and skips the call outside probe or after any stop (§7.4, §9).
+  - `/health` adds `p50`, `p95`, `rejection_count` and keeps `last_p95` as an alias of `p95` (card step 7; §16). Agreement is model-output vs `rule_choice`; timeouts are fallbacks, not agreement samples.
+  - No new dependency.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Boot: `RECOMMENDER=rules|local_llm|hosted_llm`, `MODEL_ID`, `MODEL_TIMEOUT_MS=1500`, `STRICT_MODE=true`, `LLAMA_SERVER=http://127.0.0.1:8080`, `HOSTED_LLM_URL`, `HOSTED_LLM_API_KEY`.
+  - Inject a fake in tests: `create_app(..., recommender="local_llm", recommender_impl=fake, metrics=Metrics())`.
+  - This environment did not run a real model. Do not treat `/health` p50/p95 from the unit tests as the live number.
+
+  **PENDING Driver B — live-path p95 (not `scripts/bench_llm.py`).** On the GPU laptop, start `llama-server` with the 8B Q4_K_M (same flags as A-03: `-ngl 99 -c 4096 -np 1`), then:
+
+```
+scripts/with-gpu env RECOMMENDER=local_llm \
+  MODEL_ID=Meta-Llama-3.1-8B-Instruct-Q4_K_M \
+  MODEL_TIMEOUT_MS=1500 \
+  LLAMA_SERVER=http://127.0.0.1:8080 \
+  python3 - <<'PY'
+import json
+from pathlib import Path
+from fastapi.testclient import TestClient
+from api.main import create_app
+
+app = create_app(
+    db_path=Path("/tmp/teller-live-8b.sqlite"),
+    recommender="local_llm",
+    model_id="Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+)
+steps = json.loads(Path("contract/fixtures/T2.json").read_text())["steps"]
+with TestClient(app) as client:
+    session_id = None
+    for step in steps:
+        endpoint, body = step["endpoint"], step["request"]
+        if endpoint == "POST /sessions":
+            session_id = client.post("/sessions", json=body).json()["session_id"]
+        elif endpoint.endswith("/context"):
+            client.post(f"/sessions/{session_id}/context", json=body)
+        else:
+            client.post(f"/sessions/{session_id}/answers", json=body)
+    print(json.dumps(client.get("/health").json(), indent=2))
+PY
+```
+
+  Paste `p50` / `p95` from that `/health` into a new HANDOFF line. That is the live-path number the card wants.
+
+  **PENDING — 8B vs 3B quality (DECISIONS Hour 6).** Driver B must not read `eval/scenarios/dev/` (ROSTER §2). Repeat the block above after switching `llama-server` to `Llama-3.2-3B-Instruct-Q4_K_M` and `MODEL_ID=Llama-3.2-3B-Instruct-Q4_K_M` (use `/tmp/teller-live-3b.sqlite`). Compare T2 probe `question.id` values and `agreement_rate`. Driver A can run the same API against A3's `eval/scenarios/dev` once those exist. Prefer 8B if it picks a different valid probe that better splits the leading pattern; otherwise 8B stays the default and 3B stays the VRAM/fallback.
+
+---
+
+### [merge] origin/main into a2-a05-model-path — Agent A2 — 2026-10-24 20:45
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+94 passed, 1 warning in 12.82s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** merge commit plus this entry. Conflicts: `docs/HANDOFF.md` only (kept main's `[A2] make dev-web` and the branch's `[A-05] Model path`, newest last). Auto-merged from main: `Makefile` (`make dev-web`), `docs/A_TO_B.md`, `docs/B_TO_A.md`, `docs/CROSS_LANE.md`, `docs/QUESTIONS.md`.
+- **Decisions I made, and the section that justified each:** none. Driver instruction: keep both HANDOFF sides; keep main's `make dev-web`; take main for contract/reference_impl/goldens/fixtures/web/CROSS_LANE/QUESTIONS/A_TO_B/B_TO_A; keep the branch for recommenders/, engine/prompt.py, api health/recommender wiring, tests/recommenders. Did not change A-05 logic.
+- **Questions logged:** none
+- **The next agent needs to know:** Merge of `origin/main` (`d3919f2`) into `cursor/a2-a05-model-path-9aea` (PR #30). No new PR. Live-path p95 and 8B vs 3B quality are still PENDING Driver B (see the `[A-05]` entry). No new dependency.
+

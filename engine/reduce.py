@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Sequence
 
+from engine.eligibility import eligible
 from engine.events import (
     AnswerRecorded,
     ContextAdded,
@@ -16,6 +17,7 @@ from engine.events import (
 )
 from engine.hypotheses import displayed
 from engine.library import Library, Question
+from engine.rules import question_view, rule_choice, signals_for, talk_track_for
 from engine.score import (
     Tables,
     counterpoint,
@@ -25,31 +27,13 @@ from engine.score import (
     shown,
     tables_from_library,
 )
+from engine.stop import compose_stop
 
 log = logging.getLogger(__name__)
 
 _LEVEL_WIRE = {"Clear": "clear", "Caution": "caution", "High concern": "high"}
 _SUGGEST = {"clear": "proceed", "caution": "slow_down", "high": "escalate"}
-_OPEN_GAP = {"vague": ["sig.specificity_gap"], "no_answer": ["sig.specificity_gap"]}
-
-
-def signals_for(question_id: str | None, chip: str | None, lib: Library) -> list[str]:
-    """§5.6, §7.3: asserts_on is authoritative; chip defaults apply only where it is silent."""
-    if not question_id or not chip:
-        return []
-    question = next((item for item in lib.questions if item.id == question_id), None)
-    if question is None:
-        return []
-    asserts = question.asserts_on or {}
-    if chip in asserts:
-        return list(asserts[chip])
-    defaults = {
-        "changed": ["sig.story_drift"],
-        "relayed_by_caller": ["sig.answer_relayed"],
-    }
-    if question.kind == "open":
-        defaults.update(_OPEN_GAP)
-    return list(defaults.get(chip, []))
+_STORY_FAIL = frozenset({"sig.specificity_gap", "sig.story_drift"})
 
 
 def project(events: list, lib: Library) -> dict:
@@ -89,6 +73,9 @@ def _fold_facts(
     library_version = lib.library_version
     purpose: str | None = None
     answers = 0
+    asked: list[str] = []
+    story_failed = False
+    context: list[str] = []
 
     for _seq, event in live:
         changed = False
@@ -102,12 +89,19 @@ def _fold_facts(
                 signal_id = chip_signal.get(chip_id)
                 if signal_id:
                     evidence.append(signal_id)
+                    context.append(signal_id)
                     changed = True
         elif isinstance(event, AnswerRecorded):
-            evidence.extend(signals_for(event.question_id, event.chip, lib))
+            sigs = signals_for(event.question_id, event.chip, lib)
+            evidence.extend(sigs)
             answers += 1
+            if event.question_id:
+                asked.append(event.question_id)
             if event.purpose and _records_purpose(event.question_id, questions):
                 purpose = event.purpose
+            question = questions.get(event.question_id or "")
+            if question is not None and question.role == "verify" and _STORY_FAIL & set(sigs):
+                story_failed = True
             changed = True
         elif isinstance(event, ModelSignal) and event.signal_id:
             evidence.append(event.signal_id)
@@ -122,6 +116,9 @@ def _fold_facts(
         "stated_purpose": purpose,
         "answers": answers,
         "shown": shown_lvl,
+        "asked": asked,
+        "story_failed": story_failed,
+        "context": context,
     }
 
 
@@ -141,6 +138,19 @@ def _session_state(
     raw_lvl = level(raw_score, tables)
     shown_lvl = facts["shown"]
     signals = {item.id: item for item in lib.signals}
+    interview = {
+        "asked": list(facts["asked"]),
+        "evidence": list(evidence),
+        "purpose": facts["stated_purpose"],
+        "story_failed": facts["story_failed"],
+        "context": list(facts["context"]),
+    }
+    stage, cands = eligible(interview, lib, tables)
+    stop_obj = compose_stop(
+        interview, facts["answers"], facts["context"], lib, tables, cands
+    )
+    if stop_obj:
+        shown_lvl = raw_lvl
 
     def reason_obj(signal_id: str) -> dict[str, str]:
         item = signals.get(signal_id)
@@ -152,6 +162,12 @@ def _session_state(
     pattern, pattern_label = _pattern_view(display, lib)
     wire = _LEVEL_WIRE[shown_lvl]
     opposite = counterpoint(evidence, shown_lvl, tables)
+    if stop_obj and stop_obj["kind"] == "hard":
+        question = None
+    elif cands:
+        question = question_view(rule_choice(cands), stage, lib)
+    else:
+        question = None
     return {
         "session_id": "",
         "mode": facts["mode"],
@@ -167,11 +183,12 @@ def _session_state(
             "pattern": pattern,
             "pattern_label": pattern_label,
         },
-        "question": None,
-        "stop": None,
-        "talk_track": {"stage": "", "pattern": None, "lines": [], "avoid": []},
+        "question": question,
+        "stop": stop_obj,
+        "talk_track": talk_track_for(shown_lvl, pattern, lib),
         "suggested_outcome": _SUGGEST[wire],
         "available_outcomes": ["proceed", "slow_down", "escalate", "report"],
+        "_engine": interview,
     }
 
 

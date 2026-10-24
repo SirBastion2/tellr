@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Handoff",
+  "description": "GET /sessions/{id}/handoff manager summary projection. CHANGE-004 (applied). Today's live fields plus outcome and actor (both null until POST /outcome records them). Resolves the handoff part of Q-006 only; history, health, and POST-enum schemas stay deferred. CONTRACT_VERSION 1.0.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "session_id",
+    "mode",
+    "stated_purpose",
+    "risk",
+    "suggested_outcome",
+    "answers",
+    "stop",
+    "outcome",
+    "actor"
+  ],
+  "properties": {
+    "session_id": {
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "live",
+        "practice"
+      ]
+    },
+    "stated_purpose": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "level",
+        "raw_level",
+        "score",
+        "reasons",
+        "counterpoint",
+        "pattern",
+        "pattern_label"
+      ],
+      "properties": {
+        "level": {
+          "enum": [
+            "clear",
+            "caution",
+            "high"
+          ]
+        },
+        "raw_level": {
+          "enum": [
+            "clear",
+            "caution",
+            "high"
+          ]
+        },
+        "score": {
+          "type": "integer",
+          "minimum": -45,
+          "maximum": 100
+        },
+        "reasons": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label",
+              "rationale"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "rationale": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "counterpoint": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "label",
+            "rationale"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          }
+        },
+        "pattern": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "id",
+            "label"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "pattern",
+                "look_alike"
+              ]
+            },
+            "id": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            }
+          }
+        },
+        "pattern_label": {
+          "type": "string"
+        }
+      }
+    },
+    "suggested_outcome": {
+      "enum": [
+        "proceed",
+        "slow_down",
+        "escalate"
+      ]
+    },
+    "answers": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 7
+    },
+    "stop": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "reason"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "hard",
+            "recommended"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "outcome": {
+      "description": "Null until POST /outcome records OutcomeRecorded. Values match SessionState.available_outcomes; the POST request enum stays deferred with the rest of Q-006.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "proceed",
+        "slow_down",
+        "escalate",
+        "report",
+        null
+      ]
+    },
+    "actor": {
+      "description": "Null until POST /outcome records OutcomeRecorded. Actor request enum stays deferred (Q-006).",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

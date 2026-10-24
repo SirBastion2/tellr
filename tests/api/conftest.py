@@ -14,6 +14,9 @@ FIXTURES = ROOT / "contract" / "fixtures"
 SESSION_SCHEMA = json.loads(
     (ROOT / "contract" / "session_state.schema.json").read_text(encoding="utf-8")
 )
+HANDOFF_SCHEMA = json.loads(
+    (ROOT / "contract" / "handoff.schema.json").read_text(encoding="utf-8")
+)
 ERROR_SCHEMA = json.loads((ROOT / "contract" / "error.schema.json").read_text(encoding="utf-8"))
 IGNORE_FIELDS = frozenset({"session_id", "debug"})
 
@@ -74,6 +77,14 @@ def validate(value: object, schema: dict, path: str, errors: list[str]) -> None:
 def assert_session_state(payload: object) -> None:
     errors: list[str] = []
     validate(payload, SESSION_SCHEMA, "SessionState", errors)
+    assert errors == [], errors
+    assert isinstance(payload, dict)
+    assert "_engine" not in payload
+
+
+def assert_handoff(payload: object) -> None:
+    errors: list[str] = []
+    validate(payload, HANDOFF_SCHEMA, "Handoff", errors)
     assert errors == [], errors
 
 

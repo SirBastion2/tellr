@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import inspect
-
-import pytest
+from pathlib import Path
 
 import engine
 from engine import CommandRejected
@@ -37,16 +36,26 @@ def test_engine_api_v1_signatures() -> None:
     ]
 
 
-def test_a04_entrypoints_are_not_yet_the_real_engine() -> None:
-    """A-02 implements project; candidates / stop / rules / commands land in A-04."""
-    with pytest.raises(NotImplementedError):
-        engine.candidates(None, None)  # type: ignore[arg-type]
-    with pytest.raises(NotImplementedError):
-        engine.stop(None, None, [])  # type: ignore[arg-type]
-    with pytest.raises(NotImplementedError):
-        engine.rule_choice([])
-    with pytest.raises(NotImplementedError):
-        engine.check_command([], {}, None)  # type: ignore[arg-type]
+def test_a04_entrypoints_are_wired() -> None:
+    """A-04 implements candidates / stop / rule_choice / check_command."""
+    from engine.library import load_library
+
+    lib = load_library(Path(__file__).resolve().parents[2] / "library")
+    opened = [
+        {
+            "type": "SessionOpened",
+            "mode": "practice",
+            "amount_band": "5000_9999",
+            "library_version": "1.2.0",
+        }
+    ]
+    state = engine.project(opened, lib)
+    stage, cands = engine.candidates(state, lib)
+    assert stage == "opener"
+    assert cands == ["q.purpose.open"]
+    assert engine.rule_choice(cands) == "q.purpose.open"
+    assert engine.stop(state, lib, cands) is None
+    engine.check_command(opened, {"type": "context", "chips": ["chip.cash_only"]}, lib)
 
 
 def test_command_rejected_exposes_code() -> None:
