@@ -10,6 +10,8 @@ from typing import Any
 from eval.metrics import ArmSummary
 from eval.types import LEVELS, ArmResult
 
+HELDOUT_SECTION = "held-out, 5 per population, wide intervals"
+
 
 def _pct(interval: tuple[float, float]) -> str:
     lo, hi = interval
@@ -131,20 +133,27 @@ def render_report(
     library_version: str,
     summaries: Mapping[str, ArmSummary],
     arms: Mapping[str, Sequence[ArmResult]],
+    section: str | None = None,
 ) -> str:
     lines = [
         "# Eval report",
         "",
-        f"- git: `{git_sha}`",
-        f"- library_version: `{library_version}`",
-        "- config: temperature 0, batch size 1, prefetch off, timeout off (§13.4)",
-        "",
-        (
-            "Counts, not percentages. Wilson intervals are 95%. "
-            "Do not call an arm difference significant on 15 scenarios (§13.3)."
-        ),
-        "",
     ]
+    if section:
+        lines.extend([f"## {section}", ""])
+    lines.extend(
+        [
+            f"- git: `{git_sha}`",
+            f"- library_version: `{library_version}`",
+            "- config: temperature 0, batch size 1, prefetch off, timeout off (§13.4)",
+            "",
+            (
+                "Counts, not percentages. Wilson intervals are 95%. "
+                "Do not call an arm difference significant on 15 scenarios (§13.3)."
+            ),
+            "",
+        ]
+    )
     for name, summary in summaries.items():
         fired, asked = summary.default_fired_rate
         lines.extend(

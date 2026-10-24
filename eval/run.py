@@ -3,7 +3,7 @@
 python -m eval.run --scenarios eval/scenarios/dev --out eval/results/<sha>
 
 Arms A/B/C. --model fake (default) needs no GPU. --model local is arm C
-under llama-server (hours 12–15; scripts/with-gpu). Refuses held-out data.
+under llama-server (scripts/with-gpu). Held-out paths label the report (A-08).
 """
 
 from __future__ import annotations
@@ -19,8 +19,8 @@ from eval.arms.model import FakeModel, LocalModel, run_model
 from eval.arms.rules import run_rules
 from eval.arms.static import run_static
 from eval.metrics import summarize
-from eval.report import render_report, results_payload, write_outputs
-from eval.scenarios import load_scenarios
+from eval.report import HELDOUT_SECTION, render_report, results_payload, write_outputs
+from eval.scenarios import is_heldout_path, load_scenarios
 from eval.types import ArmResult, Scenario
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -71,11 +71,11 @@ def _run_arm(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run eval arms A/B/C. No held-out.")
+    parser = argparse.ArgumentParser(description="Run eval arms A/B/C.")
     parser.add_argument(
         "--scenarios",
         required=True,
-        help="Scenario file or directory (must not be eval/scenarios/heldout)",
+        help="Scenario file or directory (heldout paths label the A-08 section)",
     )
     parser.add_argument("--out", required=True, help="Directory for results.json + report.md")
     parser.add_argument("--arms", default="A,B,C", help="Comma-separated A,B,C")
@@ -121,11 +121,13 @@ def main(argv: list[str] | None = None) -> int:
         arms=arm_rows,
         summaries=summaries,
     )
+    section = HELDOUT_SECTION if is_heldout_path(Path(args.scenarios)) else None
     report = render_report(
         git_sha=sha,
         library_version=lib.library_version,
         summaries=summaries,
         arms=arm_rows,
+        section=section,
     )
     write_outputs(Path(args.out), payload, report)
     print(f"wrote {args.out}/results.json and report.md ({len(scenarios)} scenarios)")

@@ -1,4 +1,4 @@
-"""Load §13.1 scenario YAML. Refuses held-out paths (architecture §13.4)."""
+"""Load §13.1 scenario YAML. Held-out paths are labelled, not refused (A-08)."""
 
 from __future__ import annotations
 
@@ -13,12 +13,9 @@ from eval.types import Scenario
 HELD_OUT = "heldout"
 
 
-def refuse_heldout(path: Path) -> None:
-    resolved = path.resolve()
-    if HELD_OUT in resolved.parts:
-        raise SystemExit(
-            "refusing to run on held-out scenarios (architecture §13.4 / card A-06)"
-        )
+def is_heldout_path(path: Path) -> bool:
+    """True when any path component is 'heldout' (real set or a tmp stand-in)."""
+    return HELD_OUT in path.resolve().parts
 
 
 def parse_scenario(data: Mapping[str, Any]) -> Scenario:
@@ -40,7 +37,6 @@ def parse_scenario(data: Mapping[str, Any]) -> Scenario:
 
 
 def load_scenarios(target: Path) -> list[Scenario]:
-    refuse_heldout(target)
     if target.is_file():
         files = [target]
     else:
@@ -49,7 +45,6 @@ def load_scenarios(target: Path) -> list[Scenario]:
         raise SystemExit(f"no scenario YAML under {target}")
     loaded: list[Scenario] = []
     for path in files:
-        refuse_heldout(path)
         raw = yaml.safe_load(path.read_text(encoding="utf-8"))
         items = raw if isinstance(raw, list) else [raw]
         for item in items:
