@@ -580,3 +580,62 @@ GATE PASS (a)
 - **Decisions I made, and the section that justified each:** none. Driver instruction: append-only shared docs; main for contract/api/engine/store/goldens/fixtures/`reference_impl.py`; branch for `web/`.
 - **Questions logged:** none
 - **The next agent needs to know:** This is a merge of `origin/main` (`b2db873`) into `b-01-scaffold`. No new branch or PR. Q-012 is still in `docs/QUESTIONS.md`. Both CROSS_LANE X-001 entries are present (main: missing outcome/actor, resolved; branch: schema description still said not applied, still open in the log). The schema file on this tree is main's `CHANGE-004 (applied).` wording.
+
+---
+
+### [A-05] Model path — Agent A2 — 2026-10-24 20:50
+- **Status:** done (implementation + gate). **Live-path p95: PENDING** — no GPU here; Driver B records it on the laptop.
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+96 passed, 1 warning in 12.65s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `recommenders/**` (new), `engine/prompt.py` (new), `api/main.py` (`/health` + probe-stage recommender wiring only), `tests/recommenders/**` (new), `.importlinter` (`recommenders` is a root package), `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Boot flag `RECOMMENDER=rules|local|hosted` (aliases `local_llm` / `hosted_llm`). Default remains `rules` so T1–T7 goldens and contract replay stay identical (§7.4, CHANGE-001).
+  - Model id defaults to `Meta-Llama-3.1-8B-Instruct-Q4_K_M` when the recommender is local/hosted (DECISIONS Hour 6). `recommenders.FALLBACK_MODEL_ID` is `Llama-3.2-3B-Instruct-Q4_K_M`.
+  - Recommender runs only in stage `probe` and only when `stop` is null. Output is a question ID. Fabricated IDs append `ValidationRejected` and fall back to `rule_choice` (§7.5, §9). Timeout is `MODEL_TIMEOUT_MS=1500` (§8.3).
+  - Prompt builder is an allowlist (`context_chips`, `stated_purpose`, `transcript`, `evidence_ids`, `leading_pattern`, `candidates`). Notes, amount band, and account_ref never reach it (§8.1, §10.2).
+  - `LocalLLM` POSTs `/completion` with a per-request GBNF (§8.2). `HostedLLM` uses the same `choose()` validator. Tests inject fakes; no real model was run.
+  - `/health` now has `recommender`, `model_id`, `p50`, `p95`, `last_p95` (alias of p95), `fallback_rate`, `rejection_count`, `agreement_rate` (§16). Agreement is valid model picks vs `rule_choice`.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - **Do not merge** until a driver says so. PR is A-05 only.
+  - **Live-path p95 (PENDING).** This is not the A-03 `scripts/bench_llm.py` number. Driver B, on the GPU laptop, with `llama-server` already serving the 8B Q4_K_M (A-03 flags: `llama-server -ngl 99 -c 4096 -np 1`, bartowski GGUF, `127.0.0.1:8080`):
+
+```
+scripts/with-gpu env RECOMMENDER=local \
+  MODEL_ID=Meta-Llama-3.1-8B-Instruct-Q4_K_M \
+  LLAMA_SERVER=http://127.0.0.1:8080 \
+  python3 -m recommenders.live_path
+```
+
+    Paste the printed `health.p95` (and the JSON) into a follow-up HANDOFF line. That p95 is after a T1–T7 fixture replay through the real API path.
+
+  - **8B vs 3B quality (dev / T1–T7 until A3's arm C exists).** `eval/` is not on main yet. Restart `llama-server` with the 3B Q4_K_M, then:
+
+```
+scripts/with-gpu env RECOMMENDER=local \
+  MODEL_ID=Llama-3.2-3B-Instruct-Q4_K_M \
+  LLAMA_SERVER=http://127.0.0.1:8080 \
+  python3 -m recommenders.live_path
+```
+
+    Diff the two `probe_turns` tables: agreement with `rule_id`, and which IDs each model picked on T2/T3/T6 (cover stories). Keep 8B if it stays in-candidate and is not worse on those cases; switch to 3B if 8B VRAM OOMs or live p95 > 1500 ms (DECISIONS Hour 6). When A3 lands `eval/scenarios/dev` and arm C, rerun each GGUF with `scripts/with-gpu env RECOMMENDER=local MODEL_ID=… python3 -m eval.run --arm model`.
+  - `create_app(recommender="local", recommender_impl=…)` is the test seam. `GET /health` is still read-only (CHANGE-001).
+  - No new dependency.
+
