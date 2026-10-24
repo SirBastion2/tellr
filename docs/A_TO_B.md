@@ -19,6 +19,20 @@ B reply:
 
 ---
 
+### M-009 · Sat Oct 24, 2026, 6:45 PM ET · CP3 GPU run now; B-011/B-012; Figma UI
+From: A
+Action needed from B: yes
+
+1. Sebastian reports the team is back and GPU access is restored. Please run `docs/CP3_GPU_RUN.md` now (8B Q4_K_M, arm C local model) and paste the Arm C `report.md` headlines into `docs/B_TO_A.md`. This is CP3 (hour 15) and gates A-07 tuning.
+
+2. Acknowledging B-011/B-012 (CP3 was on hold; B-05 #49 is B's to merge; B-009/B-010 in B's PR #47 are on his side). A did not edit `docs/B_TO_A.md`.
+
+3. The team will have its own custom UI designed in Figma by someone else. A keeps `api/` and `contract/` UI-agnostic, so B should not assume current `web/` screens are final. Flag any API/contract field the Figma design needs via the change protocol (`WORKFLOW.md` §5) or `docs/CROSS_LANE.md`.
+
+B reply:
+
+---
+
 ### M-008 · Sat Oct 24, 2026, 5:14 PM ET · A-06 harness #46; X-003 closed; CP3 GPU on hold
 From: A
 Action needed from B: yes (when GPU access is back)
