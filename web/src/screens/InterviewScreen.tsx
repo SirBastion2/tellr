@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { CSSProperties } from 'react'
 import type { AnswerChipId, AnswerPost, Level, Library, QuestionView, SessionState } from '../types'
 
 const LEVELS: readonly { id: Level; label: string; colour: string }[] = [
@@ -8,6 +9,17 @@ const LEVELS: readonly { id: Level; label: string; colour: string }[] = [
 ]
 
 const RECOMMENDED_STOP = 'You have enough to decide, or ask one more'
+const INK = '#1c1917'
+const QUIET_OPACITY = 0.7
+
+const tap: CSSProperties = {
+  minHeight: '48px',
+  minWidth: '48px',
+  boxSizing: 'border-box',
+  color: INK,
+  border: `1px solid ${INK}`,
+  backgroundColor: 'transparent',
+}
 
 function chipLabel(library: Library | null, id: string): string {
   return library?.chips.find((chip) => chip.id === id)?.label ?? id
@@ -84,15 +96,13 @@ function QuestionCard({
   const [purposeId, setPurposeId] = useState<string | null>(null)
   const opener = question.stage === 'opener'
   const slots: (AnswerChipId | null)[] = [0, 1, 2, 3, 4].map((index) => question.chips[index] ?? null)
+  const waitingForPurpose = opener && purposeId === null
 
   function choose(chip: AnswerChipId) {
-    if (!onAnswer) {
+    if (!onAnswer || waitingForPurpose) {
       return
     }
-    if (opener) {
-      if (!purposeId) {
-        return
-      }
+    if (opener && purposeId) {
       onAnswer({ question_id: question.id, chip, purpose: purposeId })
       return
     }
@@ -103,15 +113,29 @@ function QuestionCard({
     <article
       data-testid="question-card"
       data-emphasis={quiet ? 'low' : 'normal'}
-      className="space-y-3"
-      style={{ opacity: quiet ? 0.55 : 1 }}
+      style={{
+        opacity: quiet ? QUIET_OPACITY : 1,
+        display: 'grid',
+        gap: '8px',
+        alignContent: 'start',
+        color: INK,
+      }}
     >
-      <p data-testid="question-text" className="text-lg">
+      <p data-testid="question-text" style={{ margin: 0, fontSize: '18px', lineHeight: 1.3 }}>
         {question.text}
       </p>
-      <p data-testid="question-why">{question.why}</p>
       {opener ? (
-        <div data-testid="purpose-row" className="flex flex-wrap gap-2">
+        <div
+          data-testid="purpose-row"
+          style={{
+            display: 'flex',
+            flexWrap: 'nowrap',
+            gap: '8px',
+            overflowX: 'auto',
+            height: '48px',
+            minHeight: '48px',
+          }}
+        >
           {(library?.purposes ?? []).map((purpose) => {
             const selected = purposeId === purpose.id
             return (
@@ -121,8 +145,11 @@ function QuestionCard({
                 data-testid="purpose"
                 data-selected={selected ? 'true' : 'false'}
                 aria-pressed={selected}
-                className="min-h-12 border border-stone-900 px-3"
-                style={{ backgroundColor: selected ? '#e7e5e4' : 'transparent' }}
+                style={{
+                  ...tap,
+                  flex: '0 0 auto',
+                  backgroundColor: selected ? '#e7e5e4' : 'transparent',
+                }}
                 onClick={() => setPurposeId(purpose.id)}
               >
                 {purpose.label}
@@ -133,11 +160,12 @@ function QuestionCard({
       ) : null}
       <div
         data-testid="chip-row"
-        className="grid gap-2 overflow-hidden"
         style={{
           height: '72px',
           display: 'grid',
           gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+          gap: '8px',
+          overflow: 'hidden',
         }}
       >
         {slots.map((chip, index) =>
@@ -146,8 +174,8 @@ function QuestionCard({
               key={chip}
               type="button"
               data-testid="answer-chip"
-              className="h-full border border-stone-900 px-2 text-sm"
-              disabled={opener && purposeId === null}
+              aria-disabled={waitingForPurpose ? 'true' : 'false'}
+              style={{ ...tap, height: '100%', padding: '4px', fontSize: '14px', lineHeight: 1.2 }}
               onClick={() => choose(chip)}
             >
               {chipLabel(library, chip)}
@@ -157,6 +185,9 @@ function QuestionCard({
           ),
         )}
       </div>
+      <p data-testid="question-why" style={{ margin: 0 }}>
+        {question.why}
+      </p>
     </article>
   )
 }
@@ -173,87 +204,103 @@ export function InterviewScreen({
   const level = session ? shownLevel(session.risk.level) : null
 
   return (
-    <section data-testid="interview-screen" className="space-y-4">
+    <section data-testid="interview-screen" style={{ display: 'grid', gap: '12px' }}>
       {session && level ? (
         <>
-          <p
-            data-testid="risk-level"
-            data-level={level.id}
-            data-position={String(level.position)}
-            style={{ color: level.colour, fontSize: '28px' }}
+          <div
+            data-testid="counter-fold"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(200px, 260px) minmax(0, 1fr)',
+              columnGap: '16px',
+              alignItems: 'start',
+            }}
           >
-            {level.label}
-          </p>
-          <p>
-            Score <span data-testid="risk-score">{session.risk.score}</span>
-          </p>
-          <ol
-            data-testid="level-scale"
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px' }}
-          >
-            {LEVELS.map((item, position) => {
-              const active = item.id === session.risk.level
-              return (
-                <li
-                  key={item.id}
-                  data-testid="level-slot"
-                  data-level={item.id}
-                  data-position={String(position)}
-                  data-active={active ? 'true' : 'false'}
-                  aria-current={active ? 'step' : undefined}
-                  style={{
-                    backgroundColor: active ? item.colour : 'transparent',
-                    color: active ? '#ffffff' : item.colour,
-                    border: `2px solid ${item.colour}`,
-                    minHeight: '48px',
-                    textAlign: 'center',
-                  }}
-                >
-                  {item.label}
-                </li>
-              )
-            })}
-          </ol>
-          <p data-testid="pattern-label" style={{ fontSize: '14px' }}>
-            {session.risk.pattern_label}
-          </p>
-          {session.stated_purpose ? (
-            <p data-testid="stated-purpose">{purposeLabel(library, session.stated_purpose)}</p>
-          ) : null}
-          {session.risk.reasons.length > 0 ? (
-            <ul data-testid="reason-list" className="list-disc pl-5">
-              {session.risk.reasons.map((reason) => (
-                <li key={reason.id} data-testid="reason">
-                  {reason.label}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {session.risk.counterpoint ? (
-            <p data-testid="counterpoint">
-              {counterpointPrefix(session.risk.level)} {session.risk.counterpoint.label}
-            </p>
-          ) : null}
+            <div style={{ display: 'grid', gap: '8px', alignContent: 'start' }}>
+              <p
+                data-testid="risk-level"
+                data-level={level.id}
+                data-position={String(level.position)}
+                style={{ color: level.colour, fontSize: '28px', margin: 0, lineHeight: 1.2 }}
+              >
+                {level.label}
+              </p>
+              <ol
+                data-testid="level-scale"
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', margin: 0 }}
+              >
+                {LEVELS.map((item, position) => {
+                  const active = item.id === session.risk.level
+                  return (
+                    <li
+                      key={item.id}
+                      data-testid="level-slot"
+                      data-level={item.id}
+                      data-position={String(position)}
+                      data-active={active ? 'true' : 'false'}
+                      aria-current={active ? 'step' : undefined}
+                      style={{
+                        backgroundColor: active ? item.colour : 'transparent',
+                        color: active ? '#ffffff' : item.colour,
+                        border: `2px solid ${item.colour}`,
+                        minHeight: '48px',
+                        textAlign: 'center',
+                      }}
+                    >
+                      {item.label}
+                    </li>
+                  )
+                })}
+              </ol>
+              <p data-testid="pattern-label" style={{ fontSize: '14px', margin: 0 }}>
+                {session.risk.pattern_label}
+              </p>
+              <p style={{ margin: 0 }}>
+                Score <span data-testid="risk-score">{session.risk.score}</span>
+              </p>
+              {session.stated_purpose ? (
+                <p data-testid="stated-purpose" style={{ margin: 0 }}>
+                  {purposeLabel(library, session.stated_purpose)}
+                </p>
+              ) : null}
+              {session.risk.reasons.length > 0 ? (
+                <ul data-testid="reason-list" style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                  {session.risk.reasons.map((reason) => (
+                    <li key={reason.id} data-testid="reason">
+                      {reason.label}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {session.risk.counterpoint ? (
+                <p data-testid="counterpoint" style={{ margin: 0 }}>
+                  {counterpointPrefix(session.risk.level)} {session.risk.counterpoint.label}
+                </p>
+              ) : null}
+            </div>
+            <div style={{ display: 'grid', gap: '8px', alignContent: 'start' }}>
+              {session.stop?.kind === 'recommended' ? (
+                <p data-testid="recommended-stop" data-reason={session.stop.reason} style={{ margin: 0 }}>
+                  {RECOMMENDED_STOP}
+                </p>
+              ) : null}
+              {session.stop?.kind === 'hard' ? (
+                <p data-testid="hard-stop" data-reason={session.stop.reason} style={{ margin: 0 }}>
+                  {session.stop.reason}
+                </p>
+              ) : null}
+              {session.question ? (
+                <QuestionCard
+                  key={session.question.id}
+                  library={library}
+                  question={session.question}
+                  quiet={session.stop?.kind === 'recommended'}
+                  onAnswer={onAnswer}
+                />
+              ) : null}
+            </div>
+          </div>
           <TalkTrack library={library} session={session} />
-          {session.stop?.kind === 'recommended' ? (
-            <p data-testid="recommended-stop" data-reason={session.stop.reason}>
-              {RECOMMENDED_STOP}
-            </p>
-          ) : null}
-          {session.stop?.kind === 'hard' ? (
-            <p data-testid="hard-stop" data-reason={session.stop.reason}>
-              {session.stop.reason}
-            </p>
-          ) : null}
-          {session.question ? (
-            <QuestionCard
-              key={session.question.id}
-              library={library}
-              question={session.question}
-              quiet={session.stop?.kind === 'recommended'}
-              onAnswer={onAnswer}
-            />
-          ) : null}
         </>
       ) : null}
     </section>

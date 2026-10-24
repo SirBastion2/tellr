@@ -5,7 +5,18 @@ export function LiveBadge({ mode }: { mode: Mode | null }) {
     return null
   }
   return (
-    <p data-testid="live-badge" className="border border-stone-900 px-2 py-1 text-sm font-semibold">
+    <p
+      data-testid="live-badge"
+      style={{
+        margin: 0,
+        whiteSpace: 'nowrap',
+        flex: '0 0 auto',
+        border: '1px solid #1c1917',
+        color: '#1c1917',
+        padding: '0 8px',
+        fontWeight: 600,
+      }}
+    >
       LIVE — no scenario loaded
     </p>
   )
