@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from recommenders.base import Recommendation, Recommender, RulesRecommender
+from recommenders.fake import FakeRecommender
 from recommenders.hosted_llm import HostedLLM
 from recommenders.local_llm import LocalLLM
 from recommenders.metrics import Metrics
@@ -14,6 +15,7 @@ FALLBACK_MODEL_ID = "Llama-3.2-3B-Instruct-Q4_K_M"
 __all__ = [
     "DEFAULT_MODEL_ID",
     "FALLBACK_MODEL_ID",
+    "FakeRecommender",
     "HostedLLM",
     "LocalLLM",
     "Metrics",

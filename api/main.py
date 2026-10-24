@@ -26,7 +26,7 @@ from engine import (
     rule_choice,
     stop,
 )
-from recommenders import DEFAULT_MODEL_ID, HostedLLM, LocalLLM, Metrics
+from recommenders import DEFAULT_MODEL_ID, FakeRecommender, HostedLLM, LocalLLM, Metrics
 from recommenders.select import (
     apply_recommendation,
     last_recommendation,
@@ -36,6 +36,7 @@ from recommenders.select import (
 from store import sqlite as store
 
 _MODEL_KINDS = frozenset({"local", "local_llm", "hosted", "hosted_llm"})
+_FAKE_KINDS = frozenset({"fake", "fake_llm"})
 
 _REPO = Path(__file__).resolve().parents[1]
 _DEFAULT_LIBRARY = _REPO / "library"
@@ -122,6 +123,8 @@ def create_app(
         model_id = os.environ.get("MODEL_ID") or None
     if rec in _MODEL_KINDS and not model_id:
         model_id = DEFAULT_MODEL_ID
+    if rec in _FAKE_KINDS and not model_id:
+        model_id = FakeRecommender.MODEL_ID
     if timeout_ms is None:
         timeout_ms = int(os.environ.get("MODEL_TIMEOUT_MS", "1500"))
     if warmup_timeout_ms is None:
@@ -159,6 +162,8 @@ def create_app(
                 timeout_ms=timeout_ms,
                 library=library,
             )
+    elif impl is None and rec in _FAKE_KINDS:
+        impl = FakeRecommender()
 
     do_warmup = warmup
     if do_warmup is None:
