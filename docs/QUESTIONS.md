@@ -179,4 +179,10 @@ Agents append; drivers answer. An open question blocks only the work that depend
   notes/outcome onto SessionState in v1.
 - **Status:** answered: Driver A accepted recommendation.
 
+### Q-012 · §12 does not name the eight UI routes
+- **Raised by:** B1 · B-01 · **Sections:** architecture §12; contract/api.md; CHANGE-001; Q-006
+- **Detail:** §12 says "Eight routes matching draft §8" and does not list paths. The draft is not in the repo. contract-v1 names HTTP resources, not screen paths. CHANGE-001 rejected `GET`/`POST /settings`. Q-006 left handoff, history, and health response schemas as a follow-up CHANGE.
+- **What B1 shipped inside web/ (not a contract edit):** `/` Home, `/sessions/:id/context` Context, `/sessions/:id` Interview, `/sessions/:id/outcome` Outcome, `/sessions/:id/handoff` Handoff, `/sessions` History, `/health` Health, `/settings` Settings. The Settings screen does not call `/settings`. Handoff, history, and health do not call those endpoints and do not invent response bodies. The mock replays only `GET /library`, `POST /sessions?case=`, `GET /sessions/:id`, `POST .../context`, `POST .../answers`, and `POST .../undo`.
+- **Status:** open. Correct the paths if draft §8 names different ones.
+
 ---
