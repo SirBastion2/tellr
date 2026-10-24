@@ -15,6 +15,7 @@ dependencies = [
     "pytest",
     "ruff",
     "import-linter",
+    "httpx",
 ]
 
 [tool.setuptools.packages.find]
