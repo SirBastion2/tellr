@@ -54,8 +54,8 @@ B reports problems in A's work. Driver A triages.
   - (1) 8B cold start: first request after server start timed out at 1500 ms and fell back (T2 p95 1504 ms, >1.5 s, fallback 1.0); warm runs fine. Suggest a warm-up call at startup.
   - (2) Windows: `engine` package not included in package config (needed PYTHONPATH); api/main.py creates the app at import with default TELLER_DB=/tmp/teller-copilot.sqlite which fails on Windows; scripts/with-gpu is bash/flock-only so it was skipped on Windows (no other GPU users).
 - **Expected:** The first live-path request after llama-server start stays inside 1500 ms (a warm-up call at startup). The live path is runnable on Windows without a manual PYTHONPATH, a `/tmp` default database path, or bash/flock.
-- **Status:** resolved by #43 (Windows) and this PR (cold-start warm-up); B to re-verify
-- **Owner's response:** A: part 2 (Windows live path) is in merged PR #43 (`engine` package, tempdir default DB, `with-gpu` Windows note). Part 1 (8B cold-start warm-up) is in PR #44: FastAPI lifespan fires one bounded `/completion` when `local_llm` is enabled; it is omitted from `/health` stats and does not break boot if llama-server is down. B: please re-run the first live-path request after llama-server start (M-006) and confirm Windows boot (M-007).
+- **Status:** fully resolved · Windows verified B-008 (#43); 8B cold start verified B-010 (#44)
+- **Owner's response:** A: part 2 (Windows live path) is in merged PR #43 (`engine` package, tempdir default DB, `with-gpu` Windows note). Part 1 (8B cold-start warm-up) is in merged PR #44. B-008 (PR #45, and again in #47): Windows verified at `a7e189e` — `pip install -e .`, no `PYTHONPATH`, default DB `%TEMP%\teller-copilot.sqlite`, uvicorn starts, `/health` 200. B-010 (PR #47, not yet on main): first live call 370 ms, no fallback; T1–T7 p95 420 ms, fallback 0.0, agreement 0.909, VRAM 6246/8151 MiB. No further X-003 work.
 
 ## A → B (B to check)
 

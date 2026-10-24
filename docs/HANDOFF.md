@@ -946,3 +946,41 @@ GATE PASS (a)
   - Arm B on T1–T7 matches `reference_impl.run_case` (question IDs, chips, final raw level, score) using the shipped library.
   - No new dependency. Do not run held-out. Driver A reviews `eval/` PRs.
 
+---
+
+### [A-06] Evaluation hours 12–15 (LocalLLM arm C, CP3 runbook) — Agent A3 — 2026-10-24 21:16
+- **Status:** done (hours 12–15 code + fake-model run). Official CP3 GPU arm-C run **on hold** until B reports GPU access is back.
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+147 passed, 1 warning in 18.57s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `eval/arms/model.py`, `eval/interview.py`, `eval/run.py`, `tests/eval/test_arms.py`, `tests/eval/test_run.py`, `docs/CP3_GPU_RUN.md`, `docs/A_TO_B.md` (M-008), `docs/CROSS_LANE.md` (X-003 fully resolved), `ARCHITECTURE.md`, `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - `--model local` wraps A-05 `LocalLLM` with timeout off (24h HTTP bound; LocalLLM needs a positive ms) and one `warmup()` (§13.4, #44). `--model fake` stays the default. `recommenders` is imported only inside `LocalModel.__init__`.
+  - Interview state copies `_events` so `LocalLLM` can build the §8.1 prompt. Model sees candidate IDs only.
+  - Fake-model full run (`python -m eval.run --scenarios eval/scenarios/dev --out eval/results/<sha> --arms A,B,C --model fake`) is **not** committed: `eval/results/` is gitignored and A-06 does not say results are committed (A-08 does).
+  - GPU runbook is for Driver B's RTX 5070 / 8B Q4_K_M. Native Windows skips `scripts/with-gpu`. Run is **on hold** (B team moving). A continues non-GPU work.
+  - X-003 fully resolved from B-008 (Windows) and B-010 (first live 370 ms, p95 420 ms, fallback 0.0, agreement 0.909, VRAM 6246/8151 MiB). Did not edit `docs/B_TO_A.md`.
+  - Did not edit `eval/PREREGISTRATION.md`, held-out, `contract/`, `reference_impl.py`, goldens, `library/`, weights, or `web/`. No new dependency.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR https://github.com/SirBastion2/tellr/pull/48
+  - Fake-model headlines at `afb4574` (not committed): Arm A catch `15/15` false-flag `8/15` friction `8/15`; Arm B and fake Arm C catch `14/15` false-flag `0/15` friction `0/15`; B/C miss `scn.coached.bank_perfect_own_account`.
+  - Official CP3 numbers wait on `docs/CP3_GPU_RUN.md` after B posts GPU-access-back in `docs/B_TO_A.md`.
+  - A-07 (weights) is next non-GPU work. Do not run held-out. Checkpoint: stop for official GPU `report.md` when B can run it.
+
