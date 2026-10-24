@@ -888,3 +888,36 @@ GATE PASS (a)
   - Live path on Windows: `pip install -e .` then `python -m uvicorn api.main:app --host 127.0.0.1 --port 8000`. No `PYTHONPATH`. Default DB is `%TEMP%\teller-copilot.sqlite` (or `$TMP`/`$TEMP` on Unix if set; else `/tmp/teller-copilot.sqlite`).
   - GPU jobs on Windows: run the inner command without `scripts/with-gpu`, one at a time. WSL/Git Bash still use `scripts/with-gpu`.
   - No new dependency.
+
+---
+
+### [X-003] 8B startup warm-up — Agent A2 — 2026-10-24 21:15
+- **Status:** done (implementation + mocked-server tests). Live GPU re-check PENDING Driver B.
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+121 passed, 1 warning in 18.20s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `recommenders/local_llm.py` (`LocalLLM.warmup`); `api/main.py` (lifespan warm-up when `local`/`local_llm`); `tests/recommenders/test_warmup.py`; `ARCHITECTURE.md` (added `test_warmup.py`); `docs/A_TO_B.md` (M-006); `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Bounded wait in FastAPI lifespan, not a fire-and-forget thread, so B's TestClient live-path script is already warm when the first probe runs (L1b / §8.3; X-003).
+  - Warm-up timeout is `MODEL_WARMUP_TIMEOUT_MS` default 15000, not the live 1500 ms, because the cold hit is the thing that exceeded 1500 ms. Live path still uses 1500 ms.
+  - Warm-up uses the same `/completion` shape and the §8.1 stable prefix (library vocab) with `cache_prompt`, and is never passed to `Metrics.record_attempt` (§16).
+  - Connection errors are swallowed so boot works with no llama-server (L2). Injected fakes and `RECOMMENDER=rules` skip warm-up.
+  - No contract, schema, golden, or `reference_impl.py` change. No new dependency.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/44. Driver B: start llama-server (8B Q4_K_M), then the first live-path request after that start (same `scripts/with-gpu` block in the [A-05] entry). Reply in `docs/B_TO_A.md` or the M-006 **B reply** line. Do not merge until that check. `docs/CROSS_LANE.md` was not edited.
