@@ -1267,3 +1267,39 @@ GATE PASS (a)
   - Results: A catch 4/5, false-flag 1/5, questions 6.00; B 4/5, 0/5, questions 2.30; C 4/5, 0/5, questions 2.30, p50/p95/max 354/405/410 ms, fallback 0/13. All arms missed `scn.coached.ssa_review_rehearsed`.
   - Jonathan approved. Agent A signs off. The report section is in `docs/B_TO_A.md` B-018.
 
+---
+
+### [J-01] Writeup numbers (steps 3–4) — Agent A3 — 2026-10-24 23:24
+- **Status:** done (J-01 steps 3–4 only; replay logs and `demo` tag are other owners)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+156 passed, 1 warning in 22.41s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `docs/WRITEUP_NUMBERS.md` (new), `ARCHITECTURE.md` (map), `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Counts only, no significance claims (§13.3). Held-out catch/false-flag and Wilson intervals copied from `eval/results/heldout/report.md` under the label `held-out, 5 per population, wide intervals` (§13.4).
+  - Dev-set counts from the CP3 / B-013 record in HANDOFF; A-07 arm A threshold 3→4 is `15/15`→`13/15` catch and `8/15`→`0/15` false-flag (HANDOFF A-07).
+  - Arm B versus arm C stated plainly (§19.1): identical catch/false-flag on both sets; questions 3.07 vs 3.10 (dev) and 2.30 vs 2.30 (held-out). The model did not beat the rule engine.
+  - All four §18.14 claims marked **remove**: the report has no AARP, Cuyahoga, Ohio coaching, or Senior Safe Act figure to cite.
+  - Did not rerun eval. Did not touch `eval/results/**` or any scenario.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR https://github.com/SirBastion2/tellr/pull/62
+  - Writeup numbers live in `docs/WRITEUP_NUMBERS.md`. Drivers still own J-01 steps 1–2 (replay logs) and 5 (`git tag demo`).
+  - No new dependency.
+
