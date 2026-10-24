@@ -3,23 +3,22 @@
 from __future__ import annotations
 
 import reference_impl as ref
-
 from eval.arms.rules import run_rules
 from eval.scenarios import parse_scenario
-from engine.library import load_library
-
 from tests.eval.helpers import t_scenario
+
+from engine.library import load_library
 
 LEVEL = {"Clear": "Clear", "Caution": "Caution", "High concern": "High"}
 
 
 def test_arm_b_t1_through_t7_match_reference_traces(library_dir) -> None:
     lib = load_library(library_dir)
-    for case, (_pop, _context, _purpose, _answers) in ref.CASES.items():
+    for case in ref.CASES:
         expected = ref.run_case(*ref.CASES[case][1:])
         result = run_rules(parse_scenario(t_scenario(case)), lib)
         asked = [row["qid"] for row in expected if row["qid"]]
-        assert result.asked == asked, (case, result.asked, asked)
+        assert list(result.asked) == asked, (case, result.asked, asked)
         assert result.raw_level == LEVEL[expected[-1]["raw"]], (
             case,
             result.raw_level,

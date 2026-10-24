@@ -6,9 +6,9 @@ from eval.arms.model import FakeModel, run_model
 from eval.arms.rules import run_rules
 from eval.arms.static import run_static
 from eval.scenarios import parse_scenario
-from engine.library import load_library
-
 from tests.eval.helpers import t_scenario
+
+from engine.library import load_library
 
 
 def _library(library_dir):

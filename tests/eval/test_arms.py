@@ -6,9 +6,9 @@ from eval.arms.model import FakeModel, run_model
 from eval.arms.rules import run_rules
 from eval.arms.static import run_static
 from eval.scenarios import parse_scenario
-from engine.library import load_library
-
 from tests.eval.helpers import t_scenario
+
+from engine.library import load_library
 
 
 def test_arm_a_confirmed_is_concerning_on_secrecy_not_on_cashiers_check(library_dir) -> None:
@@ -72,9 +72,26 @@ def test_arm_a_threshold_three_is_high_and_has_no_caution(library_dir) -> None:
 
 def test_arm_a_does_not_count_above_threshold_chip(library_dir) -> None:
     lib = load_library(library_dir)
-    data = t_scenario("T5")
-    data["context_chips"] = ["chip.above_threshold"]
-    result = run_static(parse_scenario(data), lib)
+    scenario = parse_scenario(
+        {
+            "id": "scn.legitimate.threshold_chip",
+            "label": "above-threshold only",
+            "population": "legitimate",
+            "pattern_truth": None,
+            "stated_purpose": "purpose.moving_money",
+            "context_chips": ["chip.above_threshold"],
+            "answers": {
+                "purpose": "specific",
+                "counterparty_identity": "specific",
+                "written_estimate": "specific",
+                "receiving_account": "specific",
+                "secrecy": "denied",
+                "payment_flexibility": "confirmed",
+            },
+            "default": "vague",
+        }
+    )
+    result = run_static(scenario, lib)
     assert result.concerning_count == 0
     assert result.raw_level == "Clear"
 

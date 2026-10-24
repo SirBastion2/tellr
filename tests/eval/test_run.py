@@ -7,7 +7,6 @@ from pathlib import Path
 
 import pytest
 import yaml
-
 from eval.run import main
 from tests.eval.helpers import t_scenario
 

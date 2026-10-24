@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from eval.metrics import (
-    wilson_interval,
     summarize,
+    wilson_interval,
 )
 from eval.types import ArmResult
 
