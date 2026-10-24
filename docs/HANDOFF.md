@@ -580,3 +580,32 @@ GATE PASS (a)
 - **Decisions I made, and the section that justified each:** none. Driver instruction: append-only shared docs; main for contract/api/engine/store/goldens/fixtures/`reference_impl.py`; branch for `web/`.
 - **Questions logged:** none
 - **The next agent needs to know:** This is a merge of `origin/main` (`b2db873`) into `b-01-scaffold`. No new branch or PR. Q-012 is still in `docs/QUESTIONS.md`. Both CROSS_LANE X-001 entries are present (main: missing outcome/actor, resolved; branch: schema description still said not applied, still open in the log). The schema file on this tree is main's `CHANGE-004 (applied).` wording.
+
+---
+
+### [A2] make dev-web — Agent A2 — 2026-10-24 20:37
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+85 passed, 1 warning in 10.34s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `Makefile`; `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - `make dev-web` runs `npm run dev` from `web/` in tmux session `teller-web`, matching `make dev-api` and WORKFLOW §2.4 / B-01. Vite already binds 127.0.0.1:5173; the mock is middleware on that server; `VITE_API_URL` overrides the API base (B-01 HANDOFF, PR #5).
+- **Questions logged:** none (Q-012 is route paths, not this target)
+- **The next agent needs to know:** `make dev-web` starts Vite detached in tmux (`teller-web`). Empty `VITE_API_URL` uses the Vite origin (mock). Set `VITE_API_URL=http://127.0.0.1:8000` to hit `make dev-api`. No `web/` edits. Do not merge unless a driver says so. No new dependency.
