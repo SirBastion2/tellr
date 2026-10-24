@@ -1,0 +1,2399 @@
+{
+  "git_sha": "82b788d1009fe775c3fc5edb20cb5413ee25068e",
+  "library_version": "1.2.0",
+  "config": {
+    "temperature": 0,
+    "batch_size": 1,
+    "prefetch": false,
+    "timeout_ms": null
+  },
+  "arms": {
+    "A": {
+      "per_scenario": [
+        {
+          "scenario_id": "scn.coached.bank_impersonator_cruise_cover",
+          "label": "Coached \u2014 fake fraud desk, cover story is a cruise gift",
+          "population": "coached",
+          "raw_level": "High",
+          "score": null,
+          "questions": 6,
+          "asked": [
+            "q.purpose.open",
+            "q.homerepair.contractor_name",
+            "q.homerepair.estimate",
+            "q.recipient.account_details",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": 9,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "intent": "purpose",
+              "chip": "relayed_by_caller",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.contractor_name",
+              "intent": "counterparty_identity",
+              "chip": "vague",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.estimate",
+              "intent": "written_estimate",
+              "chip": "no_answer",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.recipient.account_details",
+              "intent": "receiving_account",
+              "chip": "vague",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "intent": "secrecy",
+              "chip": "confirmed",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "intent": "payment_flexibility",
+              "chip": "denied",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.on_phone",
+              "chip": "chip.on_phone",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.someone_directing",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.cash_only",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.urgency_secrecy",
+              "chip": "chip.urgency_secrecy",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.rushed",
+              "chip": "chip.rushed",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.unusual_for_customer",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.coached.jury_summons_cash",
+          "label": "Coached \u2014 fake jury-duty warrant, cash fine, caller on the line",
+          "population": "coached",
+          "raw_level": "High",
+          "score": null,
+          "questions": 6,
+          "asked": [
+            "q.purpose.open",
+            "q.homerepair.contractor_name",
+            "q.homerepair.estimate",
+            "q.recipient.account_details",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": 10,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "intent": "purpose",
+              "chip": "relayed_by_caller",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.contractor_name",
+              "intent": "counterparty_identity",
+              "chip": "vague",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.estimate",
+              "intent": "written_estimate",
+              "chip": "no_answer",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.recipient.account_details",
+              "intent": "receiving_account",
+              "chip": "no_answer",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "intent": "secrecy",
+              "chip": "confirmed",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "intent": "payment_flexibility",
+              "chip": "denied",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.on_phone",
+              "chip": "chip.on_phone",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.someone_directing",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.cash_only",
+              "chip": "chip.cash_only",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.urgency_secrecy",
+              "chip": "chip.urgency_secrecy",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.rushed",
+              "chip": "chip.rushed",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.unusual_for_customer",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.coached.relative_hospital_caller",
+          "label": "Coached \u2014 caller claims a relative was hospitalized",
+          "population": "coached",
+          "raw_level": "High",
+          "score": null,
+          "questions": 6,
+          "asked": [
+            "q.purpose.open",
+            "q.homerepair.contractor_name",
+            "q.homerepair.estimate",
+            "q.recipient.account_details",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": 10,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "intent": "purpose",
+              "chip": "relayed_by_caller",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.contractor_name",
+              "intent": "counterparty_identity",
+              "chip": "vague",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.estimate",
+              "intent": "written_estimate",
+              "chip": "no_answer",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.recipient.account_details",
+              "intent": "receiving_account",
+              "chip": "relayed_by_caller",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "intent": "secrecy",
+              "chip": "confirmed",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "intent": "payment_flexibility",
+              "chip": "denied",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.on_phone",
+              "chip": "chip.on_phone",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.someone_directing",
+              "chip": "chip.someone_directing",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.cash_only",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.urgency_secrecy",
+              "chip": "chip.urgency_secrecy",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.rushed",
+              "chip": "chip.rushed",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.unusual_for_customer",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.coached.ssa_review_rehearsed",
+          "label": "Coached \u2014 Social Security review, rehearsed plausible details",
+          "population": "coached",
+          "raw_level": "Clear",
+          "score": null,
+          "questions": 6,
+          "asked": [
+            "q.purpose.open",
+            "q.homerepair.contractor_name",
+            "q.homerepair.estimate",
+            "q.recipient.account_details",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": 0,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "intent": "purpose",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.contractor_name",
+              "intent": "counterparty_identity",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.estimate",
+              "intent": "written_estimate",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.recipient.account_details",
+              "intent": "receiving_account",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "intent": "secrecy",
+              "chip": "denied",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "intent": "payment_flexibility",
+              "chip": "confirmed",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.on_phone",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.someone_directing",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.cash_only",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.urgency_secrecy",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.rushed",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.unusual_for_customer",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.coached.tech_support_posed_as_fine",
+          "label": "Coached \u2014 tech-support refund, told to call it a government fine",
+          "population": "coached",
+          "raw_level": "High",
+          "score": null,
+          "questions": 6,
+          "asked": [
+            "q.purpose.open",
+            "q.homerepair.contractor_name",
+            "q.homerepair.estimate",
+            "q.recipient.account_details",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": 9,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "intent": "purpose",
+              "chip": "changed",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.contractor_name",
+              "intent": "counterparty_identity",
+              "chip": "relayed_by_caller",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.estimate",
+              "intent": "written_estimate",
+              "chip": "vague",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.recipient.account_details",
+              "intent": "receiving_account",
+              "chip": "no_answer",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "intent": "secrecy",
+              "chip": "confirmed",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "intent": "payment_flexibility",
+              "chip": "denied",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.on_phone",
+              "chip": "chip.on_phone",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.someone_directing",
+              "chip": "chip.someone_directing",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.cash_only",
+              "chip": "chip.cash_only",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.urgency_secrecy",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.rushed",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.unusual_for_customer",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.building_permit_counter",
+          "label": "Legitimate \u2014 township building permit, bill in hand",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": null,
+          "questions": 6,
+          "asked": [
+            "q.purpose.open",
+            "q.homerepair.contractor_name",
+            "q.homerepair.estimate",
+            "q.recipient.account_details",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": 0,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "intent": "purpose",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.contractor_name",
+              "intent": "counterparty_identity",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.estimate",
+              "intent": "written_estimate",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.recipient.account_details",
+              "intent": "receiving_account",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "intent": "secrecy",
+              "chip": "denied",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "intent": "payment_flexibility",
+              "chip": "confirmed",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.on_phone",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.someone_directing",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.cash_only",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.urgency_secrecy",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.rushed",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.unusual_for_customer",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.cemetery_memorial_invoice",
+          "label": "Legitimate \u2014 shared memorial invoice, monument company named",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": null,
+          "questions": 6,
+          "asked": [
+            "q.purpose.open",
+            "q.homerepair.contractor_name",
+            "q.homerepair.estimate",
+            "q.recipient.account_details",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": 0,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "intent": "purpose",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.contractor_name",
+              "intent": "counterparty_identity",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.estimate",
+              "intent": "written_estimate",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.recipient.account_details",
+              "intent": "receiving_account",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "intent": "secrecy",
+              "chip": "denied",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "intent": "payment_flexibility",
+              "chip": "confirmed",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.on_phone",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.someone_directing",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.cash_only",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.urgency_secrecy",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.rushed",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.unusual_for_customer",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.dealer_trailer_stock_number",
+          "label": "Legitimate \u2014 dealer trailer, stock number known, above threshold",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": null,
+          "questions": 6,
+          "asked": [
+            "q.purpose.open",
+            "q.homerepair.contractor_name",
+            "q.homerepair.estimate",
+            "q.recipient.account_details",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": 0,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "intent": "purpose",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.contractor_name",
+              "intent": "counterparty_identity",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.estimate",
+              "intent": "written_estimate",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.recipient.account_details",
+              "intent": "receiving_account",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "intent": "secrecy",
+              "chip": "denied",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "intent": "payment_flexibility",
+              "chip": "confirmed",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.on_phone",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.someone_directing",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.cash_only",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.urgency_secrecy",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.rushed",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.unusual_for_customer",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.reunion_spouse_on_phone",
+          "label": "Legitimate \u2014 reunion fare, spouse reading the reservation, unusual amount",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": null,
+          "questions": 6,
+          "asked": [
+            "q.purpose.open",
+            "q.homerepair.contractor_name",
+            "q.homerepair.estimate",
+            "q.recipient.account_details",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": 2,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "intent": "purpose",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.contractor_name",
+              "intent": "counterparty_identity",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.estimate",
+              "intent": "written_estimate",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.recipient.account_details",
+              "intent": "receiving_account",
+              "chip": "specific",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "intent": "secrecy",
+              "chip": "denied",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "intent": "payment_flexibility",
+              "chip": "confirmed",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.on_phone",
+              "chip": "chip.on_phone",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.someone_directing",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.cash_only",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.urgency_secrecy",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.rushed",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.unusual_for_customer",
+              "chip": "chip.unusual_for_customer",
+              "concerning": true,
+              "default_fired": false
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.shelter_adoption_fuzzy",
+          "label": "Legitimate \u2014 shelter adoption fee, details not itemized",
+          "population": "legitimate",
+          "raw_level": "High",
+          "score": null,
+          "questions": 6,
+          "asked": [
+            "q.purpose.open",
+            "q.homerepair.contractor_name",
+            "q.homerepair.estimate",
+            "q.recipient.account_details",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": 4,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "intent": "purpose",
+              "chip": "vague",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.contractor_name",
+              "intent": "counterparty_identity",
+              "chip": "vague",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.homerepair.estimate",
+              "intent": "written_estimate",
+              "chip": "vague",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.recipient.account_details",
+              "intent": "receiving_account",
+              "chip": "vague",
+              "concerning": true,
+              "default_fired": false
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "intent": "secrecy",
+              "chip": "denied",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "intent": "payment_flexibility",
+              "chip": "confirmed",
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.on_phone",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.someone_directing",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.cash_only",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.urgency_secrecy",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.rushed",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            },
+            {
+              "qid": null,
+              "intent": "chip.unusual_for_customer",
+              "chip": null,
+              "concerning": false,
+              "default_fired": false
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "matrix": {
+          "coached": {
+            "Clear": 1,
+            "Caution": 0,
+            "High": 4
+          },
+          "legitimate": {
+            "Clear": 4,
+            "Caution": 0,
+            "High": 1
+          }
+        },
+        "catch": [
+          4,
+          5
+        ],
+        "catch_label": "4/5",
+        "false_flag": [
+          1,
+          5
+        ],
+        "false_flag_label": "1/5",
+        "friction": [
+          1,
+          5
+        ],
+        "friction_label": "1/5",
+        "misses": [
+          "scn.coached.ssa_review_rehearsed"
+        ],
+        "questions_mean": 6.0,
+        "questions_max": 6,
+        "time_mean_s": 78.0,
+        "time_max_s": 78,
+        "default_fired_rate": [
+          0,
+          60
+        ],
+        "validator_rejections": 0,
+        "latency_p50_ms": null,
+        "latency_p95_ms": null,
+        "latency_max_ms": null,
+        "fallback_rate": null,
+        "fallbacks": null,
+        "catch_wilson": [
+          0.3755282641185388,
+          0.9637768390302125
+        ],
+        "false_flag_wilson": [
+          0.03622316096978745,
+          0.6244717358814613
+        ],
+        "baselines": {
+          "always-Clear": {
+            "matrix": {
+              "coached": {
+                "Clear": 5,
+                "Caution": 0,
+                "High": 0
+              },
+              "legitimate": {
+                "Clear": 5,
+                "Caution": 0,
+                "High": 0
+              }
+            },
+            "catch": [
+              0,
+              5
+            ],
+            "catch_label": "0/5",
+            "false_flag": [
+              0,
+              5
+            ],
+            "false_flag_label": "0/5",
+            "friction": [
+              0,
+              5
+            ],
+            "friction_label": "0/5",
+            "misses": [
+              "scn.coached.bank_impersonator_cruise_cover",
+              "scn.coached.jury_summons_cash",
+              "scn.coached.relative_hospital_caller",
+              "scn.coached.ssa_review_rehearsed",
+              "scn.coached.tech_support_posed_as_fine"
+            ],
+            "questions_mean": 6.0,
+            "questions_max": 6,
+            "time_mean_s": 78.0,
+            "time_max_s": 78,
+            "default_fired_rate": [
+              0,
+              60
+            ],
+            "validator_rejections": 0,
+            "latency_p50_ms": null,
+            "latency_p95_ms": null,
+            "latency_max_ms": null,
+            "fallback_rate": null,
+            "fallbacks": null,
+            "catch_wilson": [
+              0.0,
+              0.43449149475208104
+            ],
+            "false_flag_wilson": [
+              0.0,
+              0.43449149475208104
+            ]
+          },
+          "always-Caution": {
+            "matrix": {
+              "coached": {
+                "Clear": 0,
+                "Caution": 5,
+                "High": 0
+              },
+              "legitimate": {
+                "Clear": 0,
+                "Caution": 5,
+                "High": 0
+              }
+            },
+            "catch": [
+              5,
+              5
+            ],
+            "catch_label": "5/5",
+            "false_flag": [
+              0,
+              5
+            ],
+            "false_flag_label": "0/5",
+            "friction": [
+              5,
+              5
+            ],
+            "friction_label": "5/5",
+            "misses": [],
+            "questions_mean": 6.0,
+            "questions_max": 6,
+            "time_mean_s": 78.0,
+            "time_max_s": 78,
+            "default_fired_rate": [
+              0,
+              60
+            ],
+            "validator_rejections": 0,
+            "latency_p50_ms": null,
+            "latency_p95_ms": null,
+            "latency_max_ms": null,
+            "fallback_rate": null,
+            "fallbacks": null,
+            "catch_wilson": [
+              0.5655085052479191,
+              1.0
+            ],
+            "false_flag_wilson": [
+              0.0,
+              0.43449149475208104
+            ]
+          },
+          "always-High": {
+            "matrix": {
+              "coached": {
+                "Clear": 0,
+                "Caution": 0,
+                "High": 5
+              },
+              "legitimate": {
+                "Clear": 0,
+                "Caution": 0,
+                "High": 5
+              }
+            },
+            "catch": [
+              5,
+              5
+            ],
+            "catch_label": "5/5",
+            "false_flag": [
+              5,
+              5
+            ],
+            "false_flag_label": "5/5",
+            "friction": [
+              5,
+              5
+            ],
+            "friction_label": "5/5",
+            "misses": [],
+            "questions_mean": 6.0,
+            "questions_max": 6,
+            "time_mean_s": 78.0,
+            "time_max_s": 78,
+            "default_fired_rate": [
+              0,
+              60
+            ],
+            "validator_rejections": 0,
+            "latency_p50_ms": null,
+            "latency_p95_ms": null,
+            "latency_max_ms": null,
+            "fallback_rate": null,
+            "fallbacks": null,
+            "catch_wilson": [
+              0.5655085052479191,
+              1.0
+            ],
+            "false_flag_wilson": [
+              0.5655085052479191,
+              1.0
+            ]
+          }
+        }
+      }
+    },
+    "B": {
+      "per_scenario": [
+        {
+          "scenario_id": "scn.coached.bank_impersonator_cruise_cover",
+          "label": "Coached \u2014 fake fraud desk, cover story is a cruise gift",
+          "population": "coached",
+          "raw_level": "High",
+          "score": 70,
+          "questions": 3,
+          "asked": [
+            "q.purpose.open",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "relayed_by_caller",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "chip": "confirmed",
+              "intent": "secrecy",
+              "default_fired": false,
+              "stage": "probe"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "denied",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.coached.jury_summons_cash",
+          "label": "Coached \u2014 fake jury-duty warrant, cash fine, caller on the line",
+          "population": "coached",
+          "raw_level": "High",
+          "score": 68,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.secrecy.told_not_to_tell"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "relayed_by_caller",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "chip": "confirmed",
+              "intent": "secrecy",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.coached.relative_hospital_caller",
+          "label": "Coached \u2014 caller claims a relative was hospitalized",
+          "population": "coached",
+          "raw_level": "High",
+          "score": 70,
+          "questions": 3,
+          "asked": [
+            "q.purpose.open",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "relayed_by_caller",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "chip": "confirmed",
+              "intent": "secrecy",
+              "default_fired": false,
+              "stage": "probe"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "denied",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.coached.ssa_review_rehearsed",
+          "label": "Coached \u2014 Social Security review, rehearsed plausible details",
+          "population": "coached",
+          "raw_level": "Clear",
+          "score": -30,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "specific",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "confirmed",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.coached.tech_support_posed_as_fine",
+          "label": "Coached \u2014 tech-support refund, told to call it a government fine",
+          "population": "coached",
+          "raw_level": "High",
+          "score": 68,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.secrecy.told_not_to_tell"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "changed",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "chip": "confirmed",
+              "intent": "secrecy",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.building_permit_counter",
+          "label": "Legitimate \u2014 township building permit, bill in hand",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": -30,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "specific",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "confirmed",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.cemetery_memorial_invoice",
+          "label": "Legitimate \u2014 shared memorial invoice, monument company named",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": -30,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "specific",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "confirmed",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.dealer_trailer_stock_number",
+          "label": "Legitimate \u2014 dealer trailer, stock number known, above threshold",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": -30,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "specific",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "confirmed",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.reunion_spouse_on_phone",
+          "label": "Legitimate \u2014 reunion fare, spouse reading the reservation, unusual amount",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": -8,
+          "questions": 3,
+          "asked": [
+            "q.purpose.open",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "specific",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "chip": "denied",
+              "intent": "secrecy",
+              "default_fired": false,
+              "stage": "probe"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "confirmed",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.shelter_adoption_fuzzy",
+          "label": "Legitimate \u2014 shelter adoption fee, details not itemized",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": -2,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "vague",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "confirmed",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "matrix": {
+          "coached": {
+            "Clear": 1,
+            "Caution": 0,
+            "High": 4
+          },
+          "legitimate": {
+            "Clear": 5,
+            "Caution": 0,
+            "High": 0
+          }
+        },
+        "catch": [
+          4,
+          5
+        ],
+        "catch_label": "4/5",
+        "false_flag": [
+          0,
+          5
+        ],
+        "false_flag_label": "0/5",
+        "friction": [
+          0,
+          5
+        ],
+        "friction_label": "0/5",
+        "misses": [
+          "scn.coached.ssa_review_rehearsed"
+        ],
+        "questions_mean": 2.3,
+        "questions_max": 3,
+        "time_mean_s": 29.9,
+        "time_max_s": 39,
+        "default_fired_rate": [
+          0,
+          23
+        ],
+        "validator_rejections": 0,
+        "latency_p50_ms": null,
+        "latency_p95_ms": null,
+        "latency_max_ms": null,
+        "fallback_rate": null,
+        "fallbacks": null,
+        "catch_wilson": [
+          0.3755282641185388,
+          0.9637768390302125
+        ],
+        "false_flag_wilson": [
+          0.0,
+          0.43449149475208104
+        ],
+        "baselines": {
+          "always-Clear": {
+            "matrix": {
+              "coached": {
+                "Clear": 5,
+                "Caution": 0,
+                "High": 0
+              },
+              "legitimate": {
+                "Clear": 5,
+                "Caution": 0,
+                "High": 0
+              }
+            },
+            "catch": [
+              0,
+              5
+            ],
+            "catch_label": "0/5",
+            "false_flag": [
+              0,
+              5
+            ],
+            "false_flag_label": "0/5",
+            "friction": [
+              0,
+              5
+            ],
+            "friction_label": "0/5",
+            "misses": [
+              "scn.coached.bank_impersonator_cruise_cover",
+              "scn.coached.jury_summons_cash",
+              "scn.coached.relative_hospital_caller",
+              "scn.coached.ssa_review_rehearsed",
+              "scn.coached.tech_support_posed_as_fine"
+            ],
+            "questions_mean": 2.3,
+            "questions_max": 3,
+            "time_mean_s": 29.9,
+            "time_max_s": 39,
+            "default_fired_rate": [
+              0,
+              23
+            ],
+            "validator_rejections": 0,
+            "latency_p50_ms": null,
+            "latency_p95_ms": null,
+            "latency_max_ms": null,
+            "fallback_rate": null,
+            "fallbacks": null,
+            "catch_wilson": [
+              0.0,
+              0.43449149475208104
+            ],
+            "false_flag_wilson": [
+              0.0,
+              0.43449149475208104
+            ]
+          },
+          "always-Caution": {
+            "matrix": {
+              "coached": {
+                "Clear": 0,
+                "Caution": 5,
+                "High": 0
+              },
+              "legitimate": {
+                "Clear": 0,
+                "Caution": 5,
+                "High": 0
+              }
+            },
+            "catch": [
+              5,
+              5
+            ],
+            "catch_label": "5/5",
+            "false_flag": [
+              0,
+              5
+            ],
+            "false_flag_label": "0/5",
+            "friction": [
+              5,
+              5
+            ],
+            "friction_label": "5/5",
+            "misses": [],
+            "questions_mean": 2.3,
+            "questions_max": 3,
+            "time_mean_s": 29.9,
+            "time_max_s": 39,
+            "default_fired_rate": [
+              0,
+              23
+            ],
+            "validator_rejections": 0,
+            "latency_p50_ms": null,
+            "latency_p95_ms": null,
+            "latency_max_ms": null,
+            "fallback_rate": null,
+            "fallbacks": null,
+            "catch_wilson": [
+              0.5655085052479191,
+              1.0
+            ],
+            "false_flag_wilson": [
+              0.0,
+              0.43449149475208104
+            ]
+          },
+          "always-High": {
+            "matrix": {
+              "coached": {
+                "Clear": 0,
+                "Caution": 0,
+                "High": 5
+              },
+              "legitimate": {
+                "Clear": 0,
+                "Caution": 0,
+                "High": 5
+              }
+            },
+            "catch": [
+              5,
+              5
+            ],
+            "catch_label": "5/5",
+            "false_flag": [
+              5,
+              5
+            ],
+            "false_flag_label": "5/5",
+            "friction": [
+              5,
+              5
+            ],
+            "friction_label": "5/5",
+            "misses": [],
+            "questions_mean": 2.3,
+            "questions_max": 3,
+            "time_mean_s": 29.9,
+            "time_max_s": 39,
+            "default_fired_rate": [
+              0,
+              23
+            ],
+            "validator_rejections": 0,
+            "latency_p50_ms": null,
+            "latency_p95_ms": null,
+            "latency_max_ms": null,
+            "fallback_rate": null,
+            "fallbacks": null,
+            "catch_wilson": [
+              0.5655085052479191,
+              1.0
+            ],
+            "false_flag_wilson": [
+              0.5655085052479191,
+              1.0
+            ]
+          }
+        }
+      }
+    },
+    "C": {
+      "per_scenario": [
+        {
+          "scenario_id": "scn.coached.bank_impersonator_cruise_cover",
+          "label": "Coached \u2014 fake fraud desk, cover story is a cruise gift",
+          "population": "coached",
+          "raw_level": "High",
+          "score": 70,
+          "questions": 3,
+          "asked": [
+            "q.purpose.open",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "relayed_by_caller",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "chip": "confirmed",
+              "intent": "secrecy",
+              "default_fired": false,
+              "stage": "probe"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "denied",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.coached.jury_summons_cash",
+          "label": "Coached \u2014 fake jury-duty warrant, cash fine, caller on the line",
+          "population": "coached",
+          "raw_level": "High",
+          "score": 71,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "relayed_by_caller",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "denied",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.coached.relative_hospital_caller",
+          "label": "Coached \u2014 caller claims a relative was hospitalized",
+          "population": "coached",
+          "raw_level": "High",
+          "score": 70,
+          "questions": 3,
+          "asked": [
+            "q.purpose.open",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "relayed_by_caller",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "chip": "confirmed",
+              "intent": "secrecy",
+              "default_fired": false,
+              "stage": "probe"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "denied",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.coached.ssa_review_rehearsed",
+          "label": "Coached \u2014 Social Security review, rehearsed plausible details",
+          "population": "coached",
+          "raw_level": "Clear",
+          "score": -30,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "specific",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "confirmed",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.coached.tech_support_posed_as_fine",
+          "label": "Coached \u2014 tech-support refund, told to call it a government fine",
+          "population": "coached",
+          "raw_level": "High",
+          "score": 68,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.secrecy.told_not_to_tell"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "changed",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "chip": "confirmed",
+              "intent": "secrecy",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.building_permit_counter",
+          "label": "Legitimate \u2014 township building permit, bill in hand",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": -30,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "specific",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "confirmed",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.cemetery_memorial_invoice",
+          "label": "Legitimate \u2014 shared memorial invoice, monument company named",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": -30,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "specific",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "confirmed",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.dealer_trailer_stock_number",
+          "label": "Legitimate \u2014 dealer trailer, stock number known, above threshold",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": -30,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "specific",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "confirmed",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.reunion_spouse_on_phone",
+          "label": "Legitimate \u2014 reunion fare, spouse reading the reservation, unusual amount",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": -8,
+          "questions": 3,
+          "asked": [
+            "q.purpose.open",
+            "q.secrecy.told_not_to_tell",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "specific",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.secrecy.told_not_to_tell",
+              "chip": "denied",
+              "intent": "secrecy",
+              "default_fired": false,
+              "stage": "probe"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "confirmed",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        },
+        {
+          "scenario_id": "scn.legitimate.shelter_adoption_fuzzy",
+          "label": "Legitimate \u2014 shelter adoption fee, details not itemized",
+          "population": "legitimate",
+          "raw_level": "Clear",
+          "score": -2,
+          "questions": 2,
+          "asked": [
+            "q.purpose.open",
+            "q.alternative.cashiers_check"
+          ],
+          "default_fired": 0,
+          "validator_rejections": 0,
+          "concerning_count": null,
+          "trace": [
+            {
+              "qid": "q.purpose.open",
+              "chip": "vague",
+              "intent": "purpose",
+              "default_fired": false,
+              "stage": "opener"
+            },
+            {
+              "qid": "q.alternative.cashiers_check",
+              "chip": "confirmed",
+              "intent": "payment_flexibility",
+              "default_fired": false,
+              "stage": "probe"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "matrix": {
+          "coached": {
+            "Clear": 1,
+            "Caution": 0,
+            "High": 4
+          },
+          "legitimate": {
+            "Clear": 5,
+            "Caution": 0,
+            "High": 0
+          }
+        },
+        "catch": [
+          4,
+          5
+        ],
+        "catch_label": "4/5",
+        "false_flag": [
+          0,
+          5
+        ],
+        "false_flag_label": "0/5",
+        "friction": [
+          0,
+          5
+        ],
+        "friction_label": "0/5",
+        "misses": [
+          "scn.coached.ssa_review_rehearsed"
+        ],
+        "questions_mean": 2.3,
+        "questions_max": 3,
+        "time_mean_s": 29.9,
+        "time_max_s": 39,
+        "default_fired_rate": [
+          0,
+          23
+        ],
+        "validator_rejections": 0,
+        "latency_p50_ms": 354.0,
+        "latency_p95_ms": 404.6,
+        "latency_max_ms": 410.0,
+        "fallback_rate": 0.0,
+        "fallbacks": [
+          0,
+          13
+        ],
+        "catch_wilson": [
+          0.3755282641185388,
+          0.9637768390302125
+        ],
+        "false_flag_wilson": [
+          0.0,
+          0.43449149475208104
+        ],
+        "baselines": {
+          "always-Clear": {
+            "matrix": {
+              "coached": {
+                "Clear": 5,
+                "Caution": 0,
+                "High": 0
+              },
+              "legitimate": {
+                "Clear": 5,
+                "Caution": 0,
+                "High": 0
+              }
+            },
+            "catch": [
+              0,
+              5
+            ],
+            "catch_label": "0/5",
+            "false_flag": [
+              0,
+              5
+            ],
+            "false_flag_label": "0/5",
+            "friction": [
+              0,
+              5
+            ],
+            "friction_label": "0/5",
+            "misses": [
+              "scn.coached.bank_impersonator_cruise_cover",
+              "scn.coached.jury_summons_cash",
+              "scn.coached.relative_hospital_caller",
+              "scn.coached.ssa_review_rehearsed",
+              "scn.coached.tech_support_posed_as_fine"
+            ],
+            "questions_mean": 2.3,
+            "questions_max": 3,
+            "time_mean_s": 29.9,
+            "time_max_s": 39,
+            "default_fired_rate": [
+              0,
+              23
+            ],
+            "validator_rejections": 0,
+            "latency_p50_ms": null,
+            "latency_p95_ms": null,
+            "latency_max_ms": null,
+            "fallback_rate": null,
+            "fallbacks": null,
+            "catch_wilson": [
+              0.0,
+              0.43449149475208104
+            ],
+            "false_flag_wilson": [
+              0.0,
+              0.43449149475208104
+            ]
+          },
+          "always-Caution": {
+            "matrix": {
+              "coached": {
+                "Clear": 0,
+                "Caution": 5,
+                "High": 0
+              },
+              "legitimate": {
+                "Clear": 0,
+                "Caution": 5,
+                "High": 0
+              }
+            },
+            "catch": [
+              5,
+              5
+            ],
+            "catch_label": "5/5",
+            "false_flag": [
+              0,
+              5
+            ],
+            "false_flag_label": "0/5",
+            "friction": [
+              5,
+              5
+            ],
+            "friction_label": "5/5",
+            "misses": [],
+            "questions_mean": 2.3,
+            "questions_max": 3,
+            "time_mean_s": 29.9,
+            "time_max_s": 39,
+            "default_fired_rate": [
+              0,
+              23
+            ],
+            "validator_rejections": 0,
+            "latency_p50_ms": null,
+            "latency_p95_ms": null,
+            "latency_max_ms": null,
+            "fallback_rate": null,
+            "fallbacks": null,
+            "catch_wilson": [
+              0.5655085052479191,
+              1.0
+            ],
+            "false_flag_wilson": [
+              0.0,
+              0.43449149475208104
+            ]
+          },
+          "always-High": {
+            "matrix": {
+              "coached": {
+                "Clear": 0,
+                "Caution": 0,
+                "High": 5
+              },
+              "legitimate": {
+                "Clear": 0,
+                "Caution": 0,
+                "High": 5
+              }
+            },
+            "catch": [
+              5,
+              5
+            ],
+            "catch_label": "5/5",
+            "false_flag": [
+              5,
+              5
+            ],
+            "false_flag_label": "5/5",
+            "friction": [
+              5,
+              5
+            ],
+            "friction_label": "5/5",
+            "misses": [],
+            "questions_mean": 2.3,
+            "questions_max": 3,
+            "time_mean_s": 29.9,
+            "time_max_s": 39,
+            "default_fired_rate": [
+              0,
+              23
+            ],
+            "validator_rejections": 0,
+            "latency_p50_ms": null,
+            "latency_p95_ms": null,
+            "latency_max_ms": null,
+            "fallback_rate": null,
+            "fallbacks": null,
+            "catch_wilson": [
+              0.5655085052479191,
+              1.0
+            ],
+            "false_flag_wilson": [
+              0.5655085052479191,
+              1.0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

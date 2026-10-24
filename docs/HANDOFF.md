@@ -1228,4 +1228,42 @@ GATE PASS (a)
   - Hard rule: run once, no reruns, no edits after seeing results.
   - Do not touch `eval/scenarios/heldout/`, weights, goldens, or `web/`.
 
+---
+
+### [A-08] Run the held-out set once — Agent A3 — 2026-10-24 23:18
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+156 passed, 1 warning in 22.96s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `eval/results/heldout/results.json`, `eval/results/heldout/report.md`, `docs/HANDOFF.md`, `docs/B_TO_A.md` (B-018)
+- **Decisions I made, and the section that justified each:**
+  - Committed the single GPU-laptop run byte-for-byte. `eval/results/` is gitignored; force-added the two output files (`docs/A08_HELDOUT_RUN.md`, architecture §13.4, WORKFLOW.md §10).
+  - The harness recorded `git rev-parse HEAD` `82b788d1009fe775c3fc5edb20cb5413ee25068e` (`weights-frozen`). B saw #60 merged at `fe20c93`. The run used exactly that commit's runner files (`eval/run.py`, `eval/scenarios.py`, `eval/report.py`). `weights-frozen` `eval/scenarios.py` defines `refuse_heldout()`, which blocks held-out paths, so arm and model code, metrics, and the library stayed at weights-frozen.
+  - `report.md` already contains `## held-out, 5 per population, wide intervals`. Main `fe20c93` already emits that label from `eval/report.py` (A-08 PREP). Card A-08 step 5 is met by committing this report.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - [x] Exact `git rev-parse HEAD` of the tree the harness recorded: `82b788d1009fe775c3fc5edb20cb5413ee25068e`
+  - [x] Tag `weights-frozen` = `82b788d` (`82b788d1009fe775c3fc5edb20cb5413ee25068e`)
+  - [x] B-07 isolation commit `14bb1cd` (parent `82b788d`). A verified isolation in M-014. Merged held-out commit `b8a5ca234c0397c1739fa8477509746b7f8ee1cf`.
+  - [x] Output path `eval/results/heldout/`
+  - [x] run once; no reruns; no edits after seeing results
+  - B saw #60 merged at `fe20c93`. The run used exactly that commit's runner files. Command: `python -m eval.run --scenarios eval/scenarios/heldout --out eval/results/heldout --arms A,B,C --model local`. llama-server 8B Q4_K_M `-ngl 99 -c 4096 -np 1`. VRAM peak 7114/8151 MiB. One run, exit 0.
+  - Results: A catch 4/5, false-flag 1/5, questions 6.00; B 4/5, 0/5, questions 2.30; C 4/5, 0/5, questions 2.30, p50/p95/max 354/405/410 ms, fallback 0/13. All arms missed `scn.coached.ssa_review_rehearsed`.
+  - Jonathan approved. Agent A signs off. The report section is in `docs/B_TO_A.md` B-018.
 
