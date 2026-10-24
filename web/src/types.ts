@@ -105,6 +105,12 @@ export type Library = {
   talk_tracks: { id: string; lines: string[]; avoid: string[] }[]
 }
 
+export type AnswerPost = {
+  question_id: string
+  chip: AnswerChipId
+  purpose?: string
+}
+
 export type ErrorCode =
   | 'outcome_requires_actor'
   | 'close_without_outcome'

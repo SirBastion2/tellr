@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { apiSend } from './api'
 import { openingRequest } from '../mock/replay'
-import type { ErrorResponse, Library, SessionState } from './types'
+import type { AnswerPost, ErrorResponse, Library, SessionState } from './types'
 import { validateError, validateLibrary, validateSessionState, type SchemaIssue } from './validate'
 
 type TellerValue = {
@@ -13,8 +13,11 @@ type TellerValue = {
   postedChipIds: string[]
   startCase: (caseId: string) => Promise<SessionState | null>
   postContext: (chips: string[]) => Promise<void>
+  postAnswer: (answer: AnswerPost) => Promise<void>
   undo: () => Promise<void>
 }
+
+type ClientWrite = { kind: 'context'; chips: string[] } | { kind: 'answer' }
 
 const TellerContext = createContext<TellerValue | null>(null)
 
@@ -32,7 +35,7 @@ export function TellerProvider({ children }: { children: ReactNode }) {
   const [issues, setIssues] = useState<SchemaIssue[]>([])
   const [httpStatus, setHttpStatus] = useState<number | null>(null)
   const [error, setError] = useState<ErrorResponse | null>(null)
-  const [batches, setBatches] = useState<string[][]>([])
+  const [writes, setWrites] = useState<ClientWrite[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -91,7 +94,7 @@ export function TellerProvider({ children }: { children: ReactNode }) {
       setHttpStatus(404)
       return null
     }
-    setBatches([])
+    setWrites([])
     const result = await apiSend('POST', `/sessions?case=${encodeURIComponent(caseId)}`, request)
     return takeSession(result)
   }
@@ -103,7 +106,25 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     const result = await apiSend('POST', `/sessions/${session.session_id}/context`, { chips })
     const next = takeSession(result)
     if (next) {
-      setBatches((current) => [...current, chips])
+      setWrites((current) => [...current, { kind: 'context', chips }])
+    }
+  }
+
+  async function postAnswer(answer: AnswerPost): Promise<void> {
+    if (!session) {
+      return
+    }
+    const body: AnswerPost = {
+      question_id: answer.question_id,
+      chip: answer.chip,
+    }
+    if (answer.purpose !== undefined) {
+      body.purpose = answer.purpose
+    }
+    const result = await apiSend('POST', `/sessions/${session.session_id}/answers`, body)
+    const next = takeSession(result)
+    if (next) {
+      setWrites((current) => [...current, { kind: 'answer' }])
     }
   }
 
@@ -114,7 +135,7 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     const result = await apiSend('POST', `/sessions/${session.session_id}/undo`)
     const next = takeSession(result)
     if (next) {
-      setBatches((current) => current.slice(0, -1))
+      setWrites((current) => current.slice(0, -1))
     }
   }
 
@@ -124,9 +145,10 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     issues,
     httpStatus,
     error,
-    postedChipIds: batches.flat(),
+    postedChipIds: writes.flatMap((write) => (write.kind === 'context' ? write.chips : [])),
     startCase,
     postContext,
+    postAnswer,
     undo,
   }
 
