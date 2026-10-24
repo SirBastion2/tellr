@@ -50,6 +50,8 @@ CROSS_LANE X-003 (for A to check):
 
 PR #15 is superseded by PR #38 (same docs/CROSS_STEPS.md, rebased on main). Rule kept (both drivers approve); A-03 log row now records Driver B's laptop authorization (2026-10-24 15:55) and Driver A's acceptance by merging PR #16 (2026-10-24 3:56 PM ET). Ready for Sebastian's review.
 
+B-04 is up as PR #39 (base main, one commit on d3919f2): gate b PASS, 45 tests; smoke-tested against A's API (live open, 409 on live+scenario_id, practice with scenario, undo). No new cross-lane items. B-05 started from b-04.
+
 A reply:
 
 ---
