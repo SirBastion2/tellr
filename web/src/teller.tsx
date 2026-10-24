@@ -1,8 +1,8 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { apiSend } from './api'
 import { openingRequest } from '../mock/replay'
-import type { ErrorResponse, Library, SessionState } from './types'
-import { validateError, validateLibrary, validateSessionState, type SchemaIssue } from './validate'
+import type { AnswerPost, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
+import { validateError, validateHandoff, validateLibrary, validateSessionState, type SchemaIssue } from './validate'
 
 type TellerValue = {
   library: Library | null
@@ -11,10 +11,16 @@ type TellerValue = {
   httpStatus: number | null
   error: ErrorResponse | null
   postedChipIds: string[]
+  handoff: HandoffProjection | null
   startCase: (caseId: string) => Promise<SessionState | null>
   postContext: (chips: string[]) => Promise<void>
+  postAnswer: (answer: AnswerPost) => Promise<void>
+  postOutcome: (outcome: OutcomeId, actor: string) => Promise<void>
+  loadHandoff: () => Promise<void>
   undo: () => Promise<void>
 }
+
+type ClientWrite = { kind: 'context'; chips: string[] } | { kind: 'answer' }
 
 const TellerContext = createContext<TellerValue | null>(null)
 
@@ -32,7 +38,8 @@ export function TellerProvider({ children }: { children: ReactNode }) {
   const [issues, setIssues] = useState<SchemaIssue[]>([])
   const [httpStatus, setHttpStatus] = useState<number | null>(null)
   const [error, setError] = useState<ErrorResponse | null>(null)
-  const [batches, setBatches] = useState<string[][]>([])
+  const [writes, setWrites] = useState<ClientWrite[]>([])
+  const [handoff, setHandoff] = useState<HandoffProjection | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -91,7 +98,8 @@ export function TellerProvider({ children }: { children: ReactNode }) {
       setHttpStatus(404)
       return null
     }
-    setBatches([])
+    setWrites([])
+    setHandoff(null)
     const result = await apiSend('POST', `/sessions?case=${encodeURIComponent(caseId)}`, request)
     return takeSession(result)
   }
@@ -103,9 +111,62 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     const result = await apiSend('POST', `/sessions/${session.session_id}/context`, { chips })
     const next = takeSession(result)
     if (next) {
-      setBatches((current) => [...current, chips])
+      setWrites((current) => [...current, { kind: 'context', chips }])
     }
   }
+
+  async function postAnswer(answer: AnswerPost): Promise<void> {
+    if (!session) {
+      return
+    }
+    const body: AnswerPost = {
+      question_id: answer.question_id,
+      chip: answer.chip,
+    }
+    if (answer.purpose !== undefined) {
+      body.purpose = answer.purpose
+    }
+    const result = await apiSend('POST', `/sessions/${session.session_id}/answers`, body)
+    const next = takeSession(result)
+    if (next) {
+      setWrites((current) => [...current, { kind: 'answer' }])
+    }
+  }
+
+  const postOutcome = useCallback(
+    async (outcome: OutcomeId, actor: string): Promise<void> => {
+      const trimmed = actor.trim()
+      if (!session || trimmed.length === 0) {
+        return
+      }
+      const result = await apiSend('POST', `/sessions/${session.session_id}/outcome`, {
+        outcome,
+        actor: trimmed,
+      })
+      takeSession(result)
+    },
+    [session],
+  )
+
+  const loadHandoff = useCallback(async (): Promise<void> => {
+    if (!session) {
+      return
+    }
+    const result = await apiSend('GET', `/sessions/${session.session_id}/handoff`)
+    setHttpStatus(result.status)
+    if (result.status !== 200) {
+      setHandoff(null)
+      return
+    }
+    const found = validateHandoff(result.body)
+    setIssues(found)
+    setError(null)
+    if (found.length > 0) {
+      setHandoff(null)
+      return
+    }
+    setHandoff(result.body as HandoffProjection)
+  }, [session])
 
   async function undo(): Promise<void> {
     if (!session) {
@@ -114,7 +175,7 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     const result = await apiSend('POST', `/sessions/${session.session_id}/undo`)
     const next = takeSession(result)
     if (next) {
-      setBatches((current) => current.slice(0, -1))
+      setWrites((current) => current.slice(0, -1))
     }
   }
 
@@ -124,9 +185,13 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     issues,
     httpStatus,
     error,
-    postedChipIds: batches.flat(),
+    postedChipIds: writes.flatMap((write) => (write.kind === 'context' ? write.chips : [])),
+    handoff,
     startCase,
     postContext,
+    postAnswer,
+    postOutcome,
+    loadHandoff,
     undo,
   }
 

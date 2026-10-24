@@ -1,6 +1,7 @@
 import Ajv from 'ajv/dist/2020'
 import type { ErrorObject, ValidateFunction } from 'ajv'
 import errorSchema from '../../contract/error.schema.json'
+import handoffSchema from '../../contract/handoff.schema.json'
 import librarySchema from '../../contract/library.schema.json'
 import sessionSchema from '../../contract/session_state.schema.json'
 
@@ -20,6 +21,7 @@ function compile(schema: object): ValidateFunction {
 const sessionValidate = compile(sessionSchema)
 const libraryValidate = compile(librarySchema)
 const errorValidate = compile(errorSchema)
+const handoffValidate = compile(handoffSchema)
 
 function issues(validate: ValidateFunction, data: unknown): SchemaIssue[] {
   if (validate(data)) {
@@ -41,4 +43,8 @@ export function validateLibrary(data: unknown): SchemaIssue[] {
 
 export function validateError(data: unknown): SchemaIssue[] {
   return issues(errorValidate, data)
+}
+
+export function validateHandoff(data: unknown): SchemaIssue[] {
+  return issues(handoffValidate, data)
 }
