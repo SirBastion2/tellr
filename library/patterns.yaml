@@ -1,0 +1,71 @@
+# Architecture §5.2–§5.3. The three patterns the spec names but does not define
+# are marked review: compliance (draft §7.3) and carry no invented signals.
+patterns:
+  - id: pat.home_repair
+    name: Home repair pressure
+    label: home repair pressure
+    cover_story: Large upfront cash for a contractor
+    enabled: true
+    signals: [sig.cash_insistence, sig.cash_refusal_unexplained]
+    talk_track: tt.home_repair
+    look_alikes:
+      - id: look.contractor_with_estimate
+        label: contractor with estimate
+        description: Paying a contractor with a signed estimate
+        confirmed_by: [mit.named_counterparty, mit.written_estimate]
+        refuted_by: [sig.cash_refusal_unexplained]
+        verifying_questions: [q.homerepair.contractor_name, q.homerepair.estimate]
+
+  - id: pat.bank_impersonation
+    name: Bank or fraud-department impersonation
+    label: bank impersonation
+    cover_story: Moving money to a safe account
+    enabled: true
+    signals: [sig.third_party_call, sig.secrecy_bank, sig.rushed, sig.cash_insistence]
+    talk_track: tt.bank_impersonation
+    look_alikes:
+      - id: look.own_account_transfer
+        label: own-account transfer
+        description: Customer moving money between their own accounts
+        confirmed_by: [mit.own_named_account]
+        refuted_by: [sig.secrecy_bank]
+        verifying_questions: [q.recipient.account_details]
+
+  - id: pat.government_impersonation
+    name: Government impersonation
+    label: government impersonation
+    enabled: true
+    review: compliance
+    signals: []
+    look_alikes:
+      - id: look.official_fine_payment
+        label: official fine payment
+        confirmed_by: []
+        refuted_by: []
+        verifying_questions: []
+
+  - id: pat.family_emergency
+    name: Family emergency
+    label: family emergency
+    enabled: true
+    review: compliance
+    signals: []
+    look_alikes:
+      - id: look.relative_spoken_directly
+        label: relative spoken directly
+        confirmed_by: []
+        refuted_by: []
+        verifying_questions: []
+
+  - id: pat.tech_support
+    name: Tech support
+    label: tech support
+    enabled: true
+    review: compliance
+    signals: []
+    look_alikes:
+      - id: look.known_repair_shop
+        label: known repair shop
+        confirmed_by: []
+        refuted_by: []
+        verifying_questions: []

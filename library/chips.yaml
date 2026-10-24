@@ -1,0 +1,53 @@
+# Answer chips (§5.6) and context chips (§5.7). Copy from contract/library.json.
+chips:
+  - id: specific
+    label: Gave specific details
+    used_on: open
+  - id: vague
+    label: Vague or unsure
+    used_on: open
+  - id: no_answer
+    label: Wouldn't say
+    used_on: any
+  - id: changed
+    label: Story changed
+    used_on: any
+  - id: relayed_by_caller
+    label: Answer came from the caller
+    used_on: any
+  - id: confirmed
+    label: "Yes"
+    used_on: yes_no
+  - id: denied
+    label: "No"
+    used_on: yes_no
+
+context_chips:
+  - id: chip.on_phone
+    label: On the phone during the transaction
+    signal: sig.third_party_call
+    probe: q.secrecy.told_not_to_tell
+  - id: chip.someone_directing
+    label: Someone else is directing them
+    signal: sig.someone_directing
+    probe: q.secrecy.told_not_to_tell
+  - id: chip.cash_only
+    label: Insists on cash
+    signal: sig.cash_insistence
+    probe: q.alternative.cashiers_check
+  - id: chip.urgency_secrecy
+    label: Mentions urgency, secrecy, or being told what to say
+    signal: sig.urgency_secrecy_mentioned
+    probe: q.secrecy.told_not_to_tell
+  - id: chip.rushed
+    label: Seems rushed
+    signal: sig.rushed
+    probe: null
+  - id: chip.unusual_for_customer
+    label: Unusual for this customer
+    signal: sig.unusual_for_customer
+    probe: null
+  - id: chip.above_threshold
+    label: Cash withdrawal above the branch threshold
+    signal: null
+    probe: null
