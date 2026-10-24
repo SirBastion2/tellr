@@ -87,3 +87,24 @@ Append-only, newest at the bottom. One entry per card, or per stop.
 - **The next agent needs to know:** Screenshots of T1 Caution 16, T3 "Looks like: bank impersonation", and T6's hard stop were skipped (driver). Those three checks are tests in `web/src/interview.test.tsx`. Rendering and `POST /answers` were verified against contract fixtures through the web mock and a fetch stub, not against A's running API. The client still prefixes paths with `VITE_API_URL` (the stub used `http://api.test`). `docs/CROSS_LANE.md` is not on this branch; the copy on `cursor/cross-lane-log-760f` has no open A→B items, and this card logged no B→A items. Talk tracks are still not drawn on the interview screen. Outcome buttons stay on `/sessions/:id/outcome`.
 
 ---
+
+### [B-03] Outcome, handoff, real API — Agent B1 — 2026-10-24 20:07
+- **Status:** done (CP2 awaits driver confirmation; do not merge)
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  11 passed (11)
+       Tests  37 passed (37)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/screens/OutcomeScreen.tsx`, `web/src/screens/HandoffScreen.tsx`, `web/src/outcome.test.tsx`, `web/src/handoff.test.tsx`, `web/src/App.tsx`, `web/src/teller.tsx`, `web/src/types.ts`, `web/src/validate.ts`, `web/mock/replay.ts`, `web/src/mockReplay.test.ts`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - All four outcome buttons stay enabled at every fixture step. The highlighted button is `suggested_outcome`. Report is never highlighted, including if a payload names it. Highlight is colour `#fef3c7` plus `data-highlighted` (§11.2, §18.1).
+  - Submit posts `{outcome, actor}` and omits `note`. The actor must be non-blank after trim, and the teller must choose an outcome; the suggestion is not pre-selected (§11.1, §11.2). Button words are Proceed, Slow down, Escalate, and Report from §18.1. The actor control is labeled Actor. Those strings are not in `GET /library` (Q-006).
+  - Handoff is `GET /sessions/:id/handoff`. The mock copies `session_id`, `mode`, `stated_purpose`, `risk`, `suggested_outcome`, `answers`, and `stop` off the current fixture step. The screen renders that projection. A shape mismatch shows the contract banner and does not invent fields (Q-006). Purpose labels still come from `GET /library`. Level words match the interview screen. `stop.reason` stays machine-readable.
+  - A successful mock `POST /outcome` returns the current `SessionState` and then rejects further posts with `409` `session_closed`. Outcome is not written onto the state (Q-011). Fixtures still have no outcome step (Q-009).
+- **Questions logged:** none
+- **The next agent needs to know:** **CP2 awaits driver confirmation.** Do not merge this PR until the drivers confirm CP2 with A. Screenshots of the outcome buttons and the handoff route were skipped (driver). Those checks are tests in `web/src/outcome.test.tsx` and `web/src/handoff.test.tsx`. Hour-8 integration ran A's API from `origin/main` (`7f4f546`, uvicorn on 127.0.0.1:8000, `RECOMMENDER=rules`). T1 and T2 were walked by posting each fixture request (the bodies the chips send). Every `SessionState` matched the fixture except `session_id`, which the API assigns. `GET /handoff` matched the same projection with that id. `GET /library` validated against `library.schema.json`. It has five patterns and five look-alikes; `contract/library.json` has two, which Q-008 already allows. Chip, purpose, and question copy for these steps matched. No UI patch. `docs/CROSS_LANE.md` is not on this branch; `cursor/cross-lane-log-760f` has no open A→B items, and this card logged no B→A items. The live handoff projection does not include the recorded outcome or actor. Talk tracks are still not drawn.
+
+---

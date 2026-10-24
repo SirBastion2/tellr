@@ -58,6 +58,65 @@ describe('fixture replay', () => {
     expect(result.warnings.some((warning) => warning.includes('differs'))).toBe(true)
   })
 
+  it('derives the handoff projection from the current fixture step', () => {
+    for (const fixture of fixtures) {
+      resetMock()
+      const created = mockRequest('POST', `/sessions?case=${fixture.case}`, fixture.steps[0]?.request)
+      expect(created.status, fixture.case).toBe(200)
+      const sessionId = fixture.steps[0]?.response.session_id
+      if (!sessionId) {
+        throw new Error(`${fixture.case} has no session`)
+      }
+      for (const [index, step] of fixture.steps.entries()) {
+        if (index > 0) {
+          const action = step.endpoint.endsWith('/context') ? 'context' : 'answers'
+          const posted = mockRequest('POST', `/sessions/${sessionId}/${action}`, step.request)
+          expect(posted.warnings, `${fixture.case} ${index}`).toEqual([])
+        }
+        const handoff = mockRequest('GET', `/sessions/${sessionId}/handoff`)
+        expect(handoff.status, `${fixture.case} ${index}`).toBe(200)
+        expect(handoff.warnings, `${fixture.case} ${index}`).toEqual([])
+        expect(handoff.body, `${fixture.case} ${index}`).toEqual({
+          session_id: step.response.session_id,
+          mode: step.response.mode,
+          stated_purpose: step.response.stated_purpose,
+          risk: step.response.risk,
+          suggested_outcome: step.response.suggested_outcome,
+          answers: step.response.answers,
+          stop: step.response.stop,
+        })
+        const current = mockRequest('GET', `/sessions/${sessionId}`)
+        expect(current.body, `${fixture.case} ${index}`).toEqual(step.response)
+      }
+    }
+  })
+
+  it('rejects an outcome without an actor and keeps the fixture state', () => {
+    const created = mockRequest('POST', '/sessions?case=T1', t1.steps[0]?.request)
+    expect(created.status).toBe(200)
+    const sessionId = t1.steps[0]?.response.session_id
+    const missing = mockRequest('POST', `/sessions/${sessionId}/outcome`, { outcome: 'proceed' })
+    expect(missing.status).toBe(409)
+    expect(validateError(missing.body)).toEqual([])
+    expect(missing.body).toMatchObject({ error: { code: 'outcome_requires_actor' } })
+    const blank = mockRequest('POST', `/sessions/${sessionId}/outcome`, { outcome: 'proceed', actor: '' })
+    expect(blank.status).toBe(409)
+    expect(blank.body).toMatchObject({ error: { code: 'outcome_requires_actor' } })
+    const recorded = mockRequest('POST', `/sessions/${sessionId}/outcome`, {
+      outcome: 'slow_down',
+      actor: 'teller-1',
+    })
+    expect(recorded.status).toBe(200)
+    expect(recorded.body).toEqual(t1.steps[0]?.response)
+    const closed = mockRequest('POST', `/sessions/${sessionId}/outcome`, {
+      outcome: 'proceed',
+      actor: 'teller-1',
+    })
+    expect(closed.status).toBe(409)
+    expect(closed.body).toMatchObject({ error: { code: 'session_closed' } })
+    expect(mockRequest('GET', `/sessions/${sessionId}`).body).toEqual(t1.steps[0]?.response)
+  })
+
   it('rejects scenario_id on a live session with the contract error', () => {
     const result = mockRequest('POST', '/sessions?case=T2', {
       mode: 'live',

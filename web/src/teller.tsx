@@ -1,8 +1,8 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { apiSend } from './api'
 import { openingRequest } from '../mock/replay'
-import type { AnswerPost, ErrorResponse, Library, SessionState } from './types'
-import { validateError, validateLibrary, validateSessionState, type SchemaIssue } from './validate'
+import type { AnswerPost, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
+import { handoffShapeIssues, validateError, validateLibrary, validateSessionState, type SchemaIssue } from './validate'
 
 type TellerValue = {
   library: Library | null
@@ -11,9 +11,12 @@ type TellerValue = {
   httpStatus: number | null
   error: ErrorResponse | null
   postedChipIds: string[]
+  handoff: HandoffProjection | null
   startCase: (caseId: string) => Promise<SessionState | null>
   postContext: (chips: string[]) => Promise<void>
   postAnswer: (answer: AnswerPost) => Promise<void>
+  postOutcome: (outcome: OutcomeId, actor: string) => Promise<void>
+  loadHandoff: () => Promise<void>
   undo: () => Promise<void>
 }
 
@@ -36,6 +39,7 @@ export function TellerProvider({ children }: { children: ReactNode }) {
   const [httpStatus, setHttpStatus] = useState<number | null>(null)
   const [error, setError] = useState<ErrorResponse | null>(null)
   const [writes, setWrites] = useState<ClientWrite[]>([])
+  const [handoff, setHandoff] = useState<HandoffProjection | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -95,6 +99,7 @@ export function TellerProvider({ children }: { children: ReactNode }) {
       return null
     }
     setWrites([])
+    setHandoff(null)
     const result = await apiSend('POST', `/sessions?case=${encodeURIComponent(caseId)}`, request)
     return takeSession(result)
   }
@@ -128,6 +133,41 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const postOutcome = useCallback(
+    async (outcome: OutcomeId, actor: string): Promise<void> => {
+      const trimmed = actor.trim()
+      if (!session || trimmed.length === 0) {
+        return
+      }
+      const result = await apiSend('POST', `/sessions/${session.session_id}/outcome`, {
+        outcome,
+        actor: trimmed,
+      })
+      takeSession(result)
+    },
+    [session],
+  )
+
+  const loadHandoff = useCallback(async (): Promise<void> => {
+    if (!session) {
+      return
+    }
+    const result = await apiSend('GET', `/sessions/${session.session_id}/handoff`)
+    setHttpStatus(result.status)
+    if (result.status !== 200) {
+      setHandoff(null)
+      return
+    }
+    const found = handoffShapeIssues(result.body)
+    setIssues(found)
+    setError(null)
+    if (found.length > 0) {
+      setHandoff(null)
+      return
+    }
+    setHandoff(result.body as HandoffProjection)
+  }, [session])
+
   async function undo(): Promise<void> {
     if (!session) {
       return
@@ -146,9 +186,12 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     httpStatus,
     error,
     postedChipIds: writes.flatMap((write) => (write.kind === 'context' ? write.chips : [])),
+    handoff,
     startCase,
     postContext,
     postAnswer,
+    postOutcome,
+    loadHandoff,
     undo,
   }
 

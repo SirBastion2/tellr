@@ -24,7 +24,10 @@ const byCase = new Map(fixtures.map((fixture) => [fixture.case, fixture]))
 type Replay = {
   caseId: string
   index: number
+  closed: boolean
 }
+
+const OUTCOME_IDS = new Set(['proceed', 'slow_down', 'escalate', 'report'])
 
 const sessions = new Map<string, Replay>()
 
@@ -124,11 +127,11 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
     if (!same(body, first.request)) {
       warnings.push('payload differs from the fixture request')
     }
-    sessions.set(first.response.session_id, { caseId, index: 0 })
+    sessions.set(first.response.session_id, { caseId, index: 0, closed: false })
     return { status: 200, body: first.response, warnings }
   }
 
-  const match = /^\/sessions\/([^/]+)(?:\/(context|answers|undo))?$/.exec(path)
+  const match = /^\/sessions\/([^/]+)(?:\/(context|answers|undo|outcome|handoff))?$/.exec(path)
   if (!match) {
     return { status: 404, body: null, warnings: ['not a replay route'] }
   }
@@ -143,8 +146,67 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
     return { status: 404, body: null, warnings: ['unknown session'] }
   }
 
+  if (replay.closed && verb === 'POST' && (action === 'context' || action === 'answers' || action === 'undo' || action === 'outcome')) {
+    return {
+      status: 409,
+      body: { error: { code: 'session_closed', message: 'session is closed' } },
+      warnings: [],
+    }
+  }
+
   if (verb === 'GET' && !action) {
     return { status: 200, body: currentBody(fixture, replay.index), warnings: [] }
+  }
+
+  if (verb === 'GET' && action === 'handoff') {
+    const response = currentBody(fixture, replay.index)
+    if (!response || typeof response !== 'object') {
+      return { status: 404, body: null, warnings: ['no fixture step'] }
+    }
+    const state = response as {
+      session_id: string
+      mode: unknown
+      stated_purpose: unknown
+      risk: unknown
+      suggested_outcome: unknown
+      answers: unknown
+      stop: unknown
+    }
+    return {
+      status: 200,
+      body: {
+        session_id: state.session_id,
+        mode: state.mode,
+        stated_purpose: state.stated_purpose,
+        risk: state.risk,
+        suggested_outcome: state.suggested_outcome,
+        answers: state.answers,
+        stop: state.stop,
+      },
+      warnings: [],
+    }
+  }
+
+  if (verb === 'POST' && action === 'outcome') {
+    const record = body && typeof body === 'object' ? (body as Record<string, unknown>) : null
+    const actor = record?.actor
+    if (typeof actor !== 'string' || actor.length === 0) {
+      return {
+        status: 409,
+        body: { error: { code: 'outcome_requires_actor', message: 'outcome requires an actor' } },
+        warnings: [],
+      }
+    }
+    const outcome = record?.outcome
+    if (typeof outcome !== 'string' || !OUTCOME_IDS.has(outcome)) {
+      return { status: 422, body: null, warnings: ['outcome is not one of the four'] }
+    }
+    replay.closed = true
+    return {
+      status: 200,
+      body: currentBody(fixture, replay.index),
+      warnings: ['outcome is not in the fixture; returning the current SessionState'],
+    }
   }
 
   if (verb === 'POST' && action === 'undo') {
