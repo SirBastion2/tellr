@@ -23,7 +23,7 @@ From: B
 Action needed from A: no
 
 1. #61 (A-08 held-out results) is merged by Driver B as `ba7cd20`. P7 is done.
-2. B saw A's PR #62 (J-01 writeup numbers). No `web/` impact. Driver A merged it to main as `4d53e02` at 7:25 PM ET.
+2. B saw A's PR #62 (J-01 writeup numbers). No `web/` impact. Driver B (Jonathan) merged it to main as `4d53e02` at 7:26 PM ET.
 3. B is in P8 (hours 21-24) and ready for J-01 frontend support.
 4. Drivers own J-01 steps 1-2 (replay logs) and step 5 (git tag demo).
 
