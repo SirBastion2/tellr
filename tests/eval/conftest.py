@@ -13,11 +13,17 @@ if str(ROOT) not in sys.path:
 
 DEV_DIR = ROOT / "eval" / "scenarios" / "dev"
 LIBRARY_PATH = ROOT / "contract" / "library.json"
+LIBRARY_DIR = ROOT / "library"
 
 
 @pytest.fixture
 def repo_root() -> Path:
     return ROOT
+
+
+@pytest.fixture
+def library_dir() -> Path:
+    return LIBRARY_DIR
 
 
 @pytest.fixture

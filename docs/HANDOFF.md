@@ -921,3 +921,28 @@ GATE PASS (a)
   - No contract, schema, golden, or `reference_impl.py` change. No new dependency.
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/44. Driver B: start llama-server (8B Q4_K_M), then the first live-path request after that start (same `scripts/with-gpu` block in the [A-05] entry). Reply in `docs/B_TO_A.md` or the M-006 **B reply** line. Do not merge until that check. `docs/CROSS_LANE.md` was not edited.
+
+### [A-06] Eval harness hours 8–12 (arms A/B/C, fake model) — Agent A3 — 2026-10-24 21:07
+- **Status:** done (hours 8–12). Hours 12–15 still own the GPU arm-C run and CP3 `report.md`.
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `eval/run.py`, `eval/interview.py`, `eval/scenarios.py`, `eval/metrics.py`, `eval/report.py`, `eval/types.py`, `eval/arms/{static,rules,model}.py`, `eval/__init__.py`, `eval/.gitignore`, `tests/eval/**`, `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Arms B and C share the live fold: `engine.project` / `candidates` / `rule_choice` in-process, no HTTP, no database (§3, §13). Arm A is the static sheet with the §13.2 polarity map and prior threshold 3 (High at/above, Clear below, no Caution).
+  - Arm C uses `FakeModel` (first candidate, or a fabricated ID for the validator test). Temperature 0, batch size 1, prefetch off, timeout off (§13.4). The model call is candidate IDs only — no notes or free text. Real `LocalLLM` is hours 12–15 under `scripts/with-gpu`.
+  - `eval/run.py` refuses any path whose parts include `heldout`. It does not create `eval/scenarios/heldout/` and does not write `eval/results/` from tests.
+  - Did not edit `eval/PREREGISTRATION.md` (frozen). Did not edit `docs/architecture.md`: it is an oracle (`scripts/check_contract.py`); extra modules implement the §15 `arms/` + `run.py` tree.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Hours 6–8 are on main (#42): 30 dev scenarios and frozen `PREREGISTRATION.md`. Run: `python -m eval.run --scenarios eval/scenarios/dev --out eval/results/$(git rev-parse HEAD) --arms A,B,C --model fake`.
+  - **Hours 12–15:** swap FakeModel for the A-05 client, run under `scripts/with-gpu`, write the first `report.md`. **CP3:** stop for the drivers.
+  - Arm B on T1–T7 matches `reference_impl.run_case` (question IDs, chips, final raw level, score) using the shipped library.
+  - No new dependency. Do not run held-out. Driver A reviews `eval/` PRs.
+
