@@ -1,0 +1,15 @@
+id: scn.legitimate.gov_fine_named
+label: "Legitimate — named government agency or municipal fine"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.government_payment
+context_chips: [chip.above_threshold]
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  written_estimate: specific
+  payment_flexibility: confirmed
+  secrecy: denied
+default: vague
+tags: []
+source: "FTC government-imposter contrast; genuine official-payee payment"

@@ -1,0 +1,15 @@
+id: scn.coached.home_repair_changed
+label: "Coached — home-repair pressure, story changed mid-interview"
+population: coached
+pattern_truth: pat.home_repair
+stated_purpose: purpose.home_repair
+context_chips: [chip.cash_only, chip.rushed]
+answers:
+  purpose: changed
+  counterparty_identity: vague
+  written_estimate: no_answer
+  secrecy: confirmed
+  payment_flexibility: denied
+default: vague
+tags: []
+source: "AARP contractor / door-to-door home-repair pressure guidance"

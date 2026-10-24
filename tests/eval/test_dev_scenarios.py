@@ -1,4 +1,4 @@
-"""First 15 development scenarios: seeds, mix, and validation (ROSTER §5.2)."""
+"""30 development scenarios: seeds, mix, and validation (ROSTER §5.2)."""
 
 from __future__ import annotations
 
@@ -46,9 +46,9 @@ def _load_dev(dev_dir: Path) -> list[tuple[Path, dict]]:
     return loaded
 
 
-def test_exactly_fifteen_dev_scenarios(dev_dir: Path) -> None:
+def test_exactly_thirty_dev_scenarios(dev_dir: Path) -> None:
     loaded = _load_dev(dev_dir)
-    assert len(loaded) == 15, f"hours 2–6 slice is 15 scenarios, found {len(loaded)}"
+    assert len(loaded) == 30, f"hours 6–8 set is 30 scenarios, found {len(loaded)}"
 
 
 def test_dev_scenarios_validate(dev_dir: Path, library_path: Path) -> None:
@@ -78,13 +78,13 @@ def test_ids_are_unique(dev_dir: Path) -> None:
     assert dupes == []
 
 
-def test_partial_mix_toward_roster_5_2(dev_dir: Path) -> None:
+def test_roster_5_2_mix(dev_dir: Path) -> None:
     items = [item for _, item in _load_dev(dev_dir)]
     coached = [s for s in items if s["population"] == "coached"]
     legitimate = [s for s in items if s["population"] == "legitimate"]
     assert len(coached) + len(legitimate) == len(items)
-    assert len(coached) >= 7
-    assert len(legitimate) >= 7
+    assert len(coached) == 15
+    assert len(legitimate) == 15
 
     covers = [s for s in coached if "cover_story" in s.get("tags", [])]
     perfect = [s for s in coached if "perfectly_coached" in s.get("tags", [])]
