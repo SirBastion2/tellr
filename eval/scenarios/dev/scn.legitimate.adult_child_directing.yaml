@@ -1,0 +1,15 @@
+id: scn.legitimate.adult_child_directing
+label: "Legitimate — contractor payment, adult child helping at the window"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.home_repair
+context_chips: [chip.someone_directing]
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  written_estimate: specific
+  payment_flexibility: confirmed
+  secrecy: denied
+default: vague
+tags: [innocent_red_flag]
+source: "AARP trusted-helper contrast to someone-directing coaching"

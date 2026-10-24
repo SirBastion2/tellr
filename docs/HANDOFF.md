@@ -763,6 +763,77 @@ GATE PASS (a)
 
 ---
 
+### [A-06] Evaluation hours 6–8 (30 scenarios + pre-register) — Agent A3 — 2026-10-24 20:55
+- **Status:** partial (hours 6–8 slice done; hours 8–12 still own the harness and arms)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+115 passed, 1 warning in 12.24s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `eval/scenarios/dev/` (15 new YAML); `tests/eval/test_dev_scenarios.py`; `eval/PREREGISTRATION.md` (solo freeze commit `cd21c1d`); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Added 7 coached + 8 legitimate so the set is 15/15 (ROSTER §5.2, architecture §13.1). New files are seeded from the remaining §5.3 purposes and public FTC/FBI/AARP guidance, not from held-out or live weights.
+  - Cover story still means the stated purpose’s usual pattern ≠ `pattern_truth` (T3, §13.1), including `purpose.vehicle` / `purpose.gift_or_travel` which route to no pattern. Mix on disk: 6 covers, 5 perfectly coached, 6 innocent red-flag, 5 vague-but-genuine.
+  - Froze arm A’s prior threshold at 3 in a solo commit with no scores and no `eval/results/` (card A-06 step 1, §13.2 / §13.4). A-07 may retune it with the weights; that later figure is labelled tuned.
+  - Empty `tags: []` on scenarios that are neither cover, perfect, red-flag, nor vague. No age, appearance, or name fields.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Dev set is 30. `python3 -m eval.validate` prints `30 scenario(s) valid` and no scores. Do not write `eval/scenarios/heldout/`.
+  - **Hours 8–12 (A3):** `eval/run.py`, arms A and B, determinism tests (same scenario twice; arm B on T1–T7 reproduces goldens). Do not run arm C until A2’s model path is ready (ROSTER hour 12).
+  - Pre-registration freeze is `cd21c1d` (`docs(eval): freeze PREREGISTRATION.md before any run`). That commit is the file alone. Do not commit results into it.
+  - Driver A reviews `eval/` PRs. No new dependency.
+
+---
+
+### [X-003] Windows live-path fixes — Agent A2 — 2026-10-24 16:57
+- **Status:** done (awaiting Driver B confirm on Windows)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+119 passed, 1 warning in 12.27s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `pyproject.toml` (`engine*` in setuptools find); `api/main.py` (`default_db_path()` via `tempfile.gettempdir()`, `TELLER_DB` still wins); `scripts/with-gpu` (Windows usage comment; bash/`flock` unchanged); `tests/api/test_x003_windows.py`; `ARCHITECTURE.md` (new test file); `docs/A_TO_B.md` (M-007); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Default DB uses `tempfile.gettempdir()` so import-time `create_app()` works on Windows without `/tmp` (X-003; architecture §15 localhost deploy). `TELLER_DB` override is identical.
+  - Documented the Windows `with-gpu` equivalent instead of adding a wrapper (ROSTER §5.3 flock stays the Unix lock).
+  - Did not edit `reference_impl.py`, goldens, `contract/`, `docs/CROSS_LANE.md`, or `docs/B_TO_A.md`.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR https://github.com/SirBastion2/tellr/pull/43. Do not merge until B confirms on Windows and replies in `docs/B_TO_A.md`.
+  - Live path on Windows: `pip install -e .` then `python -m uvicorn api.main:app --host 127.0.0.1 --port 8000`. No `PYTHONPATH`. Default DB is `%TEMP%\teller-copilot.sqlite` (or `$TMP`/`$TEMP` on Unix if set; else `/tmp/teller-copilot.sqlite`).
+  - GPU jobs on Windows: run the inner command without `scripts/with-gpu`, one at a time. WSL/Git Bash still use `scripts/with-gpu`.
+  - No new dependency.
+
+---
+
 ### [X-003] 8B startup warm-up — Agent A2 — 2026-10-24 21:15
 - **Status:** done (implementation + mocked-server tests). Live GPU re-check PENDING Driver B.
 - **Gate:** `scripts/gate.sh a` → PASS
