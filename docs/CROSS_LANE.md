@@ -46,6 +46,17 @@ B reports problems in A's work. Driver A triages.
 - **Status:** resolved · PR #27
 - **Owner's response:** A: PR #27 is merged; the schema description now says "CHANGE-004 (applied)".
 
+### X-003 · 8B cold-start timeout and Windows live-path blockers
+- **Date/hour:** 2026-10-24 20
+- **Reporter:** Agent B (Driver B)
+- **File / PR:** `pyproject.toml` (`engine` omitted from `[tool.setuptools.packages.find]`), `api/main.py`, `scripts/with-gpu` · main `6890808` (A-05, PR #30)
+- **Problem:**
+  - (1) 8B cold start: first request after server start timed out at 1500 ms and fell back (T2 p95 1504 ms, >1.5 s, fallback 1.0); warm runs fine. Suggest a warm-up call at startup.
+  - (2) Windows: `engine` package not included in package config (needed PYTHONPATH); api/main.py creates the app at import with default TELLER_DB=/tmp/teller-copilot.sqlite which fails on Windows; scripts/with-gpu is bash/flock-only so it was skipped on Windows (no other GPU users).
+- **Expected:** The first live-path request after llama-server start stays inside 1500 ms (a warm-up call at startup). The live path is runnable on Windows without a manual PYTHONPATH, a `/tmp` default database path, or bash/flock.
+- **Status:** open
+- **Owner's response:**
+
 ## A → B (B to check)
 
 A reports problems in B's work. Driver B triages.
