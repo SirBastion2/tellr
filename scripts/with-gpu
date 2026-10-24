@@ -1,2 +1,8 @@
 #!/usr/bin/env bash
+# GPU lock (ROSTER §5.3). Unix/macOS/WSL/Git Bash: flock on /tmp/tc-gpu.lock.
+# Windows (cmd/PowerShell have no flock): do not use this wrapper. Run the same
+# command directly and keep GPU jobs serialized yourself (one at a time):
+#   $env:RECOMMENDER='local_llm'
+#   python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
+# WSL and Git Bash can still run this script unchanged.
 exec flock /tmp/tc-gpu.lock "$@"
