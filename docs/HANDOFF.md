@@ -1030,6 +1030,44 @@ GATE PASS (b)
 
 ---
 
+### [A-06] CP3 recorded — Agent A3 — 2026-10-24 22:47
+- **Status:** done (Driver A sign-off on B-013 numbers; B-013 report fields shipped)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+153 passed, 1 warning in 18.96s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `eval/report.py`, `eval/metrics.py`, `eval/run.py`, `eval/arms/model.py`, `tests/eval/test_run.py`, `tests/eval/test_metrics.py`, `docs/HANDOFF.md` (this entry), `docs/A_TO_B.md` (M-010)
+- **Decisions I made, and the section that justified each:**
+  - Recorded CP3 from B-013 as Driver A (Sebastian) sign-off: 30 dev scenarios, library 1.2.0, 8B Q4_K_M on RTX 5070. Did not rerun the GPU path here.
+  - Arm A: catch 15/15, false-flag 8/15 (Wilson 30–75%), 6 questions always.
+  - Arm B and Arm C (live 8B) identical: catch 14/15 (70–99%), false-flag 0/15 (0–20%), friction 0/15, questions mean ~3.1 max 5, time to decision mean 40 s, `default_fired` 0/93, validator rejections 0. Arm C latency p50 486 ms / p95 576 ms / max 619 ms, no fallbacks.
+  - One miss: `scn.coached.bank_perfect_own_account` (perfectly coached own-account story). Recorded as a known limit. Do not fix it by tuning on dev only if that break properties (§13.3, §13.4).
+  - No significance claims on 15 scenarios (§13.3).
+  - B-013 suggestion: `report.md` now prints latency p50/p95/max and `fallback_rate` per arm (validator rejection count was already there). Arm C takes LocalLLM client recordings (or wall-clock around `next()`); A/B and FakeModel stay n/a.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR https://github.com/SirBastion2/tellr/pull/53
+  - CP3 is recorded. A-07 tuning may begin; weights freeze at hour 20. Do not tune this miss on the 30-dev set if it breaks properties.
+  - B should not run the held-out set. B-07 remains B's lane (isolated worktree, `WORKFLOW.md` §10).
+  - Did not edit `eval/PREREGISTRATION.md`, held-out, `contract/`, `reference_impl.py`, goldens, `library/`, `web/`, or `docs/B_TO_A.md`. No new dependency.
+
+---
+
 ### [A-07] Tune and freeze — Agent A1 — 2026-10-24 22:50
 - **Status:** done (no `weights-frozen` tag; driver tags after merge)
 - **Gate:** `scripts/gate.sh a` → PASS
