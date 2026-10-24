@@ -119,3 +119,48 @@ GATE PASS (a)
   - `recommenders` is still absent; import-linter treats it as external. Add it to `root_packages` when the package is created.
   - `pip install -e .`; put `~/.local/bin` on PATH so `ruff`, `pytest`, and `lint-imports` resolve.
 
+---
+
+### [A-02] Reducer, scorer, ranker — Agent A1 — 2026-10-24 19:45
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+43 passed in 8.98s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+Property test (65,536 evidence sets) ran inside that 8.98s suite; well under 60s.
+- **Changed:** `engine/events.py`, `engine/score.py`, `engine/hypotheses.py`, `engine/reduce.py`, `engine/__init__.py` (wires `project` only; signatures unchanged), `tests/engine/test_properties.py`, `tests/engine/test_undo.py`, `tests/engine/test_fold_total.py`, `tests/engine/test_interface.py`, `tests/golden/test_scores.py`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Ported `effective`, `score`, `level`, `shown`, `reasons`, `pattern_scores`, `displayed` with the same names as `reference_impl.py` (A-02; tc-11). They take a `Tables` argument so goldens can load `tests/golden/reference_weights.yaml` and never `library/signals.yaml`.
+  - `engine.project` is the A-01 `engine-api-v1` function, implemented in `engine/reduce.py`. Parameter names stay `events`, `lib`. A-04 entrypoints still raise `NotImplementedError`.
+  - The fold assigns `seq` by log order (`contract/events.md`). `Truncated(to_seq)` pops live events with `seq > to_seq` and keeps folding (§4). Unknown kinds are logged at WARNING and skipped.
+  - `question` / `stop` / talk-track lines are not computed here (A-04). Risk fields, `stated_purpose`, `answers`, and `suggested_outcome` (follows shown level, §11.2) are.
+  - Q-008 stubs `pat.government_impersonation`, `pat.tech_support`, `pat.family_emergency` (and their look-alikes) were already in `library/patterns.yaml` from A-01, marked `review: compliance`, empty signals, no invented weights. Left untouched.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - **Oracle surprises (where bugs hide):**
+    - The context row's shown level equals raw. Hysteresis starts from Clear, so T1's first context (26) is already Caution. The hold shows up at T1/T3/T6 Q1: raw Clear, shown Caution (`shown` uses the previous *shown*, not raw).
+    - `asserts_on` is exclusive: chip defaults (`changed` → `sig.story_drift`, `relayed_by_caller` → `sig.answer_relayed`, open `vague`/`no_answer` → `sig.specificity_gap`) apply only when that chip is omitted from `asserts_on`.
+    - `reasons()` is same-direction IDs only. The opposite item is `counterpoint`, not a fourth reason. Ordering is raw `|weight|`, then ID; family caps do not reorder.
+    - T6's cashier's-check `denied` refutes `look.contractor_with_estimate`, so the rehearsed name and estimate drop out of `effective` and the score jumps from −14 to 29. Displayed pattern goes back to "Pattern unclear" (home repair and bank impersonation tie at 26; lead < 8).
+    - `displayed()` talks in IDs (`Looks like: pat.bank_impersonation`). `project` maps those to library labels for `risk.pattern` / `pattern_label`.
+    - Stub patterns with empty `signals` do not move T1–T7 scores or labels. Stated purpose is stored and never scored (tested).
+    - Display snap-to-raw at a stop is A-04. None of T1–T7's stop rows have shown ≠ raw, so goldens do not need it yet.
+  - **A2:** keep `FakeEngine` until A-04 fills `question` and `stop`. `engine.project` now returns real risk fields; `question` is always `null` and `stop` is always `null` on this card. Do not treat that as CHANGE-000.
+  - **A4 / A1 next:** eligibility, stop rule (including CHANGE-000 and the snap), and talk tracks. Do not retouch weights.
+  - Goldens overlay `tests/golden/reference_weights.yaml` onto a loaded library so A-07 tuning cannot move them.
+
