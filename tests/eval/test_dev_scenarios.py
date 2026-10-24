@@ -126,9 +126,7 @@ def test_vague_but_genuine_has_a_vague_answer(dev_dir: Path) -> None:
         assert "vague" in item["answers"].values(), f"{path.name} has no vague chip"
 
 
-def test_no_heldout_scenarios_in_this_slice(repo_root: Path) -> None:
-    heldout = repo_root / "eval" / "scenarios" / "heldout"
-    if not heldout.exists():
-        return
-    yamls = list(heldout.glob("*.yaml")) + list(heldout.glob("*.yml"))
-    assert yamls == [], "A3 must not write eval/scenarios/heldout/"
+def test_dev_slice_does_not_read_heldout(dev_dir: Path) -> None:
+    """A3's 30-dev tests stay on eval/scenarios/dev. Held-out YAML is H's (B-07)."""
+    assert dev_dir.name == "dev"
+    assert "heldout" not in dev_dir.parts

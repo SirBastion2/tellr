@@ -1194,4 +1194,21 @@ GATE PASS (a)
   - Contract allowed the fix. No CHANGE protocol.
   - #55 is B's to merge. B-07 / A-08 still B's held-out lane.
 
+---
+
+### [A-08] Held-out run PREP — Agent A3 — 2026-10-24 23:15
+- **Status:** partial (prep done; held-out run pending on Driver B's GPU laptop)
+- **Gate:** `scripts/gate.sh a` → pending (will record after the run in this PR)
+- **Changed:** `eval/report.py`, `eval/run.py`, `eval/scenarios.py`, `tests/eval/test_run.py`, `tests/eval/test_dev_scenarios.py`, `docs/A08_HELDOUT_RUN.md` (new), `ARCHITECTURE.md`, `docs/A_TO_B.md` (M-014), `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Did not run the held-out set, not even `--model fake`. Arm C needs the local 8B; this VM has no GPU. Architecture §13.4 / A-08: one run, later, on Driver B's laptop.
+  - Isolation of B-07 #58: commit `14bb1cd`, parent `82b788d` (`weights-frozen`), only `eval/scenarios/heldout/`, 10 scenarios valid. `python3 -m eval.validate eval/scenarios/heldout` printed OK lines and `10 scenario(s) valid` — no scores.
+  - Report labels `## held-out, 5 per population, wide intervals` when the scenarios path contains `heldout` (§13.4: five per population, wide intervals, a check on generalization). Test uses a tmp dir / DEV helpers, never the real held-out YAML.
+  - Lifted the A-06 `refuse_heldout` so the A-08 command can run. The one-run rule is the runbook, not a harness lock.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - **Driver B:** run `docs/A08_HELDOUT_RUN.md` exactly once on the GPU laptop. Record the exact SHA and tag `weights-frozen` (`82b788d`) in this file. Paste the report section in `docs/B_TO_A.md`.
+  - Hard rule: run once, no reruns, no edits after seeing results.
+  - Do not touch `eval/scenarios/heldout/`, weights, goldens, or `web/`.
+
 
