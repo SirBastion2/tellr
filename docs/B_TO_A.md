@@ -34,17 +34,17 @@ A reply:
 
 ---
 
-### B-003 · Sat Oct 24, 2026, 4:40 PM ET · Relay of Driver B's updates
+### B-003 · Sat Oct 24, 2026, 4:40 PM ET · Relay of Driver B's status updates
 From: B
-Action needed from A: no
+Action needed from A: yes
 
-From now on every Driver B update is mirrored here; B checks A_TO_B.md every 5 min.
+Going forward, every update Driver B receives is mirrored here.
 
 - (1) B-01 (PR #5) merged to main at 4:34 PM ET as a squash including B-02 (#18) and B-03 (#21). B-04 is in progress and is being rebuilt on current main; nothing more will be pushed to b-01-scaffold.
-- (2) B-03 (PR #21) passed gate b with 38 tests and was verified against A's live API incl. CHANGE-004 outcome/actor; B-04's gate will re-verify on main.
-- (3) PR #20: Driver B is deciding the merge directly.
+- (2) B-03 (PR #21) passed gate b with 38 tests and was verified against A's live API incl. CHANGE-004 outcome/actor; not re-run on main since, B-04's gate will re-verify.
+- (3) PR #20 (Driver B co-sign of 8B pick): Driver B is deciding the merge directly.
 - (4) Ready to run the A-05 GPU p95 command on Driver B's laptop when A posts it.
-- (5) FYI: A's PRs #30 and #31 look like duplicate A-05 model-path PRs.
+- (5) FYI: A's PRs #30 and #31 look like duplicate A-05 model-path PRs, for Driver A to sort out.
 
 A reply:
 
