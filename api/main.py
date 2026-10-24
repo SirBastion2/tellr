@@ -13,13 +13,23 @@ from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 
 from api.errors import rejected_response
-from engine import CommandRejected, export_library, load_library
-from engine.testing import FakeEngine, ReplayError
+from engine import (
+    CommandRejected,
+    candidates,
+    check_command,
+    export_library,
+    load_library,
+    project,
+    public_state,
+    rule_choice,
+    stop,
+)
 from store import sqlite as store
 
 _REPO = Path(__file__).resolve().parents[1]
 _DEFAULT_LIBRARY = _REPO / "library"
 _DEFAULT_DB = Path(os.environ.get("TELLER_DB", "/tmp/teller-copilot.sqlite"))
+_TELLER = frozenset({"ContextAdded", "AnswerRecorded"})
 
 
 class OpenBody(BaseModel):
@@ -49,6 +59,29 @@ def _timestamp() -> str:
     return datetime.now(UTC).replace(tzinfo=None).strftime("%Y-%m-%dT%H:%M:%S")
 
 
+def _live_indices(events: list[dict[str, Any]]) -> list[int]:
+    """0-based log order, matching engine.reduce._live_events (contract/events.md)."""
+    live: list[int] = []
+    for seq, event in enumerate(events):
+        if event.get("type") == "Truncated":
+            to_seq = event.get("to_seq")
+            if to_seq is None:
+                continue
+            live = [item for item in live if item <= int(to_seq)]
+            continue
+        live.append(seq)
+    return live
+
+
+def _undo_to_seq(events: list[dict[str, Any]]) -> int | None:
+    """Pop the most recent live teller action (§4). to_seq is 0-based log order."""
+    live = _live_indices(events)
+    teller = [seq for seq in live if events[seq].get("type") in _TELLER]
+    if not teller:
+        return None
+    return teller[-1] - 1
+
+
 def create_app(
     *,
     db_path: Path | str | None = None,
@@ -61,7 +94,6 @@ def create_app(
     model_id = os.environ.get("MODEL_ID") or None
 
     library = load_library(lib_path)
-    engine = FakeEngine()
     conn = store.connect(db)
     if not store.initialized(conn):
         store.initialize(conn)
@@ -69,7 +101,6 @@ def create_app(
     app = FastAPI(title="Teller Copilot", version="1.0.0")
     app.state.db = conn
     app.state.library = library
-    app.state.engine = engine
     app.state.recommender = rec
     app.state.model_id = model_id
     app.add_exception_handler(CommandRejected, rejected_response)
@@ -84,24 +115,15 @@ def create_app(
         }
         return out
 
-    def project(session_id: str) -> dict[str, Any]:
+    def render(session_id: str) -> dict[str, Any]:
         events = store.load_events(conn, session_id)
-        try:
-            state = dict(engine.project(events, library))
-        except ReplayError:
-            # FakeEngine keys on fixture mode (practice). Drop this when A-04 swaps the real fold.
-            rewritten: list[dict[str, Any]] = []
-            real_mode: str | None = None
-            for event in events:
-                if event.get("type") == "SessionOpened":
-                    real_mode = event.get("mode")
-                    rewritten.append({**event, "mode": "practice"})
-                else:
-                    rewritten.append(event)
-            state = dict(engine.project(rewritten, library))
-            if real_mode is not None:
-                state["mode"] = real_mode
-        return stamp(state, session_id)
+        state = project(events, library)
+        # ROSTER §5.1: fold, then candidates/stop; rules pick is already in project().
+        _stage, cands = candidates(state, library)
+        stop(state, library, cands)
+        if rec == "rules" and cands:
+            rule_choice(cands)
+        return stamp(public_state(state), session_id)
 
     def require_session(session_id: str) -> dict[str, Any]:
         row = store.get_session(conn, session_id)
@@ -131,7 +153,7 @@ def create_app(
             "amount_band": body.amount_band,
             "scenario_id": body.scenario_id,
         }
-        engine.check_command([], command, library)
+        check_command([], command, library)
         session_id = str(uuid.uuid4())
         ts = _timestamp()
         try:
@@ -158,25 +180,25 @@ def create_app(
                 "library_version": library.library_version,
             },
         )
-        return project(session_id)
+        return render(session_id)
 
     @app.post("/sessions/{session_id}/context")
     def add_context(session_id: str, body: ContextBody) -> dict[str, Any]:
         require_session(session_id)
         events = store.load_events(conn, session_id)
-        engine.check_command(events, {"type": "context", "chips": list(body.chips)}, library)
+        check_command(events, {"type": "context", "chips": list(body.chips)}, library)
         store.append_event(
             conn,
             session_id,
             {"type": "ContextAdded", "ts": _timestamp(), "chips": list(body.chips)},
         )
-        return project(session_id)
+        return render(session_id)
 
     @app.post("/sessions/{session_id}/answers")
     def add_answer(session_id: str, body: AnswerBody) -> dict[str, Any]:
         require_session(session_id)
         events = store.load_events(conn, session_id)
-        engine.check_command(
+        check_command(
             events,
             {
                 "type": "answer",
@@ -199,41 +221,37 @@ def create_app(
                 "note": body.note,
             },
         )
-        return project(session_id)
+        return render(session_id)
 
     @app.post("/sessions/{session_id}/undo")
     def undo(session_id: str) -> dict[str, Any]:
         require_session(session_id)
         events = store.load_events(conn, session_id)
-        engine.check_command(events, {"type": "undo"}, library)
-        teller = [
-            event["seq"]
-            for event in events
-            if event.get("type") in ("ContextAdded", "AnswerRecorded")
-        ]
-        if teller:
+        check_command(events, {"type": "undo"}, library)
+        to_seq = _undo_to_seq(events)
+        if to_seq is not None:
             store.append_event(
                 conn,
                 session_id,
                 {
                     "type": "Truncated",
                     "ts": _timestamp(),
-                    "to_seq": teller[-1] - 1,
+                    "to_seq": to_seq,
                     "actor": "teller",
                 },
             )
-        return project(session_id)
+        return render(session_id)
 
     @app.get("/sessions/{session_id}")
     def get_session(session_id: str) -> dict[str, Any]:
         require_session(session_id)
-        return project(session_id)
+        return render(session_id)
 
     @app.post("/sessions/{session_id}/outcome")
     def record_outcome(session_id: str, body: OutcomeBody) -> dict[str, Any]:
         require_session(session_id)
         events = store.load_events(conn, session_id)
-        engine.check_command(
+        check_command(
             events,
             {
                 "type": "outcome",
@@ -255,10 +273,10 @@ def create_app(
                 "note": body.note,
             },
         )
-        engine.check_command(store.load_events(conn, session_id), {"type": "close"}, library)
+        check_command(store.load_events(conn, session_id), {"type": "close"}, library)
         store.append_event(conn, session_id, {"type": "SessionClosed", "ts": ts})
         store.close_session(conn, session_id, ts)
-        return project(session_id)
+        return render(session_id)
 
     @app.get("/sessions/{session_id}/handoff")
     def handoff(session_id: str) -> dict[str, Any]:
@@ -268,7 +286,7 @@ def create_app(
             session_id,
             {"type": "ManagerRequested", "ts": _timestamp()},
         )
-        state = project(session_id)
+        state = render(session_id)
         return {
             "session_id": session_id,
             "mode": state["mode"],
