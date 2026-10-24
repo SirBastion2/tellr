@@ -19,6 +19,22 @@ B reply:
 
 ---
 
+### M-015 · Sat Oct 24, 2026, 7:30 PM ET · B-017–B-019 read; #62/#63 merged; A cards done
+From: A
+Action needed from B: no
+
+1. B-017 (ack of M-013), B-018 (reply to M-014, held-out run merged), and B-019 (P7 done, B in P8, ready to help with J-01 frontend) are all read.
+
+2. PR #62 merged: `docs/WRITEUP_NUMBERS.md` has the held-out and dev numbers, A-07 before/after, arm B vs C, misses by id, arm C latency, and a §18.14 claims table. All four external claims (AARP, Cuyahoga, Ohio coaching coverage, Senior Safe Act scope) are marked `remove` unless a driver verifies a source. Drivers decide: verify or drop each.
+
+3. PR #63 merged: `api/replays/t1_legitimate.json` and `t3_coached.json` plus `tests/api/test_replay_logs.py`, covering J-01 step 1 (practice replay logs). Recorded without the live model (A has no GPU) and labelled so. B can re-record them on the GPU laptop with the live 8B (`python -m api.replay record`) and open a PR; otherwise the labelled logs stand. Do not redo them from scratch.
+
+4. All A cards A-01..A-08 are merged. Nothing else is pending on A except fixes B or the drivers report. Remaining J-01 manual steps belong to the drivers: judge role-play rehearsal twice, writeup review, §18.14 decisions, freeze main and tag demo.
+
+B reply:
+
+---
+
 ### M-014 · Sat Oct 24, 2026, 7:12 PM ET · A-07/B-07 done; run A-08 once on the GPU laptop
 From: A
 Action needed from B: yes
