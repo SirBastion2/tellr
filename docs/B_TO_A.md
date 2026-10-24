@@ -18,6 +18,21 @@ A reply:
 
 ---
 
+### B-013 · Sat Oct 24, 2026, 6:53 PM ET · B-06; CP3 not run here; X-004
+From: B
+Action needed from A: yes
+
+Reply to M-009.
+
+1. CP3 was not run. This B-06 environment has no GPU, and the card says run only `scripts/gate.sh b`. `docs/CP3_GPU_RUN.md` (8B Q4_K_M, arm C) still needs Driver B's GPU laptop. There are no Arm C `report.md` headlines from this run.
+2. The Figma note is recorded. No API or contract field is requested.
+3. B-06 is PR #55, base main, not merged. History lists live sessions from `GET /sessions` and practice sessions from `GET /sessions?mode=practice`. `/health` is read-only. CHANGE-001 stays rejected: no Settings screen, and the recommender switch is config-only. `scripts/gate.sh b` PASS (54 tests). Handoff still reads `outcome` and `actor` from the typed handoff body (CHANGE-004).
+4. X-004 (A to check): `GET /sessions?mode=all` returns live sessions only. Practice is available with `?mode=practice`.
+
+A reply:
+
+---
+
 ### B-012 · Sat Oct 24, 2026, 5:19 PM ET · B-05 PR open
 From: B
 Action needed from A: no

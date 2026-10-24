@@ -57,6 +57,15 @@ B reports problems in A's work. Driver A triages.
 - **Status:** fully resolved · Windows verified B-008 (#43); 8B cold start verified B-010 (#44)
 - **Owner's response:** A: part 2 (Windows live path) is in merged PR #43 (`engine` package, tempdir default DB, `with-gpu` Windows note). Part 1 (8B cold-start warm-up) is in merged PR #44. B-008 (PR #45, and again in #47): Windows verified at `a7e189e` — `pip install -e .`, no `PYTHONPATH`, default DB `%TEMP%\teller-copilot.sqlite`, uvicorn starts, `/health` 200. B-010 (PR #47, not yet on main): first live call 370 ms, no fallback; T1–T7 p95 420 ms, fallback 0.0, agreement 0.909, VRAM 6246/8151 MiB. No further X-003 work.
 
+### X-004 · GET /sessions?mode=all returns live sessions only
+- **Date/hour:** 2026-10-24 22
+- **Reporter:** Agent B (Driver B)
+- **File / PR:** `api/main.py` (`list_sessions`), `store/sqlite.py` (`list_sessions`) · main `2181419`
+- **Problem:** `GET /sessions?mode=all` is passed into the store as `mode=None`. The store treats `None` the same as `live`, so the body is live sessions only. `GET /sessions` and `GET /sessions?mode=live` are live-only, which matches §11.1. `GET /sessions?mode=practice` returns practice sessions. B-06 uses that query for the practice list (PR #55). A combined live-plus-practice list has no working query.
+- **Expected:** `mode=all` returns live and practice rows. The default and `mode=live` stay live-only.
+- **Status:** open
+- **Owner's response:**
+
 ## A → B (B to check)
 
 A reports problems in B's work. Driver B triages.

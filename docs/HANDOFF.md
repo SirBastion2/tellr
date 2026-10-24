@@ -1028,3 +1028,34 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/49. Do not merge. Main now includes A-06 hours 12–15 (#48) and B-009–B-012 (#47). Official CP3 GPU arm-C run is still on hold (`docs/CP3_GPU_RUN.md`).
 
+---
+
+### [B-06] History and read-only health — Agent B — 2026-10-24 22:53
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+
+```
+── typecheck
+
+── lint
+
+── test
+ Test Files  17 passed (17)
+      Tests  54 passed (54)
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/screens/HistoryScreen.tsx`, `web/src/screens/HealthScreen.tsx`, `web/src/screens/SettingsScreen.tsx` (removed), `web/src/history.test.tsx` (added), `web/src/health.test.tsx` (added), `web/src/App.tsx`, `web/src/routes.ts`, `web/src/routes.test.tsx`, `web/src/a11y.test.tsx`, `web/src/mockReplay.test.ts`, `web/mock/replay.ts`, `web/mock/plugin.ts`, `ARCHITECTURE.md` (web section), `docs/HANDOFF.md`, `docs/B_TO_A.md`, `docs/CROSS_LANE.md`
+- **Decisions I made, and the section that justified each:**
+  - CHANGE-001 was rejected (§7.4, §11.1, `contract/CHANGES.md`). There is no Settings screen and no `/settings` call. `GET /health` is read-only and shows recommender, model id, p50, p95, last p95, fallback rate, rejection count, and agreement rate. The recommender follows process config from startup. The fallback switch is config-only.
+  - `/settings` redirects to `/health`. It is not in the nav (`web/src/routes.ts`). Q-012's placeholder settings page is retired by this card.
+  - History's default request is `GET /sessions`, which excludes practice (§11.1, §14.1). Practice is a separate request, `GET /sessions?mode=practice`. The screen also hides the other mode, so a mixed payload cannot put practice on the default list. Rows show `session_id`, `mode`, `opened_at`, `closed_at`, and `library_version` from that list. History and health schemas stay deferred (Q-006). No contract edit.
+  - Handoff already renders `outcome` and `actor` from the typed `GET /sessions/{id}/handoff` body (CHANGE-004). `HandoffScreen.tsx` was not changed.
+  - `docs/CROSS_LANE.md` had no open A→B items. M-009 asks for the CP3 GPU run. This environment has no GPU, and the card says run only `scripts/gate.sh b`, so CP3 was not run. Logged in `docs/B_TO_A.md` (B-013).
+- **Questions logged:** X-004
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/55. Do not merge. No new dependency. Did not read `eval/scenarios/dev/` or `library/signals.yaml`. X-004: `GET /sessions?mode=all` returns live sessions only (`api/main.py` passes `None`, and `store/sqlite.py` treats `None` as live). Practice still loads with `?mode=practice`. CP3 (`docs/CP3_GPU_RUN.md`) still needs Driver B's GPU laptop. `ARCHITECTURE.md` lists the added and removed web files under `web/` after B-06.
+
