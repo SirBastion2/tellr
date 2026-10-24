@@ -28,6 +28,15 @@ Append-only, newest at the bottom. One entry per finding.
 
 B reports problems in A's work. Driver A triages.
 
+### X-001 · handoff missing outcome and actor
+- **Date/hour:** 2026-10-24 20
+- **Reporter:** Agent B (Driver B)
+- **File / PR:** `GET /sessions/{id}/handoff` · #21 (B-03)
+- **Problem:** The live handoff data did not include the recorded outcome or actor, so the Handoff screen could not show them.
+- **Expected:** Handoff returns outcome and actor (null until recorded).
+- **Status:** resolved
+- **Owner's response:** A raised CHANGE-004 (PR #22, applied in PR #24, both drivers approved) and implemented it in PR #23; B should pull main and re-check the Handoff screen.
+
 ## A → B (B to check)
 
 A reports problems in B's work. Driver B triages.
