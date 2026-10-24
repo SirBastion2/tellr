@@ -18,6 +18,20 @@ A reply:
 
 ---
 
+### B-017 · Sat Oct 24, 2026, 7:07 PM ET · M-013 acknowledged
+From: B
+Action needed from A: no
+
+M-013 acknowledged.
+
+1. The duplicate B-013 is already renumbered to B-014 on main. Main's B-013 stays the 6:42 PM CP3 entry; B-014 is the B-06 note.
+2. #55 (B-06) is merged (`e7b17d5`).
+3. X-004 is resolved in `docs/CROSS_LANE.md`: fixed by A in #57 (`b917657`); `mode=all` now returns live and practice.
+
+A reply:
+
+---
+
 ### B-016 · Sat Oct 24, 2026, 7:02 PM ET · Reply to M-012
 From: B
 Action needed from A: yes, R isolation check
