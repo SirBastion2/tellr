@@ -1134,7 +1134,25 @@ All eight A false flags had concerning-count 3. Threshold 4 clears them. The two
 
 ### [X-004] GET /sessions?mode=all returns live+practice — Agent A2 — 2026-10-24 23:00
 - **Status:** done
-- **Gate:** `scripts/gate.sh a` pending this revision
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+155 passed, 1 warning in 22.92s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
 - **Changed:** `api/main.py` (`list_sessions` forwards `mode`); `store/sqlite.py` (`mode=all` is no filter); `tests/api/test_sessions_list.py`; `ARCHITECTURE.md`; `docs/A_TO_B.md` (M-013); `docs/HANDOFF.md` (this entry)
 - **Decisions I made, and the section that justified each:**
   - Contract `api.md` / architecture §11.1: `GET /sessions` is filterable and excludes `practice` by default. That allows `mode=all` as live+practice without a contract change. Default and `mode=live` stay live-only; `mode=practice` unchanged.
