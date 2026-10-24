@@ -506,3 +506,77 @@ GATE PASS (a)
 - **The next agent needs to know:** This branch includes `origin/main` through `b94749b` (PR #23 and PR #24). The live API in that tree returns the fields. A TestClient call to `api/main.py` got `outcome: null` and `actor: null` before `POST /outcome`, then `outcome: "escalate"` and `actor: "teller-1"` after. Both bodies validated against `handoff.schema.json`. `SessionState` did not include the fields. **CP2 still awaits driver confirmation.** Do not merge. X-001: `contract/handoff.schema.json` description still says CHANGE-004 is not applied.
 
 ---
+
+### [CHANGE-004] Handoff schema description wording — Agent R — 2026-10-24 20:32
+- **Status:** done
+- **Gate:** `scripts/gate.sh contract` → PASS; `scripts/gate.sh a` → PASS
+
+```
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (contract)
+```
+
+```
+── ruff
+All checks passed!
+
+── pytest
+85 passed, 1 warning in 10.54s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `contract/handoff.schema.json` (top-level `description` string only); `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Replaced leftover `Pending CHANGE-004 (not applied).` with `CHANGE-004 (applied).` in the schema description. CHANGE-004 is already applied and approved (PRs #22, #23, #24; `contract/CHANGES.md`, `contract/api.md`).
+  - Left the 20:13 HANDOFF proposal entry as written (this file is append-only; that entry was accurate at proposal time).
+  - Did not edit `api/`, `web/`, fixtures, `reference_impl.py`, or `tests/golden/`. Schema fields, required keys, and `CONTRACT_VERSION` are unchanged.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR #27 is wording-only. Do not merge unless a driver says so.
+  - `contract/` and `docs/` have no remaining live “pending CHANGE-004” / “not applied” wording. `handoff.schema.json` is not in `contract/oracle.sha256`.
+  - No new dependency.
+
+---
+
+### [merge] origin/main into b-01-scaffold — Agent B1 — 2026-10-24 20:35
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS; `scripts/gate.sh a` → PASS
+
+```
+── typecheck
+── lint
+── test
+ Test Files  11 passed (11)
+      Tests  38 passed (38)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (b)
+```
+
+```
+── ruff
+All checks passed!
+── pytest
+85 passed, 1 warning in 10.99s
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (a)
+```
+
+- **Changed:** merge commit only. Conflicts: `docs/HANDOFF.md` (kept every section from both sides, newest last); `docs/CROSS_LANE.md` (kept both X-001 entries); `docs/DECISIONS.md` (main; Hour 8 filled, nothing unique on the branch); `contract/handoff.schema.json` (main, unchanged). `web/` stayed the branch version.
+- **Decisions I made, and the section that justified each:** none. Driver instruction: append-only shared docs; main for contract/api/engine/store/goldens/fixtures/`reference_impl.py`; branch for `web/`.
+- **Questions logged:** none
+- **The next agent needs to know:** This is a merge of `origin/main` (`b2db873`) into `b-01-scaffold`. No new branch or PR. Q-012 is still in `docs/QUESTIONS.md`. Both CROSS_LANE X-001 entries are present (main: missing outcome/actor, resolved; branch: schema description still said not applied, still open in the log). The schema file on this tree is main's `CHANGE-004 (applied).` wording.
