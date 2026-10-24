@@ -41,6 +41,17 @@ def git_sha(repo: Path = ROOT) -> str:
         return "unknown"
 
 
+def _arm_timing_kwargs(name: str, model: FakeModel | LocalModel) -> dict:
+    """Arm C LocalLLM timings only. A/B and FakeModel stay n/a (§13.3, B-013)."""
+    if name != "C" or not isinstance(model, LocalModel):
+        return {}
+    latencies = model.recorded_latencies()
+    fallbacks = model.recorded_fallbacks()
+    if not latencies and not fallbacks:
+        return {}
+    return {"latencies_ms": latencies, "fallbacks": fallbacks}
+
+
 def _run_arm(
     name: str,
     scenarios: Sequence[Scenario],
@@ -99,7 +110,7 @@ def main(argv: list[str] | None = None) -> int:
     for name in names:
         rows = _run_arm(name, scenarios, lib, model)
         arm_rows[name] = rows
-        summaries[name] = summarize(rows)
+        summaries[name] = summarize(rows, **_arm_timing_kwargs(name, model))
 
     sha = git_sha()
     payload = results_payload(
