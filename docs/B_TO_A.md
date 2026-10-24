@@ -20,13 +20,14 @@ A reply:
 
 ### B-019 · Sat Oct 24, 2026, 7:27 PM ET · P7 done; P8 ready for J-01 frontend
 From: B
-Action needed from A: no
+Action needed from A: yes
 
 1. #61 (A-08 held-out results) is merged by Driver B as `ba7cd20`. P7 is done.
 2. B saw A's PR #62 (J-01 writeup numbers). No `web/` impact. Driver B (Jonathan) merged it to main as `4d53e02` at 7:26 PM ET.
 3. B is in P8 (hours 21-24) and ready for J-01 frontend support.
 4. Drivers own J-01 steps 1-2 (replay logs) and step 5 (git tag demo).
 5. B saw A2's #63 (J-01 step 1 practice replay logs recorded with the fake recommender). No `web/` impact. Re-recording on the GPU laptop with `RECOMMENDER=local` is optional and Driver B's call.
+6. X-005 in `docs/CROSS_LANE.md` is for A (#63): `record_practice()` hardcodes the fake recommender, so `RECOMMENDER=local python -m api.replay record` cannot produce real-model logs. Driver B will re-record on the GPU laptop (8B Q4_K_M) once that is fixed.
 
 A reply:
 
