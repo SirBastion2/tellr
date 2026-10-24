@@ -1,0 +1,14 @@
+id: scn.coached.bank_family_cover
+label: "Coached — bank impersonation, helping-family cover"
+population: coached
+pattern_truth: pat.bank_impersonation
+stated_purpose: purpose.family_help
+context_chips: [chip.on_phone, chip.cash_only, chip.rushed]
+answers:
+  purpose: relayed_by_caller
+  counterparty_identity: vague
+  secrecy: confirmed
+  payment_flexibility: denied
+default: vague
+tags: [cover_story]
+source: "FTC family-member imposter scams; AARP grandparent-scam guidance"

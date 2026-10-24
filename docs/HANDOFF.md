@@ -44,6 +44,25 @@ Append-only, newest at the bottom. One entry per card, or per stop.
 
 ---
 
+### [A-06] Evaluation hours 2–6 (validate + 15 scenarios) — Agent A3 — 2026-10-24 19:25
+- **Status:** partial (hours 2–6 slice done; hours 6–8 still own the last 15 scenarios and the solo `PREREGISTRATION.md` commit)
+- **Gate:** `scripts/gate.sh a` → FAIL at `.importlinter missing (card A-01 creates it).` Ruff and pytest on `eval/` + `tests/eval/` pass (`21 passed`). Did not add `.importlinter` or `pyproject.toml` (A2).
+- **Changed:** `eval/validate.py`; `eval/__init__.py`; `eval/PREREGISTRATION.md` (draft, no run); `eval/scenarios/dev/` (15 YAML); `tests/eval/`; `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Scenario IDs and answers for T1–T7 copied from `reference_impl.py` CASES / §6.4; extras from public FTC/FBI/AARP imposter guidance and the §13.1 / §18.16 cover-story shapes.
+  - `pattern_truth` is `pat.*` for coached and `null` for legitimate. Validator does **not** require those ids in `contract/library.json` patterns (Q-008: that file is T1–T7 display copy; A1 loads the real library). Two scenarios use `pat.government_impersonation` and `pat.tech_support`.
+  - Cover story = stated purpose’s usual pattern ≠ `pattern_truth` (T3, §13.1). `purpose.vehicle` / `purpose.gift_or_travel` have no pattern, so any `pat.*` truth counts as a cover.
+  - Arm A draft prior threshold is 3 concerning items; the sheet is binary (High at/above, Clear below, no Caution column). §13.2 is a yes-count threshold; mapping the flag to Caution only would recreate the §18.2 game. Official freeze is a solo commit at hours 6–8.
+  - `tags` / `source` are eval bookkeeping, not engine inputs. No age, appearance, or name fields.
+- **Questions logged:** none (Q-008 already covers the two extra pattern ids)
+- **The next agent needs to know:**
+  - **A2:** please add `pytest`, `ruff`, and `pyyaml` to `pyproject.toml` when it lands. A3 ran them from a user install. Also `.importlinter` (A-01) is what blocks `scripts/gate.sh a`.
+  - **Hours 6–8 (A3):** add 7 coached + 8 legitimate to reach 15/15. The first 15 already meet the §5.2 minima (8 coached / 7 legitimate; 4 covers; 3 perfectly coached; 4 innocent red-flag; 3 vague-but-genuine). Then **commit `eval/PREREGISTRATION.md` alone** before any run.
+  - **A1:** real library should include `pat.government_impersonation` and `pat.tech_support` (and `pat.family_emergency`) so later arms can label those truths.
+  - Do not write `eval/scenarios/heldout/`. Do not commit this draft with results. Driver A reviews `eval/` PRs.
+
+---
+
 ### [A-01] Library + engine-api-v1 — Agent A1 — 2026-10-24 19:26
 - **Status:** done (A1 half). Gate `a` blocked on A2 files, not on this diff.
 - **Gate:** `scripts/gate.sh a` → FAIL at `.importlinter missing (card A-01 creates it).` Ruff on `engine/` `tests/engine/` `tests/library/` PASS. `pytest -q tests/library tests/engine` → 20 passed. Contract oracles untouched.
@@ -121,7 +140,6 @@ GATE PASS (a)
 
 ---
 
-
 ### [A2 hours 4–6] API on FakeEngine — Agent A2 — 2026-10-24 19:34
 - **Status:** done (hours 4–6). Stopped before A-03.
 - **Gate:** `scripts/gate.sh a` → PASS
@@ -161,6 +179,39 @@ GATE PASS (a)
   - Live traces that match a practice fixture prefix replay after rewriting `SessionOpened.mode` to `practice` (comment in `api/main.py`). Remove that adapter in A-04.
   - `make dev-api` still starts uvicorn on `127.0.0.1:8000`. Default DB is `/tmp/teller-copilot.sqlite` (`TELLER_DB` overrides).
   - New dep: `httpx` — required by FastAPI `TestClient`. No other new dependency.
+
+---
+
+### [A-06] Merge main + gate a — Agent A3 — 2026-10-24 19:45
+- **Status:** partial (hours 2–6 still; hours 6–8 still own the last 15 scenarios and the solo `PREREGISTRATION.md` commit)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+51 passed in 0.49s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `docs/HANDOFF.md` only (merge kept A-06 + all three A-01 sections; this entry). No edits in `eval/` or `tests/eval`.
+- **Decisions I made, and the section that justified each:**
+  - Merged `origin/main` (A1 #9, A2 #10) rather than rebasing. HANDOFF conflict resolved by keeping every existing section (append-only).
+  - Gate was green after the merge; no `eval/` or `tests/eval` fixes. Did not add scenarios, did not run the eval, did not touch `eval/heldout`, `contract/`, `reference_impl.py`, or goldens.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Gate a is green on this branch (PR #8). Hours 6–8 still add 7 coached + 8 legitimate, then commit `eval/PREREGISTRATION.md` alone before any run.
+  - A1 already landed `pat.government_impersonation`, `pat.tech_support`, and `pat.family_emergency` (stubs). A2 landed `pyproject.toml` / `.importlinter`.
+  - Do not write `eval/scenarios/heldout/`. Driver A reviews `eval/` PRs.
 
 ---
 
@@ -349,8 +400,6 @@ curl -sS -X POST http://127.0.0.1:8010/sessions/$SID/answers \
 # question=q.alternative.cashiers_check suggested_outcome=escalate
 ```
 
-
-
 ### [A-03] Latency benchmark — Agent A (run on Jonathan's laptop) — 2026-10-24 15:55
 - **Status:** done
 - **Gate:** not run (card's done-when is numbers in HANDOFF; no gate step named)
@@ -366,6 +415,512 @@ curl -sS -X POST http://127.0.0.1:8010/sessions/$SID/answers \
 - **Decisions I made, and the section that justified each:** §8.1 names no model family, so Llama-3.2-3B / Llama-3.1-8B per the card. The library has 6 questions, so the 12-way grammar (§8.3) is the 5 non-opener library IDs plus 7 synthetic `q.bench.extra_NN` IDs. Suffix came out ~350 tokens, above the ~250 target, which is the conservative direction for prefill. Each run varies the suffix so prefill really processes the new tokens (~346) against the cached prefix.
 - **Questions logged:** none
 - **The next agent needs to know:** Both models fit L1b and the target with wide margin; decode (~15 tokens) dominates. 8B Q4_K_M at ctx 4096 uses ~7.4 of 8 GB, tight for anything else on the GPU. Both models picked `q.homerepair.contractor_name` for T2 (a bank-impersonation case) — a quality signal only, not measured here. Model choice is for the drivers (DECISIONS.md); A-05 not started.
+
+---
+
+### [CHANGE-004] Handoff projection schema — Agent A — 2026-10-24 20:13
+- **Status:** done (proposal only; not applied)
+- **Gate:** `scripts/gate.sh contract` → PASS
+
+```
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (contract)
+```
+
+- **Changed:** `contract/CHANGES.md`, `contract/api.md`, `contract/handoff.schema.json` (new), `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Proposed (did not apply) CHANGE-004: type `GET /sessions/{id}/handoff` as today's manager summary plus `outcome` and `actor`, both null until `POST /outcome` (WORKFLOW.md §5; CHANGE-003 / Q-006 deferred; Q-005 / Q-010 / Q-011 keep those fields off SessionState).
+  - Did not edit `api/`, `web/`, `reference_impl.py`, `tests/golden/`, or `contract/fixtures/`. History, health, and POST-enum schemas stay deferred.
+- **Questions logged:** none. Resolves the handoff part of Q-006 only, pending both drivers.
+- **The next agent needs to know:** PR is Proposed. Both driver boxes are unticked. After both drivers approve, R applies on main (bump `CONTRACT_VERSION`, tag). Then A2 adds `outcome`/`actor` to `api/main.py` `handoff()` from the latest `OutcomeRecorded` and validates with `tests/api` against `handoff.schema.json`. Do not project them onto SessionState. Do not merge this PR as applied.
+
+### [CHANGE-004] Handoff outcome/actor on GET /handoff — Agent A2 — 2026-10-24 20:18
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+85 passed, 1 warning in 10.50s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `api/main.py` (`handoff()` only), `tests/api/conftest.py`, `tests/api/test_q009.py`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - `handoff()` reads the latest `OutcomeRecorded` from `store.load_events` and adds `outcome` and `actor` (`None` until recorded) (CHANGE-004; Q-005 / Q-010 / Q-011 keep those fields off SessionState).
+  - Did not add them to `render()` / SessionState, did not change `POST /outcome`, did not return notes.
+  - Did not edit `web/`, `contract/`, `reference_impl.py`, `tests/golden/`, or fixtures.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - `GET /sessions/{id}/handoff` now validates against `contract/handoff.schema.json` via `assert_handoff()`. Before `POST /outcome`, `outcome` and `actor` are null and `ManagerRequested` is appended. After outcome they equal the posted values. SessionState still omits `outcome` / `actor` / `closed`.
+  - B1 can render the recorded outcome and actor from the handoff projection. Do not merge this PR unless a driver says so.
+  - No new dependency.
+
+---
+
+### [B-01] Scaffold, mock server, shells — Agent B1 — 2026-10-24 19:30
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  8 passed (8)
+       Tests  21 passed (21)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/**` (Vite + React + TypeScript strict + Tailwind + vitest + eslint; types; ajv banner; `web/mock` fixture replay; eight routes). Appended `docs/HANDOFF.md`, `docs/QUESTIONS.md`.
+- **Decisions I made, and the section that justified each:**
+  - Eight UI routes are `/`, `/sessions/:id/context`, `/sessions/:id`, `/sessions/:id/outcome`, `/sessions/:id/handoff`, `/sessions`, `/health`, `/settings`. §12 says eight routes and does not name them (Q-012).
+  - Interview and Context render `SessionState` plus labels from `GET /library`. Posted context chip ids stay in client memory (CHANGE-003 / Q-005, Q-010). `stop.reason` is shown raw; the §12 teller sentence is not substituted.
+  - The mock replays `contract/fixtures/T*.json` in order. A different body still returns the next fixture `SessionState` and warns. It does not score the posted chips. `POST /sessions?case=` rejects `scenario_id` when `mode` is `live` with `409` `scenario_on_live_session` (CHANGE-002). No live `SessionState` is synthesized; fixtures are practice (Q-009 deferred to A-04).
+  - Settings does not call `/settings` (CHANGE-001). Handoff, history, and health shells do not call those endpoints and do not invent bodies (Q-006 deferred).
+  - Unparseable JSON on the dev middleware returns `422` with body `null`. The UI does not invent a FastAPI `detail` array; that body is not in the contract.
+  - Screenshot of the Interview shell at T2's second answer was skipped (driver instruction). `web/src/interview.test.tsx` asserts that step's level, score, pattern label, question text, reasons, and library purpose label.
+- **Questions logged:** Q-012
+- **The next agent needs to know:** Branch is rebased on `contract-v1` (`5515060`). `VITE_API_URL` is the API base; empty uses the Vite origin, where the mock middleware serves `/library` and `/sessions`. Run `npm run dev` from `web/` (127.0.0.1:5173). A2 owns the Makefile, which is outside `web/`: please add `make dev-web` that runs that command. There is no `Makefile` in the repo yet. Chip memory pops one posted batch on a successful undo; answer posting is still B-02, so the shell's only client write is context.
+
+---
+
+### [B-02] Interview screen — Agent B1 — 2026-10-24 19:51
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  9 passed (9)
+       Tests  27 passed (27)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/screens/InterviewScreen.tsx`, `web/src/interview.test.tsx`, `web/src/teller.tsx`, `web/src/teller.test.tsx`, `web/src/App.tsx`, `web/src/types.ts`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Shown level is the words Clear, Caution, or High, a colour (`#166534` / `#b45309` / `#991b1b`), and a slot at position 0, 1, or 2. `data-level` is the fixture token. Score, reason labels, and `pattern_label` are the fixture strings. Nothing is derived from the score (§12, §11.2; card spot check "Caution" at 16). `raw_level` is not the label, so T1's first answer stays Caution while raw is clear (§6.3 hysteresis, as carried on `risk.level`).
+  - Counterpoint prefix is "In their favor:" at Caution or High and "Still noted:" at Clear, on its own line (§6.5). A recommended stop shows "You have enough to decide, or ask one more" and keeps the question at opacity 0.55 (§8.4, §12). A hard stop renders no question. Those three strings are not in `GET /library`; CHANGE-003 leaves `stop.reason` machine-readable, so it is on `data-reason` and, for a hard stop, is the visible text.
+  - The opener renders library purposes, then a 72px row of five answer chips. A chip posts only after a purpose is chosen, as `{question_id, chip, purpose}`. Later questions post `{question_id, chip}` and omit `purpose`. No `note` (§5.6, §11.1, §9).
+  - Client memory is a stack of context batches and answers. Undo pops one write, so undoing an answer does not drop posted context chips (§11.1).
+- **Questions logged:** none
+- **The next agent needs to know:** Screenshots of T1 Caution 16, T3 "Looks like: bank impersonation", and T6's hard stop were skipped (driver). Those three checks are tests in `web/src/interview.test.tsx`. Rendering and `POST /answers` were verified against contract fixtures through the web mock and a fetch stub, not against A's running API. The client still prefixes paths with `VITE_API_URL` (the stub used `http://api.test`). `docs/CROSS_LANE.md` is not on this branch; the copy on `cursor/cross-lane-log-760f` has no open A→B items, and this card logged no B→A items. Talk tracks are still not drawn on the interview screen. Outcome buttons stay on `/sessions/:id/outcome`.
+
+---
+
+### [B-03] Outcome, handoff, real API — Agent B1 — 2026-10-24 20:07
+- **Status:** done (CP2 awaits driver confirmation; do not merge)
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  11 passed (11)
+       Tests  37 passed (37)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/screens/OutcomeScreen.tsx`, `web/src/screens/HandoffScreen.tsx`, `web/src/outcome.test.tsx`, `web/src/handoff.test.tsx`, `web/src/App.tsx`, `web/src/teller.tsx`, `web/src/types.ts`, `web/src/validate.ts`, `web/mock/replay.ts`, `web/src/mockReplay.test.ts`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - All four outcome buttons stay enabled at every fixture step. The highlighted button is `suggested_outcome`. Report is never highlighted, including if a payload names it. Highlight is colour `#fef3c7` plus `data-highlighted` (§11.2, §18.1).
+  - Submit posts `{outcome, actor}` and omits `note`. The actor must be non-blank after trim, and the teller must choose an outcome; the suggestion is not pre-selected (§11.1, §11.2). Button words are Proceed, Slow down, Escalate, and Report from §18.1. The actor control is labeled Actor. Those strings are not in `GET /library` (Q-006).
+  - Handoff is `GET /sessions/:id/handoff`. The mock copies `session_id`, `mode`, `stated_purpose`, `risk`, `suggested_outcome`, `answers`, and `stop` off the current fixture step. The screen renders that projection. A shape mismatch shows the contract banner and does not invent fields (Q-006). Purpose labels still come from `GET /library`. Level words match the interview screen. `stop.reason` stays machine-readable.
+  - A successful mock `POST /outcome` returns the current `SessionState` and then rejects further posts with `409` `session_closed`. Outcome is not written onto the state (Q-011). Fixtures still have no outcome step (Q-009).
+- **Questions logged:** none
+- **The next agent needs to know:** **CP2 awaits driver confirmation.** Do not merge this PR until the drivers confirm CP2 with A. Screenshots of the outcome buttons and the handoff route were skipped (driver). Those checks are tests in `web/src/outcome.test.tsx` and `web/src/handoff.test.tsx`. Hour-8 integration ran A's API from `origin/main` (`7f4f546`, uvicorn on 127.0.0.1:8000, `RECOMMENDER=rules`). T1 and T2 were walked by posting each fixture request (the bodies the chips send). Every `SessionState` matched the fixture except `session_id`, which the API assigns. `GET /handoff` matched the same projection with that id. `GET /library` validated against `library.schema.json`. It has five patterns and five look-alikes; `contract/library.json` has two, which Q-008 already allows. Chip, purpose, and question copy for these steps matched. No UI patch. `docs/CROSS_LANE.md` is not on this branch; `cursor/cross-lane-log-760f` has no open A→B items, and this card logged no B→A items. The live handoff projection does not include the recorded outcome or actor. Talk tracks are still not drawn.
+
+---
+
+### [B-03] Handoff outcome and actor — Agent B1 — 2026-10-24 20:26
+- **Status:** done (CP2 still awaits driver confirmation; do not merge)
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  11 passed (11)
+       Tests  38 passed (38)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/types.ts`, `web/src/validate.ts`, `web/src/screens/HandoffScreen.tsx`, `web/src/handoff.test.tsx`, `web/src/teller.tsx`, `web/mock/replay.ts`, `web/src/mockReplay.test.ts`, `docs/HANDOFF.md`, `docs/CROSS_LANE.md`
+- **Decisions I made, and the section that justified each:**
+  - `HandoffProjection` matches applied `handoff.schema.json`: `outcome` is `proceed`, `slow_down`, `escalate`, `report`, or null; `actor` is a string or null. Both are null until `POST /outcome` (CHANGE-004, §11.1).
+  - The Handoff screen shows "Outcome: not recorded yet" and "Actor: not recorded yet" when those fields are null, and the outcome label plus the actor string when they are set (§12).
+  - `GET /handoff` is validated with Ajv against `contract/handoff.schema.json`. A body that omits the fields or names an unknown outcome is not rendered.
+  - The mock keeps the posted outcome and actor and returns them on the next `GET /handoff`. `SessionState` still omits both (Q-011). The handoff body does not include `note`.
+- **Questions logged:** none. X-001.
+- **The next agent needs to know:** This branch includes `origin/main` through `b94749b` (PR #23 and PR #24). The live API in that tree returns the fields. A TestClient call to `api/main.py` got `outcome: null` and `actor: null` before `POST /outcome`, then `outcome: "escalate"` and `actor: "teller-1"` after. Both bodies validated against `handoff.schema.json`. `SessionState` did not include the fields. **CP2 still awaits driver confirmation.** Do not merge. X-001: `contract/handoff.schema.json` description still says CHANGE-004 is not applied.
+
+---
+
+### [CHANGE-004] Handoff schema description wording — Agent R — 2026-10-24 20:32
+- **Status:** done
+- **Gate:** `scripts/gate.sh contract` → PASS; `scripts/gate.sh a` → PASS
+
+```
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (contract)
+```
+
+```
+── ruff
+All checks passed!
+
+── pytest
+85 passed, 1 warning in 10.54s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `contract/handoff.schema.json` (top-level `description` string only); `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Replaced leftover `Pending CHANGE-004 (not applied).` with `CHANGE-004 (applied).` in the schema description. CHANGE-004 is already applied and approved (PRs #22, #23, #24; `contract/CHANGES.md`, `contract/api.md`).
+  - Left the 20:13 HANDOFF proposal entry as written (this file is append-only; that entry was accurate at proposal time).
+  - Did not edit `api/`, `web/`, fixtures, `reference_impl.py`, or `tests/golden/`. Schema fields, required keys, and `CONTRACT_VERSION` are unchanged.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR #27 is wording-only. Do not merge unless a driver says so.
+  - `contract/` and `docs/` have no remaining live “pending CHANGE-004” / “not applied” wording. `handoff.schema.json` is not in `contract/oracle.sha256`.
+  - No new dependency.
+
+---
+
+### [merge] origin/main into b-01-scaffold — Agent B1 — 2026-10-24 20:35
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS; `scripts/gate.sh a` → PASS
+
+```
+── typecheck
+── lint
+── test
+ Test Files  11 passed (11)
+      Tests  38 passed (38)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (b)
+```
+
+```
+── ruff
+All checks passed!
+── pytest
+85 passed, 1 warning in 10.99s
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (a)
+```
+
+- **Changed:** merge commit only. Conflicts: `docs/HANDOFF.md` (kept every section from both sides, newest last); `docs/CROSS_LANE.md` (kept both X-001 entries); `docs/DECISIONS.md` (main; Hour 8 filled, nothing unique on the branch); `contract/handoff.schema.json` (main, unchanged). `web/` stayed the branch version.
+- **Decisions I made, and the section that justified each:** none. Driver instruction: append-only shared docs; main for contract/api/engine/store/goldens/fixtures/`reference_impl.py`; branch for `web/`.
+- **Questions logged:** none
+- **The next agent needs to know:** This is a merge of `origin/main` (`b2db873`) into `b-01-scaffold`. No new branch or PR. Q-012 is still in `docs/QUESTIONS.md`. Both CROSS_LANE X-001 entries are present (main: missing outcome/actor, resolved; branch: schema description still said not applied, still open in the log). The schema file on this tree is main's `CHANGE-004 (applied).` wording.
+
+---
+
+### [A2] make dev-web — Agent A2 — 2026-10-24 20:37
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+85 passed, 1 warning in 10.34s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `Makefile`; `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - `make dev-web` runs `npm run dev` from `web/` in tmux session `teller-web`, matching `make dev-api` and WORKFLOW §2.4 / B-01. Vite already binds 127.0.0.1:5173; the mock is middleware on that server; `VITE_API_URL` overrides the API base (B-01 HANDOFF, PR #5).
+- **Questions logged:** none (Q-012 is route paths, not this target)
+- **The next agent needs to know:** `make dev-web` starts Vite detached in tmux (`teller-web`). Empty `VITE_API_URL` uses the Vite origin (mock). Set `VITE_API_URL=http://127.0.0.1:8000` to hit `make dev-api`. No `web/` edits. Do not merge unless a driver says so. No new dependency.
+
+---
+
+### [A-05] Model path — Agent A2 — 2026-10-24 20:40
+- **Status:** done (implementation and gate). **Live-path p95: PENDING Driver B** (no GPU here; fakes only).
+- **Gate:** `scripts/gate.sh a` → PASS (`RECOMMENDER=rules`)
+
+```
+── ruff
+All checks passed!
+
+── pytest
+94 passed, 1 warning in 12.26s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `recommenders/**`, `engine/prompt.py`, `api/main.py` (`/health` + recommender wiring in `render`/`create_app` only), `tests/recommenders/**`, `.importlinter` (`recommenders` is now a root package), `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Default local model ID is `Meta-Llama-3.1-8B-Instruct-Q4_K_M` when `RECOMMENDER` is `local`/`local_llm`/`hosted`/`hosted_llm` (DECISIONS Hour 6; §15 `MODEL_ID`). The 3B (`Llama-3.2-3B-Instruct-Q4_K_M`) is the operational fallback: restart `llama-server` on that GGUF and set `MODEL_ID`.
+  - `RECOMMENDER=rules` (default) does not construct a model client and does not append `RecommendationIssued`, so T1–T7 replay and goldens stay identical (§7.3 floor).
+  - Prompt builder is an allowlist (`engine/prompt.py`, §8.1 / §10.2). Notes, `amount_band`, and `account_ref` are never copied in. Adding a SessionState field does not add it to the prompt.
+  - Validator is shared (`recommenders.validate`); LocalLLM sends a per-request GBNF (§8.2); HostedLLM does not assume a grammar. Timeout is 1500 ms (§8.3). Strict mode forces `signals_asserted=[]` and skips the call outside probe or after any stop (§7.4, §9).
+  - `/health` adds `p50`, `p95`, `rejection_count` and keeps `last_p95` as an alias of `p95` (card step 7; §16). Agreement is model-output vs `rule_choice`; timeouts are fallbacks, not agreement samples.
+  - No new dependency.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Boot: `RECOMMENDER=rules|local_llm|hosted_llm`, `MODEL_ID`, `MODEL_TIMEOUT_MS=1500`, `STRICT_MODE=true`, `LLAMA_SERVER=http://127.0.0.1:8080`, `HOSTED_LLM_URL`, `HOSTED_LLM_API_KEY`.
+  - Inject a fake in tests: `create_app(..., recommender="local_llm", recommender_impl=fake, metrics=Metrics())`.
+  - This environment did not run a real model. Do not treat `/health` p50/p95 from the unit tests as the live number.
+
+  **PENDING Driver B — live-path p95 (not `scripts/bench_llm.py`).** On the GPU laptop, start `llama-server` with the 8B Q4_K_M (same flags as A-03: `-ngl 99 -c 4096 -np 1`), then:
+
+```
+scripts/with-gpu env RECOMMENDER=local_llm \
+  MODEL_ID=Meta-Llama-3.1-8B-Instruct-Q4_K_M \
+  MODEL_TIMEOUT_MS=1500 \
+  LLAMA_SERVER=http://127.0.0.1:8080 \
+  python3 - <<'PY'
+import json
+from pathlib import Path
+from fastapi.testclient import TestClient
+from api.main import create_app
+
+app = create_app(
+    db_path=Path("/tmp/teller-live-8b.sqlite"),
+    recommender="local_llm",
+    model_id="Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+)
+steps = json.loads(Path("contract/fixtures/T2.json").read_text())["steps"]
+with TestClient(app) as client:
+    session_id = None
+    for step in steps:
+        endpoint, body = step["endpoint"], step["request"]
+        if endpoint == "POST /sessions":
+            session_id = client.post("/sessions", json=body).json()["session_id"]
+        elif endpoint.endswith("/context"):
+            client.post(f"/sessions/{session_id}/context", json=body)
+        else:
+            client.post(f"/sessions/{session_id}/answers", json=body)
+    print(json.dumps(client.get("/health").json(), indent=2))
+PY
+```
+
+  Paste `p50` / `p95` from that `/health` into a new HANDOFF line. That is the live-path number the card wants.
+
+  **PENDING — 8B vs 3B quality (DECISIONS Hour 6).** Driver B must not read `eval/scenarios/dev/` (ROSTER §2). Repeat the block above after switching `llama-server` to `Llama-3.2-3B-Instruct-Q4_K_M` and `MODEL_ID=Llama-3.2-3B-Instruct-Q4_K_M` (use `/tmp/teller-live-3b.sqlite`). Compare T2 probe `question.id` values and `agreement_rate`. Driver A can run the same API against A3's `eval/scenarios/dev` once those exist. Prefer 8B if it picks a different valid probe that better splits the leading pattern; otherwise 8B stays the default and 3B stays the VRAM/fallback.
+
+---
+
+### [merge] origin/main into a2-a05-model-path — Agent A2 — 2026-10-24 20:45
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+94 passed, 1 warning in 12.82s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** merge commit plus this entry. Conflicts: `docs/HANDOFF.md` only (kept main's `[A2] make dev-web` and the branch's `[A-05] Model path`, newest last). Auto-merged from main: `Makefile` (`make dev-web`), `docs/A_TO_B.md`, `docs/B_TO_A.md`, `docs/CROSS_LANE.md`, `docs/QUESTIONS.md`.
+- **Decisions I made, and the section that justified each:** none. Driver instruction: keep both HANDOFF sides; keep main's `make dev-web`; take main for contract/reference_impl/goldens/fixtures/web/CROSS_LANE/QUESTIONS/A_TO_B/B_TO_A; keep the branch for recommenders/, engine/prompt.py, api health/recommender wiring, tests/recommenders. Did not change A-05 logic.
+- **Questions logged:** none
+- **The next agent needs to know:** Merge of `origin/main` (`d3919f2`) into `cursor/a2-a05-model-path-9aea` (PR #30). No new PR. Live-path p95 and 8B vs 3B quality are still PENDING Driver B (see the `[A-05]` entry). No new dependency.
+
+---
+
+### [B-04] Talk tracks, undo, practice mode — Agent B — 2026-10-24 20:49
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  14 passed (14)
+       Tests  45 passed (45)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/screens/InterviewScreen.tsx`, `web/src/screens/HomeScreen.tsx`, `web/src/App.tsx`, `web/src/teller.tsx`, `web/mock/replay.ts`, `web/src/talkTrack.test.tsx`, `web/src/undo.test.tsx`, `web/src/modes.test.tsx`, `web/src/home.test.tsx`, `web/src/interview.test.tsx`, `web/src/routes.test.tsx`, `web/src/mockReplay.test.ts`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - The talk-track panel shows the stage lines from `GET /library` for `talk_track.stage`. Pattern lines from the library track named by `talk_track.pattern` are added only when `risk.pattern.kind` is `pattern`. Avoid phrases are that stage track's `avoid` list (§7.1, §11.2; tc-20: copy comes from the library). A look-alike on screen does not add pattern lines. The panel does not recompute the score or which pattern is displayed.
+  - Undo is `POST /sessions/{id}/undo` with no body. The screen renders the `SessionState` from that response, including a body that is not the previous fixture step. Posted context chips still drop one client batch after a successful undo, because `SessionState` does not include them and removal is only through undo (Q-010, §11.1).
+  - Practice mode shows a scenario picker. The choices are contract fixture cases T1–T7, with the fixture labels. Starting one posts the fixture open body plus `scenario_id`. Live mode hides the picker and posts `{mode: "live", amount_band}` with no `scenario_id`. The shell shows `LIVE — no scenario loaded` on every route while `session.mode` is `live` (§12, §14.1).
+  - There is no `GET /scenarios` (Q-006). Empty `VITE_API_URL` uses the mock, which replays the chosen fixture. A live open with no case replays T1's steps with `mode` set to `live`, because the fixtures have no live trace (Q-009). A's API stores `scenario_id` and does not replay the fixture; the teller still taps chips.
+  - Settings stays a UI page with no `/settings` call. The health screen does not write `/health` (CHANGE-001; M-002). `make dev-web` was already on main and was not edited.
+- **Questions logged:** none
+- **The next agent needs to know:** This branch is from current `main` (`d3919f2`), not `b-01-scaffold`. Do not push to `b-01-scaffold`. Screenshots of the talk track, undo, and the live badge were skipped (driver). Those checks are `web/src/talkTrack.test.tsx`, `web/src/undo.test.tsx`, and `web/src/modes.test.tsx`. A TestClient call against `api/main.py` (`RECOMMENDER=rules`) opened a live session, rejected `scenario_id` on live with 409 `scenario_on_live_session`, opened practice with `scenario_id` `T2`, and undo restored the opened score and question. Talk-track lines and avoid phrases matched `GET /library`, and those five tracks match `contract/library.json`. No UI patch. `docs/CROSS_LANE.md` has no open A→B items. No new X-id. M-002 items left for another card: PR #32 (`docs/B_TO_A.md` BA-001), PR #20, and PR #15. No new dependency.
+
+---
+
+### [A-05] Live-path GPU results — Agent B (Driver B) — 2026-10-24 20:49
+- **Status:** done (measurement posted). X-003 open for Driver A.
+- **Gate:** not re-run. Live-path `/health` on Driver B's laptop, main @6890808, not `scripts/bench_llm.py`.
+- **Changed:** `docs/B_TO_A.md` (B-006), `docs/HANDOFF.md` (this entry), `docs/CROSS_LANE.md` (X-003)
+- **Decisions I made, and the section that justified each:** none. Numbers below are the laptop run. No weight or threshold change.
+- **Questions logged:** X-003
+- **The next agent needs to know:** PR #20 (Driver B co-sign of 8B pick) merged 4:47 PM ET. Ran on Driver B laptop (RTX 5070 8GB), main @6890808, llama-server -ngl 99 -c 4096 -np 1, RECOMMENDER=local_llm, MODEL_TIMEOUT_MS=1500, T1-T7 each fixture fresh app+sqlite, /health stats (few calls per fixture, small sample). rejection_count 0 everywhere.
+
+Live-path p50/p95 ms:
+
+| Run | T2 | T1 | T3 | T4 | T5 | T6 | T7 | fallback |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 8B run1 | 1504/1504 | 1175.5/1477.45 | 582/604.5 | 566/566 | 528/528 | 626/658.4 | 686.5/706.75 | T2 1.0, T1 0.5, else 0 |
+| 8B run2 warm | 618/618 | 610/644.2 | 607.5/670.05 | 792/792 | 614/614 | 592/630.7 | 649/697.6 | 0 |
+| 3B run1 | 295/295 | 201/221.7 | 215.5/230.35 | 189/189 | 210/210 | 215.5/224.05 | 208/216.1 | 0 |
+| 3B run2 | 246/246 | 207.5/219.65 | 220.5/231.75 | 204/204 | 204/204 | 225/234 | 234.5/256.55 | 0 |
+
+VRAM: 8B 7108 MiB, 3B 3781 MiB.
+
+Questions: T2 identical both models (purpose.open, purpose.open, recipient.account_details, secrecy.told_not_to_tell, alternative.cashiers_check). Only model difference: T3 step 4, 8B q.homerepair.estimate vs 3B q.secrecy.told_not_to_tell (stable across runs). agreement_rate mostly 1.0; T1 0.5 both models; T3 0.5 for 8B.
+
+X-003 (A to check): (1) 8B cold start: first request after server start timed out at 1500 ms and fell back (T2 p95 1504 ms, >1.5 s, fallback 1.0); warm runs fine. Suggest a warm-up call at startup. (2) Windows: `engine` package not included in package config (needed PYTHONPATH); api/main.py creates the app at import with default TELLER_DB=/tmp/teller-copilot.sqlite which fails on Windows; scripts/with-gpu is bash/flock-only so it was skipped on Windows (no other GPU users).
+
+---
+
+### [A-05] live p95 8B 742 ms, 3B 342 ms (pooled, warm); no fallbacks; cold-start first 8B call timed out once. — Agent B (Driver B) — 2026-10-24 20:51
+- **Status:** done (second run posted). Per-fixture table above is unchanged. X-003 still open.
+- **Gate:** not re-run. Same laptop, main @6890808, warm server.
+- **Changed:** `docs/B_TO_A.md` (B-006 addendum), `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:** none. No weight or threshold change.
+- **Questions logged:** none new (X-003 already logged)
+- **The next agent needs to know:** Second independent run, all T1-T7 calls pooled, n=11 model calls per model. 8B p50 663, p95 742, p99 760, min/max 622/765; 3B p50 255, p95 342, p99 364, min/max 233/370; fallback 0.0 and rejections 0 for both; agreement with rules 9/11 for both; T2 /health p50/p95 8B 691/691, 3B 278/278. In this run the models split on T3 (8B estimate vs 3B secrecy.told_not_to_tell) and T6 (8B secrecy then cashiers_check vs 3B cashiers_check twice). Live p95 is ~260 ms above A-03's bench for 8B (483) and ~46 ms above for 3B (296).
+
+---
+
+### [A-06] Evaluation hours 6–8 (30 scenarios + pre-register) — Agent A3 — 2026-10-24 20:55
+- **Status:** partial (hours 6–8 slice done; hours 8–12 still own the harness and arms)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+115 passed, 1 warning in 12.24s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `eval/scenarios/dev/` (15 new YAML); `tests/eval/test_dev_scenarios.py`; `eval/PREREGISTRATION.md` (solo freeze commit `cd21c1d`); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Added 7 coached + 8 legitimate so the set is 15/15 (ROSTER §5.2, architecture §13.1). New files are seeded from the remaining §5.3 purposes and public FTC/FBI/AARP guidance, not from held-out or live weights.
+  - Cover story still means the stated purpose’s usual pattern ≠ `pattern_truth` (T3, §13.1), including `purpose.vehicle` / `purpose.gift_or_travel` which route to no pattern. Mix on disk: 6 covers, 5 perfectly coached, 6 innocent red-flag, 5 vague-but-genuine.
+  - Froze arm A’s prior threshold at 3 in a solo commit with no scores and no `eval/results/` (card A-06 step 1, §13.2 / §13.4). A-07 may retune it with the weights; that later figure is labelled tuned.
+  - Empty `tags: []` on scenarios that are neither cover, perfect, red-flag, nor vague. No age, appearance, or name fields.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Dev set is 30. `python3 -m eval.validate` prints `30 scenario(s) valid` and no scores. Do not write `eval/scenarios/heldout/`.
+  - **Hours 8–12 (A3):** `eval/run.py`, arms A and B, determinism tests (same scenario twice; arm B on T1–T7 reproduces goldens). Do not run arm C until A2’s model path is ready (ROSTER hour 12).
+  - Pre-registration freeze is `cd21c1d` (`docs(eval): freeze PREREGISTRATION.md before any run`). That commit is the file alone. Do not commit results into it.
+  - Driver A reviews `eval/` PRs. No new dependency.
+
+---
+
+### [X-003] Windows live-path fixes — Agent A2 — 2026-10-24 16:57
+- **Status:** done (awaiting Driver B confirm on Windows)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+119 passed, 1 warning in 12.27s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `pyproject.toml` (`engine*` in setuptools find); `api/main.py` (`default_db_path()` via `tempfile.gettempdir()`, `TELLER_DB` still wins); `scripts/with-gpu` (Windows usage comment; bash/`flock` unchanged); `tests/api/test_x003_windows.py`; `ARCHITECTURE.md` (new test file); `docs/A_TO_B.md` (M-007); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Default DB uses `tempfile.gettempdir()` so import-time `create_app()` works on Windows without `/tmp` (X-003; architecture §15 localhost deploy). `TELLER_DB` override is identical.
+  - Documented the Windows `with-gpu` equivalent instead of adding a wrapper (ROSTER §5.3 flock stays the Unix lock).
+  - Did not edit `reference_impl.py`, goldens, `contract/`, `docs/CROSS_LANE.md`, or `docs/B_TO_A.md`.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR https://github.com/SirBastion2/tellr/pull/43. Do not merge until B confirms on Windows and replies in `docs/B_TO_A.md`.
+  - Live path on Windows: `pip install -e .` then `python -m uvicorn api.main:app --host 127.0.0.1 --port 8000`. No `PYTHONPATH`. Default DB is `%TEMP%\teller-copilot.sqlite` (or `$TMP`/`$TEMP` on Unix if set; else `/tmp/teller-copilot.sqlite`).
+  - GPU jobs on Windows: run the inner command without `scripts/with-gpu`, one at a time. WSL/Git Bash still use `scripts/with-gpu`.
+  - No new dependency.
+
+---
+
+### [X-003] 8B startup warm-up — Agent A2 — 2026-10-24 21:15
+- **Status:** done (implementation + mocked-server tests). Live GPU re-check PENDING Driver B.
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+121 passed, 1 warning in 18.20s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `recommenders/local_llm.py` (`LocalLLM.warmup`); `api/main.py` (lifespan warm-up when `local`/`local_llm`); `tests/recommenders/test_warmup.py`; `ARCHITECTURE.md` (added `test_warmup.py`); `docs/A_TO_B.md` (M-006); `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Bounded wait in FastAPI lifespan, not a fire-and-forget thread, so B's TestClient live-path script is already warm when the first probe runs (L1b / §8.3; X-003).
+  - Warm-up timeout is `MODEL_WARMUP_TIMEOUT_MS` default 15000, not the live 1500 ms, because the cold hit is the thing that exceeded 1500 ms. Live path still uses 1500 ms.
+  - Warm-up uses the same `/completion` shape and the §8.1 stable prefix (library vocab) with `cache_prompt`, and is never passed to `Metrics.record_attempt` (§16).
+  - Connection errors are swallowed so boot works with no llama-server (L2). Injected fakes and `RECOMMENDER=rules` skip warm-up.
+  - No contract, schema, golden, or `reference_impl.py` change. No new dependency.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/44. Driver B: start llama-server (8B Q4_K_M), then the first live-path request after that start (same `scripts/with-gpu` block in the [A-05] entry). Reply in `docs/B_TO_A.md` or the M-006 **B reply** line. Do not merge until that check. `docs/CROSS_LANE.md` was not edited.
 
 ### [A-06] Eval harness hours 8–12 (arms A/B/C, fake model) — Agent A3 — 2026-10-24 21:07
 - **Status:** done (hours 8–12). Hours 12–15 still own the GPU arm-C run and CP3 `report.md`.
@@ -383,10 +938,10 @@ GATE PASS (a)
   - Arms B and C share the live fold: `engine.project` / `candidates` / `rule_choice` in-process, no HTTP, no database (§3, §13). Arm A is the static sheet with the §13.2 polarity map and prior threshold 3 (High at/above, Clear below, no Caution).
   - Arm C uses `FakeModel` (first candidate, or a fabricated ID for the validator test). Temperature 0, batch size 1, prefetch off, timeout off (§13.4). The model call is candidate IDs only — no notes or free text. Real `LocalLLM` is hours 12–15 under `scripts/with-gpu`.
   - `eval/run.py` refuses any path whose parts include `heldout`. It does not create `eval/scenarios/heldout/` and does not write `eval/results/` from tests.
-  - Did not edit `eval/PREREGISTRATION.md` (frozen; not on this branch of main). Did not edit `docs/architecture.md`: it is an oracle (`scripts/check_contract.py`); extra modules implement the §15 `arms/` + `run.py` tree.
+  - Did not edit `eval/PREREGISTRATION.md` (frozen). Did not edit `docs/architecture.md`: it is an oracle (`scripts/check_contract.py`); extra modules implement the §15 `arms/` + `run.py` tree.
 - **Questions logged:** none
 - **The next agent needs to know:**
-  - **Hours 6–8 (still open on the other A-06 branch):** 30 dev scenarios and the solo `PREREGISTRATION.md` commit. This PR does not add scenarios. `python -m eval.run --scenarios eval/scenarios/dev --out eval/results/$(git rev-parse HEAD) --arms A,B,C --model fake` once those YAML exist.
+  - Hours 6–8 are on main (#42): 30 dev scenarios and frozen `PREREGISTRATION.md`. Run: `python -m eval.run --scenarios eval/scenarios/dev --out eval/results/$(git rev-parse HEAD) --arms A,B,C --model fake`.
   - **Hours 12–15:** swap FakeModel for the A-05 client, run under `scripts/with-gpu`, write the first `report.md`. **CP3:** stop for the drivers.
   - Arm B on T1–T7 matches `reference_impl.run_case` (question IDs, chips, final raw level, score) using the shipped library.
   - No new dependency. Do not run held-out. Driver A reviews `eval/` PRs.

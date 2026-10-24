@@ -1,0 +1,15 @@
+id: scn.legitimate.t1_contractor_on_phone
+label: "Legitimate — contractor, on the phone, wants cash"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.home_repair
+context_chips: [chip.on_phone, chip.cash_only]
+answers:
+  purpose: specific
+  counterparty_identity: specific
+  written_estimate: specific
+  payment_flexibility: confirmed
+  secrecy: denied
+default: vague
+tags: [seed.T1, innocent_red_flag]
+source: "architecture §6.4 T1"

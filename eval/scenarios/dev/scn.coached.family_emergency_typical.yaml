@@ -1,0 +1,14 @@
+id: scn.coached.family_emergency_typical
+label: "Coached — family-emergency imposter, bail-or-wire story"
+population: coached
+pattern_truth: pat.family_emergency
+stated_purpose: purpose.family_help
+context_chips: [chip.on_phone, chip.rushed, chip.urgency_secrecy, chip.cash_only]
+answers:
+  purpose: relayed_by_caller
+  counterparty_identity: vague
+  secrecy: confirmed
+  payment_flexibility: denied
+default: vague
+tags: []
+source: "FTC family-member imposter scams; AARP grandparent-scam guidance"

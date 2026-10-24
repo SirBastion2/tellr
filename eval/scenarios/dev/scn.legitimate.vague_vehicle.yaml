@@ -1,0 +1,14 @@
+id: scn.legitimate.vague_vehicle
+label: "Legitimate — vehicle purchase, genuine but vague on the seller"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.vehicle
+context_chips: []
+answers:
+  purpose: specific
+  counterparty_identity: vague
+  payment_flexibility: confirmed
+  secrecy: denied
+default: vague
+tags: [vague_but_genuine]
+source: "architecture §18.16; FTC private-party vehicle guidance (under-specified seller)"

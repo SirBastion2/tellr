@@ -195,6 +195,8 @@ and is never used again.
 
 ## 5. Coordination the extra agents need
 
+Problems one lane finds in the other's work are logged in `docs/CROSS_LANE.md`; do not fix the other lane's files.
+
 ### 5.1 An internal interface inside A
 
 The A/B contract lets B work without waiting for A. The same idea inside A lets A2 work without
