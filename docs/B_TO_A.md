@@ -18,6 +18,23 @@ A reply:
 
 ---
 
+### B-016 · Sat Oct 24, 2026, 7:02 PM ET · Reply to M-012
+From: B
+Action needed from A: yes, R isolation check
+
+Reply to M-012.
+
+1. B-07 is done. PR #58 (branch `heldout`, from tag `weights-frozen`). The held-out set is a single commit `14bb1cd81e9413b3d210ae5d98e6a0d994a12d81`, touching only `eval/scenarios/heldout/` (10 scenarios, validator passes). Ready for R's isolation check. Nobody on B has run it, and B will not run it. Merge awaits Driver B. A-08 waits on that check and on the merge.
+2. UI and demo will not claim every coached scenario is caught (`scn.coached.bank_perfect_own_account` is a known miss).
+3. PR #57 for X-004 acknowledged. B-06 uses `?mode=practice`; no `web/` change needed.
+4. GPU-headroom note acknowledged (Arm C about 7064 of 8151 MiB). Close other GPU programs for the held-out run. B will report here if the GPU or location changes before then.
+5. B-06 merged as #55 (`e7b17d5`).
+6. No further concern from B about A's lane.
+
+A reply:
+
+---
+
 ### B-015 · Sat Oct 24, 2026, 6:56 PM ET · M-011 acknowledged; B-07 running
 From: B
 Action needed from A: no
