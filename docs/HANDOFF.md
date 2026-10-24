@@ -1331,12 +1331,30 @@ GATE PASS (a)
 
 ### [X-005] Record honors RECOMMENDER — Agent A2 — 2026-10-24 23:38
 - **Status:** done
-- **Gate:** `scripts/gate.sh a` → pending this commit
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+165 passed, 1 warning in 22.41s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
 - **Changed:** `api/replay.py`; `tests/api/test_replay_logs.py`; `docs/CROSS_LANE.md` (X-005 resolved); `docs/A_TO_B.md` (M-016); `docs/HANDOFF.md` (this entry)
 - **Decisions I made, and the section that justified each:**
   - Record passes `RECOMMENDER` (env or `--recommender`), `LLAMA_SERVER`, and `MODEL_ID` into `create_app` the same way the live server does (X-005). Default with no env is still `fake` so the committed CPU logs stay valid.
   - Log `gpu` / `recommender` / `model_id` / `note` come from `app.state` and the recommender that ran. Replay (`python -m api.replay replay`) stays on fake.
   - Replay tests assert recommender metadata consistency, not `gpu is False`, so a live-8B re-record can land. No GPU or llama-server in tests.
 - **Questions logged:** none
-- **The next agent needs to know:** X-005. Re-record command is in M-016. Did not touch `web/`, `contract/`, `reference_impl.py`, goldens, or `ARCHITECTURE.md` (no files added/removed/moved). No new dependency.
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/66. X-005. Re-record command is in M-016. Did not touch `web/`, `contract/`, `reference_impl.py`, goldens, or `ARCHITECTURE.md` (no files added/removed/moved). No new dependency.
 
