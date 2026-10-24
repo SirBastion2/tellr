@@ -49,6 +49,18 @@ export type OutcomeId = 'proceed' | 'slow_down' | 'escalate' | 'report'
 
 export type SuggestedOutcome = Exclude<OutcomeId, 'report'>
 
+export type HandoffProjection = {
+  session_id: string
+  mode: Mode
+  stated_purpose: string | null
+  risk: SessionState['risk']
+  suggested_outcome: SuggestedOutcome
+  answers: number
+  stop: SessionState['stop']
+  outcome: OutcomeId | null
+  actor: string | null
+}
+
 export type DebugView = {
   recommender: string
   latency_ms: number

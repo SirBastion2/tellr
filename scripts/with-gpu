@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec flock /tmp/tc-gpu.lock "$@"

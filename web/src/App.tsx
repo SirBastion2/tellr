@@ -1,4 +1,5 @@
-import { Link, BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { listCases } from '../mock/replay'
 import { LiveBadge } from './LiveBadge'
 import { SchemaBanner } from './SchemaBanner'
@@ -12,7 +13,7 @@ import { InterviewScreen } from './screens/InterviewScreen'
 import { OutcomeScreen } from './screens/OutcomeScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { TellerProvider, useTeller } from './teller'
-import type { AnswerPost, ErrorResponse, Library, SessionState } from './types'
+import type { AnswerPost, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import type { SchemaIssue } from './validate'
 
 export function AppShell({
@@ -25,6 +26,8 @@ export function AppShell({
   onPostContext,
   onAnswer,
   onUndo,
+  onSubmitOutcome,
+  handoff = null,
   httpStatus = null,
   error = null,
 }: {
@@ -37,6 +40,8 @@ export function AppShell({
   onPostContext?: (chips: string[]) => void
   onAnswer?: (answer: AnswerPost) => void
   onUndo?: () => void
+  onSubmitOutcome?: (body: { outcome: OutcomeId; actor: string }) => void
+  handoff?: HandoffProjection | null
   httpStatus?: number | null
   error?: ErrorResponse | null
 }) {
@@ -90,8 +95,14 @@ export function AppShell({
             />
           }
         />
-        <Route path="/sessions/:id/outcome" element={<OutcomeScreen session={session} />} />
-        <Route path="/sessions/:id/handoff" element={<HandoffScreen />} />
+        <Route
+          path="/sessions/:id/outcome"
+          element={<OutcomeScreen session={session} onSubmit={onSubmitOutcome} />}
+        />
+        <Route
+          path="/sessions/:id/handoff"
+          element={<HandoffScreen library={library} projection={handoff} />}
+        />
         <Route
           path="/sessions/:id"
           element={<InterviewScreen library={library} session={session} onAnswer={onAnswer} />}
@@ -106,6 +117,15 @@ export function AppShell({
 function ConnectedShell() {
   const teller = useTeller()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { loadHandoff } = teller
+  const sessionId = teller.session?.session_id ?? null
+  useEffect(() => {
+    if (!sessionId || !location.pathname.endsWith('/handoff')) {
+      return
+    }
+    void loadHandoff()
+  }, [location.pathname, sessionId, loadHandoff])
   return (
     <AppShell
       library={teller.library}
@@ -130,6 +150,10 @@ function ConnectedShell() {
       }}
       onUndo={() => {
         void teller.undo()
+      }}
+      handoff={teller.handoff}
+      onSubmitOutcome={(body) => {
+        void teller.postOutcome(body.outcome, body.actor)
       }}
     />
   )
