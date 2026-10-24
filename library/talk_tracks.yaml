@@ -1,0 +1,27 @@
+talk_tracks:
+  - id: tt.proceed
+    lines:
+      - Thanks for walking me through that.
+    avoid: []
+  - id: tt.slow_down
+    lines:
+      - We see a lot of calls like this lately. Mind if I ask a couple of quick questions?
+      - A cashier's check made out to them is safer than carrying cash.
+      - Would you call them back on a number from your own records before we finish?
+    avoid:
+      - You're being scammed.
+      - Who told you to say that?
+  - id: tt.escalate
+    lines:
+      - I'd like my manager to take a quick look. It's routine for larger cash withdrawals.
+    avoid:
+      - Anything accusatory
+      - Anything the caller warned them the bank would say
+  - id: tt.bank_impersonation
+    lines:
+      - Your bank will never ask you to move money to keep it safe.
+    avoid: []
+  - id: tt.home_repair
+    lines:
+      - Reputable contractors take checks and give written estimates.
+    avoid: []

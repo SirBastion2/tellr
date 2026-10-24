@@ -1,0 +1,114 @@
+# Live weights. Golden tests load tests/golden/reference_weights.yaml, never this file.
+# Starting values from reference_impl.py / architecture §6.2. Tune only in A-07.
+signals:
+  - id: sig.third_party_call
+    name: On the phone during the visit
+    family: third_party
+    weight: 14
+    requires_interview: false
+    rationale: Scammers often stay on the line to coach the customer through the withdrawal.
+
+  - id: sig.someone_directing
+    name: Someone else directing them
+    family: third_party
+    weight: 16
+    requires_interview: false
+    rationale: Another person steering the transaction can mean the customer isn't acting freely.
+
+  - id: sig.cash_insistence
+    name: Insists on cash
+    family: payment_channel
+    weight: 12
+    requires_interview: false
+    rationale: Scams favour cash because it can't be traced or reversed.
+
+  - id: sig.rushed
+    name: Seems rushed
+    family: urgency
+    weight: 6
+    requires_interview: false
+    rationale: Urgency is a pressure tactic, though it's common in ordinary errands too.
+
+  - id: sig.urgency_secrecy_mentioned
+    name: Mentioned urgency or secrecy
+    family: secrecy
+    weight: 18
+    requires_interview: false
+    rationale: Being told to hurry or keep quiet is a hallmark of coaching.
+
+  - id: sig.unusual_for_customer
+    name: Unusual for this customer
+    family: story_quality
+    weight: 8
+    requires_interview: false
+    rationale: The teller's knowledge of the customer is a real but weak signal.
+
+  - id: sig.answer_relayed
+    name: Answer relayed by caller
+    family: third_party
+    weight: 18
+    requires_interview: true
+    rationale: The customer repeated what someone on the phone told them to say.
+
+  - id: sig.secrecy_bank
+    name: Told not to discuss with the bank
+    family: secrecy
+    weight: 22
+    requires_interview: true
+    rationale: Scammers warn victims the bank will try to stop them. Being told to keep it quiet is one of the strongest single indicators.
+
+  - id: sig.specificity_gap
+    name: Missing details
+    family: story_quality
+    weight: 18
+    requires_interview: true
+    rationale: A plausible purpose with none of the details a real one would have.
+
+  - id: sig.story_drift
+    name: Story changed
+    family: story_quality
+    weight: 12
+    requires_interview: true
+    rationale: Answers that shift between questions suggest a rehearsed story under strain.
+
+  - id: sig.cash_refusal_unexplained
+    name: Turned down a safer option
+    family: payment_channel
+    weight: 14
+    requires_interview: true
+    rationale: Legitimate payees take checks. Refusing one without a reason is a coaching signature.
+
+  - id: mit.purpose_specific
+    name: Clear purpose
+    family: mitigating
+    weight: -10
+    requires_interview: true
+    rationale: The customer described the purpose in their own specific terms.
+
+  - id: mit.named_counterparty
+    name: Named the payee
+    family: mitigating
+    weight: -15
+    requires_interview: true
+    rationale: A real job or purchase has a named person or business behind it.
+
+  - id: mit.written_estimate
+    name: Written estimate exists
+    family: mitigating
+    weight: -15
+    requires_interview: true
+    rationale: A real contract job normally has paperwork the customer can describe.
+
+  - id: mit.own_named_account
+    name: Account in their own name
+    family: mitigating
+    weight: -15
+    requires_interview: true
+    rationale: Money moving between the customer's own accounts at a bank they chose.
+
+  - id: mit.accepts_alternative
+    name: Accepted a cashier's check
+    family: mitigating
+    weight: -20
+    requires_interview: true
+    rationale: Willingness to use a traceable payment is strong evidence the payee is real.
