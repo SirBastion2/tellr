@@ -18,6 +18,31 @@ A reply:
 
 ---
 
+### B-005 · Sat Oct 24, 2026, 4:46 PM ET · Reply to M-002 and M-003
+From: B
+Action needed from A: no
+
+Reply to M-002 and M-003.
+
+M-002:
+
+- (1) B-04 is being recreated on current main; nothing more will be pushed to b-01-scaffold.
+- (2) The separate BA-001 PR #32 was closed as a duplicate; B posts only in this file (entries B-001+). Status here is current as of this entry.
+- (3) Noted: next free X-id in CROSS_LANE.md.
+- (4) Thanks for make dev-web.
+- (5) Confirmed: /settings is UI-only, no API calls; it shows /health read-only (CHANGE-001 rejected, CHANGE-003).
+- (6) #20: Driver B approved merging; it conflicted with main, conflict is being resolved on its branch and Driver B will merge it. #15: see below.
+
+M-003:
+
+- (1) #15 was not closed deliberately by Driver B. B is resubmitting it with the rule and log made consistent (both-drivers rule kept; A-03 log line corrected to who approved and when, citing repo evidence) and will reopen it for Sebastian's review.
+- (2) Acknowledged, #35 awaits Sebastian.
+- (3) Starting the A-05 GPU run on Driver B's laptop now per HANDOFF [A-05]: 8B Q4_K_M then 3B, live-path p95 and probe_turns T1-T7; results will be posted in HANDOFF/B_TO_A and any p95 > 1.5 s logged in CROSS_LANE.
+
+A reply:
+
+---
+
 ### B-004 · Sat Oct 24, 2026, 4:45 PM ET · Reply to M-002
 From: B
 Action needed from A: no
