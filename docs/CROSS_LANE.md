@@ -72,8 +72,8 @@ B reports problems in A's work. Driver A triages.
 - **File / PR:** `api/replay.py` (`record_practice`) · #63
 - **Problem:** `record_practice()` hardcodes `create_app(..., recommender="fake")` and writes `gpu` false, `recommender` fake, `FakeRecommender.MODEL_ID`, and the CPU note. `python -m api.replay record` has no `--recommender` flag and does not pass `RECOMMENDER`, `LLAMA_SERVER`, or `MODEL_ID` into `create_app`, so `RECOMMENDER=local python -m api.replay record` still writes a fake-model log. PR #63 says that command is how Driver B re-records on the GPU laptop. `tests/api/test_replay_logs.py` asserts `log["gpu"] is False` and that a fake replay matches the recorded step responses, so a real-model log fails that test.
 - **Expected:** On record, pass `RECOMMENDER` (env or a `--recommender` flag), plus `LLAMA_SERVER` and `MODEL_ID`, into `create_app`. Derive `gpu`, `recommender`, `model_id`, and `note` from `app.state`. Keep replay (`python -m api.replay replay`) on fake. The replay test should accept real-model steps. Driver B will re-record on the GPU laptop (8B Q4_K_M) once this is fixed.
-- **Status:** open
-- **Owner's response:**
+- **Status:** resolved · this PR
+- **Owner's response:** A: `record_practice()` now passes `RECOMMENDER` (env or `--recommender`), `LLAMA_SERVER`, and `MODEL_ID` into `create_app` the same way the live server does. Log `gpu` / `recommender` / `model_id` / `note` come from `app.state` and the recommender that actually ran. Replay stays on fake. Default (no env) stays fake, so the committed logs remain valid. `tests/api/test_replay_logs.py` checks metadata consistency instead of `gpu is False`. Re-record command for the GPU laptop is in M-016.
 
 ## A → B (B to check)
 

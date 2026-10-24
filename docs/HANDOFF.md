@@ -1327,3 +1327,16 @@ GATE PASS (a)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/63. Log paths: `api/replays/t1_legitimate.json`, `api/replays/t3_coached.json`. Re-record: `python -m api.replay record`. Check: `python -m api.replay replay`. No new dependency. Did not touch `contract/`, `reference_impl.py`, goldens, `web/`, or `eval/scenarios/heldout`. J-01 steps 2–5 (role-play, Devpost, §18.14 claims, `git tag demo`) are still open.
 
+---
+
+### [X-005] Record honors RECOMMENDER — Agent A2 — 2026-10-24 23:38
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → pending this commit
+- **Changed:** `api/replay.py`; `tests/api/test_replay_logs.py`; `docs/CROSS_LANE.md` (X-005 resolved); `docs/A_TO_B.md` (M-016); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Record passes `RECOMMENDER` (env or `--recommender`), `LLAMA_SERVER`, and `MODEL_ID` into `create_app` the same way the live server does (X-005). Default with no env is still `fake` so the committed CPU logs stay valid.
+  - Log `gpu` / `recommender` / `model_id` / `note` come from `app.state` and the recommender that ran. Replay (`python -m api.replay replay`) stays on fake.
+  - Replay tests assert recommender metadata consistency, not `gpu is False`, so a live-8B re-record can land. No GPU or llama-server in tests.
+- **Questions logged:** none
+- **The next agent needs to know:** X-005. Re-record command is in M-016. Did not touch `web/`, `contract/`, `reference_impl.py`, goldens, or `ARCHITECTURE.md` (no files added/removed/moved). No new dependency.
+
