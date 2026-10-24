@@ -92,3 +92,72 @@ def test_no_heldout_directory_created(repo_root: Path) -> None:
         return
     yamls = list(heldout.glob("*.yaml")) + list(heldout.glob("*.yml"))
     assert yamls == [], "A3 must not write eval/scenarios/heldout/"
+
+
+class _StubLocal:
+    """Stand-in for A-05 LocalLLM. Hours 12–15 tests; no GPU."""
+
+    def __init__(self, **kwargs: object) -> None:
+        self.kwargs = kwargs
+        self.warmed = 0
+        self.seen: list[tuple[object, list[object]]] = []
+
+    def warmup(self) -> bool:
+        self.warmed += 1
+        return True
+
+    def next(self, state: object, candidates: list[object]) -> object:
+        from recommenders.base import Recommendation
+
+        self.seen.append((state, list(candidates)))
+        ids = [item.id if hasattr(item, "id") else str(item) for item in candidates]
+        return Recommendation(next_question_id=ids[0], signals_asserted=[])
+
+
+def test_run_accepts_model_local(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Hours 12–15: --model local is the GPU arm-C path (A-05 LocalLLM)."""
+    stub = _StubLocal()
+
+    def _from_env(library: object) -> object:
+        from eval.arms.model import LocalModel
+
+        return LocalModel(library=library, client=stub)
+
+    monkeypatch.setattr("eval.arms.model.LocalModel.from_env", _from_env)
+    monkeypatch.setattr("eval.run.LocalModel.from_env", _from_env)
+    dev = _write_dev(tmp_path)
+    out = tmp_path / "results"
+    rc = main(
+        [
+            "--scenarios",
+            str(dev),
+            "--out",
+            str(out),
+            "--arms",
+            "C",
+            "--model",
+            "local",
+        ]
+    )
+    assert rc == 0
+    assert stub.warmed == 1
+    assert (out / "report.md").is_file()
+    assert (out / "results.json").is_file()
+
+
+def test_run_unknown_model_is_rejected(tmp_path: Path) -> None:
+    dev = _write_dev(tmp_path)
+    out = tmp_path / "results"
+    rc = main(
+        [
+            "--scenarios",
+            str(dev),
+            "--out",
+            str(out),
+            "--arms",
+            "C",
+            "--model",
+            "hosted",
+        ]
+    )
+    assert rc == 2

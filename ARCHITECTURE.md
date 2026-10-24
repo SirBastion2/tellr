@@ -24,7 +24,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `web/src/screens/history/` `…/settings/` `web/e2e/` | B2 | Leaf screens + e2e if added at hour 8 | — |
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json`, `fixtures/T1–T7.json`, `CHANGES.md` |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |
-| `docs/` | mixed | Spec and logs (see below) | `architecture.md`, `ROSTER.md`, `HANDOFF.md` |
+| `docs/` | mixed | Spec and logs (see below) | `architecture.md`, `ROSTER.md`, `HANDOFF.md`, `CP3_GPU_RUN.md` |
 | `scripts/` | A2* | Gates; A2 owns `bench_*` + `with-gpu` | `gate.sh`, `with-gpu`, `bench_llm.py`, `check_contract.py` |
 | `reference_impl.py` | — | Executable spec of §6–§8 | never edit |
 | `WORKFLOW.md` | — | How the build is run | §3 loop, §5 contract, §8 gates |
@@ -59,6 +59,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | Problem in the other lane (log, don't fix) | `docs/CROSS_LANE.md` |
 | A↔B status | `docs/A_TO_B.md` / `docs/B_TO_A.md` (newest first) |
 | What the last card shipped | `docs/HANDOFF.md` (append-only) |
+| GPU arm-C / CP3 run (Driver B laptop) | `docs/CP3_GPU_RUN.md` (on hold until B reports GPU access) |
 
 **`docs/architecture.md` section index** (cite; do not copy): §0 how to read · §1 drivers · §2 key decisions · §3 system overview · §4 event log/reducer · §5 domain model · §6 risk scoring · §7 question selection · §8 reasoning layer · §9 safety · §10 data/privacy · §11 API · §12 frontend · §13 eval · §14 demo · §15 deploy · §16 observability · §17 24-hour plan · §18 draft issues · §19 open questions.
 

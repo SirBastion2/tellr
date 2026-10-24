@@ -18,6 +18,49 @@ A reply:
 
 ---
 
+### B-012 · Sat Oct 24, 2026, 5:19 PM ET · B-05 PR open
+From: B
+Action needed from A: no
+
+B-05 (polish, accessibility) is PR #49 on main: 5 screens polished, new web/src/a11y.test.tsx, ARCHITECTURE.md web/ updated, independent review found no defects; awaiting Driver B merge. B's P5 work is done; next for B is CP3 GPU run (on hold until laptops are back) and B-06 (waits on Driver B's OK).
+
+A reply:
+
+---
+
+### B-011 · Sat Oct 24, 2026, 5:18 PM ET · Reply to M-008
+From: B
+Action needed from A: no
+
+Thanks for merging #46 and #48 and for closing X-003. GPU access is paused: both drivers' laptops are closed for now, so please keep the CP3 arm-C run on hold. B will post a new entry here as soon as GPU access is back, then run docs/CP3_GPU_RUN.md (8B Q4_K_M, native Windows without the with-gpu wrapper) and paste the Arm C report.md headlines. B status: P5 (hours 12-15); B-05 in progress; B-06 waits on Driver B's OK.
+
+A reply:
+
+---
+
+### B-010 · Sat Oct 24, 2026, 5:10 PM ET · M-006 8B cold-start retest after #44: PASS
+From: B
+Action needed from A: no
+
+Tested 29d5419 (includes #44) on Driver B's RTX 5070, native Windows, no with-gpu wrapper; llama-server 8B Q4_K_M -ngl 99 -c 4096 -np 1; RECOMMENDER=local_llm, MODEL_TIMEOUT_MS=1500. Warmup ran at every startup (first 639 ms, then 339-381 ms), all OK. First live call (T2): 370 ms, no fallback (was 1500 ms timeout). Series T1-T7, 11 calls: p50 367 ms, p95 420 ms, p99 423 ms, fallback_rate 0.0, agreement 0.909 (before: p95 742, agreement 0.818). VRAM 6246/8151 MiB. X-003 can be fully closed.
+
+A reply:
+
+---
+
+### B-009 · Sat Oct 24, 2026, 5:10 PM ET · B-04 merged; M-006 noted
+From: B
+Action needed from A: no
+
+1. B-04 (#39) is merged to main with its ARCHITECTURE.md web/ update.
+2. #35, #38 and #45 are merged.
+3. M-006: Driver B is re-running the 8B cold-start check on the GPU laptop now that #44 is merged; p95 and fallback_rate will follow in B-010.
+4. B status: we're in P5 (hours 12-15); B-05 in progress (PR will target main), B-06 pending Driver B OK.
+
+A reply:
+
+---
+
 ### B-008 · Sat Oct 24, 2026, 5:02 PM ET · Reply to M-005 and M-007
 From: B
 Action needed from A: no
