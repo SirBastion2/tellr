@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { HandoffScreen } from './screens/HandoffScreen'
 import { TellerProvider, useTeller } from './teller'
 import type { HandoffProjection, Library, SessionState } from './types'
-import { handoffShapeIssues } from './validate'
+import { validateHandoff } from './validate'
 
 const library = libraryJson as Library
 
@@ -23,6 +23,8 @@ function projectionFromFixture(session: SessionState): HandoffProjection {
     suggested_outcome: session.suggested_outcome,
     answers: session.answers,
     stop: session.stop,
+    outcome: null,
+    actor: null,
   }
 }
 
@@ -49,6 +51,10 @@ describe('Handoff screen', () => {
     expect(screen.getByTestId('handoff-purpose').textContent).toBe(purpose?.label)
     expect(screen.queryByTestId('handoff-stop')).toBeNull()
     expect(screen.queryByTestId('question-text')).toBeNull()
+    expect(screen.getByTestId('handoff-outcome').textContent).toBe('Outcome: not recorded yet')
+    expect(screen.getByTestId('handoff-outcome').getAttribute('data-recorded')).toBe('false')
+    expect(screen.getByTestId('handoff-actor').textContent).toBe('Actor: not recorded yet')
+    expect(screen.getByTestId('handoff-actor').getAttribute('data-recorded')).toBe('false')
   })
 
   it('shows a hard stop reason from the fixture projection', () => {
@@ -71,11 +77,33 @@ describe('Handoff screen', () => {
     expect(screen.getByTestId('handoff-pattern').textContent).toBe('From the server')
     expect(screen.getByTestId('handoff-suggested').textContent).toBe('Escalate')
     expect(screen.getByTestId('handoff-suggested').getAttribute('data-outcome')).toBe('escalate')
+    expect(screen.getByTestId('handoff-outcome').textContent).toBe('Outcome: not recorded yet')
+    expect(screen.getByTestId('handoff-actor').textContent).toBe('Actor: not recorded yet')
   })
 
-  it('accepts the fixture projection shape', () => {
+  it('renders a recorded outcome and actor', () => {
     const session = asSession(t2.steps[3]?.response)
-    expect(handoffShapeIssues(projectionFromFixture(session))).toEqual([])
+    const projection = projectionFromFixture(session)
+    projection.outcome = 'report'
+    projection.actor = 'teller-1'
+    render(<HandoffScreen library={library} projection={projection} />)
+    expect(screen.getByTestId('handoff-outcome').textContent).toBe('Outcome: Report')
+    expect(screen.getByTestId('handoff-outcome').getAttribute('data-recorded')).toBe('true')
+    expect(screen.getByTestId('handoff-actor').textContent).toBe('Actor: teller-1')
+    expect(screen.getByTestId('handoff-actor').getAttribute('data-recorded')).toBe('true')
+  })
+
+  it('validates the fixture projection against handoff.schema.json', () => {
+    const session = asSession(t2.steps[3]?.response)
+    const projection = projectionFromFixture(session)
+    expect(validateHandoff(projection)).toEqual([])
+    const recorded = { ...projection, outcome: 'escalate', actor: 'teller-1' }
+    expect(validateHandoff(recorded)).toEqual([])
+    const missing: Record<string, unknown> = { ...projection }
+    delete missing.outcome
+    delete missing.actor
+    expect(validateHandoff(missing).length).toBeGreaterThan(0)
+    expect(validateHandoff({ ...projection, outcome: 'approve' }).length).toBeGreaterThan(0)
   })
 })
 
@@ -118,6 +146,7 @@ describe('handoff and outcome against the API', () => {
     const session = asSession(t2.steps[0]?.response)
     const projection = projectionFromFixture(asSession(t2.steps[3]?.response))
     projection.risk = { ...projection.risk, score: 58 }
+    let recorded: { outcome: HandoffProjection['outcome']; actor: string } | null = null
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -132,9 +161,11 @@ describe('handoff and outcome against the API', () => {
           return http(200, session)
         }
         if (method === 'GET' && url.endsWith('/handoff')) {
-          return http(200, projection)
+          return http(200, recorded ? { ...projection, outcome: recorded.outcome, actor: recorded.actor } : projection)
         }
         if (method === 'POST' && url.endsWith('/outcome')) {
+          const posted = JSON.parse(body ?? '{}') as { outcome: HandoffProjection['outcome']; actor: string }
+          recorded = posted
           return http(200, session)
         }
         return http(404, null)
@@ -158,6 +189,8 @@ describe('handoff and outcome against the API', () => {
       expect(screen.getByTestId('handoff-score').textContent).toBe('58')
     })
     expect(screen.getByTestId('handoff-pattern').textContent).toBe(projection.risk.pattern_label)
+    expect(screen.getByTestId('handoff-outcome').textContent).toBe('Outcome: not recorded yet')
+    expect(screen.getByTestId('handoff-actor').textContent).toBe('Actor: not recorded yet')
     const handoffCall = calls.find((call) => call.url.endsWith('/handoff'))
     expect(handoffCall?.method).toBe('GET')
     expect(handoffCall?.url).toBe(`http://api.test/sessions/${session.session_id}/handoff`)
@@ -169,5 +202,14 @@ describe('handoff and outcome against the API', () => {
     const outcomeCall = calls.find((call) => call.url.endsWith('/outcome'))
     expect(outcomeCall?.url).toBe(`http://api.test/sessions/${session.session_id}/outcome`)
     expect(JSON.parse(outcomeCall?.body ?? '{}')).toEqual({ outcome: 'escalate', actor: 'teller-1' })
+
+    fireEvent.click(screen.getByRole('button', { name: 'load' }))
+    await waitFor(() => {
+      expect(screen.getByTestId('handoff-outcome').textContent).toBe('Outcome: Escalate')
+    })
+    expect(screen.getByTestId('handoff-outcome').getAttribute('data-recorded')).toBe('true')
+    expect(screen.getByTestId('handoff-actor').textContent).toBe('Actor: teller-1')
+    expect(screen.getByTestId('handoff-actor').getAttribute('data-recorded')).toBe('true')
+    expect(validateHandoff(recorded ? { ...projection, outcome: recorded.outcome, actor: recorded.actor } : projection)).toEqual([])
   })
 })

@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { apiSend } from './api'
 import { openingRequest } from '../mock/replay'
 import type { AnswerPost, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
-import { handoffShapeIssues, validateError, validateLibrary, validateSessionState, type SchemaIssue } from './validate'
+import { validateError, validateHandoff, validateLibrary, validateSessionState, type SchemaIssue } from './validate'
 
 type TellerValue = {
   library: Library | null
@@ -158,7 +158,7 @@ export function TellerProvider({ children }: { children: ReactNode }) {
       setHandoff(null)
       return
     }
-    const found = handoffShapeIssues(result.body)
+    const found = validateHandoff(result.body)
     setIssues(found)
     setError(null)
     if (found.length > 0) {

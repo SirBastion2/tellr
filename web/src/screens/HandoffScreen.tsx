@@ -1,4 +1,4 @@
-import type { HandoffProjection, Level, Library, SuggestedOutcome } from '../types'
+import type { HandoffProjection, Level, Library, OutcomeId, SuggestedOutcome } from '../types'
 
 const LEVEL_TEXT: Record<Level, string> = {
   clear: 'Clear',
@@ -10,6 +10,13 @@ const SUGGESTED_TEXT: Record<SuggestedOutcome, string> = {
   proceed: 'Proceed',
   slow_down: 'Slow down',
   escalate: 'Escalate',
+}
+
+const OUTCOME_TEXT: Record<OutcomeId, string> = {
+  proceed: 'Proceed',
+  slow_down: 'Slow down',
+  escalate: 'Escalate',
+  report: 'Report',
 }
 
 function purposeLabel(library: Library | null, id: string): string {
@@ -64,6 +71,12 @@ export function HandoffScreen({
               {projection.stop.reason}
             </p>
           ) : null}
+          <p data-testid="handoff-outcome" data-recorded={projection.outcome === null ? 'false' : 'true'}>
+            Outcome: {projection.outcome === null ? 'not recorded yet' : OUTCOME_TEXT[projection.outcome]}
+          </p>
+          <p data-testid="handoff-actor" data-recorded={projection.actor === null ? 'false' : 'true'}>
+            Actor: {projection.actor === null ? 'not recorded yet' : projection.actor}
+          </p>
         </>
       ) : null}
     </section>

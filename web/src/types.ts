@@ -57,6 +57,8 @@ export type HandoffProjection = {
   suggested_outcome: SuggestedOutcome
   answers: number
   stop: SessionState['stop']
+  outcome: OutcomeId | null
+  actor: string | null
 }
 
 export type DebugView = {

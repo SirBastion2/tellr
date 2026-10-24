@@ -25,6 +25,8 @@ type Replay = {
   caseId: string
   index: number
   closed: boolean
+  outcome: string | null
+  actor: string | null
 }
 
 const OUTCOME_IDS = new Set(['proceed', 'slow_down', 'escalate', 'report'])
@@ -127,7 +129,13 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
     if (!same(body, first.request)) {
       warnings.push('payload differs from the fixture request')
     }
-    sessions.set(first.response.session_id, { caseId, index: 0, closed: false })
+    sessions.set(first.response.session_id, {
+      caseId,
+      index: 0,
+      closed: false,
+      outcome: null,
+      actor: null,
+    })
     return { status: 200, body: first.response, warnings }
   }
 
@@ -182,6 +190,8 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
         suggested_outcome: state.suggested_outcome,
         answers: state.answers,
         stop: state.stop,
+        outcome: replay.outcome,
+        actor: replay.actor,
       },
       warnings: [],
     }
@@ -202,6 +212,8 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
       return { status: 422, body: null, warnings: ['outcome is not one of the four'] }
     }
     replay.closed = true
+    replay.outcome = outcome
+    replay.actor = actor
     return {
       status: 200,
       body: currentBody(fixture, replay.index),

@@ -8,7 +8,7 @@ import t6 from '../../contract/fixtures/T6.json'
 import t7 from '../../contract/fixtures/T7.json'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockRequest, resetMock } from '../mock/replay'
-import { validateError, validateSessionState } from './validate'
+import { validateError, validateHandoff, validateSessionState } from './validate'
 
 const fixtures = [t1, t2, t3, t4, t5, t6, t7]
 
@@ -84,7 +84,10 @@ describe('fixture replay', () => {
           suggested_outcome: step.response.suggested_outcome,
           answers: step.response.answers,
           stop: step.response.stop,
+          outcome: null,
+          actor: null,
         })
+        expect(validateHandoff(handoff.body), `${fixture.case} ${index}`).toEqual([])
         const current = mockRequest('GET', `/sessions/${sessionId}`)
         expect(current.body, `${fixture.case} ${index}`).toEqual(step.response)
       }
@@ -108,6 +111,10 @@ describe('fixture replay', () => {
     })
     expect(recorded.status).toBe(200)
     expect(recorded.body).toEqual(t1.steps[0]?.response)
+    const handoff = mockRequest('GET', `/sessions/${sessionId}/handoff`)
+    expect(handoff.status).toBe(200)
+    expect(handoff.body).toMatchObject({ outcome: 'slow_down', actor: 'teller-1' })
+    expect(validateHandoff(handoff.body)).toEqual([])
     const closed = mockRequest('POST', `/sessions/${sessionId}/outcome`, {
       outcome: 'proceed',
       actor: 'teller-1',
