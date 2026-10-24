@@ -151,6 +151,7 @@ def list_sessions(
         sql += " WHERE mode = 'live'"
     elif mode == "practice":
         sql += " WHERE mode = 'practice'"
+    # mode == "all": no filter (live + practice). §11.1 excludes practice by default.
     sql += " ORDER BY opened_at DESC"
     rows = conn.execute(sql, params).fetchall()
     return [

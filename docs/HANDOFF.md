@@ -1130,7 +1130,6 @@ All eight A false flags had concerning-count 3. Threshold 4 clears them. The two
 
 **Miss left on the product:** `scn.coached.bank_perfect_own_account` (phone + cash + refused check + specific own-account; score 14). Look-alike `look.own_account_transfer` is not refuted (`secrecy` denied), so `mit.own_named_account` (−15) still counts. Payment family is already at cap 25, so raising cash weights does nothing. Catching it without a property break or a new false flag is possible, but only by overfitting that one development row. Left it.
 
-
 ---
 
 ### [B-06] History and read-only health — Agent B — 2026-10-24 22:53
@@ -1161,4 +1160,38 @@ GATE PASS (b)
   - Merged `origin/main`. Main's B-013 (CP3 on Driver B's GPU laptop, #51) is unchanged. This card's note is B-014. Thanks for the M-010 sign-off on CP3. B-05 is merged (#49).
 - **Questions logged:** X-004
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/55. Do not merge. No new dependency. Did not read `eval/scenarios/dev/` or `library/signals.yaml`. X-004: `GET /sessions?mode=all` returns live sessions only (`api/main.py` passes `None`, and `store/sqlite.py` treats `None` as live). Practice still loads with `?mode=practice`. `ARCHITECTURE.md` lists the added and removed web files under `web/` after B-06.
+
+---
+
+### [X-004] GET /sessions?mode=all returns live+practice — Agent A2 — 2026-10-24 23:00
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+155 passed, 1 warning in 22.92s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `api/main.py` (`list_sessions` forwards `mode`); `store/sqlite.py` (`mode=all` is no filter); `tests/api/test_sessions_list.py`; `ARCHITECTURE.md`; `docs/A_TO_B.md` (M-013); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Contract `api.md` / architecture §11.1: `GET /sessions` is filterable and excludes `practice` by default. That allows `mode=all` as live+practice without a contract change. Default and `mode=live` stay live-only; `mode=practice` unchanged.
+  - The API used to pass `mode=all` as `None`; the store treats `None` like live. Fix: pass `mode` through; store treats `"all"` as no WHERE clause.
+  - Did not edit `docs/CROSS_LANE.md` or `docs/B_TO_A.md` (X-004 lives in B's unmerged #55). M-013 tells B to point X-004's owner response here after #55 merges, and to renumber #55's reused B-013 to B-014.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Contract allowed the fix. No CHANGE protocol.
+  - #55 is B's to merge. B-07 / A-08 still B's held-out lane.
+
 

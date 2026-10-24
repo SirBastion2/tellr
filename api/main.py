@@ -423,7 +423,7 @@ def create_app(
     def list_sessions(
         mode: Literal["live", "practice", "all"] | None = Query(default=None),
     ) -> dict[str, list[dict[str, Any]]]:
-        sessions = store.list_sessions(conn, mode=None if mode == "all" else mode)
+        sessions = store.list_sessions(conn, mode=mode)
         return {"sessions": sessions}
 
     return app
