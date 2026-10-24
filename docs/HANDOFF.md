@@ -278,3 +278,75 @@ GATE PASS (a)
   - **Goldens** still load `tests/golden/reference_weights.yaml`, never `library/signals.yaml`.
   - Checkpoint CP2 is A2's: hour-8 integration against the real API. A1 is stopped here.
 
+### [A-04] API swap to the real engine — Agent A2 — 2026-10-24 19:52
+- **Status:** done (A2 API half). **Checkpoint CP2:** stop until the drivers confirm the hour-8 integration run.
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+83 passed, 1 warning in 10.20s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `api/main.py`, `tests/api/test_q009.py`, `tests/api/conftest.py`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Replaced `FakeEngine` with `from engine import project, candidates, stop, rule_choice, check_command, public_state` (A1 A-04 HANDOFF; ROSTER §5.1). `RECOMMENDER=rules` uses `project` as the complete rules-path fold; the other helpers stay on the call path so the API is not on the stand-in.
+  - `public_state(state)` before HTTP. `_engine` is not in `session_state.schema.json` (A1 HANDOFF; CHANGE-003 / Q-011).
+  - Dropped the live-mode FakeEngine rewrite in `api/main.py`. Live sessions fold natively (§11.1; Q-009).
+  - `Truncated.to_seq` is the fold's 0-based log order (`engine.reduce._live_events` / `contract/events.md`), not the store's 1-based PK. Undo walks live events so a second undo pops again (§4).
+  - Outcome still appends `OutcomeRecorded` then `SessionClosed` (CHANGE-003 / Q-009). Notes/outcome/actor/closed stay off SessionState (Q-011).
+  - CHANGE-002 mapping is unchanged: `CommandRejected` → `409 {"error":{"code","message"}}`.
+- **Questions logged:** none. Q-009 coverage is now API tests (`tests/api/test_q009.py`), not contract fixtures (`reference_impl.py` still cannot emit undo/outcome/live).
+- **Cross-lane:** none. No `docs/CROSS_LANE.md` entry.
+- **The next agent needs to know:**
+  - **CP2:** this PR does not merge. Drivers walk T1/T2 on B's screen against this API. A2 is stopped here.
+  - T1–T7 contract replay is green against the real engine. Q-009: undo pops, two undos pop twice, answer-after-undo is live, outcome closes, live T2 matches the fixture except `mode`.
+  - `make dev-api` still starts uvicorn in tmux on `127.0.0.1:8000`. Default DB `/tmp/teller-copilot.sqlite` (`TELLER_DB` overrides).
+  - No new dependency.
+  - **T2 curl walkthrough** (scores 0 → 32 → 40 → 58 → 80; last step recommended escalate, question `q.alternative.cashiers_check`, `_engine` absent):
+
+```
+TELLER_DB=/tmp/teller-t2.sqlite python3 -m uvicorn api.main:app --host 127.0.0.1 --port 8010
+
+curl -sS http://127.0.0.1:8010/health
+# {"recommender":"rules","model_id":null,"last_p95":null,"fallback_rate":0.0,"agreement_rate":null}
+
+SID=$(curl -sS -X POST http://127.0.0.1:8010/sessions \
+  -H 'Content-Type: application/json' \
+  -d '{"mode":"practice","amount_band":"5000_9999"}' | python3 -c "import json,sys; print(json.load(sys.stdin)['session_id'])")
+# open: answers=0 score=0 question=q.purpose.open
+
+curl -sS -X POST http://127.0.0.1:8010/sessions/$SID/context \
+  -H 'Content-Type: application/json' \
+  -d '{"chips":["chip.on_phone","chip.cash_only","chip.rushed"]}'
+# context: answers=0 level=caution score=32
+
+curl -sS -X POST http://127.0.0.1:8010/sessions/$SID/answers \
+  -H 'Content-Type: application/json' \
+  -d '{"question_id":"q.purpose.open","chip":"relayed_by_caller","purpose":"purpose.moving_money"}'
+# Q1: answers=1 purpose.moving_money score=40 question=q.recipient.account_details
+
+curl -sS -X POST http://127.0.0.1:8010/sessions/$SID/answers \
+  -H 'Content-Type: application/json' \
+  -d '{"question_id":"q.recipient.account_details","chip":"vague"}'
+# Q2: answers=2 score=58 question=q.secrecy.told_not_to_tell
+
+curl -sS -X POST http://127.0.0.1:8010/sessions/$SID/answers \
+  -H 'Content-Type: application/json' \
+  -d '{"question_id":"q.secrecy.told_not_to_tell","chip":"confirmed"}'
+# Q3: answers=3 score=80 level=high stop={kind:recommended, reason:enough to escalate}
+# question=q.alternative.cashiers_check suggested_outcome=escalate
+```
+
+
