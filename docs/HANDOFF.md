@@ -278,3 +278,19 @@ GATE PASS (a)
   - **Goldens** still load `tests/golden/reference_weights.yaml`, never `library/signals.yaml`.
   - Checkpoint CP2 is A2's: hour-8 integration against the real API. A1 is stopped here.
 
+
+### [A-03] Latency benchmark — Agent A (run on Jonathan's laptop) — 2026-10-24 15:55
+- **Status:** done
+- **Gate:** not run (card's done-when is numbers in HANDOFF; no gate step named)
+- **Changed:** `scripts/bench_llm.py` (new), `docs/HANDOFF.md` (this entry)
+- **Setup:** NVIDIA GeForce RTX 5070 Laptop GPU, 8151 MiB VRAM, driver 592.01, Windows; llama.cpp b11865 win CUDA 13.4; `llama-server -ngl 99 -c 4096 -np 1`; bartowski GGUFs. Prompt: 947-token stable prefix + 348-token suffix (T2 transcript, context chips, evidence, leading pattern, 12 candidates); 12-way GBNF over question IDs; temperature 0; `cache_prompt`; 3 warm-up runs, then 50 timed. Total = client wall clock per request; prefill/decode = llama-server `timings`.
+- **Results (ms):**
+
+| Model | Total p50 | Total p95 | Prefill p50 | Prefill p95 | Decode p50 | Decode p95 | VRAM used | L1b ≤1.5 s | §8.3 ≈0.7 s |
+|---|---:|---:|---:|---:|---:|---:|---:|---|---|
+| Llama-3.2-3B-Instruct Q4_K_M | 273.2 | 296.3 | 86.6 | 92.2 | 174.4 | 184.0 | 4865 MiB | PASS | PASS |
+| Meta-Llama-3.1-8B-Instruct Q4_K_M | 463.6 | 482.7 | 166.4 | 171.7 | 285.2 | 291.9 | 7379 MiB | PASS | PASS |
+
+- **Decisions I made, and the section that justified each:** §8.1 names no model family, so Llama-3.2-3B / Llama-3.1-8B per the card. The library has 6 questions, so the 12-way grammar (§8.3) is the 5 non-opener library IDs plus 7 synthetic `q.bench.extra_NN` IDs. Suffix came out ~350 tokens, above the ~250 target, which is the conservative direction for prefill. Each run varies the suffix so prefill really processes the new tokens (~346) against the cached prefix.
+- **Questions logged:** none
+- **The next agent needs to know:** Both models fit L1b and the target with wide margin; decode (~15 tokens) dominates. 8B Q4_K_M at ctx 4096 uses ~7.4 of 8 GB, tight for anything else on the GPU. Both models picked `q.homerepair.contractor_name` for T2 (a bank-impersonation case) — a quality signal only, not measured here. Model choice is for the drivers (DECISIONS.md); A-05 not started.
