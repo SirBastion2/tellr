@@ -1,0 +1,15 @@
+[importlinter]
+root_packages=
+    engine
+    api
+    store
+
+[importlinter:contract:engine-isolation]
+name = Engine does not import api, store, or recommenders
+type = forbidden
+source_modules=
+    engine
+forbidden_modules=
+    api
+    store
+    recommenders

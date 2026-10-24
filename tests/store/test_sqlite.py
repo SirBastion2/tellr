@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
@@ -127,7 +128,7 @@ def test_purge_deletes_events_then_closed_sessions(db: sqlite3.Connection) -> No
     assert db.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 2
 
 
-def test_foreign_keys_pragma_is_on_for_every_connection(db_path) -> None:
+def test_foreign_keys_pragma_is_on_for_every_connection(db_path: Path) -> None:
     first = connect(db_path)
     initialize(first)
     first.close()

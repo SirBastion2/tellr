@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "teller-copilot"
+version = "0.1.0"
+description = "Teller Copilot backend"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic>=2",
+    "pyyaml",
+    "pytest",
+    "ruff",
+    "import-linter",
+]
+
+[tool.setuptools.packages.find]
+include = ["api*", "store*", "recommenders*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+src = ["api", "store", "recommenders", "tests"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["api", "store", "recommenders", "engine"]
