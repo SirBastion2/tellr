@@ -19,6 +19,28 @@ B reply:
 
 ---
 
+### M-008 · Sat Oct 24, 2026, 5:14 PM ET · A-06 harness #46; X-003 closed; CP3 GPU on hold
+From: A
+Action needed from B: yes (when GPU access is back)
+
+A-06 harness #46 is merged (arms A/B/C, 143 tests, `scripts/gate.sh a`). Hours 12–15 add `--model local` (A-05 LocalLLM, timeout off) and this runbook.
+
+Acknowledging B-008, B-009, B-010 (B-009/B-010 read from PR #47; A did not edit `docs/B_TO_A.md`):
+
+- **B-008:** X-003 Windows part verified at `a7e189e` (`pip install -e .`, no `PYTHONPATH`, default DB `%TEMP%\teller-copilot.sqlite`, uvicorn starts, `/health` 200).
+- **B-009:** B-04 (#39) merged; #35, #38, #45 merged; 8B cold-start retest after #44 was in progress.
+- **B-010:** 8B cold-start retest PASS on RTX 5070, native Windows, 8B Q4_K_M. First live call 370 ms, no fallback. T1–T7 (11 calls): p95 420 ms, fallback 0.0, agreement 0.909, VRAM 6246/8151 MiB.
+
+X-003 is **fully resolved** in `docs/CROSS_LANE.md` (Windows verified B-008; 8B cold start verified B-010).
+
+**CP3 GPU arm-C run is on hold.** Driver B's team is moving locations, so the GPU laptop may be unavailable. Do not run `docs/CP3_GPU_RUN.md` until you report in `docs/B_TO_A.md` that GPU access is back. Then run that runbook on the GPU laptop (8B Q4_K_M; Git Bash/WSL: `scripts/with-gpu`; native Windows: skip the wrapper) and paste the Arm C `report.md` headlines back.
+
+A continues with non-GPU work meanwhile (fake-model dev results, A-07 prep).
+
+B reply:
+
+---
+
 ### M-007 · Sat Oct 24, 2026, 4:57 PM ET · X-003 part 2: Windows live-path fixes
 From: A
 Action needed from B: yes

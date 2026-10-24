@@ -130,3 +130,53 @@ def test_arm_c_config_is_eval_pinned(library_dir) -> None:
         assert call["batch_size"] == 1
         assert call["prefetch"] is False
         assert call["timeout_ms"] is None
+
+
+class _StubLocal:
+    def __init__(self) -> None:
+        self.seen: list[tuple[object, list[object]]] = []
+
+    def next(self, state: object, candidates: list[object]) -> object:
+        from recommenders.base import Recommendation
+
+        self.seen.append((state, list(candidates)))
+        ids = [item.id if hasattr(item, "id") else str(item) for item in candidates]
+        return Recommendation(next_question_id=ids[0], signals_asserted=[])
+
+
+def test_local_model_passes_state_and_eval_pins(library_dir) -> None:
+    """Hours 12–15: LocalModel wraps LocalLLM.next; eval pins stay on."""
+    from eval.arms.model import LocalModel
+
+    lib = load_library(library_dir)
+    scenario = parse_scenario(t_scenario("T2"))
+    stub = _StubLocal()
+    client = LocalModel(library=lib, client=stub)
+    result = run_model(scenario, lib, model=client)
+    assert result.asked
+    assert stub.seen
+    for state, _cands in stub.seen:
+        assert isinstance(state, dict)
+        assert "_events" in state
+    for call in client.calls:
+        assert call["temperature"] == 0
+        assert call["batch_size"] == 1
+        assert call["prefetch"] is False
+        assert call["timeout_ms"] is None
+
+
+def test_local_model_error_falls_back_to_rules(library_dir) -> None:
+    from eval.arms.model import LocalModel
+
+    class Boom:
+        def next(self, state: object, candidates: list[object]) -> object:
+            raise OSError("llama-server down")
+
+    lib = load_library(library_dir)
+    scenario = parse_scenario(t_scenario("T2"))
+    rules = run_rules(scenario, lib)
+    client = LocalModel(library=lib, client=Boom())
+    model = run_model(scenario, lib, model=client)
+    assert model.validator_rejections >= 1
+    assert model.asked == rules.asked
+    assert model.raw_level == rules.raw_level

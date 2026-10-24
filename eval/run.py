@@ -2,7 +2,8 @@
 
 python -m eval.run --scenarios eval/scenarios/dev --out eval/results/<sha>
 
-Hours 8–12: arms A/B/C with FakeModel for C. No GPU. Refuses held-out data.
+Arms A/B/C. --model fake (default) needs no GPU. --model local is arm C
+under llama-server (hours 12–15; scripts/with-gpu). Refuses held-out data.
 """
 
 from __future__ import annotations
@@ -14,7 +15,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from engine.library import load_library
-from eval.arms.model import FakeModel, run_model
+from eval.arms.model import FakeModel, LocalModel, run_model
 from eval.arms.rules import run_rules
 from eval.arms.static import run_static
 from eval.metrics import summarize
@@ -44,7 +45,7 @@ def _run_arm(
     name: str,
     scenarios: Sequence[Scenario],
     lib,
-    model: FakeModel,
+    model: FakeModel | LocalModel,
 ) -> list[ArmResult]:
     runners: dict[str, Callable[[Scenario], ArmResult]] = {
         "A": lambda s: run_static(s, lib),
@@ -68,22 +69,26 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--model",
         default="fake",
-        help="Hours 8–12: fake only (no GPU). Real LocalLLM is hours 12–15.",
+        help="fake (no GPU) or local (A-05 LocalLLM; hours 12–15, GPU lock).",
     )
     parser.add_argument("--library", default=str(ROOT / "library"))
     args = parser.parse_args(argv)
 
-    if args.model != "fake":
+    if args.model not in {"fake", "local", "local_llm"}:
         print(
-            "hours 8–12 support --model fake only (no GPU). "
-            "Arm C under llama-server is hours 12–15.",
+            "unknown --model; use fake or local "
+            "(local = A-05 LocalLLM under scripts/with-gpu).",
             file=sys.stderr,
         )
         return 2
 
     scenarios = load_scenarios(Path(args.scenarios))
     lib = load_library(Path(args.library))
-    model = FakeModel()
+    if args.model == "fake":
+        model: FakeModel | LocalModel = FakeModel()
+    else:
+        model = LocalModel.from_env(lib)
+        model.warmup()
     names = [part.strip() for part in args.arms.split(",") if part.strip()]
     if not names:
         print("no arms selected", file=sys.stderr)

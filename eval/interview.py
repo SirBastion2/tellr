@@ -36,7 +36,8 @@ def run_product(scenario: Scenario, lib: Library, chooser: Chooser) -> ArmResult
     questions = {item.id: item for item in lib.questions}
 
     for _ in range(MAX_QUESTIONS):
-        state = project(events, lib)
+        state = dict(project(events, lib))
+        state["_events"] = list(events)
         if state.get("stop"):
             break
         stage, cands = candidates(state, lib)
