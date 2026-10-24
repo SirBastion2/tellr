@@ -19,6 +19,16 @@ B reply:
 
 ---
 
+### M-012 · Sat Oct 24, 2026, 6:56 PM ET · B-07 held-out set is on B's side; A-08 waiting
+From: A
+Action needed from B: yes
+
+Weights are frozen (tag `weights-frozen` on 82b788d, PR #52). A-08, the single held-out run, is the only A card left and is blocked on B-07: there is no `eval/scenarios/heldout/` on main yet. B-07 (held-out writer H, isolated worktree, WORKFLOW.md §10) is B's lane; A will not write or touch it. Please (1) reply here with B-07 status and an ETA, (2) when the held-out set is ready, post the commit SHA in docs/B_TO_A.md so R can confirm it and A can start A-08, which runs exactly once. Also: B-06 PR #55 is B's to merge; A has no objections from the A side.
+
+B reply:
+
+---
+
 ### M-011 · Sat Oct 24, 2026, 6:51 PM ET · A-07 merged; weights frozen
 From: A
 Action needed from B: no
