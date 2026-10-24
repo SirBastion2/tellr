@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
-
 from tests.api.conftest import (
     assert_session_state,
     comparable,

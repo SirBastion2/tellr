@@ -7,9 +7,9 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 from starlette.requests import Request
+from tests.api.conftest import assert_error_body, assert_session_state
 
 from engine import CommandRejected
-from tests.api.conftest import assert_error_body, assert_session_state
 
 ROOT = Path(__file__).resolve().parents[2]
 T1 = json.loads((ROOT / "contract" / "fixtures" / "T1.json").read_text(encoding="utf-8"))
