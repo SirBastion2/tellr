@@ -1,0 +1,15 @@
+id: scn.legitimate.vague_home_repair
+label: "Legitimate — home repair, genuine but vague on the company"
+population: legitimate
+pattern_truth: null
+stated_purpose: purpose.home_repair
+context_chips: []
+answers:
+  purpose: specific
+  counterparty_identity: vague
+  written_estimate: vague
+  payment_flexibility: confirmed
+  secrecy: denied
+default: vague
+tags: [vague_but_genuine]
+source: "AARP contractor guidance; T4-shaped without a cash chip"

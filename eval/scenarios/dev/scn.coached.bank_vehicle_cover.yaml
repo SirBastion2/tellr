@@ -1,0 +1,15 @@
+id: scn.coached.bank_vehicle_cover
+label: "Coached — bank impersonation, vehicle-purchase cover"
+population: coached
+pattern_truth: pat.bank_impersonation
+stated_purpose: purpose.vehicle
+context_chips: [chip.on_phone, chip.cash_only, chip.urgency_secrecy]
+answers:
+  purpose: specific
+  counterparty_identity: vague
+  receiving_account: vague
+  secrecy: confirmed
+  payment_flexibility: denied
+default: vague
+tags: [cover_story]
+source: "FTC imposter-scam guidance; architecture §18.16 (draft §2 vehicle cover)"

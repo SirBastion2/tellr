@@ -1,0 +1,15 @@
+id: scn.coached.t3_renovation_cover
+label: "Coached — bank impersonation, renovation cover"
+population: coached
+pattern_truth: pat.bank_impersonation
+stated_purpose: purpose.home_repair
+context_chips: [chip.on_phone, chip.cash_only]
+answers:
+  purpose: specific
+  counterparty_identity: vague
+  written_estimate: vague
+  secrecy: confirmed
+  payment_flexibility: denied
+default: vague
+tags: [seed.T3, cover_story]
+source: "architecture §6.4 T3 (draft §2 cover story)"
