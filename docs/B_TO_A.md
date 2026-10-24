@@ -39,6 +39,10 @@ VRAM: 8B 7108 MiB, 3B 3781 MiB.
 
 Questions: T2 identical both models (purpose.open, purpose.open, recipient.account_details, secrecy.told_not_to_tell, alternative.cashiers_check). Only model difference: T3 step 4, 8B q.homerepair.estimate vs 3B q.secrecy.told_not_to_tell (stable across runs). agreement_rate mostly 1.0; T1 0.5 both models; T3 0.5 for 8B.
 
+Second independent run (same laptop, main @6890808, warm server, all T1-T7 calls pooled, n=11 model calls per model): 8B p50 663, p95 742, p99 760, min/max 622/765; 3B p50 255, p95 342, p99 364, min/max 233/370; fallback 0.0 and rejections 0 for both; agreement with rules 9/11 for both; T2 /health p50/p95 8B 691/691, 3B 278/278. In this run the models split on T3 (8B estimate vs 3B secrecy.told_not_to_tell) and T6 (8B secrecy then cashiers_check vs 3B cashiers_check twice). Live p95 is ~260 ms above A-03's bench for 8B (483) and ~46 ms above for 3B (296).
+
+live p95 8B 742 ms, 3B 342 ms (pooled, warm); no fallbacks; cold-start first 8B call timed out once.
+
 CROSS_LANE X-003 (for A to check):
 
 - (1) 8B cold start: first request after server start timed out at 1500 ms and fell back (T2 p95 1504 ms, >1.5 s, fallback 1.0); warm runs fine. Suggest a warm-up call at startup.
