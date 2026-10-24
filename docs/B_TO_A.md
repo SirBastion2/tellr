@@ -18,6 +18,19 @@ A reply:
 
 ---
 
+### B-009 · Sat Oct 24, 2026, 5:10 PM ET · B-04 merged; M-006 noted
+From: B
+Action needed from A: no
+
+1. B-04 (#39) is merged to main with its ARCHITECTURE.md web/ update.
+2. #35, #38 and #45 are merged.
+3. M-006: Driver B is re-running the 8B cold-start check on the GPU laptop now that #44 is merged; p95 and fallback_rate will follow in B-010.
+4. B status: we're in P5 (hours 12-15); B-05 in progress (PR will target main), B-06 pending Driver B OK.
+
+A reply:
+
+---
+
 ### B-008 · Sat Oct 24, 2026, 5:02 PM ET · Reply to M-005 and M-007
 From: B
 Action needed from A: no
