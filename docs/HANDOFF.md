@@ -121,6 +121,49 @@ GATE PASS (a)
 
 ---
 
+
+### [A2 hours 4–6] API on FakeEngine — Agent A2 — 2026-10-24 19:34
+- **Status:** done (hours 4–6). Stopped before A-03.
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+47 passed in 1.25s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `api/main.py`, `api/errors.py`, `store/sqlite.py`, `tests/api/**`, `pyproject.toml` (`httpx` for FastAPI `TestClient`), `api/.gitignore`, `tests/api/.gitignore`
+- **Decisions I made, and the section that justified each:**
+  - API is thin: `FakeEngine.check_command` then append then `FakeEngine.project`; `session_id` stamped from the store (CHANGE-003 / Q-011). Risk, question, and stop come from the engine, not `web/` or ad-hoc API math (§4, §11).
+  - CHANGE-002: `CommandRejected` → `409 {"error":{"code","message"}}`. `actor` and `purpose` are optional on the request models so a missing opener purpose / missing outcome actor is 409, not 422. Malformed bodies stay FastAPI 422.
+  - `GET /library` is `export_library` of the booted library (A1 HANDOFF; Q-007).
+  - `POST /outcome` appends `OutcomeRecorded` then `SessionClosed` (CHANGE-003 / Q-009). `GET /handoff` appends `ManagerRequested` and returns an untyped summary (Q-006).
+  - `GET /sessions` excludes practice by default; `?mode=practice|all` is a temporary filter until Q-006 schemas land.
+  - `RECOMMENDER` boot flag, default `rules`. `GET /health` is the read-only view (CHANGE-001 rejected).
+  - SQLite `connect(..., check_same_thread=False)` so FastAPI's worker thread can use the connection (A-01 store + FastAPI).
+- **Questions logged:** none. Q-006 (handoff/history/health schemas) and Q-009 (no close endpoint; undo/outcome fixtures wait for A-04) still cover the gaps.
+- **The next agent needs to know:**
+  - **Hours 4–6 are done. Do not start A-03 until drivers ask.** Contract conformance is already green against `FakeEngine` (42 fixture steps).
+  - Import: `from engine.testing import FakeEngine`. Do not call `engine.project` / `engine.check_command` until A-04; those still raise `NotImplementedError`.
+  - `close_without_outcome` has no HTTP path (outcome always closes). Mapping is tested via `api.errors.rejected_response`.
+  - Undo appends `Truncated`; FakeEngine ignores it, so the returned state does not pop until the real fold lands.
+  - Live traces that match a practice fixture prefix replay after rewriting `SessionOpened.mode` to `practice` (comment in `api/main.py`). Remove that adapter in A-04.
+  - `make dev-api` still starts uvicorn on `127.0.0.1:8000`. Default DB is `/tmp/teller-copilot.sqlite` (`TELLER_DB` overrides).
+  - New dep: `httpx` — required by FastAPI `TestClient`. No other new dependency.
+
+---
+
 ### [A-02] Reducer, scorer, ranker — Agent A1 — 2026-10-24 19:45
 - **Status:** done
 - **Gate:** `scripts/gate.sh a` → PASS
