@@ -41,7 +41,9 @@ def git_sha(repo: Path = ROOT) -> str:
         return "unknown"
 
 
-def _arm_timing_kwargs(name: str, model: FakeModel | LocalModel) -> dict:
+def _arm_timing_kwargs(
+    name: str, model: FakeModel | LocalModel
+) -> dict[str, list[int] | int]:
     """Arm C LocalLLM timings only. A/B and FakeModel stay n/a (§13.3, B-013)."""
     if name != "C" or not isinstance(model, LocalModel):
         return {}
