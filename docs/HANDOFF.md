@@ -712,3 +712,28 @@ GATE PASS (a)
 - **Questions logged:** none
 - **The next agent needs to know:** Merge of `origin/main` (`d3919f2`) into `cursor/a2-a05-model-path-9aea` (PR #30). No new PR. Live-path p95 and 8B vs 3B quality are still PENDING Driver B (see the `[A-05]` entry). No new dependency.
 
+---
+
+### [A-05] Live-path GPU results — Agent B (Driver B) — 2026-10-24 20:49
+- **Status:** done (measurement posted). X-003 open for Driver A.
+- **Gate:** not re-run. Live-path `/health` on Driver B's laptop, main @6890808, not `scripts/bench_llm.py`.
+- **Changed:** `docs/B_TO_A.md` (B-006), `docs/HANDOFF.md` (this entry), `docs/CROSS_LANE.md` (X-003)
+- **Decisions I made, and the section that justified each:** none. Numbers below are the laptop run. No weight or threshold change.
+- **Questions logged:** X-003
+- **The next agent needs to know:** PR #20 (Driver B co-sign of 8B pick) merged 4:47 PM ET. Ran on Driver B laptop (RTX 5070 8GB), main @6890808, llama-server -ngl 99 -c 4096 -np 1, RECOMMENDER=local_llm, MODEL_TIMEOUT_MS=1500, T1-T7 each fixture fresh app+sqlite, /health stats (few calls per fixture, small sample). rejection_count 0 everywhere.
+
+Live-path p50/p95 ms:
+
+| Run | T2 | T1 | T3 | T4 | T5 | T6 | T7 | fallback |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 8B run1 | 1504/1504 | 1175.5/1477.45 | 582/604.5 | 566/566 | 528/528 | 626/658.4 | 686.5/706.75 | T2 1.0, T1 0.5, else 0 |
+| 8B run2 warm | 618/618 | 610/644.2 | 607.5/670.05 | 792/792 | 614/614 | 592/630.7 | 649/697.6 | 0 |
+| 3B run1 | 295/295 | 201/221.7 | 215.5/230.35 | 189/189 | 210/210 | 215.5/224.05 | 208/216.1 | 0 |
+| 3B run2 | 246/246 | 207.5/219.65 | 220.5/231.75 | 204/204 | 204/204 | 225/234 | 234.5/256.55 | 0 |
+
+VRAM: 8B 7108 MiB, 3B 3781 MiB.
+
+Questions: T2 identical both models (purpose.open, purpose.open, recipient.account_details, secrecy.told_not_to_tell, alternative.cashiers_check). Only model difference: T3 step 4, 8B q.homerepair.estimate vs 3B q.secrecy.told_not_to_tell (stable across runs). agreement_rate mostly 1.0; T1 0.5 both models; T3 0.5 for 8B.
+
+X-003 (A to check): (1) 8B cold start: first request after server start timed out at 1500 ms and fell back (T2 p95 1504 ms, >1.5 s, fallback 1.0); warm runs fine. Suggest a warm-up call at startup. (2) Windows: `engine` package not included in package config (needed PYTHONPATH); api/main.py creates the app at import with default TELLER_DB=/tmp/teller-copilot.sqlite which fails on Windows; scripts/with-gpu is bash/flock-only so it was skipped on Windows (no other GPU users).
+
