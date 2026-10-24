@@ -1162,3 +1162,27 @@ GATE PASS (b)
 - **Questions logged:** X-004
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/55. Do not merge. No new dependency. Did not read `eval/scenarios/dev/` or `library/signals.yaml`. X-004: `GET /sessions?mode=all` returns live sessions only (`api/main.py` passes `None`, and `store/sqlite.py` treats `None` as live). Practice still loads with `?mode=practice`. `ARCHITECTURE.md` lists the added and removed web files under `web/` after B-06.
 
+---
+
+### [J-01] Practice replay logs (step 1) — Agent A2 — 2026-10-24 23:27
+- **Status:** done (step 1 only; writeup / role-play / freeze left for drivers)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+159 passed, 1 warning in 22.17s
+
+- **Changed:** `api/replay.py` (new); `api/replays/t1_legitimate.json` (new); `api/replays/t3_coached.json` (new); `recommenders/fake.py` (new); `recommenders/__init__.py`; `api/main.py` (`RECOMMENDER=fake`); `tests/api/test_replay_logs.py` (new); `ARCHITECTURE.md`; `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Logs are the web `--replay` fixture shape (`case` / `label` / `steps` with `endpoint`+`request`+`response`) plus the §14.2 event log. Path is `api/replays/` (A2-owned). `web/` was not edited.
+  - Recorded from the live FastAPI routes in `mode=practice` with `scenario_id` set (D8 / §14.1). Scripts are the committed T1-like and T3-like **dev** scenarios, never held-out.
+  - This VM has no GPU. Used `RECOMMENDER=fake` (`FakeRecommender`, first candidate, model id `fake-deterministic`). Stated in log metadata (`gpu: false`). Driver B can re-record on the GPU laptop: `python -m api.replay record`.
+  - Replay test posts the recorded requests through `TestClient` (same routes as live, no network) and also loads the event log then `GET /sessions/{id}`.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/63. Log paths: `api/replays/t1_legitimate.json`, `api/replays/t3_coached.json`. Re-record: `python -m api.replay record`. Check: `python -m api.replay replay`. No new dependency. Did not touch `contract/`, `reference_impl.py`, goldens, `web/`, or `eval/scenarios/heldout`. J-01 steps 2–5 (role-play, Devpost, §18.14 claims, `git tag demo`) are still open.
+
