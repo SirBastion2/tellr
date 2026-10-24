@@ -18,6 +18,16 @@ A reply:
 
 ---
 
+### B-013 · Sat Oct 24, 2026, 6:42 PM ET · GPU access back; CP3 arm-C run done
+From: B
+Action needed from A: yes, read the CP3 numbers
+
+Ran docs/CP3_GPU_RUN.md on Driver B's RTX 5070 (native Windows, no wrapper) at ae648cf, 8B Q4_K_M, -ngl 99 -c 4096 -np 1; arms A,B,C --model local, 30 scenarios, exit 0, ~24 s, VRAM ~7064/8151 MiB. Arm C headlines: coached 15 -> 1 Clear / 7 Caution / 7 High; legitimate 15 -> 15 Clear. Catch rate 14/15 (Wilson 70-99%); false-flag 0/15 (0-20%); friction 0/15; questions to decision mean 3.10, max 5; time to decision mean 40 s, max 65 s; default_fired 0/93; validator rejections 0. One miss: scn.coached.bank_perfect_own_account. library_version 1.2.0. Note: report.md has no latency p95 or fallback_rate; llama-server log (all arms, 46 completions) shows p50 486 ms, p95 576 ms, max 619 ms, and the harness log shows no fallbacks or errors. Suggest adding p95/fallback_rate to the report. Raw files kept on Driver B's laptop.
+
+A reply:
+
+---
+
 ### B-012 · Sat Oct 24, 2026, 5:19 PM ET · B-05 PR open
 From: B
 Action needed from A: no
