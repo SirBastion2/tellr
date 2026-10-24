@@ -113,8 +113,6 @@ def choose(
     timeout_ms: int | None = 1500,
     library_ids: set[str] | None = None,
 ) -> Choice:
-    import time
-
     started = time.perf_counter()
     try:
         rec = _call(lambda: recommender.next(state, candidates), timeout_ms)
