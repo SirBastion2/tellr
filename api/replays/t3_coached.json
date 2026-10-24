@@ -4,26 +4,26 @@
   "label": "Coached \u2014 bank impersonation, renovation cover",
   "population": "coached",
   "scenario_id": "scn.coached.t3_renovation_cover",
-  "script": "eval/scenarios/dev/scn.coached.t3_renovation_cover.yaml",
+  "script": "eval\\scenarios\\dev\\scn.coached.t3_renovation_cover.yaml",
   "mode": "practice",
-  "gpu": false,
-  "recommender": "fake",
-  "model_id": "fake-deterministic",
-  "recorded_at": "2026-10-24T23:26:00",
+  "gpu": true,
+  "recommender": "local",
+  "model_id": "Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+  "recorded_at": "2026-10-24T23:39:55",
   "library_version": "1.2.0",
-  "note": "Recorded on a CPU-only VM with RECOMMENDER=fake (deterministic first candidate, no llama-server). No GPU was available. Driver B can re-record on the GPU laptop with RECOMMENDER=local.",
+  "note": "Recorded with RECOMMENDER=local against llama-server (model_id=Meta-Llama-3.1-8B-Instruct-Q4_K_M). gpu=true.",
   "session": {
-    "session_id": "f0ef5231-d9f1-4db1-9b4c-85f2311b0576",
+    "session_id": "25e17e5d-e4cd-4191-ad30-bc42c21ab88d",
     "mode": "practice",
-    "opened_at": "2026-10-24T23:26:00",
-    "closed_at": "2026-10-24T23:26:00",
+    "opened_at": "2026-10-24T23:39:53",
+    "closed_at": "2026-10-24T23:39:55",
     "library_version": "1.2.0",
     "scenario_id": "scn.coached.t3_renovation_cover"
   },
   "events": [
     {
       "type": "SessionOpened",
-      "ts": "2026-10-24T23:26:00",
+      "ts": "2026-10-24T23:39:53",
       "mode": "practice",
       "amount_band": "5000_9999",
       "library_version": "1.2.0",
@@ -31,7 +31,7 @@
     },
     {
       "type": "ContextAdded",
-      "ts": "2026-10-24T23:26:00",
+      "ts": "2026-10-24T23:39:53",
       "chips": [
         "chip.on_phone",
         "chip.cash_only"
@@ -40,7 +40,7 @@
     },
     {
       "type": "AnswerRecorded",
-      "ts": "2026-10-24T23:26:00",
+      "ts": "2026-10-24T23:39:53",
       "question_id": "q.purpose.open",
       "chip": "specific",
       "purpose": "purpose.home_repair",
@@ -49,7 +49,7 @@
     },
     {
       "type": "AnswerRecorded",
-      "ts": "2026-10-24T23:26:00",
+      "ts": "2026-10-24T23:39:53",
       "question_id": "q.homerepair.contractor_name",
       "chip": "vague",
       "purpose": null,
@@ -58,42 +58,42 @@
     },
     {
       "type": "RecommendationIssued",
-      "ts": "2026-10-24T23:26:00",
-      "question_id": "q.secrecy.told_not_to_tell",
-      "model_id": "fake-deterministic",
-      "latency_ms": 0,
+      "ts": "2026-10-24T23:39:54",
+      "question_id": "q.homerepair.estimate",
+      "model_id": "Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+      "latency_ms": 490,
       "source": "model",
       "seq": 5
     },
     {
       "type": "QuestionAsked",
-      "ts": "2026-10-24T23:26:00",
-      "question_id": "q.secrecy.told_not_to_tell",
+      "ts": "2026-10-24T23:39:54",
+      "question_id": "q.homerepair.estimate",
       "stage": "probe",
       "source": "model",
       "seq": 6
     },
     {
       "type": "AnswerRecorded",
-      "ts": "2026-10-24T23:26:00",
-      "question_id": "q.secrecy.told_not_to_tell",
-      "chip": "confirmed",
+      "ts": "2026-10-24T23:39:54",
+      "question_id": "q.homerepair.estimate",
+      "chip": "vague",
       "purpose": null,
       "note": null,
       "seq": 7
     },
     {
       "type": "RecommendationIssued",
-      "ts": "2026-10-24T23:26:00",
+      "ts": "2026-10-24T23:39:54",
       "question_id": "q.alternative.cashiers_check",
-      "model_id": "fake-deterministic",
-      "latency_ms": 0,
+      "model_id": "Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+      "latency_ms": 509,
       "source": "model",
       "seq": 8
     },
     {
       "type": "QuestionAsked",
-      "ts": "2026-10-24T23:26:00",
+      "ts": "2026-10-24T23:39:54",
       "question_id": "q.alternative.cashiers_check",
       "stage": "probe",
       "source": "model",
@@ -101,7 +101,7 @@
     },
     {
       "type": "AnswerRecorded",
-      "ts": "2026-10-24T23:26:00",
+      "ts": "2026-10-24T23:39:54",
       "question_id": "q.alternative.cashiers_check",
       "chip": "denied",
       "purpose": null,
@@ -109,17 +109,43 @@
       "seq": 10
     },
     {
-      "type": "OutcomeRecorded",
-      "ts": "2026-10-24T23:26:00",
-      "outcome": "escalate",
-      "actor": "teller",
-      "note": null,
+      "type": "RecommendationIssued",
+      "ts": "2026-10-24T23:39:55",
+      "question_id": "q.secrecy.told_not_to_tell",
+      "model_id": "Meta-Llama-3.1-8B-Instruct-Q4_K_M",
+      "latency_ms": 551,
+      "source": "model",
       "seq": 11
     },
     {
-      "type": "SessionClosed",
-      "ts": "2026-10-24T23:26:00",
+      "type": "QuestionAsked",
+      "ts": "2026-10-24T23:39:55",
+      "question_id": "q.secrecy.told_not_to_tell",
+      "stage": "probe",
+      "source": "model",
       "seq": 12
+    },
+    {
+      "type": "AnswerRecorded",
+      "ts": "2026-10-24T23:39:55",
+      "question_id": "q.secrecy.told_not_to_tell",
+      "chip": "confirmed",
+      "purpose": null,
+      "note": null,
+      "seq": 13
+    },
+    {
+      "type": "OutcomeRecorded",
+      "ts": "2026-10-24T23:39:55",
+      "outcome": "escalate",
+      "actor": "teller",
+      "note": null,
+      "seq": 14
+    },
+    {
+      "type": "SessionClosed",
+      "ts": "2026-10-24T23:39:55",
+      "seq": 15
     }
   ],
   "steps": [
@@ -131,7 +157,7 @@
         "scenario_id": "scn.coached.t3_renovation_cover"
       },
       "response": {
-        "session_id": "f0ef5231-d9f1-4db1-9b4c-85f2311b0576",
+        "session_id": "25e17e5d-e4cd-4191-ad30-bc42c21ab88d",
         "mode": "practice",
         "answers": 0,
         "library_version": "1.2.0",
@@ -177,7 +203,7 @@
           "report"
         ],
         "debug": {
-          "recommender": "fake",
+          "recommender": "local",
           "latency_ms": 0,
           "rejections": 0
         }
@@ -192,7 +218,7 @@
         ]
       },
       "response": {
-        "session_id": "f0ef5231-d9f1-4db1-9b4c-85f2311b0576",
+        "session_id": "25e17e5d-e4cd-4191-ad30-bc42c21ab88d",
         "mode": "practice",
         "answers": 0,
         "library_version": "1.2.0",
@@ -254,7 +280,7 @@
           "report"
         ],
         "debug": {
-          "recommender": "fake",
+          "recommender": "local",
           "latency_ms": 0,
           "rejections": 0
         }
@@ -268,7 +294,7 @@
         "purpose": "purpose.home_repair"
       },
       "response": {
-        "session_id": "f0ef5231-d9f1-4db1-9b4c-85f2311b0576",
+        "session_id": "25e17e5d-e4cd-4191-ad30-bc42c21ab88d",
         "mode": "practice",
         "answers": 1,
         "library_version": "1.2.0",
@@ -334,7 +360,7 @@
           "report"
         ],
         "debug": {
-          "recommender": "fake",
+          "recommender": "local",
           "latency_ms": 0,
           "rejections": 0
         }
@@ -347,7 +373,7 @@
         "chip": "vague"
       },
       "response": {
-        "session_id": "f0ef5231-d9f1-4db1-9b4c-85f2311b0576",
+        "session_id": "25e17e5d-e4cd-4191-ad30-bc42c21ab88d",
         "mode": "practice",
         "answers": 2,
         "library_version": "1.2.0",
@@ -371,6 +397,174 @@
               "id": "sig.cash_insistence",
               "label": "Insists on cash",
               "rationale": "Scams favour cash because it can't be traced or reversed."
+            }
+          ],
+          "counterpoint": {
+            "id": "mit.purpose_specific",
+            "label": "Clear purpose",
+            "rationale": "The customer described the purpose in their own specific terms."
+          },
+          "pattern": null,
+          "pattern_label": "Pattern unclear"
+        },
+        "question": {
+          "id": "q.homerepair.estimate",
+          "text": "Do you have a written estimate from them?",
+          "why": "Real contract work normally comes with paperwork the customer can describe.",
+          "kind": "open",
+          "chips": [
+            "specific",
+            "vague",
+            "no_answer",
+            "changed",
+            "relayed_by_caller"
+          ],
+          "stage": "probe",
+          "source": "model"
+        },
+        "stop": null,
+        "talk_track": {
+          "stage": "tt.slow_down",
+          "pattern": null,
+          "lines": [
+            "We see a lot of calls like this lately. Mind if I ask a couple of quick questions?",
+            "A cashier's check made out to them is safer than carrying cash.",
+            "Would you call them back on a number from your own records before we finish?"
+          ],
+          "avoid": [
+            "You're being scammed.",
+            "Who told you to say that?"
+          ]
+        },
+        "suggested_outcome": "slow_down",
+        "available_outcomes": [
+          "proceed",
+          "slow_down",
+          "escalate",
+          "report"
+        ],
+        "debug": {
+          "recommender": "local",
+          "latency_ms": 490,
+          "rejections": 0
+        }
+      }
+    },
+    {
+      "endpoint": "POST /sessions/{id}/answers",
+      "request": {
+        "question_id": "q.homerepair.estimate",
+        "chip": "vague"
+      },
+      "response": {
+        "session_id": "25e17e5d-e4cd-4191-ad30-bc42c21ab88d",
+        "mode": "practice",
+        "answers": 3,
+        "library_version": "1.2.0",
+        "stated_purpose": "purpose.home_repair",
+        "risk": {
+          "level": "caution",
+          "raw_level": "caution",
+          "score": 34,
+          "reasons": [
+            {
+              "id": "sig.specificity_gap",
+              "label": "Missing details",
+              "rationale": "A plausible purpose with none of the details a real one would have."
+            },
+            {
+              "id": "sig.third_party_call",
+              "label": "On the phone during the visit",
+              "rationale": "Scammers often stay on the line to coach the customer through the withdrawal."
+            },
+            {
+              "id": "sig.cash_insistence",
+              "label": "Insists on cash",
+              "rationale": "Scams favour cash because it can't be traced or reversed."
+            }
+          ],
+          "counterpoint": {
+            "id": "mit.purpose_specific",
+            "label": "Clear purpose",
+            "rationale": "The customer described the purpose in their own specific terms."
+          },
+          "pattern": null,
+          "pattern_label": "Pattern unclear"
+        },
+        "question": {
+          "id": "q.alternative.cashiers_check",
+          "text": "Would a cashier's check made out to them work instead? It's safer than carrying cash.",
+          "why": "Legitimate payees take checks. Refusing one without a reason is a coaching signature.",
+          "kind": "yes_no",
+          "chips": [
+            "confirmed",
+            "denied",
+            "no_answer",
+            "changed",
+            "relayed_by_caller"
+          ],
+          "stage": "probe",
+          "source": "model"
+        },
+        "stop": null,
+        "talk_track": {
+          "stage": "tt.slow_down",
+          "pattern": null,
+          "lines": [
+            "We see a lot of calls like this lately. Mind if I ask a couple of quick questions?",
+            "A cashier's check made out to them is safer than carrying cash.",
+            "Would you call them back on a number from your own records before we finish?"
+          ],
+          "avoid": [
+            "You're being scammed.",
+            "Who told you to say that?"
+          ]
+        },
+        "suggested_outcome": "slow_down",
+        "available_outcomes": [
+          "proceed",
+          "slow_down",
+          "escalate",
+          "report"
+        ],
+        "debug": {
+          "recommender": "local",
+          "latency_ms": 509,
+          "rejections": 0
+        }
+      }
+    },
+    {
+      "endpoint": "POST /sessions/{id}/answers",
+      "request": {
+        "question_id": "q.alternative.cashiers_check",
+        "chip": "denied"
+      },
+      "response": {
+        "session_id": "25e17e5d-e4cd-4191-ad30-bc42c21ab88d",
+        "mode": "practice",
+        "answers": 4,
+        "library_version": "1.2.0",
+        "stated_purpose": "purpose.home_repair",
+        "risk": {
+          "level": "caution",
+          "raw_level": "caution",
+          "score": 47,
+          "reasons": [
+            {
+              "id": "sig.specificity_gap",
+              "label": "Missing details",
+              "rationale": "A plausible purpose with none of the details a real one would have."
+            },
+            {
+              "id": "sig.cash_refusal_unexplained",
+              "label": "Turned down a safer option",
+              "rationale": "Legitimate payees take checks. Refusing one without a reason is a coaching signature."
+            },
+            {
+              "id": "sig.third_party_call",
+              "label": "On the phone during the visit",
+              "rationale": "Scammers often stay on the line to coach the customer through the withdrawal."
             }
           ],
           "counterpoint": {
@@ -418,8 +612,8 @@
           "report"
         ],
         "debug": {
-          "recommender": "fake",
-          "latency_ms": 0,
+          "recommender": "local",
+          "latency_ms": 551,
           "rejections": 0
         }
       }
@@ -431,98 +625,9 @@
         "chip": "confirmed"
       },
       "response": {
-        "session_id": "f0ef5231-d9f1-4db1-9b4c-85f2311b0576",
+        "session_id": "25e17e5d-e4cd-4191-ad30-bc42c21ab88d",
         "mode": "practice",
-        "answers": 3,
-        "library_version": "1.2.0",
-        "stated_purpose": "purpose.home_repair",
-        "risk": {
-          "level": "caution",
-          "raw_level": "caution",
-          "score": 56,
-          "reasons": [
-            {
-              "id": "sig.secrecy_bank",
-              "label": "Told not to discuss with the bank",
-              "rationale": "Scammers warn victims the bank will try to stop them. Being told to keep it quiet is one of the strongest single indicators."
-            },
-            {
-              "id": "sig.specificity_gap",
-              "label": "Missing details",
-              "rationale": "A plausible purpose with none of the details a real one would have."
-            },
-            {
-              "id": "sig.third_party_call",
-              "label": "On the phone during the visit",
-              "rationale": "Scammers often stay on the line to coach the customer through the withdrawal."
-            }
-          ],
-          "counterpoint": {
-            "id": "mit.purpose_specific",
-            "label": "Clear purpose",
-            "rationale": "The customer described the purpose in their own specific terms."
-          },
-          "pattern": {
-            "kind": "pattern",
-            "id": "pat.bank_impersonation",
-            "label": "Looks like: bank impersonation"
-          },
-          "pattern_label": "Looks like: bank impersonation"
-        },
-        "question": {
-          "id": "q.alternative.cashiers_check",
-          "text": "Would a cashier's check made out to them work instead? It's safer than carrying cash.",
-          "why": "Legitimate payees take checks. Refusing one without a reason is a coaching signature.",
-          "kind": "yes_no",
-          "chips": [
-            "confirmed",
-            "denied",
-            "no_answer",
-            "changed",
-            "relayed_by_caller"
-          ],
-          "stage": "probe",
-          "source": "model"
-        },
-        "stop": null,
-        "talk_track": {
-          "stage": "tt.slow_down",
-          "pattern": "tt.bank_impersonation",
-          "lines": [
-            "We see a lot of calls like this lately. Mind if I ask a couple of quick questions?",
-            "A cashier's check made out to them is safer than carrying cash.",
-            "Would you call them back on a number from your own records before we finish?",
-            "Your bank will never ask you to move money to keep it safe."
-          ],
-          "avoid": [
-            "You're being scammed.",
-            "Who told you to say that?"
-          ]
-        },
-        "suggested_outcome": "slow_down",
-        "available_outcomes": [
-          "proceed",
-          "slow_down",
-          "escalate",
-          "report"
-        ],
-        "debug": {
-          "recommender": "fake",
-          "latency_ms": 0,
-          "rejections": 0
-        }
-      }
-    },
-    {
-      "endpoint": "POST /sessions/{id}/answers",
-      "request": {
-        "question_id": "q.alternative.cashiers_check",
-        "chip": "denied"
-      },
-      "response": {
-        "session_id": "f0ef5231-d9f1-4db1-9b4c-85f2311b0576",
-        "mode": "practice",
-        "answers": 4,
+        "answers": 5,
         "library_version": "1.2.0",
         "stated_purpose": "purpose.home_repair",
         "risk": {
@@ -558,24 +663,10 @@
           },
           "pattern_label": "Looks like: bank impersonation"
         },
-        "question": {
-          "id": "q.homerepair.estimate",
-          "text": "Do you have a written estimate from them?",
-          "why": "Real contract work normally comes with paperwork the customer can describe.",
-          "kind": "open",
-          "chips": [
-            "specific",
-            "vague",
-            "no_answer",
-            "changed",
-            "relayed_by_caller"
-          ],
-          "stage": "probe",
-          "source": "rules"
-        },
+        "question": null,
         "stop": {
-          "kind": "recommended",
-          "reason": "enough to escalate"
+          "kind": "hard",
+          "reason": "enough to escalate; nothing left to ask"
         },
         "talk_track": {
           "stage": "tt.escalate",
@@ -597,7 +688,7 @@
           "report"
         ],
         "debug": {
-          "recommender": "fake",
+          "recommender": "local",
           "latency_ms": 0,
           "rejections": 0
         }
@@ -610,9 +701,9 @@
         "actor": "teller"
       },
       "response": {
-        "session_id": "f0ef5231-d9f1-4db1-9b4c-85f2311b0576",
+        "session_id": "25e17e5d-e4cd-4191-ad30-bc42c21ab88d",
         "mode": "practice",
-        "answers": 4,
+        "answers": 5,
         "library_version": "1.2.0",
         "stated_purpose": "purpose.home_repair",
         "risk": {
@@ -648,24 +739,10 @@
           },
           "pattern_label": "Looks like: bank impersonation"
         },
-        "question": {
-          "id": "q.homerepair.estimate",
-          "text": "Do you have a written estimate from them?",
-          "why": "Real contract work normally comes with paperwork the customer can describe.",
-          "kind": "open",
-          "chips": [
-            "specific",
-            "vague",
-            "no_answer",
-            "changed",
-            "relayed_by_caller"
-          ],
-          "stage": "probe",
-          "source": "rules"
-        },
+        "question": null,
         "stop": {
-          "kind": "recommended",
-          "reason": "enough to escalate"
+          "kind": "hard",
+          "reason": "enough to escalate; nothing left to ask"
         },
         "talk_track": {
           "stage": "tt.escalate",
@@ -687,7 +764,7 @@
           "report"
         ],
         "debug": {
-          "recommender": "fake",
+          "recommender": "local",
           "latency_ms": 0,
           "rejections": 0
         }
