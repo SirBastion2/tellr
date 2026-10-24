@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import ClassVar
 
 import pytest
 import yaml
@@ -51,6 +52,16 @@ def test_run_writes_results_and_report(tmp_path: Path) -> None:
     assert "always-Clear" in report
     assert "Wilson" in report
     assert "default_fired_rate" in report
+    assert "Validator rejections" in report
+    assert report.count("Latency p50/p95/max: n/a") == 3
+    assert report.count("fallback_rate: n/a") == 3
+    for name in ("A", "B", "C"):
+        metrics = payload["arms"][name]["metrics"]
+        assert metrics["latency_p50_ms"] is None
+        assert metrics["latency_p95_ms"] is None
+        assert metrics["latency_max_ms"] is None
+        assert metrics["fallback_rate"] is None
+        assert metrics["validator_rejections"] == 0
     assert "T2" in report or "t2" in report.lower() or "scn.coached" in report
 
 
@@ -143,6 +154,108 @@ def test_run_accepts_model_local(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     assert stub.warmed == 1
     assert (out / "report.md").is_file()
     assert (out / "results.json").is_file()
+
+
+class _RecordedLocal(_StubLocal):
+    """LocalLLM stand-in with the timings/fallbacks B-013 asked the report to show."""
+
+    latencies_ms: ClassVar[list[int]] = [486, 500, 576, 619]
+    fallbacks = 0
+
+
+def test_report_arm_c_uses_local_llm_timings(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Arm C reads LocalLLM recorded timings; A/B stay n/a. Fake stays n/a."""
+    from eval.metrics import percentile
+
+    stub = _RecordedLocal()
+
+    def _from_env(library: object) -> object:
+        from eval.arms.model import LocalModel
+
+        return LocalModel(library=library, client=stub)
+
+    monkeypatch.setattr("eval.arms.model.LocalModel.from_env", _from_env)
+    monkeypatch.setattr("eval.run.LocalModel.from_env", _from_env)
+    dev = _write_dev(tmp_path)
+    out = tmp_path / "results"
+    rc = main(
+        [
+            "--scenarios",
+            str(dev),
+            "--out",
+            str(out),
+            "--arms",
+            "A,B,C",
+            "--model",
+            "local",
+        ]
+    )
+    assert rc == 0
+    payload = json.loads((out / "results.json").read_text(encoding="utf-8"))
+    report = (out / "report.md").read_text(encoding="utf-8")
+    samples = _RecordedLocal.latencies_ms
+    p50 = percentile(samples, 50)
+    p95 = percentile(samples, 95)
+    assert report.count("Latency p50/p95/max: n/a") == 2
+    assert report.count("fallback_rate: n/a") == 2
+    assert f"Latency p50/p95/max: {p50:.0f} / {p95:.0f} / 619 ms" in report
+    assert "fallback_rate: 0/4" in report
+    for name in ("A", "B"):
+        metrics = payload["arms"][name]["metrics"]
+        assert metrics["latency_p50_ms"] is None
+        assert metrics["fallback_rate"] is None
+        assert metrics["validator_rejections"] == 0
+    c_metrics = payload["arms"]["C"]["metrics"]
+    assert c_metrics["latency_p50_ms"] == p50
+    assert c_metrics["latency_p95_ms"] == p95
+    assert c_metrics["latency_max_ms"] == 619
+    assert c_metrics["fallback_rate"] == 0.0
+    assert c_metrics["fallbacks"] == [0, 4]
+    assert c_metrics["validator_rejections"] == 0
+
+
+def test_local_model_records_timings_and_fallbacks_when_client_does_not() -> None:
+    """Real LocalLLM has no stats bag; LocalModel records wall-clock and fallbacks."""
+    from eval.arms.model import LocalModel
+
+    class Silent:
+        def next(self, state: object, candidates: list[object]) -> object:
+            from recommenders.base import Recommendation
+
+            ids = [item.id if hasattr(item, "id") else str(item) for item in candidates]
+            return Recommendation(next_question_id=ids[0], signals_asserted=[])
+
+    class Boom:
+        def next(self, state: object, candidates: list[object]) -> object:
+            raise OSError("llama-server down")
+
+    ok = LocalModel(library=object(), client=Silent())  # type: ignore[arg-type]
+    qid = ok.choose(
+        candidates=["q.purpose.open"],
+        temperature=0,
+        batch_size=1,
+        prefetch=False,
+        timeout_ms=None,
+        state={},
+    )
+    assert qid == "q.purpose.open"
+    assert len(ok.recorded_latencies()) == 1
+    assert ok.recorded_fallbacks() == 0
+
+    bad = LocalModel(library=object(), client=Boom())  # type: ignore[arg-type]
+    empty = bad.choose(
+        candidates=["q.purpose.open"],
+        temperature=0,
+        batch_size=1,
+        prefetch=False,
+        timeout_ms=None,
+        state={},
+    )
+    assert empty == ""
+    assert len(bad.recorded_latencies()) == 1
+    assert bad.recorded_fallbacks() == 1
 
 
 def test_run_unknown_model_is_rejected(tmp_path: Path) -> None:

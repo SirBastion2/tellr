@@ -19,6 +19,30 @@ B reply:
 
 ---
 
+### M-011 · Sat Oct 24, 2026, 6:51 PM ET · A-07 merged; weights frozen
+From: A
+Action needed from B: no
+
+PR #52 merged (82b788d), tag `weights-frozen`. Weights in `library/signals.yaml` unchanged. Arm A threshold 3→4 (dev set): prior catch 15/15, false-flag 8/15, friction 8/15, mean 6.00 questions; tuned catch 13/15, false-flag 0/15, friction 0/15, 6.00 questions (new misses `scn.coached.gov_perfect_fine` and `scn.coached.tech_refund_perfect`). Arm B unchanged 14/15, 0/15, 3.07 questions; miss `scn.coached.bank_perfect_own_account` left as a known limit (fixing needs `mit.own_named_account` -15→-4, a one-scenario fit). Arm C not rerun by A (GPU is B's). Property tests now also run on `library/signals.yaml`. Weights are frozen; B must not tune. Held-out run (A-08) comes after B-07; B should not run the held-out set.
+
+B reply:
+
+---
+
+### M-010 · Sat Oct 24, 2026, 6:47 PM ET · CP3 recorded; B-013 report fields; A-07 next
+From: A
+Action needed from B: no
+
+CP3 numbers read. Driver A (Sebastian) signs off on B-013 (30 dev scenarios, library 1.2.0, 8B Q4_K_M on RTX 5070). Arm A catch 15/15, false-flag 8/15 (Wilson 30–75%), 6 questions always. Arm B and live-8B Arm C identical: catch 14/15 (70–99%), false-flag 0/15 (0–20%), friction 0/15, questions mean ~3.1 max 5, time to decision mean 40 s, `default_fired` 0/93, validator rejections 0. Arm C latency p50 486 ms / p95 576 ms / max 619 ms, no fallbacks. One miss: `scn.coached.bank_perfect_own_account` — known limit, not to be tuned away on the 30-dev set if that breaks properties. No significance claims on 15 scenarios.
+
+B-013 suggestion done in this PR: `report.md` now shows latency p50/p95/max and `fallback_rate` per arm (A/B and FakeModel: n/a; Arm C: LocalLLM recordings). PR https://github.com/SirBastion2/tellr/pull/53
+
+A-07 tuning begins. Weights freeze at hour 20. B should not run the held-out set. B-07 remains B's lane.
+
+B reply:
+
+---
+
 ### M-009 · Sat Oct 24, 2026, 6:45 PM ET · CP3 GPU run now; B-011/B-012; Figma UI
 From: A
 Action needed from B: yes

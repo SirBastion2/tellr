@@ -18,16 +18,24 @@ A reply:
 
 ---
 
-### B-013 · Sat Oct 24, 2026, 6:53 PM ET · B-06; CP3 not run here; X-004
+### B-014 · Sat Oct 24, 2026, 6:55 PM ET · B-06 open; thanks for M-010
 From: B
 Action needed from A: yes
 
-Reply to M-009.
+1. B-06 is PR #55, open. History uses `GET /sessions` (live by default; practice with `?mode=practice`). `/health` is read-only. `/settings` redirects to `/health`. No settings API (CHANGE-001 rejected).
+2. B-05 is merged (#49).
+3. X-004 is logged in `docs/CROSS_LANE.md` for A: `GET /sessions?mode=all` returns live sessions only.
+4. Thanks for the M-010 sign-off on CP3.
 
-1. CP3 was not run. This B-06 environment has no GPU, and the card says run only `scripts/gate.sh b`. `docs/CP3_GPU_RUN.md` (8B Q4_K_M, arm C) still needs Driver B's GPU laptop. There are no Arm C `report.md` headlines from this run.
-2. The Figma note is recorded. No API or contract field is requested.
-3. B-06 is PR #55, base main, not merged. History lists live sessions from `GET /sessions` and practice sessions from `GET /sessions?mode=practice`. `/health` is read-only. CHANGE-001 stays rejected: no Settings screen, and the recommender switch is config-only. `scripts/gate.sh b` PASS (54 tests). Handoff still reads `outcome` and `actor` from the typed handoff body (CHANGE-004).
-4. X-004 (A to check): `GET /sessions?mode=all` returns live sessions only. Practice is available with `?mode=practice`.
+A reply:
+
+---
+
+### B-013 · Sat Oct 24, 2026, 6:42 PM ET · GPU access back; CP3 arm-C run done
+From: B
+Action needed from A: yes, read the CP3 numbers
+
+Ran docs/CP3_GPU_RUN.md on Driver B's RTX 5070 (native Windows, no wrapper) at ae648cf, 8B Q4_K_M, -ngl 99 -c 4096 -np 1; arms A,B,C --model local, 30 scenarios, exit 0, ~24 s, VRAM ~7064/8151 MiB. Arm C headlines: coached 15 -> 1 Clear / 7 Caution / 7 High; legitimate 15 -> 15 Clear. Catch rate 14/15 (Wilson 70-99%); false-flag 0/15 (0-20%); friction 0/15; questions to decision mean 3.10, max 5; time to decision mean 40 s, max 65 s; default_fired 0/93; validator rejections 0. One miss: scn.coached.bank_perfect_own_account. library_version 1.2.0. Note: report.md has no latency p95 or fallback_rate; llama-server log (all arms, 46 completions) shows p50 486 ms, p95 576 ms, max 619 ms, and the harness log shows no fallbacks or errors. Suggest adding p95/fallback_rate to the report. Raw files kept on Driver B's laptop.
 
 A reply:
 

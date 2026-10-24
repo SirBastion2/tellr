@@ -8,6 +8,7 @@ The model sees candidate IDs only — no notes, no free text (§9, §10.2).
 from __future__ import annotations
 
 import os
+import time
 from collections.abc import Sequence
 from typing import Any
 from urllib.error import URLError
@@ -66,6 +67,8 @@ class LocalModel:
     def __init__(self, *, library: Library, client: Any | None = None) -> None:
         self.library = library
         self.calls: list[dict[str, Any]] = []
+        self._latencies_ms: list[int] = []
+        self._fallbacks = 0
         if client is not None:
             self.client = client
             return
@@ -77,6 +80,19 @@ class LocalModel:
             timeout_ms=_LOCAL_NO_TIMEOUT_MS,
             library=library,
         )
+
+    def recorded_latencies(self) -> list[int]:
+        """Prefer the LocalLLM client's bag; else wall-clock around next()."""
+        recorded = getattr(self.client, "latencies_ms", None)
+        if recorded is not None:
+            return [max(0, int(item)) for item in recorded]
+        return list(self._latencies_ms)
+
+    def recorded_fallbacks(self) -> int:
+        recorded = getattr(self.client, "fallbacks", None)
+        if recorded is not None:
+            return int(recorded)
+        return self._fallbacks
 
     @classmethod
     def from_env(cls, library: Library) -> LocalModel:
@@ -107,8 +123,10 @@ class LocalModel:
                 "timeout_ms": timeout_ms,
             }
         )
+        t0 = time.perf_counter()
         try:
             recommendation = self.client.next(state or {}, list(candidates))
+            self._latencies_ms.append(max(0, round((time.perf_counter() - t0) * 1000)))
             return str(recommendation.next_question_id)
         except (
             OSError,
@@ -119,6 +137,8 @@ class LocalModel:
             KeyError,
             AttributeError,
         ):
+            self._latencies_ms.append(max(0, round((time.perf_counter() - t0) * 1000)))
+            self._fallbacks += 1
             return ""
 
 

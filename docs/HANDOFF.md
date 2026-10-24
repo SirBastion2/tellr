@@ -1030,6 +1030,109 @@ GATE PASS (b)
 
 ---
 
+### [A-06] CP3 recorded — Agent A3 — 2026-10-24 22:47
+- **Status:** done (Driver A sign-off on B-013 numbers; B-013 report fields shipped)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+153 passed, 1 warning in 18.96s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `eval/report.py`, `eval/metrics.py`, `eval/run.py`, `eval/arms/model.py`, `tests/eval/test_run.py`, `tests/eval/test_metrics.py`, `docs/HANDOFF.md` (this entry), `docs/A_TO_B.md` (M-010)
+- **Decisions I made, and the section that justified each:**
+  - Recorded CP3 from B-013 as Driver A (Sebastian) sign-off: 30 dev scenarios, library 1.2.0, 8B Q4_K_M on RTX 5070. Did not rerun the GPU path here.
+  - Arm A: catch 15/15, false-flag 8/15 (Wilson 30–75%), 6 questions always.
+  - Arm B and Arm C (live 8B) identical: catch 14/15 (70–99%), false-flag 0/15 (0–20%), friction 0/15, questions mean ~3.1 max 5, time to decision mean 40 s, `default_fired` 0/93, validator rejections 0. Arm C latency p50 486 ms / p95 576 ms / max 619 ms, no fallbacks.
+  - One miss: `scn.coached.bank_perfect_own_account` (perfectly coached own-account story). Recorded as a known limit. Do not fix it by tuning on dev only if that break properties (§13.3, §13.4).
+  - No significance claims on 15 scenarios (§13.3).
+  - B-013 suggestion: `report.md` now prints latency p50/p95/max and `fallback_rate` per arm (validator rejection count was already there). Arm C takes LocalLLM client recordings (or wall-clock around `next()`); A/B and FakeModel stay n/a.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR https://github.com/SirBastion2/tellr/pull/53
+  - CP3 is recorded. A-07 tuning may begin; weights freeze at hour 20. Do not tune this miss on the 30-dev set if it breaks properties.
+  - B should not run the held-out set. B-07 remains B's lane (isolated worktree, `WORKFLOW.md` §10).
+  - Did not edit `eval/PREREGISTRATION.md`, held-out, `contract/`, `reference_impl.py`, goldens, `library/`, `web/`, or `docs/B_TO_A.md`. No new dependency.
+
+---
+
+### [A-07] Tune and freeze — Agent A1 — 2026-10-24 22:50
+- **Status:** done (no `weights-frozen` tag; driver tags after merge)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+148 passed, 1 warning in 22.32s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `tests/engine/test_properties.py` (live-weights parametrization); `library/signals.yaml` (comment only; numbers kept); `eval/arms/static.py` (`THRESHOLD` 3→4); `eval/PREREGISTRATION.md` (Tuning section, labelled tuned); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Property walk now parametrizes `reference_weights` and `library/signals.yaml`, plus a cap/sign check (card A-07 step 1; architecture §6.2). Goldens and the oracle test still use `tests/golden/reference_weights.yaml` only.
+  - Arm A threshold **3 → 4** (§13.4 same freedom as the weights). Runtime constant lives in `eval/arms/static.py` (A3-owned; file comment said "Tune only in A-07"); prior 3 stays in the frozen PREREGISTRATION section.
+  - Live weights **kept** at §6.2 starting values. The remaining product miss cannot be caught without a one-scenario knife-edge (below).
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR https://github.com/SirBastion2/tellr/pull/52
+  - Do **not** tag `weights-frozen` in this PR; driver tags after merge.
+  - Do not run held-out. Arm C skipped (GPU). CP3 already reported B/C identical on this set.
+  - `eval/arms/static.py` is the only A3-owned code edit (one integer). A3 tests still pass (`concerning_count >= 3` on T2).
+
+**Eval command:** `python -m eval.run --scenarios eval/scenarios/dev --out /tmp/x --arms A,B --model fake` (library 1.2.0)
+
+**Change 1 — live-weights property parametrization** (no score change)
+
+| | Catch | False-flag | Friction | Mean Q | Misses |
+|---|---|---|---|---:|---|
+| A before = after | 15/15 | 8/15 | 8/15 | 6.00 | none |
+| B before = after | 14/15 | 0/15 | 0/15 | 3.07 | `scn.coached.bank_perfect_own_account` |
+
+**Change 2 — weight trials, not applied** (in-memory only; §13.4 / do not overfit)
+
+| Trial | Catch | FF | Friction | Miss score | Why rejected |
+|---|---|---|---|---:|---|
+| `mit.own_named_account` −15→−4 | 15/15 | 0/15 | 0/15 | 14→25 | one-scenario knife-edge on Caution; only t5 else moves (−45→−34, still Clear) |
+| own −8 + `sig.third_party_call` 14→18 | 15/15 | 0/15 | 0/15 | 14→25 | same catch, plus two other Caution→High flips; built to fit this miss |
+| `mit.purpose_specific` −10→0 | 14/15 | 0/15 | 1/15 | 14→24 | miss remains; T7 becomes Caution (friction). §19.3 left as Clear |
+
+**Change 3 — arm A threshold 3→4** (applied; labelled tuned)
+
+| Arm | Catch | False-flag | Friction | Mean Q | Misses |
+|---|---|---|---|---:|---|
+| A before (3) | 15/15 | 8/15 | 8/15 | 6.00 | none |
+| A after (4) | 13/15 | 0/15 | 0/15 | 6.00 | `scn.coached.gov_perfect_fine`, `scn.coached.tech_refund_perfect` |
+| B before = after | 14/15 | 0/15 | 0/15 | 3.07 | `scn.coached.bank_perfect_own_account` |
+
+All eight A false flags had concerning-count 3. Threshold 4 clears them. The two new A misses are perfectly coached sheets that also sit at 3; keeping 15/15 catch on A requires those eight legitimate High flags. Threshold 5 would also drop the two coached rows at 4.
+
+**Miss left on the product:** `scn.coached.bank_perfect_own_account` (phone + cash + refused check + specific own-account; score 14). Look-alike `look.own_account_transfer` is not refuted (`secrecy` denied), so `mit.own_named_account` (−15) still counts. Payment family is already at cap 25, so raising cash weights does nothing. Catching it without a property break or a new false flag is possible, but only by overfitting that one development row. Left it.
+
+
+---
+
 ### [B-06] History and read-only health — Agent B — 2026-10-24 22:53
 - **Status:** done
 - **Gate:** `scripts/gate.sh b` → PASS
@@ -1049,13 +1152,13 @@ contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
 GATE PASS (b)
 ```
 
-- **Changed:** `web/src/screens/HistoryScreen.tsx`, `web/src/screens/HealthScreen.tsx`, `web/src/screens/SettingsScreen.tsx` (removed), `web/src/history.test.tsx` (added), `web/src/health.test.tsx` (added), `web/src/App.tsx`, `web/src/routes.ts`, `web/src/routes.test.tsx`, `web/src/a11y.test.tsx`, `web/src/mockReplay.test.ts`, `web/mock/replay.ts`, `web/mock/plugin.ts`, `ARCHITECTURE.md` (web section), `docs/HANDOFF.md`, `docs/B_TO_A.md`, `docs/CROSS_LANE.md`
+- **Changed:** `web/src/screens/HistoryScreen.tsx`, `web/src/screens/HealthScreen.tsx`, `web/src/screens/SettingsScreen.tsx` (removed), `web/src/history.test.tsx` (added), `web/src/health.test.tsx` (added), `web/src/App.tsx`, `web/src/routes.ts`, `web/src/routes.test.tsx`, `web/src/a11y.test.tsx`, `web/src/mockReplay.test.ts`, `web/mock/replay.ts`, `web/mock/plugin.ts`, `ARCHITECTURE.md` (web section), `docs/HANDOFF.md`, `docs/B_TO_A.md` (B-014), `docs/CROSS_LANE.md` (X-004)
 - **Decisions I made, and the section that justified each:**
   - CHANGE-001 was rejected (§7.4, §11.1, `contract/CHANGES.md`). There is no Settings screen and no `/settings` call. `GET /health` is read-only and shows recommender, model id, p50, p95, last p95, fallback rate, rejection count, and agreement rate. The recommender follows process config from startup. The fallback switch is config-only.
   - `/settings` redirects to `/health`. It is not in the nav (`web/src/routes.ts`). Q-012's placeholder settings page is retired by this card.
   - History's default request is `GET /sessions`, which excludes practice (§11.1, §14.1). Practice is a separate request, `GET /sessions?mode=practice`. The screen also hides the other mode, so a mixed payload cannot put practice on the default list. Rows show `session_id`, `mode`, `opened_at`, `closed_at`, and `library_version` from that list. History and health schemas stay deferred (Q-006). No contract edit.
   - Handoff already renders `outcome` and `actor` from the typed `GET /sessions/{id}/handoff` body (CHANGE-004). `HandoffScreen.tsx` was not changed.
-  - `docs/CROSS_LANE.md` had no open A→B items. M-009 asks for the CP3 GPU run. This environment has no GPU, and the card says run only `scripts/gate.sh b`, so CP3 was not run. Logged in `docs/B_TO_A.md` (B-013).
+  - Merged `origin/main`. Main's B-013 (CP3 on Driver B's GPU laptop, #51) is unchanged. This card's note is B-014. Thanks for the M-010 sign-off on CP3. B-05 is merged (#49).
 - **Questions logged:** X-004
-- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/55. Do not merge. No new dependency. Did not read `eval/scenarios/dev/` or `library/signals.yaml`. X-004: `GET /sessions?mode=all` returns live sessions only (`api/main.py` passes `None`, and `store/sqlite.py` treats `None` as live). Practice still loads with `?mode=practice`. CP3 (`docs/CP3_GPU_RUN.md`) still needs Driver B's GPU laptop. `ARCHITECTURE.md` lists the added and removed web files under `web/` after B-06.
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/55. Do not merge. No new dependency. Did not read `eval/scenarios/dev/` or `library/signals.yaml`. X-004: `GET /sessions?mode=all` returns live sessions only (`api/main.py` passes `None`, and `store/sqlite.py` treats `None` as live). Practice still loads with `?mode=practice`. `ARCHITECTURE.md` lists the added and removed web files under `web/` after B-06.
 

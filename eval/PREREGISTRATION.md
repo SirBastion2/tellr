@@ -143,3 +143,48 @@ flipped.
 - Held-out scenarios (H, card B-07)
 - Arm C model choice (CP1)
 - Any arm result, score, or confusion-matrix cell
+
+## Tuning (A-07, labelled tuned)
+
+Tuned on the 30 development scenarios only (architecture §13.4). Held-out
+numbers, written after this freeze by whoever did not tune, are the honest
+check. Arm C was not rerun (GPU-only; CP3 already matches arm B on the
+fake-model path).
+
+Command: `python -m eval.run --scenarios eval/scenarios/dev --out /tmp/x --arms A,B --model fake`
+
+### Arm A threshold (tuned)
+
+**4** concerning items.
+
+The prior in the section above remains **3**. Scoring is unchanged: High at
+or above the threshold, Clear below, no Caution band.
+
+### Live weights
+
+Starting §6.2 values in `library/signals.yaml` are **kept**. Goldens still
+load `tests/golden/reference_weights.yaml`.
+
+The only remaining product miss is `scn.coached.bank_perfect_own_account`
+(score 14, Clear). Catching it requires cutting `mit.own_named_account`
+from −15 to −4, which moves that one scenario onto the Caution line and
+leaves every other development row in the same band. That is a one-scenario
+knife-edge, so the weight was left alone. Combining that cut with a
+`sig.third_party_call` bump also catches the miss without new false flags,
+but it exists to fit this development case. If a later held-out run shows
+the same miss, revisit then.
+
+### Development metrics (labelled tuned)
+
+| Arm | Catch | False-flag | Friction | Mean Q | Misses |
+|---|---|---|---|---:|---|
+| A prior (threshold 3) | 15/15 | 8/15 | 8/15 | 6.00 | none |
+| A **tuned** (threshold 4) | 13/15 | 0/15 | 0/15 | 6.00 | `scn.coached.gov_perfect_fine`, `scn.coached.tech_refund_perfect` |
+| B starting = B **tuned** (weights unchanged) | 14/15 | 0/15 | 0/15 | 3.07 | `scn.coached.bank_perfect_own_account` |
+
+Arm A at 4 is the only integer that removes the eight legitimate High
+flags (all had concerning-count 3) without also dropping the coached rows
+that sit at 4. The two new misses are perfectly coached sheets that the
+prior threshold only caught by also flagging those eight legitimate
+customers. Always-Caution remains the trivial 15/15 catch / 0/15
+false-flag line; arm A cannot use it (no Caution band).
