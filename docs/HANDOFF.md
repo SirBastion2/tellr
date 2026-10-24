@@ -485,3 +485,24 @@ GATE PASS (a)
 - **The next agent needs to know:** **CP2 awaits driver confirmation.** Do not merge this PR until the drivers confirm CP2 with A. Screenshots of the outcome buttons and the handoff route were skipped (driver). Those checks are tests in `web/src/outcome.test.tsx` and `web/src/handoff.test.tsx`. Hour-8 integration ran A's API from `origin/main` (`7f4f546`, uvicorn on 127.0.0.1:8000, `RECOMMENDER=rules`). T1 and T2 were walked by posting each fixture request (the bodies the chips send). Every `SessionState` matched the fixture except `session_id`, which the API assigns. `GET /handoff` matched the same projection with that id. `GET /library` validated against `library.schema.json`. It has five patterns and five look-alikes; `contract/library.json` has two, which Q-008 already allows. Chip, purpose, and question copy for these steps matched. No UI patch. `docs/CROSS_LANE.md` is not on this branch; `cursor/cross-lane-log-760f` has no open A→B items, and this card logged no B→A items. The live handoff projection does not include the recorded outcome or actor. Talk tracks are still not drawn.
 
 ---
+
+### [B-03] Handoff outcome and actor — Agent B1 — 2026-10-24 20:26
+- **Status:** done (CP2 still awaits driver confirmation; do not merge)
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  Test Files  11 passed (11)
+       Tests  38 passed (38)
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+- **Changed:** `web/src/types.ts`, `web/src/validate.ts`, `web/src/screens/HandoffScreen.tsx`, `web/src/handoff.test.tsx`, `web/src/teller.tsx`, `web/mock/replay.ts`, `web/src/mockReplay.test.ts`, `docs/HANDOFF.md`, `docs/CROSS_LANE.md`
+- **Decisions I made, and the section that justified each:**
+  - `HandoffProjection` matches applied `handoff.schema.json`: `outcome` is `proceed`, `slow_down`, `escalate`, `report`, or null; `actor` is a string or null. Both are null until `POST /outcome` (CHANGE-004, §11.1).
+  - The Handoff screen shows "Outcome: not recorded yet" and "Actor: not recorded yet" when those fields are null, and the outcome label plus the actor string when they are set (§12).
+  - `GET /handoff` is validated with Ajv against `contract/handoff.schema.json`. A body that omits the fields or names an unknown outcome is not rendered.
+  - The mock keeps the posted outcome and actor and returns them on the next `GET /handoff`. `SessionState` still omits both (Q-011). The handoff body does not include `note`.
+- **Questions logged:** none. X-001.
+- **The next agent needs to know:** This branch includes `origin/main` through `b94749b` (PR #23 and PR #24). The live API in that tree returns the fields. A TestClient call to `api/main.py` got `outcome: null` and `actor: null` before `POST /outcome`, then `outcome: "escalate"` and `actor: "teller-1"` after. Both bodies validated against `handoff.schema.json`. `SessionState` did not include the fields. **CP2 still awaits driver confirmation.** Do not merge. X-001: `contract/handoff.schema.json` description still says CHANGE-004 is not applied.
+
+---

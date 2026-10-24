@@ -28,6 +28,15 @@ Append-only, newest at the bottom. One entry per finding.
 
 B reports problems in A's work. Driver A triages.
 
+### X-001 · handoff schema description still says CHANGE-004 is not applied
+- **Date/hour:** 2026-10-24 20
+- **Reporter:** Agent B1 (Driver B)
+- **File / PR:** `contract/handoff.schema.json` · #24
+- **Problem:** The schema `description` still says "Pending CHANGE-004 (not applied)." `contract/CHANGES.md` and `contract/api.md` mark CHANGE-004 applied. `GET /sessions/{id}/handoff` on main (`ac8aa78`, PR #23) does return `outcome` and `actor`.
+- **Expected:** The schema description should say CHANGE-004 is applied, matching `contract/CHANGES.md` and `contract/api.md`.
+- **Status:** open
+- **Owner's response:**
+
 ## A → B (B to check)
 
 A reports problems in B's work. Driver B triages.

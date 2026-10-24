@@ -146,7 +146,10 @@ describe('handoff and outcome against the API', () => {
     const session = asSession(t2.steps[0]?.response)
     const projection = projectionFromFixture(asSession(t2.steps[3]?.response))
     projection.risk = { ...projection.risk, score: 58 }
-    let recorded: { outcome: HandoffProjection['outcome']; actor: string } | null = null
+    const recorded: { outcome: HandoffProjection['outcome']; actor: string | null } = {
+      outcome: null,
+      actor: null,
+    }
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -161,11 +164,12 @@ describe('handoff and outcome against the API', () => {
           return http(200, session)
         }
         if (method === 'GET' && url.endsWith('/handoff')) {
-          return http(200, recorded ? { ...projection, outcome: recorded.outcome, actor: recorded.actor } : projection)
+          return http(200, { ...projection, outcome: recorded.outcome, actor: recorded.actor })
         }
         if (method === 'POST' && url.endsWith('/outcome')) {
           const posted = JSON.parse(body ?? '{}') as { outcome: HandoffProjection['outcome']; actor: string }
-          recorded = posted
+          recorded.outcome = posted.outcome
+          recorded.actor = posted.actor
           return http(200, session)
         }
         return http(404, null)
@@ -210,6 +214,7 @@ describe('handoff and outcome against the API', () => {
     expect(screen.getByTestId('handoff-outcome').getAttribute('data-recorded')).toBe('true')
     expect(screen.getByTestId('handoff-actor').textContent).toBe('Actor: teller-1')
     expect(screen.getByTestId('handoff-actor').getAttribute('data-recorded')).toBe('true')
-    expect(validateHandoff(recorded ? { ...projection, outcome: recorded.outcome, actor: recorded.actor } : projection)).toEqual([])
+    expect(recorded).toEqual({ outcome: 'escalate', actor: 'teller-1' })
+    expect(validateHandoff({ ...projection, outcome: recorded.outcome, actor: recorded.actor })).toEqual([])
   })
 })
