@@ -386,3 +386,35 @@ GATE PASS (contract)
   - Did not edit `api/`, `web/`, `reference_impl.py`, `tests/golden/`, or `contract/fixtures/`. History, health, and POST-enum schemas stay deferred.
 - **Questions logged:** none. Resolves the handoff part of Q-006 only, pending both drivers.
 - **The next agent needs to know:** PR is Proposed. Both driver boxes are unticked. After both drivers approve, R applies on main (bump `CONTRACT_VERSION`, tag). Then A2 adds `outcome`/`actor` to `api/main.py` `handoff()` from the latest `OutcomeRecorded` and validates with `tests/api` against `handoff.schema.json`. Do not project them onto SessionState. Do not merge this PR as applied.
+
+### [CHANGE-004] Handoff outcome/actor on GET /handoff — Agent A2 — 2026-10-24 20:18
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+85 passed, 1 warning in 10.50s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `api/main.py` (`handoff()` only), `tests/api/conftest.py`, `tests/api/test_q009.py`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - `handoff()` reads the latest `OutcomeRecorded` from `store.load_events` and adds `outcome` and `actor` (`None` until recorded) (CHANGE-004; Q-005 / Q-010 / Q-011 keep those fields off SessionState).
+  - Did not add them to `render()` / SessionState, did not change `POST /outcome`, did not return notes.
+  - Did not edit `web/`, `contract/`, `reference_impl.py`, `tests/golden/`, or fixtures.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - `GET /sessions/{id}/handoff` now validates against `contract/handoff.schema.json` via `assert_handoff()`. Before `POST /outcome`, `outcome` and `actor` are null and `ManagerRequested` is appended. After outcome they equal the posted values. SessionState still omits `outcome` / `actor` / `closed`.
+  - B1 can render the recorded outcome and actor from the handoff projection. Do not merge this PR unless a driver says so.
+  - No new dependency.
