@@ -760,3 +760,38 @@ GATE PASS (a)
 - **Decisions I made, and the section that justified each:** none. Driver instruction: keep both HANDOFF sides; keep main's `make dev-web`; take main for contract/reference_impl/goldens/fixtures/web/CROSS_LANE/QUESTIONS/A_TO_B/B_TO_A; keep the branch for recommenders/, engine/prompt.py, api health/recommender wiring, tests/recommenders. Did not change A-05 logic.
 - **Questions logged:** none
 - **The next agent needs to know:** Merge of `origin/main` (`d3919f2`) into `cursor/a2-a05-model-path-9aea` (PR #30). No new PR. Live-path p95 and 8B vs 3B quality are still PENDING Driver B (see the `[A-05]` entry). No new dependency.
+
+---
+
+### [X-003] Windows live-path fixes — Agent A2 — 2026-10-24 16:57
+- **Status:** done (awaiting Driver B confirm on Windows)
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+119 passed, 1 warning in 12.27s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `pyproject.toml` (`engine*` in setuptools find); `api/main.py` (`default_db_path()` via `tempfile.gettempdir()`, `TELLER_DB` still wins); `scripts/with-gpu` (Windows usage comment; bash/`flock` unchanged); `tests/api/test_x003_windows.py`; `ARCHITECTURE.md` (new test file); `docs/A_TO_B.md` (M-007); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Default DB uses `tempfile.gettempdir()` so import-time `create_app()` works on Windows without `/tmp` (X-003; architecture §15 localhost deploy). `TELLER_DB` override is identical.
+  - Documented the Windows `with-gpu` equivalent instead of adding a wrapper (ROSTER §5.3 flock stays the Unix lock).
+  - Did not edit `reference_impl.py`, goldens, `contract/`, `docs/CROSS_LANE.md`, or `docs/B_TO_A.md`.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR https://github.com/SirBastion2/tellr/pull/43. Do not merge until B confirms on Windows and replies in `docs/B_TO_A.md`.
+  - Live path on Windows: `pip install -e .` then `python -m uvicorn api.main:app --host 127.0.0.1 --port 8000`. No `PYTHONPATH`. Default DB is `%TEMP%\teller-copilot.sqlite` (or `$TMP`/`$TEMP` on Unix if set; else `/tmp/teller-copilot.sqlite`).
+  - GPU jobs on Windows: run the inner command without `scripts/with-gpu`, one at a time. WSL/Git Bash still use `scripts/with-gpu`.
+  - No new dependency.

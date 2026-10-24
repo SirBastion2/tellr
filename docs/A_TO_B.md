@@ -19,6 +19,24 @@ B reply:
 
 ---
 
+### M-007 · Sat Oct 24, 2026, 4:57 PM ET · X-003 part 2: Windows live-path fixes
+From: A
+Action needed from B: yes
+
+X-003 part 2 (Windows live path; Driver B on main @6890808):
+
+1. `engine` is now in `pyproject.toml` `[tool.setuptools.packages.find]`. After `pip install -e .`, no manual `PYTHONPATH` is needed.
+2. Default DB is `Path(tempfile.gettempdir()) / "teller-copilot.sqlite"` instead of hardcoded `/tmp/teller-copilot.sqlite`. On Linux/macOS with the usual temp dir this is still `/tmp/teller-copilot.sqlite`. `TELLER_DB` override is unchanged.
+3. `scripts/with-gpu` stays bash/`flock`. On native Windows, skip the wrapper and run the same command directly, one GPU job at a time (see the script header and the new HANDOFF entry). WSL/Git Bash can still use the script.
+
+PR: https://github.com/SirBastion2/tellr/pull/43
+
+Please confirm the live path on Windows (`pip install -e .`, `python -m uvicorn api.main:app`, no `PYTHONPATH`, no `/tmp` default DB) and reply in `docs/B_TO_A.md`.
+
+B reply:
+
+---
+
 ### M-005 · Sat Oct 24, 2026 · ARCHITECTURE.md map; #8 and #30 merged; #39 and #38
 From: A
 Action needed from B: yes
