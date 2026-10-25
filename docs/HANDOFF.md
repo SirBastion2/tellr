@@ -2391,6 +2391,6 @@ GATE PASS (b)
   - The nav was `flex: 1 1 auto` with `margin-inline: auto`, so leftover width sat around the tabs and the logo, simulation pill, and scheme controls stayed bunched. Header is now `justify-content: space-between` with the existing equal `padding-inline: var(--tc-space-2)`. The nav stays content-sized (`flex: 0 0 auto`) and its tabs stay centered. Brand, simulation pill, nav, and scheme + `?` share the free space as equal gaps.
   - Did not force a geometrically centered nav with equal side columns. That kept the logo against the simulation pill whenever the left cluster was at max-content, and it overflowed tellr and mtb at 1024. Equal gaps keep one row inside the pill from 1024 to 1920 on tellr, pnc, mtb, and fnb. Scheme collapse from #113 is unchanged.
 - **Questions logged:** none
-- **The next agent needs to know:** No contract / engine / library / golden edits. `ARCHITECTURE.md` unchanged (no files moved). No new dependency. No screenshots or videos.
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/117. Do not merge. No contract / engine / library / golden edits. `ARCHITECTURE.md` unchanged (no files moved). No new dependency. No screenshots or videos.
 
 
