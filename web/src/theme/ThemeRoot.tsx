@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { usePresenter } from '../presenter'
-import { DEMO_ROOT_FONT, DENSITY } from './tokens'
+import { DEMO_ROOT_FONT, DENSITY, FOOTER_FONT_SIZE } from './tokens'
 import { useColorScheme, useTheme } from './ThemeProvider'
 import { themeVars } from './vars'
 
@@ -53,9 +53,10 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
       >
         <div
           data-testid="theme-card"
+          className="tc-page-card"
           style={{
             position: 'relative',
-            width: 'min(1440px, 100%)',
+            width: '100%',
             maxWidth: '100%',
             minWidth: 0,
             margin: '0 auto',
@@ -73,10 +74,11 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
         </div>
         <p
           data-testid="theme-footer"
+          className="tc-footer"
           style={{
-            width: 'min(1440px, 100%)',
+            width: '100%',
             margin: '0 auto',
-            fontSize: '0.8125rem',
+            fontSize: FOOTER_FONT_SIZE,
             lineHeight: 1.4,
             color: 'var(--tc-muted)',
             ...footerPosition,

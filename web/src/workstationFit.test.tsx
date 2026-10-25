@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { App } from './App'
 import './index.css'
 import { THEMES } from './theme/registry'
-import { DEMO_ROOT_FONT, DENSITY, HEADER_SCHEME_COLLAPSE_PX } from './theme/tokens'
+import { DEMO_ROOT_FONT, DENSITY, FOOTER_FONT_SIZE, HEADER_SCHEME_COLLAPSE_PX } from './theme/tokens'
 
 const css = () => readFileSync('src/index.css', 'utf8')
 
@@ -43,6 +43,12 @@ describe('workstation laptop fit', () => {
     expect(screen.getByTestId('scheme-menu')).toBeTruthy()
     expect(screen.getByTestId('color-scheme')).toBeTruthy()
     expect(screen.getByTestId('theme-root').style.fontSize).toBe(DEMO_ROOT_FONT)
+    expect(screen.getByTestId('theme-card').style.width).toBe('100%')
+    expect(screen.getByTestId('theme-card').className).toContain('tc-page-card')
+    expect(screen.getByTestId('theme-footer').style.fontSize).toBe(FOOTER_FONT_SIZE)
+    expect(source).toMatch(/\.tc-page-card[\s\S]*width:\s*100%/)
+    expect(source).toMatch(/\.tc-footer[\s\S]*font-size:\s*13px/)
+    expect(source).not.toMatch(/min\(1440px/)
   })
 
   it('scales type and spacing from the shared density tokens', () => {

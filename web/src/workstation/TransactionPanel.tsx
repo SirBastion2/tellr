@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { formatElapsed } from '../demo/clock'
+import { formatElapsed, timelineElapsedMs } from '../demo/clock'
 import type { CustomerEvent, CustomerFile } from '../demo/customers'
 import { Emphasis } from '../ui/emphasis'
 import { SectionHeading } from '../ui/facts'
@@ -103,7 +103,7 @@ export function TransactionPanel({
         {visible.map((event, index) => {
           const isCurrent = index === visible.length - 1
           const last = index === visible.length - 1
-          const elapsed = customer.events.slice(0, index + 1).reduce((sum, item) => sum + item.delayMs, 0)
+          const elapsed = timelineElapsedMs(customer.events, index + 1)
           return (
             <li
               key={event.id}

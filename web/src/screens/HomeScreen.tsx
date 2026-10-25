@@ -10,6 +10,7 @@ export function HomeScreen({
   library,
   session,
   postedChipIds = [],
+  dismissed = [],
   activity = null,
   demo = null,
   closed = false,
@@ -18,12 +19,15 @@ export function HomeScreen({
   library: Library | null
   session: SessionState | null
   postedChipIds?: readonly string[]
+  dismissed?: readonly string[]
   activity?: readonly ActivityRow[] | null
   demo?: DemoView | null
   closed?: boolean
   onUndo?: () => void
 }) {
   const customer = demo ? customerById(demo.customerId) : null
+  const idle = Boolean(demo && demo.index === 0 && !demo.playing)
+  const live = Boolean(demo && (demo.playing || demo.index > 0))
 
   return (
     <section data-testid="home-screen" style={{ display: 'grid', gap: 'var(--tc-space-gap, 13px)' }}>
@@ -54,15 +58,20 @@ export function HomeScreen({
               session={session}
               postedChipIds={postedChipIds}
               confirmed={demo.confirmed}
+              dismissed={dismissed}
               pending={demo.pending}
+              idle={idle}
               onConfirm={demo.onConfirmSignal}
               onDismiss={demo.onDismissSignal}
+              onRestore={demo.onRestoreSignal}
               onEscalate={demo.onEscalate}
-              onUndo={session ? onUndo : undefined}
+              onUndo={live ? onUndo : undefined}
               closed={closed}
             />
           </div>
-          <ExplanationPanel library={library} session={session} postedChipIds={postedChipIds} />
+          {idle || demo.pending ? null : (
+            <ExplanationPanel library={library} session={session} postedChipIds={postedChipIds} />
+          )}
         </>
       ) : null}
     </section>

@@ -79,10 +79,12 @@ export function ExplanationPanel({
   library,
   session,
   postedChipIds,
+  idle = false,
 }: {
   library: Library | null
   session: SessionState | null
   postedChipIds: readonly string[]
+  idle?: boolean
 }) {
   const [health, setHealth] = useState<HealthReport | null>(null)
 
@@ -106,7 +108,7 @@ export function ExplanationPanel({
     }
   }, [])
 
-  if (!session) {
+  if (!session || idle) {
     return null
   }
 

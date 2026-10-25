@@ -42,7 +42,7 @@ Page gradients are hex and rgba only. Windows Chrome and Edge drop an entire `ba
 
 ## Layout breakpoints
 
-The page card is `min(1440px, 100%)` and starts at the top of the page so the header is not clipped. There is no progress-dot column.
+The page card fills the padded page (`width: 100%`) and starts at the top of the page so the header is not clipped. There is no 1440px cap and no progress-dot column. The footer is 13px.
 
 | Width | Layout |
 |---|---|
@@ -54,7 +54,7 @@ The page card is `min(1440px, 100%)` and starts at the top of the page so the he
 
 Type and padding use `clamp()` from `DENSITY` in `web/src/theme/tokens.ts` (about 15–20% tighter than the first workstation pass). Prose is at most `70ch`. Toolbar controls share a 40px height. Play keeps the icon and the word on one line. The customer select matches that height. Show case file and the elapsed timer sit on that row.
 
-Target playback at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s.
+Target playback at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. The toolbar clock and the timeline stamps use that same simulated customer time at every speed. Speed only changes how long the wall clock takes.
 
 ## Header and toolbar
 
@@ -64,7 +64,7 @@ One row, `flex-wrap: nowrap`, nav scrolls, no second line. Title, simulation pil
 2. Title "Teller Copilot"
 3. Simulation pill: `Simulation: <customer title>`, or `LIVE — no scenario loaded` when the session is live and no synthetic customer is selected
 4. Connection pill (see Live and sample)
-5. Tabs that fit the demo layout: Home, Customer file, and, once a session exists, Outcome and Handoff
+5. Tabs that fit the demo layout: Home, Customer file, Outcome, and Handoff. Outcome and Handoff are hint labels until a visit exists; they are not extra screens
 6. Light / Dark / System
 7. `?` opens keyboard help
 
@@ -78,12 +78,12 @@ Fact grids are two columns: a bold label beside a normal value. Section headings
 
 | Screen | Route | On the demo nav | Fields |
 |---|---|---|---|
-| Workstation | `/` | Yes | Library version and copy status. Toolbar. Transaction (type, amount, memo), timeline with step, time, and speaker, event progress. Copilot: level icon and word, one reason (or the counterpoint when reasons are empty), suggested next action (`question.text`, else the first talk-track line), read-aloud script, signal rows. Why this level, below the columns |
+| Workstation | `/` | Yes | Library version and copy status. Toolbar. Transaction (type, amount, memo), timeline with step, time, and speaker, event progress. Copilot is idle (`Press play to start the simulation.`) until Play or Step. While a write is in flight it says Updating copilot…. A live visit shows the server level, one reason (or the counterpoint when reasons are empty), suggested next action (`question.text`, else the first talk-track line), read-aloud script, and signal rows. Dismissed rows stay dimmed with Restore. The origin badge is an inline pill beside the factor label. Undo and Escalate stay off until a visit is live. Why this level sits below the columns |
 | Customer file | `/customer` | Yes | Banner that name and age band stay on this screen. Profile: name, age band, tenure, typical withdrawal, channels. Recent activity (session `GET /activity` when it has rows, otherwise the synthetic date / description / amount table). This withdrawal: type, amount, memo. What was noted: each script signal once, with Not yet, Observed, Teller confirmed, or Dismissed |
 | Context | `/sessions/:id/context` | No | "What you noticed." Chip buttons from `GET /library`. Posts `source: "teller"`. Does not score |
 | Session | `/sessions/:id` | No | Level icon and word, three-step scale, pattern, score, stated purpose, "Why it was flagged", counterpoint ("In their favor" or "Still noted"). Question text, purpose row on the opener, five answer slots, why. Talk track and avoid list. A recommended stop says "You have enough to decide, or ask one more" and keeps the question quieter. A hard stop shows `stop.reason` and no question |
-| Outcome | `/sessions/:id/outcome` | Yes, once a session exists | Suggested outcome, questions answered. Teller's decision: Proceed, Slow down, Escalate, Report. All four stay available while the visit is open. The highlighted one is only a suggestion. Report is never highlighted. Teller name. Record decision, enabled once a choice and a name are set. After the visit closes, the choices, the name field, and Record decision are gone. The card shows the recorded decision and Start new customer |
-| Handoff | `/sessions/:id/handoff` | Yes, once a session exists | Title from the recorded outcome (`Handoff — Escalated by teller` when the teller escalated). Short session id (first eight characters of a UUID) with the full id on the tooltip and Copy. Mode, questions answered, level badge, score, pattern, stated purpose, suggested outcome, teller's decision, recorded by, stop. "Why it was flagged" and the counterpoint line |
+| Outcome | `/sessions/:id/outcome` | Yes (hint until a visit exists) | Suggested outcome, questions answered. Teller's decision: Proceed, Slow down, Escalate, Report. All four stay available while the visit is open. The highlighted one is only a suggestion. Report is never highlighted. Teller name. Record decision, enabled once a choice and a name are set. After the visit closes, the choices, the name field, and Record decision are gone. The card shows the recorded decision and Start new customer. No Undo above the heading |
+| Handoff | `/sessions/:id/handoff` | Yes (hint until a visit exists) | Title from the recorded outcome (`Handoff — Escalated by teller` when the teller escalated). Short session id (first eight characters of a UUID) with the full id on the tooltip and Copy. Mode, questions answered, level badge, score, pattern, stated purpose, suggested outcome, teller's decision, recorded by, stop. "Why it was flagged" and the counterpoint line. No Undo above the heading |
 | History | `/sessions` | No | Live rows from `GET /sessions`. Practice is a second request, `GET /sessions?mode=practice`. Session id, mode, opened, closed, library version |
 | Health | `/health` | No | `GET /health` only. Decision engine, model, typical response, slow response, last slow response, fallback rate, rejections, agreement with the rules. The screen does not change the engine. `/settings` redirects here |
 | Missing page | any other path, or a session route with no visit | No | "Page not found" or "Start a customer first", with a link back to Home. `/health` and History (`/sessions`) still render without a visit |
@@ -112,7 +112,7 @@ Teller-facing copy does not show `sig.*`, `chip.*`, `mit.*`, `pat.*`, `purpose.*
 | Confidence `null` | Not applicable (rules engine) |
 | Strength | Strong factor, Moderate factor, or Minor factor from `\|weight\| / sum(\|weight\|)` in that response. `>= 1/3` strong, `>= 1/6` moderate, otherwise minor. This is presentation of server weights. It is not a new score |
 
-Signal source is Observed or Teller confirmed. Customer-file rows may also say Not yet or Dismissed.
+Signal source is Observed or Teller confirmed. That badge is a compact pill on the same row as the factor label, next to confirm and dismiss. Customer-file rows may also say Not yet or Dismissed. A dismissed copilot row stays visible and offers Restore. Undo reverses the last teller confirm, dismiss, or restore; otherwise it posts `/undo`.
 
 ## Accessibility
 
@@ -139,9 +139,8 @@ While it is on, which is always:
 - Context, Session, History, and Health are off the nav. The routes still exist
 - Changing the simulated customer resets the session without a confirm dialog
 - The current-event caption is the larger size
-- Keys that work: `?` help, `P` play/pause, `N` step, Escape closes help and dialogs
-- Keys that do not fire: `R`, `C`, `D`, `E`, `[`, `]`
-- Restart and Escalate in the UI still ask for confirmation. Escalate posts `{ outcome: "escalate", actor: "teller" }` and opens handoff
+- Keys that work: `?` help, `P` play/pause, `N` step, `R` restart, `C` confirm, `D` dismiss, `E` escalate, `[` / `]` switch customer. Escape closes help and dialogs
+- Restart confirm button reads Restart. Escalate posts `{ outcome: "escalate", actor: "teller" }` and opens handoff
 
 ## Live and sample
 
@@ -218,7 +217,11 @@ The gap sentence ("not in this response") shows only when `explanation` is absen
 | `?` | Show or hide shortcut help. Escape closes it |
 | `P` | Play or pause |
 | `N` | Step one customer event |
-| `R`, `C`, `D`, `E`, `[`, `]` | Not active. Restart and Escalate remain buttons with confirm dialogs |
+| `R` | Restart. Confirm button reads Restart |
+| `C` | Confirm the latest signal |
+| `D` | Dismiss the latest signal |
+| `E` | Escalate to the supervisor |
+| `[` / `]` | Switch simulated customer |
 
 Typing in a field, and holding Ctrl, Alt, or Meta, does not trigger these keys.
 
