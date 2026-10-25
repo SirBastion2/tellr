@@ -2342,4 +2342,29 @@ GATE PASS (b)
 - **Questions logged:** Q-015 (answered: CHANGE-006)
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/111. Do not merge. Cutoffs shown: `Clear: 0–24`, `Caution: 25–59`, `High concern: 60–100`. No new dependency. No screenshots or videos.
 
+---
+
+### [B] Copilot level icon sits in the pill — Cloud agent — 2026-10-25 06:52
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 187 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  52 passed (52)
+      Tests  187 passed (187)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/workstation/CopilotStrip.tsx`, `web/src/index.css`, `web/src/copilotTheme.test.tsx`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - The existing Clear / Caution / High SVGs in `web/src/ui/LevelIcon.tsx` stay as they are (ARCHITECTURE workstation: level is an icon plus a word). Copilot had the icon in a side grid cell centered on the badge + Urgency Score + reason, so the triangle sat outside the pill, lower-left, in the card text color.
+  - The icon now sits inside `.tc-level-badge`, which is already `inline-flex` and `align-items: center` (same placement as Handoff). `.tc-level-badge svg` is `display: block; flex: 0 0 auto; align-self: center` so Clear, Caution, and High share one 20×20 box. Pill padding, type, colors, and min-height are unchanged.
+- **Questions logged:** none
+- **The next agent needs to know:** No contract / engine / library / golden edits. No new dependency. No screenshots or videos. ARCHITECTURE.md unchanged (no files moved).
+
 
