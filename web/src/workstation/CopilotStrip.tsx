@@ -392,42 +392,32 @@ export function CopilotStrip({
       ) : null}
       </div>
       {closed ? null : (
-        <div className="tc-copilot-actions" style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--tc-space-2, 8px)' }}>
-          {onUndo ? (
-            <button
-              type="button"
-              className="tc-btn tc-undo"
-              data-variant="secondary"
-              data-testid="undo"
-              title="Undo the last signal"
-              style={roundIconButton(secondaryStyle)}
-              disabled={pending}
-              onClick={() => onUndo()}
-            >
-              <UndoIcon />
-              <span className="tc-sr">Undo</span>
-            </button>
-          ) : null}
+        <div className="tc-copilot-actions">
           <button
             type="button"
-            className="tc-btn"
-            data-variant="danger"
+            className="tc-btn tc-frost tc-escalate"
             data-testid="escalate"
             title="Escalate to supervisor (E)"
             data-loading={pending ? 'true' : 'false'}
             aria-busy={pending}
             disabled={pending}
-            style={{
-              ...controlStyle,
-              backgroundColor: 'var(--tc-risk-high-bg)',
-              color: 'var(--tc-risk-high-fg)',
-              borderColor: 'transparent',
-              flex: '1 1 12rem',
-            }}
             onClick={onEscalate}
           >
             Escalate to supervisor
           </button>
+          {onUndo ? (
+            <button
+              type="button"
+              className="tc-btn tc-frost tc-undo"
+              data-testid="undo"
+              title="Undo the last signal"
+              aria-label="Undo"
+              disabled={pending}
+              onClick={() => onUndo()}
+            >
+              <UndoIcon />
+            </button>
+          ) : null}
         </div>
       )}
       <div

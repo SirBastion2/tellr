@@ -53,6 +53,7 @@ describe('Handoff screen', () => {
     for (const row of reasonRows) {
       expect(row.getAttribute('data-status')).toBe('Observed')
       expect(row.querySelector('.tc-badge')?.textContent).toBe('Observed')
+      expect((row as HTMLElement).style.flexDirection).toBe('column')
     }
     expect(screen.getByTestId('handoff-suggested').textContent).toBe('Slow down')
     expect(screen.getByTestId('handoff-suggested').getAttribute('data-outcome')).toBe(projection.suggested_outcome)

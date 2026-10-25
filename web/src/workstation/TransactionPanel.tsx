@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { formatElapsed, timelineElapsedMs } from '../demo/clock'
 import type { CustomerEvent, CustomerFile } from '../demo/customers'
 import { Emphasis } from '../ui/emphasis'
@@ -69,13 +70,17 @@ export function TransactionPanel({
   )
 }
 
+const STEP_REVEAL_MS = 2500
+
 export function StepCard({
   customer,
   fired,
+  playing = false,
 }: {
   customer: CustomerFile
   fired: number
   presenter?: boolean
+  playing?: boolean
 }) {
   const current = fired > 0 ? customer.events[fired - 1] : null
   const names = personalNamesFrom(customer.profile.name)
@@ -85,8 +90,36 @@ export function StepCard({
     ? `Step ${fired} · ${formatElapsed(elapsed)} · ${eventSpeaker(current, names)}`
     : 'Customer File'
   const text = current ? redactPersonalCopy(current.text, names) : ''
+  const [seen, setSeen] = useState({ customer: customer.id, fired })
+  const [pulse, setPulse] = useState(false)
+  if (seen.customer !== customer.id) {
+    setSeen({ customer: customer.id, fired })
+    if (pulse) {
+      setPulse(false)
+    }
+  } else if (seen.fired !== fired) {
+    setSeen({ customer: customer.id, fired })
+    setPulse(playing && fired > 0)
+  }
+
+  useEffect(() => {
+    if (!pulse) {
+      return
+    }
+    const timer = window.setTimeout(() => setPulse(false), STEP_REVEAL_MS)
+    return () => window.clearTimeout(timer)
+  }, [pulse, fired, customer.id])
+
   return (
-    <div className="tc-step-card" data-testid={current ? 'demo-event' : undefined} data-kind={current?.kind} hidden={!current}>
+    <div
+      className="tc-step-card"
+      data-testid={current ? 'demo-event' : undefined}
+      data-kind={current?.kind}
+      data-revealed={pulse ? 'pulse' : 'idle'}
+      aria-live="polite"
+      aria-atomic="true"
+      hidden={!current}
+    >
       <StepSwap
         stepKey={`${customer.id}:${fired}`}
         direction={direction}

@@ -115,7 +115,8 @@ export function HandoffScreen({
                   data-testid="handoff-reason"
                   data-id={signal.id}
                   data-status={signal.status ?? undefined}
-                  style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--tc-space-2)', alignItems: 'baseline' }}
+                  className="tc-handoff-reason"
+                  style={{ display: 'flex', flexDirection: 'column', flexWrap: 'nowrap', alignItems: 'flex-start', gap: 'var(--tc-space-1, 4px)' }}
                 >
                   <strong>{signal.label}</strong>
                   {signal.status ? <span className="tc-badge">{signal.status}</span> : null}
