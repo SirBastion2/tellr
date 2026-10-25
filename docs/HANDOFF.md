@@ -1607,14 +1607,14 @@ GATE PASS (a)
 
 ### [B] Live sessions, one fact list, demo layout — Agent B — 2026-10-24 23:05
 - **Status:** done
-- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 89 tests, contract OK)
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 90 tests, contract OK) on `7d6d2eb`
 
 ```
 ── typecheck
 ── lint
 ── test
  Test Files  29 passed (29)
-      Tests  89 passed (89)
+      Tests  90 passed (90)
 ── contract
 contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
 
