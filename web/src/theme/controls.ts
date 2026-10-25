@@ -11,7 +11,7 @@ export const controlStyle: CSSProperties = {
   borderRadius: 'var(--tc-radius-control, 999px)',
   fontFamily: 'inherit',
   fontWeight: 'var(--tc-font-weight, 500)' as CSSProperties['fontWeight'],
-  padding: '0 12px',
+  padding: 'var(--tc-space-control-pad-y, 8px) var(--tc-space-control-pad-x, 12px)',
 }
 
 export const inputFill = 'var(--tc-input, #e7e5e4)'

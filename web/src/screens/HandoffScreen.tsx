@@ -47,7 +47,7 @@ export function HandoffScreen({
   projection: HandoffProjection | null
 }) {
   return (
-    <section data-testid="handoff-screen" className="tc-card">
+    <section data-testid="handoff-screen" className="tc-card tc-screen">
       <PageTitle>{projection ? handoffTitle(projection.outcome, projection.actor) : 'Handoff'}</PageTitle>
       {projection ? (
         <>
@@ -96,7 +96,7 @@ export function HandoffScreen({
           </FactGrid>
           <SectionHeading>Why it was flagged</SectionHeading>
           {projection.risk.reasons.length > 0 ? (
-            <ul style={{ margin: 0, paddingLeft: '1.2rem', display: 'grid', gap: 6 }}>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem', display: 'grid', gap: 'var(--tc-space-2)' }}>
               {projection.risk.reasons.map((reason) => (
                 <li key={reason.id} data-testid="handoff-reason">
                   <strong>{reason.label}</strong>

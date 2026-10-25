@@ -9,15 +9,15 @@ const card: CSSProperties = {
   color: 'var(--tc-text)',
   border: '1px solid var(--tc-glass-border)',
   borderRadius: 'var(--tc-radius-card)',
-  padding: 16,
+  padding: 'var(--tc-space-4)',
   display: 'grid',
-  gap: 12,
+  gap: 'var(--tc-space-3)',
 }
 
 const kv: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: '9.5rem minmax(0, 1fr)',
-  gap: '8px 16px',
+  gap: 'var(--tc-space-2) var(--tc-space-4)',
   margin: 0,
   alignItems: 'baseline',
 }
@@ -32,15 +32,15 @@ export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) 
   const customer = demo ? customerById(demo.customerId) : null
 
   return (
-    <section data-testid="customer-screen" style={{ display: 'grid', gap: 16 }}>
-      <div style={{ display: 'grid', gap: 8 }}>
+    <section data-testid="customer-screen" className="tc-screen">
+      <div className="tc-stack-heading">
         <PageTitle>Customer file</PageTitle>
         <p data-testid="synthetic-banner" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
           Practice data. The name and age band stay on this screen. They are not sent to the copilot.
         </p>
       </div>
       {demo ? (
-        <label htmlFor="customer-file-picker" style={{ display: 'grid', gap: 4, maxWidth: 360 }}>
+        <label htmlFor="customer-file-picker" className="tc-stack-heading" style={{ maxWidth: 360 }}>
           <span style={term}>Simulated customer</span>
           <select
             id="customer-file-picker"

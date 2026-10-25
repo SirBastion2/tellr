@@ -32,6 +32,7 @@ export const HEADER_SCHEME_COLLAPSE_PX = 1280
 /**
  * Shared workstation density. `index.css` and `vars.ts` read these so type,
  * gaps, and cards scale in one place instead of per component.
+ * `space1`–`space5` are the 4 / 8 / 12 / 16 / 24 rhythm.
  */
 export const DENSITY = {
   typeTitle: 'clamp(1.1rem, 0.8vw + 0.82rem, 1.45rem)',
@@ -52,4 +53,16 @@ export const DENSITY = {
   cardPad: 'clamp(10px, 1.1vw, 18px)',
   wordmarkWidth: '110px',
   wordmarkHeight: '40px',
+  /** Shared 4 / 8 / 12 / 16 / 24 rhythm. Screens and chrome read these, not ad-hoc px. */
+  space1: '4px',
+  space2: '8px',
+  space3: '12px',
+  space4: '16px',
+  space5: '24px',
+  spaceHeader: '8px',
+  spaceHeaderContent: '16px',
+  spaceHeadingBody: '8px',
+  spaceBodyControl: '12px',
+  spaceControlPadY: '8px',
+  spaceControlPadX: '12px',
 } as const

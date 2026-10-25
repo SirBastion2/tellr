@@ -44,7 +44,7 @@ export function OutcomeScreen({
   }
 
   return (
-    <section data-testid="outcome-screen" className="tc-card">
+    <section data-testid="outcome-screen" className="tc-card tc-screen">
       <PageTitle>Outcome</PageTitle>
       {session && closed ? (
         <>
@@ -108,7 +108,7 @@ export function OutcomeScreen({
               )
             })}
           </ul>
-          <label className="block" htmlFor="outcome-actor" style={{ display: 'grid', gap: 4, fontWeight: 700 }}>
+          <label className="tc-stack-heading block" htmlFor="outcome-actor" style={{ fontWeight: 700 }}>
             Teller name
             <input
               id="outcome-actor"

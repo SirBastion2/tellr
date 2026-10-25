@@ -14,7 +14,7 @@ const control: CSSProperties = {
   minHeight: 40,
   boxSizing: 'border-box',
   gap: 8,
-  padding: '0 12px',
+  padding: 'var(--tc-space-control-pad-y, 8px) var(--tc-space-control-pad-x, 12px)',
 }
 
 const iconButton: CSSProperties = {
