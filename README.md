@@ -2,17 +2,22 @@
 
 # Tellr
 
-Tellr is a counter-side copilot that helps a bank teller spot a coached elder-fraud victim during a cash withdrawal: the model gets only anonymous ids and library labels, never a name, age, account details, memo, dollar amount, or the customer's own words, and that is safe for a bank because identity never reaches the model, the model runs locally, it only picks the next question and cannot set the score, the level, or the action, and the teller decides.
+Tellr is a copilot beside the teller at the counter. It helps them spot a customer who may have been coached through elder fraud during a cash withdrawal.
+
+The model gets only anonymous codes (ids) and short labels from the question list. It never gets a name, an age, account details, a memo, a dollar amount, or the customer's own words.
+
+That is safe for a bank. Identity never reaches the model. The model runs on the bank's own computer. It only picks the next question, and it cannot set the score, the level, or the action. The teller decides.
 
 Built by Team KotR for HackPSU Fall 2026: Sebastian Villalba and Jonathan Zheng.
 
 ## In 30 seconds
 
 - We built it for a teller at the counter, on a cash withdrawal, when the customer may have been coached through elder fraud.
-- Tellr exists to speed up deciding what to do at the counter. In an unusual case the teller uses their own judgment, and that is also what prevents a leak. The teller never types a note about the visit, so nothing they would write about the customer reaches the model, and anything the chips and answer taps do not cover stays with the teller. The only typing on screen is Teller name on Outcome. It is stored with the decision and is never sent to the model. [What goes in](#what-goes-in-and-why-its-safe-for-a-bank). Tellr never listens: no microphone, no audio software, no call recording, and no transcript of what the customer said. Voice input is not built (`docs/architecture.md`).
-- We added playback so a judge can watch a scripted visit in about 45 seconds at normal speed (Government impersonation). A real teller would not see that playback. The controls are in [The demo vs real use](#the-demo-vs-real-use).
-- `tellr` is the default look. PNC, M&T (`mtb`), and F.N.B. (`fnb`) are example looks of the same screen. They change the color, the font, and the logo. They are not affiliations or endorsements. The signals, questions, words to say, patterns, and score weights are files in `library/` that you can edit. A feed from a bank's core system is not built.
-- What the model may see, and why that is safe for a bank, is the table in [What goes in](#what-goes-in-and-why-its-safe-for-a-bank).
+- Tellr speeds up deciding what to do at the counter. In unusual cases the teller uses their own judgment, which also helps prevent information leaks.
+- The teller only taps. They tap signal chips and answer the copilot's next question with a tap. One signal those taps can record is "Told not to discuss with the bank." The engine builds the model's prompt itself from those taps, using a fixed allowlist of ids and library labels (anonymous codes and short names; a fixed list of approved items). A typed note is allowed but dropped before the prompt, so nothing the teller types reaches the model. The only typing on screen is Teller name on Outcome, and it is never sent to the model. [What goes in](#what-goes-in-and-why-its-safe-for-a-bank).
+- Tellr never listens. There is no microphone, no audio software, no call recording, and no transcript of what the customer said. Voice input is not built (`docs/architecture.md`).
+- We added playback so a judge can watch a scripted visit in about 45 seconds at normal speed ("Government impersonation"). A real teller would not see that playback. The controls are in [The demo vs real use](#the-demo-vs-real-use).
+- `tellr` is the default look. PNC, M&T (`mtb`), and F.N.B. (`fnb`) are example looks of the same screen. They change the color, the font, and the logo. They are not affiliations or endorsements. The signals, questions, words to say, scam patterns, and score weights are files in `library/` that you can edit. A feed from a bank's core system is not built.
 
 **Jump to:** [In 30 seconds](#in-30-seconds) · [The problem](#the-problem) · [Why a Teller Copilot](#why-a-teller-copilot) · [What goes in](#what-goes-in-and-why-its-safe-for-a-bank) · [Try it in two minutes](#try-it-in-two-minutes) · [How we built it with Cursor](#how-we-built-it-with-cursor) · [The demo vs real use](#the-demo-vs-real-use) · [The Llama 8B and benchmarks](#the-llama-8b-and-benchmarks) · [Templates](#templates) · [How a teller uses it](#how-a-teller-uses-it) · [Safety and limitations](#safety-and-limitations) · [Specs and tech stack](#specs-and-tech-stack) · [Sources](#sources)
 
@@ -30,16 +35,16 @@ Staff at the counter have stopped losses in published bank programs. A 2019 AARP
 
 ## What goes in, and why it's safe for a bank
 
-A signal chip looks like "Mentions urgency, secrecy, or being told what to say," and the next question is answered with a tap. The engine builds the model's prompt from those taps. An allowlist, a fixed list of approved items, keeps that prompt to anonymous ids and short library labels. If some other program sends a note, the server can store it, and the prompt builder rejects it. In the demo a script posts the chips on a timer, and on the coached files it also posts the answer taps. [The demo vs real use](#the-demo-vs-real-use).
+A chip the teller can tap is "Mentions urgency, secrecy, or being told what to say." How the demo posts taps is in [The demo vs real use](#the-demo-vs-real-use).
 
 | Model sees | Model never sees |
 |---|---|
-| Anonymous ids for the signals the teller noted, the purpose the customer stated, the answers, the reasons already on the score, the matched pattern, and the next questions. Also the library's short labels for those signals, purposes, and questions. | Name, age, account details, how long they have banked, their usual withdrawal, Channels (how they usually bank), account activity, the memo, the dollar amount and its size bracket, and the customer's own words. |
+| Anonymous codes for the signals the teller noted, the purpose the customer stated, the answers, the reasons already on the score, the matched pattern, and the next questions. Also the short names for those signals, purposes, and questions. | Name, age, account details, how long they have banked, their usual withdrawal, Channels (how they usually bank), account activity, the memo, the dollar amount and its size bracket, and the customer's own words. |
 
 - The model only picks the next question. It cannot set the score, the level, or the action. The rules set the score. The purpose the customer stated only picks questions, and it is not part of the score. The teller decides. That table is everything the model may be shown.
 - If the model is slow, down, or names a question it was not allowed to pick, the rules pick the question.
 - It runs on this computer by default. A hosted model is optional, and off unless it is turned on. The product starts on the rules, with no model required.
-- The log keeps the visit type, the time, which version of the library files was used, the withdrawal size bracket, and anonymous ids for the signals and answers. It does not keep an account number or the customer's words. A teller's typed name is stored with the decision. On screen, the case file can show how long they have banked, a typical withdrawal, and Channels. It does not show a name, an age, or gendered pronouns. Account activity is not shown and not sent. The memo, the type, and the dollar amount stay on screen and are not sent. See `docs/architecture.md`.
+- The log keeps the visit type, the time, which version of the library files was used, the withdrawal size bracket, and anonymous codes for the signals and answers. It does not keep an account number or the customer's words. A teller's typed name is stored with the decision. On screen, the case file can show how long they have banked, a typical withdrawal, and Channels. It does not show a name, an age, or gendered pronouns. Account activity is not shown and not sent. The memo, the type, and the dollar amount stay on screen and are not sent. See `docs/architecture.md`.
 
 ## Try it in two minutes
 
@@ -54,11 +59,11 @@ Demo video: link to be added
 
 ## How we built it with Cursor
 
-We built Tellr together. We built the engine, the evaluation, the screen and the API, and we ran the benchmarks on an RTX 5070 Laptop. Agents wrote the code.
+We built Tellr together. We built the scoring engine, the measured checks, the screen, and the web service, and we ran the benchmarks on an RTX 5070 Laptop. Agents wrote the code.
 
-We split the work into written tasks, then into small fixes. Each one sat on its own working copy (a branch) and its own pull request, with a short note for the next person (`docs/handoff/`). When a task had its own folders, we added an agent. When two tasks would edit the same files, or the shared agreement between the engine and the screen, we left that work with one agent so the copies would not collide (`docs/ROSTER.md`; `WORKFLOW.md`). The written plan uses four building agents, and a fifth only after the shared screen files stop changing (`docs/ROSTER.md`). Our cap was 12 agents at once. We did not stay at that cap. Open pull requests peaked at 9, at 8:18 PM UTC on 24 Oct 2026. If an agent got stuck, we started a fresh chat with the task and the newest note (`WORKFLOW.md`). The writer for the separate visit set was a new agent, used once (`docs/ROSTER.md`).
+We split the work into written tasks, then into small fixes. Each one sat on its own working copy (a branch) and its own pull request (a GitHub review), with a short note for the next person (`docs/handoff/`). We decided how many agents to run from the work in front of us. We added an agent when a task touched its own folders. We held back when tasks shared files, or shared the written rules the engine and the screen both follow (`docs/ROSTER.md`; `WORKFLOW.md`). The written plan uses four building agents, and a fifth only after the shared screen files stop changing (`docs/ROSTER.md`). Our cap was 12 agents at once. We did not stay at that cap. Open pull requests peaked at 9. If an agent got stuck, we started a fresh chat with the task and the newest note (`WORKFLOW.md`). The writer for the separate visit set was a new agent, used once (`docs/ROSTER.md`).
 
-An automated check, `scripts/gate.sh`, had to pass before we merged. We merged one pull request at a time: 151 have merged, and no two landed in the same second. The engine side and the screen side wrote to each other in `docs/A_TO_B.md` and `docs/B_TO_A.md`. A problem in the other side's files was written in `docs/CROSS_LANE.md` and left for that side to fix. The shared agreement changes only when we both approve a written change (`WORKFLOW.md`).
+An automated check, `scripts/gate.sh`, had to pass before we merged. We merged one pull request at a time. 152 have merged. The engine side and the screen side wrote to each other in `docs/A_TO_B.md` and `docs/B_TO_A.md`. A problem in the other side's files was written in `docs/CROSS_LANE.md` and left for that side to fix. Those shared rules change only when we both approve a written change (`WORKFLOW.md`).
 
 The same path covered those tasks, including the one-time run on a separate set of visits (`docs/A08_HELDOUT_RUN.md`), the screen tasks, and fixes such as the badge on the Handoff screen (`docs/handoff/20261025-0935-handoff-observed-badge.md`).
 
@@ -66,13 +71,13 @@ The same path covered those tasks, including the one-time run on a separate set 
 
 The page you open always loads a simulated customer, so you see a Simulated customer picker, Play, Step, Restart, a 1× / 2× / 4× speed control, an elapsed timer, the script timeline, a header reading `Simulation: <customer title>`, and a Practice data note. The screen walk-through is in [How a teller uses it](#how-a-teller-uses-it).
 
-A scripted file plays on a timer and posts the signals a teller would tap, so the teller does not tap them. Government impersonation, Romance, crypto cash, and Contractor cash, coached also post the answer taps. Car down payment and Routine Friday cash post no signals and no answers. The demo never sends a typed note. With the server running, those posts are scored as a teller's own taps would be: the same events and the same version of the library files produce the same level, reasons, pattern, and question (`docs/architecture.md`). With no server, the page shows a saved reply and does not score it. The copilot, the score, the suggested action, and Handoff read that same session.
+A scripted file plays on a timer and posts the signals a teller would tap, so the teller does not tap them. "Government impersonation", "Romance, crypto cash", and "Contractor cash, coached" also post the answer taps. "Car down payment" and "Routine Friday cash" post no signals and no answers. The demo never sends a typed note. With the server running, those posts are scored as a teller's own taps would be: the same events and the same version of the library files produce the same level, reasons, pattern, and question (`docs/architecture.md`). With no server, the page shows a saved reply and does not score it. The copilot, the score, the suggested action, and Handoff read that same session.
 
 A live visit loads no scenario (`docs/architecture.md`). With no simulated customer, the header reads `LIVE — no scenario loaded`.
 
 ## The Llama 8B and benchmarks
 
-The question picker is **Meta-Llama-3.1-8B-Instruct**, an 8-billion-parameter model, quantized (stored in a smaller form) as **Q4_K_M**, on an RTX 5070 Laptop (8151 MiB; the 8B used 7379 MiB on this bench). Llama-3.2-3B-Instruct Q4_K_M is the smaller backup (p50 273.2 ms, p95 296.3 ms). p50 is the typical wait and p95 is the slow end. Both are defined under the table.
+The question picker is **Meta-Llama-3.1-8B-Instruct**, an 8-billion-parameter model, quantized (stored in a smaller form) as **Q4_K_M**, on an RTX 5070 Laptop (8151 MiB of graphics memory; the 8B used 7379 MiB on this bench). Llama-3.2-3B-Instruct Q4_K_M is the smaller backup (p50 273.2 ms, p95 296.3 ms). p50 is the typical wait and p95 is the slow end. Both are defined under the table.
 
 | Metric | Figure |
 |---|---|
@@ -131,11 +136,11 @@ Cuyahoga County's Scam Squad is related teller-based work. At a participating cr
 
 Three patterns are marked for a compliance review and include no signals the score can use (`library/patterns.yaml`).
 
-Open items: the training steps for the 8B are not in the repo; no real bank pilot; no compliance sign-off; saved visits are not encrypted; no security review; no rule for audits or for how long records are kept (`store/sqlite.py` can delete closed visits, and the server does not call it). The Outcome screen stores a typed teller name. Still open in the design: Spanish wording, whether the customer's words should reach the model, the pattern name on the customer's side of the screen, and more than one teller (`docs/architecture.md`).
+Open items: the training steps for the 8B are not in the repo; no real bank pilot; no compliance sign-off; saved visits are not encrypted; no security review; no rule for audits or for how long records are kept (`store/sqlite.py` can delete closed visits, and the server does not call it). The Outcome screen stores a typed teller name. Still open in the design: Spanish wording, whether the customer's words should reach the model, the scam-pattern name on the customer's side of the screen, and more than one teller (`docs/architecture.md`).
 
 ## Specs and tech stack
 
-We trained the Llama 8B (the 8-billion-parameter model) on an RTX 5070 laptop GPU (the training steps are not in the repo; see Open items). The scoring engine is Python 3.12 or newer. The web service is FastAPI, and the data checks are Pydantic 2 or newer. `reference_impl.py` is the scoring reference the tests compare against. The screen is React 19.3.1, Vite 8.3.5, TypeScript 6.0.3, and Tailwind CSS 4.3.3. Visits are stored in SQLite, and a stored event cannot be edited. The shared agreement is version 2.0.0. Every visit reply is one complete snapshot.
+We trained the Llama 8B (the 8-billion-parameter model) on an RTX 5070 laptop GPU (the training steps are not in the repo; see Open items). The scoring engine is Python 3.12 or newer. The web service is FastAPI, a Python toolkit for the web, and the data checks are Pydantic 2 or newer, a checker for the shape of the data. `reference_impl.py` is the scoring reference the tests compare against. The screen is React 19.3.1, Vite 8.3.5, TypeScript 6.0.3, and Tailwind CSS 4.3.3. Visits are stored in SQLite, a small database file, and a stored event cannot be edited. The shared rules between the engine and the screen are version 2.0.0. Every visit reply is one complete picture of the visit.
 
 ## Sources
 
