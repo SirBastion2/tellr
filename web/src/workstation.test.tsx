@@ -53,10 +53,14 @@ const afterSecrecy = asSession(
 )
 
 describe('workstation answers', () => {
-  it('keeps the server question as suggested action and has no chip answer panel', () => {
+  it('shows talk_track.action when the server sent one, and the question when it did not', () => {
     const { rerender } = render(<HomeScreen library={library} session={opener} demo={demo()} />)
-    expect(screen.getByTestId('copilot-action').textContent).toBe(opener.question?.text)
-    expect(suggestedAction(opener)).toBe(opener.question?.text)
+    expect(opener.talk_track.action).toBe('Complete the withdrawal.')
+    expect(suggestedAction(opener)).toBe('Complete the withdrawal.')
+    expect(screen.getByTestId('copilot-action').textContent).toBe('Complete the withdrawal.')
+    expect(screen.getByTestId('copilot-action').textContent).not.toBe(opener.question?.text)
+    expect(screen.getByTestId('read-aloud').textContent).toBe(opener.talk_track.lines.join(' '))
+    expect(screen.getByTestId('read-aloud').textContent).not.toContain('Complete the withdrawal.')
     expect(screen.queryByTestId('answer-panel')).toBeNull()
     expect(screen.queryByText(/How did they answer/i)).toBeNull()
     expect(screen.queryByTestId('answer-chip')).toBeNull()
@@ -69,28 +73,56 @@ describe('workstation answers', () => {
     expect(screen.queryByText('Raw level')).toBeNull()
 
     rerender(<HomeScreen library={library} session={secrecy} demo={demo()} />)
-    expect(screen.getByTestId('copilot-action').textContent).toBe(secrecy.question?.text)
-    expect(suggestedAction(secrecy)).toBe(secrecy.question?.text)
+    expect(secrecy.talk_track.action).toBe('Pause the cash. Verify the story, and offer a cashier\'s check.')
+    expect(screen.getByTestId('copilot-action').textContent).toBe(secrecy.talk_track.action)
+    expect(suggestedAction(secrecy)).toBe(secrecy.talk_track.action)
+    expect(screen.getByTestId('read-aloud').textContent).toBe(secrecy.talk_track.lines.join(' '))
     expect(screen.queryByTestId('answer-panel')).toBeNull()
 
     rerender(<HomeScreen library={library} session={afterSecrecy} demo={demo()} />)
     expect(screen.getByTestId('copilot-level').textContent).toBe('High')
-    expect(screen.getByTestId('copilot-action').textContent).toBe(afterSecrecy.question?.text)
-    expect(suggestedAction(afterSecrecy)).toBe(afterSecrecy.question?.text)
+    expect(afterSecrecy.talk_track.action).toBe('Ask the customer to step aside and get a manager.')
+    expect(screen.getByTestId('copilot-action').textContent).toBe(afterSecrecy.talk_track.action)
+    expect(suggestedAction(afterSecrecy)).toBe(afterSecrecy.talk_track.action)
     expect(suggestedAction(afterSecrecy)).not.toBe(opener.question?.text)
+    expect(screen.getByTestId('read-aloud').textContent).toBe(afterSecrecy.talk_track.lines.join(' '))
+
+    const legacyTrack = { ...opener.talk_track }
+    delete legacyTrack.action
+    const legacy: SessionState = { ...opener, talk_track: legacyTrack }
+    rerender(<HomeScreen library={library} session={legacy} demo={demo()} />)
+    expect(suggestedAction(legacy)).toBe(legacy.question?.text)
+    expect(screen.getByTestId('copilot-action').textContent).toBe(legacy.question?.text)
+
+    const blank: SessionState = {
+      ...opener,
+      talk_track: { ...opener.talk_track, action: '   ' },
+    }
+    expect(suggestedAction(blank)).toBe(blank.question?.text)
   })
 
   it('keeps suggested action on a hard stop and still has no answer chips', () => {
+    const track = { ...opener.talk_track }
+    delete track.action
     const stopped: SessionState = {
       ...opener,
       question: null,
       stop: { kind: 'hard', reason: 'enough to escalate' },
-      talk_track: { ...opener.talk_track, lines: ['Pause and call the supervisor.'] },
+      talk_track: { ...track, lines: ['Pause and call the supervisor.'] },
     }
-    render(<HomeScreen library={library} session={stopped} demo={demo()} />)
+    const { rerender } = render(<HomeScreen library={library} session={stopped} demo={demo()} />)
     expect(screen.getByTestId('copilot-action').textContent).toBe('Pause and call the supervisor.')
+    expect(screen.getByTestId('read-aloud').textContent).toBe('Pause and call the supervisor.')
     expect(screen.queryByTestId('answer-panel')).toBeNull()
     expect(screen.queryByTestId('answer-chip')).toBeNull()
+
+    const withAction: SessionState = {
+      ...stopped,
+      talk_track: { ...stopped.talk_track, action: 'Ask the customer to step aside and get a manager.' },
+    }
+    rerender(<HomeScreen library={library} session={withAction} demo={demo()} />)
+    expect(screen.getByTestId('copilot-action').textContent).toBe('Ask the customer to step aside and get a manager.')
+    expect(screen.getByTestId('read-aloud').textContent).toBe('Pause and call the supervisor.')
   })
 
   it('shows one Level row and a raw row only when the server values differ', () => {

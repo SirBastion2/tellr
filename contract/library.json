@@ -334,7 +334,8 @@
       "lines": [
         "Thanks for walking me through that."
       ],
-      "avoid": []
+      "avoid": [],
+      "action": "Complete the withdrawal."
     },
     {
       "id": "tt.slow_down",
@@ -346,7 +347,8 @@
       "avoid": [
         "You're being scammed.",
         "Who told you to say that?"
-      ]
+      ],
+      "action": "Pause the cash. Verify the story, and offer a cashier's check."
     },
     {
       "id": "tt.escalate",
@@ -356,21 +358,24 @@
       "avoid": [
         "Anything accusatory",
         "Anything the caller warned them the bank would say"
-      ]
+      ],
+      "action": "Ask the customer to step aside and get a manager."
     },
     {
       "id": "tt.bank_impersonation",
       "lines": [
         "Your bank will never ask you to move money to keep it safe."
       ],
-      "avoid": []
+      "avoid": [],
+      "action": "Pause the move and tell them the bank does not move money to keep it safe."
     },
     {
       "id": "tt.home_repair",
       "lines": [
         "Reputable contractors take checks and give written estimates."
       ],
-      "avoid": []
+      "avoid": [],
+      "action": "Verify the contractor and the written estimate before releasing cash."
     }
   ]
 }

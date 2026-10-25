@@ -72,7 +72,11 @@ def question_view(question_id: str, stage: str, lib: Library) -> dict[str, Any]:
 
 
 def talk_track_for(shown_lvl: str, pattern: Mapping[str, Any] | None, lib: Library) -> dict[str, Any]:
-    """§7.1: stage lines from the suggested outcome; pattern lines only while displayed."""
+    """§7.1: stage lines from the shown level; pattern lines only while a pattern is displayed.
+
+    CHANGE-007: copy the stage track's action when that library row has one.
+    Pattern lines do not replace it. avoid stays the stage list.
+    """
     wire = _LEVEL_WIRE.get(shown_lvl, shown_lvl)
     stage_id = _STAGE_TT[wire]
     tracks = {item.id: item for item in lib.talk_tracks}
@@ -86,12 +90,16 @@ def talk_track_for(shown_lvl: str, pattern: Mapping[str, Any] | None, lib: Libra
         if candidate in tracks:
             pat_id = candidate
             extra = list(tracks[candidate].lines)
-    return {
+    view: dict[str, Any] = {
         "stage": stage_id,
         "pattern": pat_id,
         "lines": list(stage.lines) + extra,
         "avoid": list(stage.avoid),
     }
+    action = stage.action.strip() if isinstance(stage.action, str) else ""
+    if action:
+        view["action"] = action
+    return view
 
 
 def public_state(state: Mapping[str, Any]) -> dict[str, Any]:

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "SessionState",
-  "description": "Architecture §11.2. CONTRACT_VERSION 2.0.0 (contract-v2). CHANGE-003: Interview = this object + GET /library + the client's last posted chips/purpose (Q-005, Q-010). CHANGE-005: optional nullable explanation and optional context_chips (absent or null/empty on old fixtures). session_id is store-assigned; notes/outcome/actor/closed are not projected (Q-011). Cross-field rules (question null only on a hard stop; reasons share the level's direction) live in scripts/check_contract.py (Q-004). Architecture §11.2's T2 example is illustrative; contract/fixtures/T2.json from reference_impl.py is the oracle.",
+  "description": "Architecture §11.2. CONTRACT_VERSION 2.0.0 (contract-v2). CHANGE-003: Interview = this object + GET /library + the client's last posted chips/purpose (Q-005, Q-010). CHANGE-005: optional nullable explanation and optional context_chips (absent or null/empty on old fixtures). CHANGE-007: optional talk_track.action (imperative teller move; absent on older payloads). session_id is store-assigned; notes/outcome/actor/closed are not projected (Q-011). Cross-field rules (question null only on a hard stop; reasons share the level's direction) live in scripts/check_contract.py (Q-004). Architecture §11.2's T2 example is illustrative; contract/fixtures/T2.json from reference_impl.py is the oracle.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -266,6 +266,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "action": {
+          "description": "CHANGE-007. Optional imperative teller move for this step. Not a question. Absent on older payloads.",
+          "type": "string"
         }
       }
     },

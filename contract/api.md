@@ -75,6 +75,13 @@ Every response that returns a session returns a full `SessionState`
   from `web/` and not from live weights. Absent on older health payloads.
   Health stays untyped (CHANGE-003 / Q-006 still deferred). T1–T7 fixtures,
   SessionState, goldens, and `reference_impl.py` are unchanged.
+- **Suggested action (CHANGE-007, applied; additive).** `talk_track` may
+  include optional `action`: one short imperative teller move, not a
+  question. The engine copies it from the stage talk track (`tt.proceed`,
+  `tt.slow_down`, `tt.escalate`). `question.text`, `lines`, and `avoid` stay.
+  Absent on a payload, clients keep their previous suggested-action content.
+  Each `GET /library` talk track may carry the same optional string. No
+  `CONTRACT_VERSION` bump. `reference_impl.py` does not carry talk-track prose.
 - **Outcome and handoff appends (CHANGE-003 / Q-009, Q-011).** A valid
   `POST /sessions/{id}/outcome` appends `OutcomeRecorded` then `SessionClosed`.
   `GET /sessions/{id}/handoff` appends `ManagerRequested` and returns the manager
