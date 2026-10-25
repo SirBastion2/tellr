@@ -218,6 +218,24 @@ Four bank themes share one layout. `?theme=` or the `T` key cycles `tellr` → `
 
 The contract in `contract/` is the frozen interface. `CONTRACT_VERSION` is 2.0.0. Every session response is a full `SessionState`. Fixtures T1–T7 are generated from `reference_impl.py`, and both sides test against them. A change is a written `CHANGE-nnn`, approval from both drivers, then an apply on `main` (`contract/api.md`; `WORKFLOW.md` §5).
 
+## Specs and tech stack
+
+| Piece | What the repo records | What it does |
+|---|---|---|
+| Training hardware | Sebastian states an RTX 5070 was used to train the Llama 8B. That training run is not written down in the repo. | The graphics card named for training the question-picking model. |
+| Inference hardware | NVIDIA GeForce RTX 5070 Laptop, 8151 MiB VRAM, driver 592.01, Windows. llama.cpp b11865, CUDA 13.4. `llama-server -ngl 99 -c 4096 -np 1`. The 8B used 7379 MiB in the latency bench (`docs/handoff/000-archive.md`, [A-03]; `docs/DECISIONS.md`). | The laptop that ran the measured question-picking calls and the eval. |
+| Base model | Meta-Llama-3.1-8B-Instruct, Q4_K_M, bartowski GGUF. Llama-3.2-3B-Instruct Q4_K_M is the fallback (`docs/DECISIONS.md`; `docs/handoff/000-archive.md`, [A-03]). | Picks one allowed question ID. It does not write the score or the words the teller reads. |
+| Fine-tune | Not described. No LoRA, QLoRA, epoch count, dataset size, or training time is in the repo. Tag `weights-frozen` (`82b788d`) freezes the scoring weights, not a Llama training checkpoint (`docs/handoff/000-archive.md`, [A-07]; `docs/A08_HELDOUT_RUN.md`). | The score table is frozen. How the 8B weights were trained is not in these files. |
+| Engine | Python >= 3.12. FastAPI, uvicorn, and Pydantic >= 2 are declared with no FastAPI version pin. Pytest and Ruff are the test and lint tools (`pyproject.toml`). `reference_impl.py` is the scoring oracle. Golden tests load `tests/golden/reference_weights.yaml` (`WORKFLOW.md` §4). | Folds the teller's taps into a score, a level, and reasons. The golden tests check that fold against the reference. |
+| Store | SQLite. Events reject updates (`store/sqlite.py`). | Keeps the visit log. |
+| Frontend | React 19.3.1, Vite 8.3.5, TypeScript 6.0.3 with `strict: true`, Tailwind CSS 4.3.3. Tests run on Vitest 5.0.5. The gate script asks for Node 20+ (`web/package.json`; `web/package-lock.json`; `web/tsconfig.json`; `scripts/gate.sh`). | Draws the workstation. It does not compute the score. |
+| API contract | `CONTRACT_VERSION` 2.0.0. Every session response is a `SessionState`. Fixtures T1–T7 come from `reference_impl.py` (`contract/api.md`). | The frozen shape both the engine and the screen share. |
+| Themes | `tellr`, `pnc`, `mtb`, `fnb`. Color, font, and brand mark (`ARCHITECTURE.md`). | Same screens, four bank looks. |
+| Gate | `scripts/gate.sh a` runs Ruff, pytest, import-linter, and the contract check. `scripts/gate.sh b` runs the TypeScript check, ESLint, Vitest, and the contract check (`scripts/gate.sh`). | The automated check a change has to pass. |
+| Development | Cursor agents, including cloud agents. One fresh agent per task, on its own branch. Two drivers steer (`docs/handoff/20261025-0828-signal-rows-no-observed.md`). | How the code was written. |
+
+The engine does the thinking that can be checked. The screen shows it. The 8B only chooses the next question. Sebastian states that model was trained on an RTX 5070. The notes in this repo describe the published Instruct model, quantized Q4_K_M, running on an RTX 5070 Laptop for inference. They do not record a training recipe.
+
 ## Templates
 
 The words on screen, and the bank chrome, are files. The model does not write them. There is no settings screen for editing them. A settings endpoint was rejected (`docs/DECISIONS.md`, Hour 2; `contract/api.md`).
