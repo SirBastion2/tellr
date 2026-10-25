@@ -278,6 +278,7 @@ button[data-loading='true'],
 .tc-facts dt,
 .tc-facts dd {
   min-width: 0;
+  margin: 0;
 }
 
 .tc-explain {

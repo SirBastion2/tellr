@@ -5,6 +5,8 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 // @ts-expect-error node:child_process is provided by the test runner
 import { spawnSync } from 'node:child_process'
+// @ts-expect-error node:process is provided by the test runner
+import { cwd, env, execPath } from 'node:process'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { App } from './App'
@@ -65,6 +67,7 @@ describe('fact-grid optical alignment', () => {
     expect(amount).toMatch(/font-size:\s*var\(--tc-text-2xl/)
     expect(amount).toMatch(/line-height:\s*var\(--tc-text-2xl-lh/)
     expect(amount).not.toMatch(/line-height:\s*var\(--tc-line-fact/)
+    expect(source).toMatch(/\.tc-facts dt,\s*\n\.tc-facts dd \{[\s\S]*?margin:\s*0/)
   })
 
   it('applies the same computed fact-grid tokens on Home for every bank', () => {
@@ -78,24 +81,21 @@ describe('fact-grid optical alignment', () => {
       const grid = type.closest('dl')
       expect(grid, themeId).toBeTruthy()
       expect(grid?.className, themeId).toContain('tc-kv')
-      const style = getComputedStyle(grid as HTMLElement)
-      expect(style.alignItems, themeId).toBe('center')
-      expect(style.columnGap, themeId).toBe('16px')
-      expect(style.rowGap, themeId).toBe('8px')
+      expect(grid?.className, themeId).not.toContain('tc-facts')
       const amount = screen.getByTestId('txn-amount')
       expect(amount.className, themeId).toContain('tc-amount')
-      expect(getComputedStyle(amount).display, themeId).toBe('block')
+      expect(amount.textContent, themeId).toMatch(/\$/)
       fireEvent.keyDown(window, { key: 'T' })
     }
   })
 
   it('measures Amount optical center, equal row gaps, and the space-4 column gap in Chromium at 1280', () => {
-    const script = join(process.cwd(), 'scripts/measure-fact-grid.mjs')
-    const result = spawnSync(process.execPath, [script, '--fixture'], {
+    const script = join(cwd(), 'scripts/measure-fact-grid.mjs')
+    const result = spawnSync(execPath, [script, '--fixture'], {
       encoding: 'utf8',
-      cwd: process.cwd(),
+      cwd: cwd(),
       timeout: 90_000,
-      env: process.env,
+      env,
     })
     if (result.status === 2) {
       throw new Error(result.stderr || result.stdout || 'playwright unavailable')

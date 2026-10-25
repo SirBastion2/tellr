@@ -9,7 +9,7 @@ import { createRequire } from 'node:module'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { fileURLToPath } from 'node:url'
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 const WEB_DIR = join(SCRIPT_DIR, '..')
@@ -114,7 +114,9 @@ function collectFacts(rootSelector) {
   const typeToAmountGapPx = Number((amountRow.top - typeRow.bottom).toFixed(2))
   const amountToMemoGapPx = Number((memoRow.top - amountRow.bottom).toFixed(2))
   const amountCenterDeltaPx = Number(Math.abs(midY(dts[1]) - midY(amountValue)).toFixed(2))
-  const columnGapPx = Number((amountRow.valueLeft - amountRow.labelRight).toFixed(2))
+  const labelColRight = Math.max(...dts.map((dt) => dt.getBoundingClientRect().right))
+  const valueColLeft = Math.min(...dds.map((dd) => dd.getBoundingClientRect().left))
+  const columnGapPx = Number((valueColLeft - labelColRight).toFixed(2))
   return {
     typeValue,
     alignItems: style.alignItems,
@@ -145,7 +147,8 @@ async function main() {
     console.error('playwright is not installed')
     process.exit(2)
   }
-  const { chromium } = await import(pathToFileURL(playwrightPath).href)
+  const require = createRequire(import.meta.url)
+  const { chromium } = require(playwrightPath)
   const browser = await chromium.launch({
     headless: true,
     args: ['--disable-gpu', '--no-sandbox'],
