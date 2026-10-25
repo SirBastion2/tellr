@@ -2443,6 +2443,6 @@ GATE PASS (b)
   - Confirm (✓) and dismiss (✕) stay the 48px circles on the copilot signal rows (`CopilotStrip`, architecture workstation). Both use grid `place-items: center`, `line-height: 1`, and padding 0 so the inline SVG sits in the middle of the circle. Size, fill, border, and radius are unchanged. The same styles apply in tellr, pnc, mtb, and fnb because those banks share the control.
   - The check stroke was half a unit right of the 24 viewBox center. Shifted that path left by 0.5 so the ink is centered. The X path was already centered.
 - **Questions logged:** none
-- **The next agent needs to know:** No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos. ARCHITECTURE.md unchanged (no files moved).
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/114. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos. ARCHITECTURE.md unchanged (no files moved).
 
 
