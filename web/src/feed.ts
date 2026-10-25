@@ -26,11 +26,17 @@ export function originText(source: ChipSource | undefined, confirmed: boolean): 
 export function listedChipIds(
   posted: readonly string[],
   chips: readonly ContextChipEcho[] | undefined,
+  dismissed: readonly string[] = [],
 ): string[] {
   const ids = [...posted]
   for (const chip of chips ?? []) {
     if (!ids.includes(chip.id)) {
       ids.push(chip.id)
+    }
+  }
+  for (const id of dismissed) {
+    if (!ids.includes(id)) {
+      ids.push(id)
     }
   }
   return ids

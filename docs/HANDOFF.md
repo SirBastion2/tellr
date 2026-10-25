@@ -1672,6 +1672,34 @@ Headless Chrome (`web/scripts/measure-fit.mjs`, live-API mode, F.N.B. theme, con
 
 ---
 
+### [B] Copilot card reversible actions and idle state — Agent B (Sebastian / Driver A UI lane) — 2026-10-25 03:50
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 101 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  31 passed (31)
+      Tests  101 passed (101)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/workstation/CopilotStrip.tsx`, `web/src/screens/HomeScreen.tsx`, `web/src/App.tsx`, `web/src/feed.ts`, `web/src/index.css`, `web/src/demo/types.ts`, `web/src/workstation/ExplanationPanel.tsx`, `web/src/copilotCard.test.tsx` (new), `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - All five stress-test bugs still reproduced on `c1b9d00` (#88). None were already fixed.
+  - Dismissed rows stay on Signals with Restore. Confirm/dismiss stay reversible; Undo reverses the last teller action, else posts `/undo` (architecture §12: render server state; workstation card).
+  - In-flight writes show “Updating copilot…” so the card never mixes two snapshots. After the last chip is gone, the mock/API still returns T1-open Clear plus the opener question and proceed talk track. That is one response; web does not rewrite it.
+  - Idle placeholder until Play or Step (`index === 0` and not playing), including after Start new customer. Undo/Escalate stay off.
+  - Origin badge is an inline pill on the factor row. Outcome and Handoff no longer show a stray Undo above the heading.
+- **Questions logged:** none
+- **The next agent needs to know:** PR is https://github.com/SirBastion2/tellr/pull/90. Do not merge. `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine / library edits. No new npm dependency. No screenshots.
+
+---
+
 ### [B] Demo polish: timer units, shortcuts, footer, width — Agent B (Sebastian / Driver A UI lane) — 2026-10-25 03:50
 - **Status:** done
 - **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 99 tests, contract OK)
