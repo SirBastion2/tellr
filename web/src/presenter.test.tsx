@@ -1,0 +1,62 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { mockRequest, resetMock } from '../mock/replay'
+import { App } from './App'
+import { PRESENTER_STORAGE_KEY } from './theme/tokens'
+
+function http(status: number, body: unknown) {
+  return Promise.resolve({
+    status,
+    text: () => Promise.resolve(body === undefined ? '' : JSON.stringify(body)),
+  })
+}
+
+describe('presenter mode', () => {
+  it('enlarges type, hides dev tabs, and limits shortcuts', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input)
+        const method = init?.method ?? 'GET'
+        const body = typeof init?.body === 'string' ? init.body : undefined
+        const path = url.replace(/^https?:\/\/[^/]+/, '')
+        const result = mockRequest(method, path, body ? (JSON.parse(body) as unknown) : undefined)
+        return http(result.status, result.body)
+      }),
+    )
+    window.history.replaceState({}, '', '/?present=1')
+    render(<App />)
+    const root = screen.getByTestId('theme-root')
+    expect(root.getAttribute('data-presenter')).toBe('true')
+    expect(root.style.fontSize).toBe('125%')
+    expect(screen.queryByRole('link', { name: 'Context' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Session' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'History' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Health' })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Home' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Customer file' })).toBeTruthy()
+    expect(screen.getByTestId('elapsed-timer').textContent).toBe('0:00')
+    expect(screen.getByTestId('event-caption').textContent).toMatch(/Press play/)
+    expect(window.localStorage.getItem(PRESENTER_STORAGE_KEY)).toBeNull()
+
+    fireEvent.keyDown(window, { key: 'r' })
+    expect(screen.queryByTestId('confirm-dialog')).toBeNull()
+    fireEvent.keyDown(window, { key: 'p' })
+    expect(screen.getByTestId('demo-play').getAttribute('aria-pressed')).toBe('true')
+    fireEvent.keyDown(window, { key: 'p' })
+
+    fireEvent.click(screen.getByTestId('demo-step'))
+    await waitFor(() => {
+      expect(screen.getByTestId('live-badge').textContent).toMatch(/Simulation:/)
+    })
+    fireEvent.change(screen.getByTestId('customer-picker'), { target: { value: 'government-impersonation' } })
+    expect(screen.queryByTestId('confirm-dialog')).toBeNull()
+    expect((screen.getByTestId('customer-picker') as HTMLSelectElement).value).toBe('government-impersonation')
+    await waitFor(() => {
+      expect(screen.getByTestId('live-badge').textContent).toBe('Simulation: Government impersonation')
+    })
+
+    resetMock()
+    vi.unstubAllGlobals()
+  })
+})

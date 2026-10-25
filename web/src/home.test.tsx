@@ -18,6 +18,8 @@ function demo(overrides: Partial<DemoView> = {}): DemoView {
     pending: false,
     showCase: false,
     confirmed: [],
+    presenter: false,
+    elapsedMs: 0,
     onSelectCustomer: () => undefined,
     onPlay: () => undefined,
     onPause: () => undefined,

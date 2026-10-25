@@ -1,7 +1,17 @@
+import { SOLID_CONTROLS } from '../chrome'
 import type { BankTheme } from '../types'
 import { FOOTER_TEXT } from '../tokens'
 
 /** PNC Bank. Orange accent, medium radius, strong elevation. */
+const risk = {
+  clearBg: '#F7F4F1',
+  clearFg: '#1A1208',
+  cautionBg: '#FFEDD5',
+  cautionFg: '#9A3412',
+  highBg: '#7F1D1D',
+  highFg: '#FFFFFF',
+}
+
 export const theme: BankTheme = {
   id: 'pnc',
   name: 'PNC',
@@ -47,12 +57,36 @@ export const theme: BankTheme = {
     active: '#EF7622',
     inactive: 'rgba(77, 89, 100, 0.85)',
   },
-  risk: {
-    clearBg: '#F7F4F1',
-    clearFg: '#1A1208',
-    cautionBg: '#FFEDD5',
-    cautionFg: '#9A3412',
-    highBg: '#7F1D1D',
-    highFg: '#FFFFFF',
+  risk,
+  ...SOLID_CONTROLS,
+  link: '#FFE4CC',
+  surface: '#1A2744',
+  light: {
+    wordmarkColor: '#9A3412',
+    background: {
+      color: '#F7F4F1',
+      image:
+        'radial-gradient(ellipse at 86% 12%, rgba(239, 118, 34, 0.28) 0%, rgba(239, 118, 34, 0) 46%), linear-gradient(160deg, #fffdfb 0%, #f7f4f1 48%, #ffe4cc 100%)',
+      repeat: 'no-repeat',
+      size: 'cover',
+    },
+    glass: {
+      fill: 'rgba(255, 255, 255, 0.86)',
+      border: 'rgba(0, 45, 114, 0.28)',
+      blur: '20px',
+      fallback: '#FFFFFF',
+    },
+    text: '#002D72',
+    mutedText: '#24303A',
+    inputFill: '#FFF1E6',
+    accent: '#C2410C',
+    button: '#EF7622',
+    buttonText: '#1A1208',
+    logoColor: '#9A3412',
+    progress: { active: '#C2410C', inactive: '#FDBA74' },
+    risk,
+    ...SOLID_CONTROLS,
+    link: '#9A3412',
+    surface: '#FFFFFF',
   },
 }

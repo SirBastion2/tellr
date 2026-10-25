@@ -17,6 +17,8 @@ export type DemoView = {
   pending: boolean
   showCase: boolean
   confirmed: readonly string[]
+  presenter: boolean
+  elapsedMs: number
   onSelectCustomer: (id: string) => void
   onPlay: () => void
   onPause: () => void

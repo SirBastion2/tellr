@@ -11,6 +11,26 @@ export type CustomerEvent = {
 export type CustomerActivity = {
   when: string
   description: string
+  amount: string
+}
+
+/**
+ * Playback length at 1× is the sum of `delayMs` (the wait before each event).
+ * 2× halves that sum and 4× quarters it, because the player divides by speed.
+ * Reduced motion uses a 0 wait. Targets leave a few seconds to narrate each beat:
+ * routine Friday 20s, car down payment 32s, government impersonation and
+ * romance/crypto 45s, contractor cash 60s.
+ */
+export const SCRIPT_TARGETS_MS: Readonly<Record<string, number>> = {
+  'benign-routine': 20_000,
+  'benign-car': 32_000,
+  'government-impersonation': 45_000,
+  'romance-crypto': 45_000,
+  'contractor-cash': 60_000,
+}
+
+export function scriptDurationMs(customer: CustomerFile, speed = 1): number {
+  return customer.events.reduce((sum, event) => sum + Math.round(event.delayMs / speed), 0)
 }
 
 export type CustomerFile = {
@@ -47,9 +67,9 @@ export const CUSTOMERS: readonly CustomerFile[] = [
       channels: 'Branch window',
     },
     activity: [
-      { when: 'Last Tuesday', description: 'Social Security deposit, $1,842' },
-      { when: 'Last Friday', description: 'Debit card, grocery, $64' },
-      { when: 'Three weeks ago', description: 'Cash withdrawal, $200' },
+      { when: 'Last Tuesday', description: 'Social Security deposit', amount: '$1,842' },
+      { when: 'Last Friday', description: 'Debit card, grocery', amount: '$64' },
+      { when: 'Three weeks ago', description: 'Cash withdrawal', amount: '$200' },
     ],
     transaction: {
       type: 'Cash withdrawal',
@@ -60,35 +80,35 @@ export const CUSTOMERS: readonly CustomerFile[] = [
     events: [
       {
         id: 'window',
-        delayMs: 0,
+        delayMs: 4000,
         kind: 'dialogue',
         text: 'Helen steps up to the window and sets her purse on the counter.',
         chips: [],
       },
       {
         id: 'phone',
-        delayMs: 2200,
+        delayMs: 14000,
         kind: 'dialogue',
         text: 'She stays on the phone the whole time. The caller is still talking.',
         chips: ['chip.on_phone'],
       },
       {
         id: 'directing',
-        delayMs: 2200,
+        delayMs: 14000,
         kind: 'dialogue',
         text: 'She repeats what the caller says, word for word, before answering.',
         chips: ['chip.someone_directing'],
       },
       {
         id: 'cash',
-        delayMs: 2200,
+        delayMs: 14000,
         kind: 'transaction',
         text: 'She asks for $8,000 in cash. A check will not do.',
         chips: ['chip.cash_only', 'chip.above_threshold'],
       },
       {
         id: 'secrecy',
-        delayMs: 2200,
+        delayMs: 14000,
         kind: 'dialogue',
         text: 'The contractor needs it today. She was told not to explain why.',
         chips: ['chip.urgency_secrecy', 'chip.rushed'],
@@ -107,9 +127,9 @@ export const CUSTOMERS: readonly CustomerFile[] = [
       channels: 'Online banking and the branch',
     },
     activity: [
-      { when: 'Yesterday', description: 'New payee added in online banking, not yet paid' },
-      { when: 'Monday', description: 'Wire inquiry, then cancelled' },
-      { when: 'Last month', description: 'Payroll deposit, usual amount' },
+      { when: 'Yesterday', description: 'New payee added in online banking', amount: 'Not yet paid' },
+      { when: 'Monday', description: 'Wire inquiry, then cancelled', amount: '—' },
+      { when: 'Last month', description: 'Payroll deposit', amount: 'Usual' },
     ],
     transaction: {
       type: 'Cash withdrawal',
@@ -120,35 +140,35 @@ export const CUSTOMERS: readonly CustomerFile[] = [
     events: [
       {
         id: 'window',
-        delayMs: 0,
+        delayMs: 3000,
         kind: 'dialogue',
         text: 'Marcus comes to the window with a note on his phone.',
         chips: [],
       },
       {
         id: 'directing',
-        delayMs: 2200,
+        delayMs: 10500,
         kind: 'dialogue',
         text: 'He says his partner told him exactly how to ask for the money.',
         chips: ['chip.someone_directing'],
       },
       {
         id: 'cash',
-        delayMs: 2200,
+        delayMs: 10500,
         kind: 'transaction',
         text: 'He requests $6,500 in cash. The partner said a transfer would fail.',
         chips: ['chip.cash_only', 'chip.above_threshold'],
       },
       {
         id: 'secrecy',
-        delayMs: 2200,
+        delayMs: 10500,
         kind: 'dialogue',
         text: 'It has to be today, and he was asked not to mention the investment.',
         chips: ['chip.urgency_secrecy'],
       },
       {
         id: 'unusual',
-        delayMs: 2200,
+        delayMs: 10500,
         kind: 'transaction',
         text: 'This is several times his usual withdrawal.',
         chips: ['chip.unusual_for_customer'],
@@ -167,9 +187,9 @@ export const CUSTOMERS: readonly CustomerFile[] = [
       channels: 'Branch window',
     },
     activity: [
-      { when: 'Last Thursday', description: 'Pension deposit, usual' },
-      { when: 'Last week', description: 'Utility debit, $90' },
-      { when: 'Last month', description: 'Cash withdrawal, $150' },
+      { when: 'Last Thursday', description: 'Pension deposit', amount: 'Usual' },
+      { when: 'Last week', description: 'Utility debit', amount: '$90' },
+      { when: 'Last month', description: 'Cash withdrawal', amount: '$150' },
     ],
     transaction: {
       type: 'Cash withdrawal',
@@ -180,35 +200,35 @@ export const CUSTOMERS: readonly CustomerFile[] = [
     events: [
       {
         id: 'window',
-        delayMs: 0,
+        delayMs: 3000,
         kind: 'dialogue',
         text: 'Ruth approaches the window already on a call.',
         chips: [],
       },
       {
         id: 'phone',
-        delayMs: 2200,
+        delayMs: 10500,
         kind: 'dialogue',
         text: 'She keeps the phone at her ear and nods at the caller.',
         chips: ['chip.on_phone'],
       },
       {
         id: 'directing',
-        delayMs: 2200,
+        delayMs: 10500,
         kind: 'dialogue',
         text: 'The caller tells her what to say to the teller.',
         chips: ['chip.someone_directing'],
       },
       {
         id: 'secrecy',
-        delayMs: 2200,
+        delayMs: 10500,
         kind: 'dialogue',
         text: 'She says there is a warrant and she must not tell the bank why.',
         chips: ['chip.urgency_secrecy'],
       },
       {
         id: 'cash',
-        delayMs: 2200,
+        delayMs: 10500,
         kind: 'transaction',
         text: 'She asks for $7,500 in cash. The caller said a check is not allowed.',
         chips: ['chip.cash_only', 'chip.above_threshold'],
@@ -227,9 +247,9 @@ export const CUSTOMERS: readonly CustomerFile[] = [
       channels: 'Branch and debit card',
     },
     activity: [
-      { when: 'Last week', description: 'Savings transfer into checking, $4,000' },
-      { when: 'Monday', description: 'Dealer service debit, $180' },
-      { when: 'Last month', description: 'Paycheck deposit, usual' },
+      { when: 'Last week', description: 'Savings transfer into checking', amount: '$4,000' },
+      { when: 'Monday', description: 'Dealer service debit', amount: '$180' },
+      { when: 'Last month', description: 'Paycheck deposit', amount: 'Usual' },
     ],
     transaction: {
       type: 'Cash withdrawal',
@@ -240,28 +260,28 @@ export const CUSTOMERS: readonly CustomerFile[] = [
     events: [
       {
         id: 'window',
-        delayMs: 0,
+        delayMs: 2000,
         kind: 'dialogue',
         text: 'Andre steps up with a buyer’s order from the dealer.',
         chips: [],
       },
       {
         id: 'purpose',
-        delayMs: 2200,
+        delayMs: 10000,
         kind: 'dialogue',
         text: 'He names the dealer, the model, and the stock number without being prompted.',
         chips: [],
       },
       {
         id: 'amount',
-        delayMs: 2200,
+        delayMs: 10000,
         kind: 'transaction',
         text: 'He asks for $9,000 toward the down payment and says a cashier’s check works.',
         chips: [],
       },
       {
         id: 'pace',
-        delayMs: 2200,
+        delayMs: 10000,
         kind: 'dialogue',
         text: 'He is not on the phone and says he can come back tomorrow if needed.',
         chips: [],
@@ -280,9 +300,9 @@ export const CUSTOMERS: readonly CustomerFile[] = [
       channels: 'ATM and the branch',
     },
     activity: [
-      { when: 'Last Friday', description: 'Cash withdrawal, $300' },
-      { when: 'The Friday before', description: 'Cash withdrawal, $300' },
-      { when: 'Yesterday', description: 'Payroll deposit, usual' },
+      { when: 'Last Friday', description: 'Cash withdrawal', amount: '$300' },
+      { when: 'The Friday before', description: 'Cash withdrawal', amount: '$300' },
+      { when: 'Yesterday', description: 'Payroll deposit', amount: 'Usual' },
     ],
     transaction: {
       type: 'Cash withdrawal',
@@ -293,21 +313,21 @@ export const CUSTOMERS: readonly CustomerFile[] = [
     events: [
       {
         id: 'window',
-        delayMs: 0,
+        delayMs: 2000,
         kind: 'dialogue',
         text: 'Priya waves and steps up to the window.',
         chips: [],
       },
       {
         id: 'usual',
-        delayMs: 2200,
+        delayMs: 9000,
         kind: 'transaction',
         text: 'She asks for $300 cash, the same amount as the last two Fridays.',
         chips: [],
       },
       {
         id: 'chat',
-        delayMs: 2200,
+        delayMs: 9000,
         kind: 'dialogue',
         text: 'She talks about the weekend and is not in a hurry.',
         chips: [],

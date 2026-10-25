@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import { darkPalette } from './theme/palette'
 import { THEME_LIST } from './theme/registry'
+import type { ThemePalette } from './theme/types'
 
 function channels(color: string): [number, number, number, number] {
   const hex = color.trim()
@@ -45,21 +47,40 @@ function composite(foreground: string, background: string): string {
   return `#${mixed.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`
 }
 
+function checkPalette(label: string, palette: ThemePalette) {
+  const page = palette.background.color
+  const glass = channels(palette.glass.fill)
+  const card = composite(`rgba(${glass[0]}, ${glass[1]}, ${glass[2]}, ${glass[3]})`, page)
+  const input = composite(palette.inputFill, palette.glass.fallback)
+  expect(contrast(palette.text, page), `${label} text on field`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.text, card), `${label} text on glass`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.mutedText, page), `${label} muted on field`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.mutedText, card), `${label} muted on glass`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.mutedText, palette.glass.fallback), `${label} muted on fallback`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.text, palette.glass.fallback), `${label} text on fallback`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.text, palette.surface), `${label} text on surface`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.text, input), `${label} text on input`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.buttonText, palette.button), `${label} primary button`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.secondaryFg, palette.secondaryBg), `${label} secondary`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.chipFg, palette.chipBg), `${label} badge`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.actionFg, palette.actionBg), `${label} action`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.quoteFg, palette.quoteBg), `${label} quote`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.link, page), `${label} link on field`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.link, palette.glass.fallback), `${label} link on fallback`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.link, card), `${label} link on glass`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.wordmarkColor, page), `${label} wordmark on field`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.wordmarkColor, palette.glass.fallback), `${label} wordmark on fallback`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.risk.clearFg, palette.risk.clearBg), `${label} clear`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.risk.cautionFg, palette.risk.cautionBg), `${label} caution`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.risk.highFg, palette.risk.highBg), `${label} high`).toBeGreaterThanOrEqual(4.5)
+}
+
 describe('theme contrast', () => {
-  it('keeps text, buttons, and risk states at WCAG AA for every bank', () => {
+  it('keeps text, buttons, and risk states at WCAG AA for every bank and color scheme', () => {
     expect(THEME_LIST.map((theme) => theme.id)).toEqual(['fnb', 'mtb', 'pnc', 'tellr'])
     for (const theme of THEME_LIST) {
-      const page = theme.background.color
-      const glass = channels(theme.glass.fill)
-      const card = composite(`rgba(${glass[0]}, ${glass[1]}, ${glass[2]}, ${glass[3]})`, page)
-      expect(contrast(theme.text, page), `${theme.id} text on field`).toBeGreaterThanOrEqual(4.5)
-      expect(contrast(theme.text, card), `${theme.id} text on glass`).toBeGreaterThanOrEqual(4.5)
-      expect(contrast(theme.mutedText, page), `${theme.id} muted on field`).toBeGreaterThanOrEqual(4.5)
-      expect(contrast(theme.buttonText, theme.button), `${theme.id} primary button`).toBeGreaterThanOrEqual(4.5)
-      expect(contrast(theme.text, theme.glass.fallback), `${theme.id} text on fallback`).toBeGreaterThanOrEqual(4.5)
-      expect(contrast(theme.risk.clearFg, theme.risk.clearBg), `${theme.id} clear`).toBeGreaterThanOrEqual(4.5)
-      expect(contrast(theme.risk.cautionFg, theme.risk.cautionBg), `${theme.id} caution`).toBeGreaterThanOrEqual(4.5)
-      expect(contrast(theme.risk.highFg, theme.risk.highBg), `${theme.id} high`).toBeGreaterThanOrEqual(4.5)
+      checkPalette(`${theme.id} dark`, darkPalette(theme))
+      checkPalette(`${theme.id} light`, theme.light)
     }
   })
 })

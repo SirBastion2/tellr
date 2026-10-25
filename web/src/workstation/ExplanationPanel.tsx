@@ -46,7 +46,7 @@ export function ExplanationPanel({
   const debug = session.debug
 
   return (
-    <section data-testid="explain-panel" aria-label="Why this level" style={{ display: 'grid', gap: 8 }}>
+    <section data-testid="explain-panel" aria-label="Why this level" className="tc-prose" style={{ display: 'grid', gap: 8, maxWidth: '70ch' }}>
       <h2 style={{ margin: 0, fontSize: 18 }}>Why this level</h2>
       <p style={{ margin: 0 }} data-testid="explain-level">
         Shown level {session.risk.level}. Raw level {session.risk.raw_level}. Score {session.risk.score}. Pattern{' '}

@@ -70,4 +70,51 @@ export type BankTheme = {
     highBg: string
     highFg: string
   }
+  /** Filled secondary / dismiss control. Never transparent on a risk panel. */
+  secondaryBg: string
+  secondaryFg: string
+  secondaryBorder: string
+  /** Link and quiet actions. Checked against the page and the solid card. */
+  link: string
+  /** Opaque nested surface. Text is `--tc-text`. */
+  surface: string
+  chipBg: string
+  chipFg: string
+  actionBg: string
+  actionFg: string
+  quoteBg: string
+  quoteFg: string
+  quoteBorder: string
+  focus: string
+  /** Light-mode palette. Top-level color fields are the dark palette. */
+  light: ThemePalette
+}
+
+/** Color fields that swap with `prefers-color-scheme` or the header toggle. */
+export type ThemePalette = {
+  wordmarkColor: string
+  background: ThemeBackground
+  glass: BankTheme['glass']
+  text: string
+  mutedText: string
+  inputFill: string
+  accent: string
+  button: string
+  buttonText: string
+  logoColor: string
+  progress: BankTheme['progress']
+  risk: BankTheme['risk']
+  secondaryBg: string
+  secondaryFg: string
+  secondaryBorder: string
+  link: string
+  surface: string
+  chipBg: string
+  chipFg: string
+  actionBg: string
+  actionFg: string
+  quoteBg: string
+  quoteFg: string
+  quoteBorder: string
+  focus: string
 }
