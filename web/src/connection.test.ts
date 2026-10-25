@@ -123,7 +123,10 @@ describe('API connection choice', () => {
 
   it('does not probe 127.0.0.1 from a deployed production host', async () => {
     vi.stubEnv('VITE_API_URL', '')
-    const native = vi.fn(async () => new Response('offline', { status: 503 }))
+    const native = vi.fn(async (input: RequestInfo | URL) => {
+      expect(String(input)).not.toContain('127.0.0.1')
+      return new Response('offline', { status: 503 })
+    })
     vi.stubGlobal('fetch', native)
     const jsdom = pageJsdom()
     expect(jsdom).toBeDefined()
