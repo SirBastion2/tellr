@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
 import { ANSWER_ORIGIN, answerSignalRows } from '../answerSignals'
 import { listedChipIds, notesOnlyChip, originText, sourceForChip } from '../feed'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
@@ -116,7 +117,25 @@ export function CopilotStrip({
       if (!(target instanceof Node)) {
         return
       }
-      if (toggleRef.current?.contains(target) || overlayRef.current?.contains(target)) {
+      const toggle = toggleRef.current
+      if (toggle?.contains(target)) {
+        return
+      }
+      if (toggle) {
+        const rect = toggle.getBoundingClientRect()
+        const overToggle =
+          rect.width > 0 &&
+          rect.height > 0 &&
+          event.clientX >= rect.left &&
+          event.clientX <= rect.right &&
+          event.clientY >= rect.top &&
+          event.clientY <= rect.bottom
+        if (overToggle) {
+          setOpen(false)
+          return
+        }
+      }
+      if (overlayRef.current?.contains(target)) {
         return
       }
       setOpen(false)
@@ -128,6 +147,26 @@ export function CopilotStrip({
       document.removeEventListener('click', onClick)
     }
   }, [open])
+
+  useEffect(() => {
+    const node = overlayRef.current
+    const theme = document.querySelector<HTMLElement>('[data-testid="theme-root"]')
+    if (!node || !theme) {
+      return
+    }
+    const copyTheme = () => {
+      for (let index = 0; index < theme.style.length; index += 1) {
+        const key = theme.style.item(index)
+        if (key.startsWith('--')) {
+          node.style.setProperty(key, theme.style.getPropertyValue(key))
+        }
+      }
+    }
+    copyTheme()
+    const observer = new MutationObserver(copyTheme)
+    observer.observe(theme, { attributes: true, attributeFilter: ['style'] })
+    return () => observer.disconnect()
+  }, [idle, session])
 
   if (idle) {
     return (
@@ -219,7 +258,8 @@ export function CopilotStrip({
         <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
           {reason}
         </p>
-        <div className="tc-explain-anchor">
+        <div className="tc-explain-anchor" />
+        {createPortal(
           <div
             id="score-explanation-overlay"
             data-testid="score-explanation-overlay"
@@ -227,14 +267,17 @@ export function CopilotStrip({
             hidden={!open}
             ref={overlayRef}
           >
-            <ExplanationPanel
-              library={library}
-              session={session}
-              postedChipIds={postedChipIds}
-              activity={activity}
-            />
-          </div>
-        </div>
+            <div className="tc-explain-overlay-body">
+              <ExplanationPanel
+                library={library}
+                session={session}
+                postedChipIds={postedChipIds}
+                activity={activity}
+              />
+            </div>
+          </div>,
+          document.body,
+        )}
       </div>
       <div
         className="tc-block"

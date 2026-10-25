@@ -358,26 +358,62 @@ button[data-loading='true'],
 
 .tc-explain-anchor {
   position: relative;
-  z-index: 2;
   height: 0;
+  anchor-name: --tc-score-explain;
 }
 
 .tc-explain-overlay {
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  left: calc(-1 * var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)));
-  right: calc(-1 * var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)));
-  max-height: 100vh;
-  max-height: 100dvh;
-  overflow-x: hidden;
-  overflow-y: auto;
+  position: fixed;
+  position-anchor: --tc-score-explain;
+  position-visibility: always;
+  z-index: 40;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 0;
+  min-height: 0;
+  width: auto;
+  height: auto;
+  padding: 0;
+  top: var(--tc-space-4, 16px);
+  right: var(--tc-space-4, 16px);
+  bottom: var(--tc-space-4, 16px);
+  left: var(--tc-space-4, 16px);
+  max-width: calc(100vw - 2 * var(--tc-space-4, 16px));
+  max-height: calc(100vh - 2 * var(--tc-space-4, 16px));
+  max-height: calc(100dvh - 2 * var(--tc-space-4, 16px));
+  top: max(var(--tc-space-4, 16px), calc(anchor(bottom) + var(--tc-space-2, 8px)));
+  left: max(var(--tc-space-4, 16px), calc(anchor(left) - var(--tc-space-card-fluid, clamp(10px, 1vw, 16px))));
   background: var(--tc-surface, #1e1b4b);
   color: var(--tc-text, #ffffff);
   border: 1px solid var(--tc-glass-border, #1c1917);
   border-radius: var(--tc-radius-card, 16px);
+}
+
+.tc-explain-overlay-body {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0;
+}
+
+.tc-explain-overlay .tc-explain {
   padding: var(--tc-space-card-fluid, clamp(10px, 1vw, 16px));
+}
+
+.tc-explain-overlay .tc-title {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin-left: calc(-1 * var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)));
+  margin-right: calc(-1 * var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)));
+  padding: var(--tc-space-card-fluid, clamp(10px, 1vw, 16px))
+    var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)) var(--tc-space-2, 8px);
+  background: var(--tc-surface, #1e1b4b);
 }
 
 .tc-factor-list {
