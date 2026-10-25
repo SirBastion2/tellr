@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { controlStyle, inputFill, mutedColor, textColor } from '../theme/controls'
+import { LevelIcon } from '../ui/LevelIcon'
 import type { AnswerChipId, AnswerPost, Level, Library, QuestionView, SessionState } from '../types'
 
 const LEVELS: readonly { id: Level; label: string; colour: string }[] = [
@@ -201,6 +202,7 @@ export function InterviewScreen({
 
   return (
     <section data-testid="interview-screen" style={{ display: 'grid', gap: '12px' }}>
+      <h2 className="tc-sr">Session</h2>
       {session && level ? (
         <>
           <div
@@ -227,9 +229,9 @@ export function InterviewScreen({
                 data-testid="risk-level"
                 data-level={level.id}
                 data-position={String(level.position)}
-                style={{ color: level.colour, fontSize: '28px', margin: 0, lineHeight: 1.2 }}
+                style={{ color: level.colour, fontSize: '28px', margin: 0, lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: 8 }}
               >
-                {level.label}
+                <LevelIcon level={level.id} />{level.label}
               </p>
               <ol
                 data-testid="level-scale"

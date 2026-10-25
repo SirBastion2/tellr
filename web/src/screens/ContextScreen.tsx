@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
-import { controlStyle, inputFill } from '../theme/controls'
+import { controlStyle, inputFill, primaryStyle } from '../theme/controls'
+import { LEVEL_WORD } from '../ui/LevelIcon'
 import type { Library, SessionState } from '../types'
 
 const tap: CSSProperties = controlStyle
@@ -25,7 +26,8 @@ export function ContextScreen({
   }
 
   return (
-    <section data-testid="context-screen" className="space-y-4">
+    <section data-testid="context-screen" style={{ display: 'grid', gap: 16 }}>
+      <h2 style={{ margin: 0, fontSize: 22 }}>Context</h2>
       <ul className="flex flex-wrap gap-2">
         {(library?.context_chips ?? []).map((chip) => (
           <li key={chip.id}>
@@ -46,15 +48,31 @@ export function ContextScreen({
           </li>
         ))}
       </ul>
-      <button type="button" data-testid="post-context" style={tap} onClick={() => onPost?.(selected)}>
+      <button
+        type="button"
+        className="tc-btn"
+        data-variant="primary"
+        data-testid="post-context"
+        style={{ ...tap, ...primaryStyle }}
+        onClick={() => onPost?.(selected)}
+      >
         Add
       </button>
       {session ? (
-        <>
-          <p data-testid="session-id">{session.session_id}</p>
-          <p data-testid="risk-level">{session.risk.level}</p>
-          <p data-testid="risk-score">{session.risk.score}</p>
-        </>
+        <dl style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 12px', margin: 0 }}>
+          <dt>Session</dt>
+          <dd data-testid="session-id" style={{ margin: 0 }}>
+            {session.session_id}
+          </dd>
+          <dt>Level</dt>
+          <dd data-testid="risk-level" style={{ margin: 0 }}>
+            {LEVEL_WORD[session.risk.level]}
+          </dd>
+          <dt>Score</dt>
+          <dd data-testid="risk-score" style={{ margin: 0 }}>
+            {session.risk.score}
+          </dd>
+        </dl>
       ) : null}
     </section>
   )

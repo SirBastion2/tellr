@@ -36,10 +36,11 @@ export function ThemeRoot({ answers, children }: { answers: number | null; child
         position: 'relative',
         color: 'var(--tc-text)',
         fontFamily: 'var(--tc-font)',
-        backgroundColor: 'var(--tc-bg-color)',
-        backgroundImage: 'var(--tc-bg-image)',
+        fontWeight: 'var(--tc-font-weight)' as CSSProperties['fontWeight'],
+        backgroundColor: theme.background.color,
+        backgroundImage: theme.background.image,
         backgroundRepeat: theme.background.repeat as CSSProperties['backgroundRepeat'],
-        backgroundSize: 'var(--tc-bg-size)',
+        backgroundSize: theme.background.size,
         backgroundPosition: 'center',
       }}
     >
@@ -101,13 +102,13 @@ export function ThemeRoot({ answers, children }: { answers: number | null; child
           style={{
             position: 'relative',
             width: 'min(960px, 100%)',
-            borderRadius: 28,
+            borderRadius: 'var(--tc-radius-card)',
             background: 'var(--tc-glass-fill)',
-            border: '1px solid var(--tc-glass-border)',
+            border: 'var(--tc-border-width) var(--tc-border-style) var(--tc-glass-border)',
             backdropFilter: 'blur(var(--tc-glass-blur))',
             WebkitBackdropFilter: 'blur(var(--tc-glass-blur))',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), 0 28px 70px rgba(0,0,0,0.28)',
-            padding: '22px 52px 22px 22px',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), var(--tc-shadow-card)',
+            padding: 'var(--tc-space-card) 52px var(--tc-space-card) var(--tc-space-card)',
             boxSizing: 'border-box',
           }}
         >

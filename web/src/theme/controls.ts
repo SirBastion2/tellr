@@ -7,9 +7,10 @@ export const controlStyle: CSSProperties = {
   boxSizing: 'border-box',
   color: 'var(--tc-text, #1c1917)',
   backgroundColor: 'transparent',
-  border: '1px solid var(--tc-accent, #1c1917)',
-  borderRadius: '999px',
+  border: 'var(--tc-border-width, 1px) var(--tc-border-style, solid) var(--tc-accent, #1c1917)',
+  borderRadius: 'var(--tc-radius-control, 999px)',
   fontFamily: 'inherit',
+  fontWeight: 'var(--tc-font-weight, 500)' as CSSProperties['fontWeight'],
   padding: '0 12px',
 }
 
@@ -22,3 +23,9 @@ export const mutedColor = 'var(--tc-muted, #44403c)'
 export const buttonFill = 'var(--tc-button, transparent)'
 
 export const buttonText = 'var(--tc-button-text, #1c1917)'
+
+export const primaryStyle: CSSProperties = {
+  backgroundColor: buttonFill,
+  color: buttonText,
+  borderColor: 'transparent',
+}

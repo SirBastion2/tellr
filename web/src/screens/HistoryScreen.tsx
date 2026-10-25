@@ -103,7 +103,8 @@ export function HistoryScreen() {
       : []
 
   return (
-    <section data-testid="history-screen" className="space-y-3">
+    <section data-testid="history-screen" style={{ display: 'grid', gap: 12 }}>
+      <h2 style={{ margin: 0, fontSize: 22 }}>History</h2>
       <div className="flex gap-2" data-testid="history-filter">
         <button
           type="button"
@@ -129,11 +130,21 @@ export function HistoryScreen() {
       <ul data-testid="history-list" className="space-y-2">
         {visible.map((session) => (
           <li key={session.session_id} data-testid="history-row" data-mode={session.mode}>
-            <p data-testid="history-session-id">{session.session_id}</p>
-            <p data-testid="history-mode">{session.mode}</p>
-            <p data-testid="history-opened">{session.opened_at}</p>
-            <p data-testid="history-closed">{session.closed_at ?? ''}</p>
-            <p data-testid="history-library">{session.library_version}</p>
+            <p>
+              Session <span data-testid="history-session-id">{session.session_id}</span>
+            </p>
+            <p>
+              Mode <span data-testid="history-mode">{session.mode}</span>
+            </p>
+            <p>
+              Opened <span data-testid="history-opened">{session.opened_at}</span>
+            </p>
+            <p>
+              Closed <span data-testid="history-closed">{session.closed_at ?? ''}</span>
+            </p>
+            <p>
+              Library <span data-testid="history-library">{session.library_version}</span>
+            </p>
           </li>
         ))}
       </ul>

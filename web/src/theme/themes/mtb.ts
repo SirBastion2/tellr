@@ -1,24 +1,32 @@
 import weaveUrl from '../../assets/weave.svg'
 import type { BankTheme } from '../types'
-import { FOOTER_TEXT, UI_FONT } from '../tokens'
+import { FOOTER_TEXT } from '../tokens'
 
-/** M&T Bank. Green field with a CSS weave, green-tinted glass, text wordmark. */
+/** M&T Bank. Green field, weave texture, serif wordmark, round controls. */
 export const theme: BankTheme = {
   id: 'mtb',
   name: 'M&T Bank',
   wordmark: 'M&T Bank',
   mark: 'text',
+  logo: 'text',
   markPlacement: 'bottom-left',
   footerPlacement: 'end',
   footerText: FOOTER_TEXT,
-  fontFamily: UI_FONT,
+  fontFamily: '"Segoe UI", "Helvetica Neue", sans-serif',
+  fontWeight: 400,
+  headingWeight: 600,
   wordmarkFont: 'Georgia, "Palatino Linotype", Palatino, serif',
   wordmarkColor: '#F4FBF6',
   wordmarkWeight: 500,
   wordmarkLetterSpacing: '0.01em',
+  radius: { card: '20px', control: '999px' },
+  border: { width: '1px', style: 'solid' },
+  shadow: { card: '0 18px 40px rgba(8, 40, 28, 0.35)' },
+  density: 'regular',
+  space: { gap: '14px', cardPadding: '18px' },
   background: {
     color: '#0E3B2E',
-    image: `url("${weaveUrl}"), radial-gradient(ellipse at 18% 0%, rgba(214, 240, 220, 0.22), transparent 48%), linear-gradient(165deg, #0c3329 0%, #124d3b 46%, #1a6b4c 100%)`,
+    image: `url("${weaveUrl}"), radial-gradient(ellipse at 18% 0%, rgba(214, 240, 220, 0.22) 0%, rgba(214, 240, 220, 0) 48%), linear-gradient(165deg, #0c3329 0%, #124d3b 46%, #1a6b4c 100%)`,
     repeat: 'repeat, no-repeat, no-repeat',
     size: '140px 140px, cover, cover',
   },
@@ -26,9 +34,10 @@ export const theme: BankTheme = {
     fill: 'rgba(210, 235, 214, 0.18)',
     border: 'rgba(232, 245, 233, 0.34)',
     blur: '18px',
+    fallback: '#0E3B2E',
   },
   text: '#F7FFF9',
-  mutedText: 'rgba(247, 255, 249, 0.72)',
+  mutedText: '#D1FAE5',
   inputFill: 'rgba(255, 255, 255, 0.16)',
   accent: '#9DDCB4',
   button: '#F4FBF6',
@@ -37,5 +46,13 @@ export const theme: BankTheme = {
   progress: {
     active: '#E7F6EC',
     inactive: 'rgba(231, 246, 236, 0.35)',
+  },
+  risk: {
+    clearBg: '#F4FBF6',
+    clearFg: '#0E3B2E',
+    cautionBg: '#FFEDD5',
+    cautionFg: '#9A3412',
+    highBg: '#7F1D1D',
+    highFg: '#FFFFFF',
   },
 }

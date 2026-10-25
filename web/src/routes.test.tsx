@@ -12,7 +12,7 @@ const session = t2.steps[0]?.response as SessionState
 
 describe('routes', () => {
   it('mounts the screens', () => {
-    expect(APP_ROUTES).toHaveLength(7)
+    expect(APP_ROUTES).toHaveLength(8)
     for (const route of APP_ROUTES) {
       const path = route.path.replace(':id', 'fixture-T2')
       render(
@@ -21,9 +21,6 @@ describe('routes', () => {
             library={library}
             session={session}
             issues={[]}
-            scenarios={[{ id: 'T2', label: 'T2' }]}
-            onStartPractice={() => undefined}
-            onStartLive={() => undefined}
           />
         </MemoryRouter>,
       )
@@ -40,9 +37,6 @@ describe('routes', () => {
           library={library}
           session={session}
           issues={[]}
-          scenarios={[{ id: 'T2', label: 'T2' }]}
-          onStartPractice={() => undefined}
-          onStartLive={() => undefined}
         />
       </MemoryRouter>,
     )

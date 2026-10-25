@@ -1,4 +1,5 @@
 import library from '../../contract/library.json' with { type: 'json' }
+import liveLevels from './live_levels.json' with { type: 'json' }
 import t1 from '../../contract/fixtures/T1.json' with { type: 'json' }
 import t2 from '../../contract/fixtures/T2.json' with { type: 'json' }
 import t3 from '../../contract/fixtures/T3.json' with { type: 'json' }
@@ -22,6 +23,8 @@ type Fixture = {
 const fixtures = [t1, t2, t3, t4, t5, t6, t7] as Fixture[]
 const byCase = new Map(fixtures.map((fixture) => [fixture.case, fixture]))
 
+type LiveStep = { kind: 'context'; chips: string[] } | { kind: 'answer' }
+
 type Replay = {
   caseId: string
   index: number
@@ -32,7 +35,10 @@ type Replay = {
   openedAt: string
   closedAt: string | null
   libraryVersion: string
+  liveLog: LiveStep[]
 }
+
+const recordedLevels = liveLevels as Record<string, Record<string, unknown>>
 
 let openedCount = 0
 
@@ -143,6 +149,51 @@ function currentBody(fixture: Fixture, index: number, mode: 'live' | 'practice')
   return present(fixture.steps[index]?.response ?? null, mode)
 }
 
+function liveChips(replay: Replay): string[] {
+  const seen = new Set<string>()
+  const chips: string[] = []
+  for (const step of replay.liveLog) {
+    if (step.kind !== 'context') {
+      continue
+    }
+    for (const chip of step.chips) {
+      if (!seen.has(chip)) {
+        seen.add(chip)
+        chips.push(chip)
+      }
+    }
+  }
+  return chips
+}
+
+function sessionBody(replay: Replay, fixture: Fixture, sessionId: string): unknown {
+  if (replay.mode === 'live' && liveChips(replay).length > 0) {
+    return liveBody(replay, fixture, sessionId)
+  }
+  return currentBody(fixture, replay.index, replay.mode)
+}
+
+function liveBody(replay: Replay, fixture: Fixture, sessionId: string): unknown {
+  const chips = liveChips(replay)
+  if (chips.length === 0) {
+    return currentBody(fixture, replay.index, replay.mode)
+  }
+  const recorded = recordedLevels[[...chips].sort().join('|')]
+  if (!recorded) {
+    return currentBody(fixture, replay.index, replay.mode)
+  }
+  return { ...recorded, session_id: sessionId, mode: replay.mode }
+}
+
+function chipList(body: unknown): string[] {
+  const record = recordOf(body)
+  const chips = record?.chips
+  if (!Array.isArray(chips)) {
+    return []
+  }
+  return chips.filter((chip): chip is string => typeof chip === 'string')
+}
+
 export function mockRequest(method: string, url: string, body?: unknown): MockResult {
   const parsed = new URL(url, 'http://teller.local')
   const path = parsed.pathname
@@ -192,6 +243,7 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
       openedAt: nextOpenedAt(),
       closedAt: null,
       libraryVersion: libraryVersionOf(presented),
+      liveLog: [],
     })
     return { status: 200, body: presented, warnings }
   }
@@ -260,11 +312,11 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
   }
 
   if (verb === 'GET' && !action) {
-    return { status: 200, body: currentBody(fixture, replay.index, replay.mode), warnings: [] }
+    return { status: 200, body: sessionBody(replay, fixture, sessionId), warnings: [] }
   }
 
   if (verb === 'GET' && action === 'handoff') {
-    const response = currentBody(fixture, replay.index, replay.mode)
+    const response = sessionBody(replay, fixture, sessionId)
     if (!response || typeof response !== 'object') {
       return { status: 404, body: null, warnings: ['no fixture step'] }
     }
@@ -314,12 +366,16 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
     replay.actor = actor
     return {
       status: 200,
-      body: currentBody(fixture, replay.index, replay.mode),
+      body: sessionBody(replay, fixture, sessionId),
       warnings: ['outcome is not in the fixture; returning the current SessionState'],
     }
   }
 
   if (verb === 'POST' && action === 'undo') {
+    if (replay.mode === 'live' && replay.liveLog.length > 0) {
+      replay.liveLog.pop()
+      return { status: 200, body: sessionBody(replay, fixture, sessionId), warnings: [] }
+    }
     if (replay.index <= 0) {
       return {
         status: 200,
@@ -333,6 +389,23 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
 
   if (verb === 'POST' && (action === 'context' || action === 'answers')) {
     const next = fixture.steps[replay.index + 1]
+    const matched =
+      replay.liveLog.length === 0 &&
+      Boolean(next && stepKind(next.endpoint) === action && same(body, next.request))
+    if (replay.mode === 'live' && !matched) {
+      const warnings: string[] = []
+      if (action === 'context') {
+        replay.liveLog.push({ kind: 'context', chips: chipList(body) })
+        const key = [...liveChips(replay)].sort().join('|')
+        if (liveChips(replay).length > 0 && !recordedLevels[key]) {
+          warnings.push('no recorded level for these chips')
+        }
+      } else {
+        replay.liveLog.push({ kind: 'answer' })
+        warnings.push('live mock keeps the context projection; answers are scored by the API')
+      }
+      return { status: 200, body: sessionBody(replay, fixture, sessionId), warnings }
+    }
     if (!next) {
       return {
         status: 200,

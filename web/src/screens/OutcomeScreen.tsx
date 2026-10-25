@@ -34,7 +34,8 @@ export function OutcomeScreen({
   }
 
   return (
-    <section data-testid="outcome-screen" className="space-y-4">
+    <section data-testid="outcome-screen" style={{ display: 'grid', gap: 16 }}>
+      <h2 style={{ margin: 0, fontSize: 22 }}>Outcome</h2>
       {session ? (
         <>
           <ul className="flex flex-wrap gap-2">
@@ -66,9 +67,10 @@ export function OutcomeScreen({
               )
             })}
           </ul>
-          <label className="block">
+          <label className="block" htmlFor="outcome-actor">
             Actor
             <input
+              id="outcome-actor"
               data-testid="actor"
               value={actor}
               onChange={(event) => {
