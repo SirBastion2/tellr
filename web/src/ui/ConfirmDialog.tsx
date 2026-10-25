@@ -49,7 +49,7 @@ export function ConfirmDialog({
           gap: 12,
         }}
       >
-        <h2 id="confirm-title" style={{ margin: 0, fontSize: 20 }}>
+        <h2 id="confirm-title" className="tc-text-xl" style={{ margin: 0 }}>
           {title}
         </h2>
         <p id="confirm-body" style={{ margin: 0 }}>

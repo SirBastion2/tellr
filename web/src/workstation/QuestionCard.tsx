@@ -56,7 +56,7 @@ export function QuestionCard({
       }}
     >
       {hidePrompt ? null : (
-        <p data-testid="question-text" style={{ margin: 0, fontSize: '18px', lineHeight: 1.3 }}>
+        <p data-testid="question-text" className="tc-text-lg" style={{ margin: 0 }}>
           {question.text}
         </p>
       )}
@@ -81,6 +81,7 @@ export function QuestionCard({
                 data-testid="purpose"
                 data-selected={selected ? 'true' : 'false'}
                 aria-pressed={selected}
+                className="tc-text-sm"
                 style={{
                   ...tap,
                   flex: '0 0 auto',
@@ -111,7 +112,8 @@ export function QuestionCard({
               type="button"
               data-testid="answer-chip"
               aria-disabled={waitingForPurpose ? 'true' : 'false'}
-              style={{ ...tap, height: '100%', padding: '4px', fontSize: '14px', lineHeight: 1.2 }}
+              className="tc-text-sm"
+              style={{ ...tap, height: '100%', padding: '4px' }}
               onClick={() => choose(chip)}
             >
               {chipLabel(library, chip)}

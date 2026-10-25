@@ -107,7 +107,7 @@ export function OutcomeScreen({
               )
             })}
           </ul>
-          <label className="tc-stack-heading block" htmlFor="outcome-actor" style={{ fontWeight: 700 }}>
+          <label className="tc-stack-heading tc-text-base block" htmlFor="outcome-actor" style={{ fontWeight: 'var(--tc-strong-weight)' }}>
             Teller name
             <input
               id="outcome-actor"

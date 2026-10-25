@@ -90,7 +90,7 @@ describe('header labels and spacing rhythm', () => {
     expect(headerRule(source, '.tc-header-title')).not.toMatch(/overflow:\s*hidden/)
     expect(headerRule(source, '.tc-header-title')).not.toMatch(/text-overflow:\s*ellipsis/)
     expect(headerRule(source, '.tc-live-badge')).toMatch(/text-overflow:\s*ellipsis/)
-    expect(source).toMatch(/\.tc-header-nav[\s\S]*font-size:\s*clamp/)
+    expect(source).toMatch(/\.tc-header-nav[\s\S]*font-size:\s*var\(--tc-text-sm/)
   })
 
   it('centers the tellr logo in its pill with flex, equal padding, and object-fit', () => {

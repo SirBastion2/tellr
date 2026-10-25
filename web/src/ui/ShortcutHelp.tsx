@@ -47,7 +47,7 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
           gap: 'var(--tc-space-3)',
         }}
       >
-        <h2 id="shortcut-title" style={{ margin: 0, fontSize: 20 }}>
+        <h2 id="shortcut-title" className="tc-text-xl" style={{ margin: 0 }}>
           Keyboard shortcuts
         </h2>
         <ul
@@ -83,7 +83,7 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
             </li>
           ))}
         </ul>
-        <p data-testid="shortcut-scope" style={{ margin: 0, fontSize: 14 }}>
+        <p data-testid="shortcut-scope" className="tc-prose" style={{ margin: 0, fontSize: 'var(--tc-text-sm)' }}>
           These keys work on every screen, including Customer file, Outcome, and Handoff.
           They do nothing while you type in a field, or while Ctrl, Alt, or Cmd is held.
         </p>

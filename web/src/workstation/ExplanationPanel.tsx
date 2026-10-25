@@ -30,7 +30,7 @@ function FactorList({
 }) {
   if (items.length === 0) {
     return (
-      <p data-testid={testId} style={{ margin: 0, fontWeight: 400 }}>
+      <p data-testid={testId} className="tc-prose" style={{ margin: 0 }}>
         {empty}
       </p>
     )
