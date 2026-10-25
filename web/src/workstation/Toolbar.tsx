@@ -94,7 +94,10 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
           data-testid="customer-picker"
           aria-label="Simulated customer"
           value={demo.customerId}
-          onChange={(event) => demo.onSelectCustomer(event.target.value)}
+          onChange={(event) => {
+            demo.onSelectCustomer(event.target.value)
+            event.currentTarget.blur()
+          }}
         >
           {demo.customers.map((item) => (
             <option key={item.id} value={item.id}>

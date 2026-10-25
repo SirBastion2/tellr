@@ -133,7 +133,10 @@ function SchemeMenu() {
         aria-label="Color scheme"
         value={choice}
         style={{ ...headerTap }}
-        onChange={(event) => setChoice(event.target.value as ColorChoice)}
+        onChange={(event) => {
+          setChoice(event.target.value as ColorChoice)
+          event.currentTarget.blur()
+        }}
       >
         {SCHEME_OPTIONS.map((option) => (
           <option key={option.id} value={option.id}>
