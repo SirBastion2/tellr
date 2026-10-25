@@ -6,7 +6,7 @@ Tellr is a copilot beside the teller at the counter. It helps them spot a custom
 
 The model gets only anonymous codes (ids) and short labels from the question list. It never gets a name, an age, account details, a memo, a dollar amount, or the customer's own words.
 
-That is safe for a bank. Identity never reaches the model. The model runs on the bank's own computer. It only picks the next question, and it cannot set the score, the level, or the action. The teller decides.
+That is safe for a bank. Identity never reaches the model. By default the model runs on the same computer as Tellr, not in a cloud service. It only picks the next question, and it cannot set the score, the level, or the action. The teller decides.
 
 Built by Team KotR for HackPSU Fall 2026: Sebastian Villalba and Jonathan Zheng.
 
@@ -63,7 +63,7 @@ We built Tellr together. We built the scoring engine, the measured checks, the s
 
 We split the work into written tasks, then into small fixes. Each one sat on its own working copy (a branch) and its own pull request (a GitHub review), with a short note for the next person (`docs/handoff/`). We decided how many agents to run from the work in front of us. We added an agent when a task touched its own folders. We held back when tasks shared files, or shared the written rules the engine and the screen both follow (`docs/ROSTER.md`; `WORKFLOW.md`). The written plan uses four building agents, and a fifth only after the shared screen files stop changing (`docs/ROSTER.md`). Our cap was 12 agents at once. We did not stay at that cap. Open pull requests peaked at 9. If an agent got stuck, we started a fresh chat with the task and the newest note (`WORKFLOW.md`). The writer for the separate visit set was a new agent, used once (`docs/ROSTER.md`).
 
-An automated check, `scripts/gate.sh`, had to pass before we merged. We merged one pull request at a time. 152 have merged. The engine side and the screen side wrote to each other in `docs/A_TO_B.md` and `docs/B_TO_A.md`. A problem in the other side's files was written in `docs/CROSS_LANE.md` and left for that side to fix. Those shared rules change only when we both approve a written change (`WORKFLOW.md`).
+An automated check, `scripts/gate.sh`, had to pass before we merged. We merged one pull request at a time. More than 150 have merged. The engine side and the screen side wrote to each other in `docs/A_TO_B.md` and `docs/B_TO_A.md`. A problem in the other side's files was written in `docs/CROSS_LANE.md` and left for that side to fix. Those shared rules change only when we both approve a written change (`WORKFLOW.md`).
 
 The same path covered those tasks, including the one-time run on a separate set of visits (`docs/A08_HELDOUT_RUN.md`), the screen tasks, and fixes such as the badge on the Handoff screen (`docs/handoff/20261025-0935-handoff-observed-badge.md`).
 
