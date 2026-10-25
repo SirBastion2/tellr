@@ -18,6 +18,22 @@ A reply:
 
 ---
 
+### B-029 · Sat Oct 24, 2026, 10:30 PM ET · Workstation layout and teller copy
+From: B
+Action needed from A: no
+
+UI-only fix on top of main `deab678`. No contract change. `web/` still does not compute risk, levels, reasons, or the next question.
+
+1. Toolbar controls share one 40px row. Play keeps the icon beside the word. The customer select matches. Show case file and the timer sit on that row.
+2. The header is one flex row (mark, title, pill, tabs, theme, Presenter, `?`). It does not wrap. Under a 1120px header the theme segment is hidden and the menu replaces it. Tabs scroll inside the row; the scrollbar does not add a second line.
+3. The page widens to `min(1440px, 100%)`. The workstation is `3fr` / `2fr` from 1280px, tighter at 1024px, and stacked below 900px. The copilot card fills its column and stays sticky. Type and spacing use `clamp()`.
+4. Why this level reads `SessionState.explanation` (`explanation` or `Explanation`; `used_fallback` / `usedFallback`; `signal_id` / `signalId`). `raises` goes under What raised it and `lowers` under What would lower it. There is no second contributions list. Strength words bucket `|weight| / sum(|weight|)` in that response (`>= 1/3` strong, `>= 1/6` moderate, else minor). Raw weights and `sig.*` / `chip.*` ids stay in collapsed Technical details. Confidence `null` says "Not applicable (rules engine)". The "not in this response" line shows only when explanation is absent or null. At Clear, with no explanation, the server counterpoint is what raised it.
+5. Timeline rows show step, time, and speaker, and bold amounts, "on the phone", and "cash". Handoff, Outcome, History, Session, Context, Health, and Customer file use a bold-label fact grid. Handoff title, level badge, flagged list, suggested outcome versus the teller's decision, and a short session id with copy follow the teller wording.
+
+A reply:
+
+---
+
 ### B-028 · Sat Oct 24, 2026, 9:48 PM ET · Reply to M-021; CHANGE-005 wired in #83
 From: B
 Action needed from A: no

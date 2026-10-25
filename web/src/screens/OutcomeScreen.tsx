@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { buttonFill, buttonText, controlStyle, inputFill } from '../theme/controls'
+import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
+import { suggestedLabel } from '../ui/plain'
 import type { OutcomeId, SessionState } from '../types'
 
 const OUTCOME_LABEL: Record<OutcomeId, string> = {
@@ -34,10 +36,16 @@ export function OutcomeScreen({
   }
 
   return (
-    <section data-testid="outcome-screen" style={{ display: 'grid', gap: 16 }}>
-      <h2 style={{ margin: 0, fontSize: 22 }}>Outcome</h2>
+    <section data-testid="outcome-screen" className="tc-card">
+      <PageTitle>Outcome</PageTitle>
       {session ? (
         <>
+          <FactGrid label="Suggested outcome">
+            <Fact term="Suggested outcome">{suggestedLabel(session.suggested_outcome)}</Fact>
+            <Fact term="Questions answered">{session.answers}</Fact>
+          </FactGrid>
+          <SectionHeading>Teller's decision</SectionHeading>
+          <p style={{ margin: 0 }}>All four choices stay available. The highlighted one is only a suggestion.</p>
           <ul className="flex flex-wrap gap-2">
             {session.available_outcomes.map((outcome) => {
               const highlighted = outcome !== 'report' && outcome === session.suggested_outcome
@@ -67,8 +75,8 @@ export function OutcomeScreen({
               )
             })}
           </ul>
-          <label className="block" htmlFor="outcome-actor">
-            Actor
+          <label className="block" htmlFor="outcome-actor" style={{ display: 'grid', gap: 4, fontWeight: 700 }}>
+            Teller name
             <input
               id="outcome-actor"
               data-testid="actor"
@@ -86,7 +94,7 @@ export function OutcomeScreen({
             onClick={submit}
             style={{ ...tap, backgroundColor: buttonFill, color: buttonText, borderColor: 'transparent' }}
           >
-            Submit
+            Record decision
           </button>
         </>
       ) : null}

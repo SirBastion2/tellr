@@ -26,7 +26,7 @@ export function HomeScreen({
   return (
     <section data-testid="home-screen" style={{ display: 'grid', gap: 16 }}>
       <div style={{ display: 'grid', gap: 4 }}>
-        <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Workstation</h2>
+        <h2 className="tc-title">Workstation</h2>
         {library ? (
           <p className="tc-prose" style={{ margin: 0, maxWidth: '70ch', fontSize: '0.875rem' }}>
             Library <span data-testid="library-version">{library.library_version}</span>

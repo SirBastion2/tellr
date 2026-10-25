@@ -36,16 +36,17 @@ const tap: CSSProperties = {
   flex: '0 0 auto',
 }
 
+const SCHEME_OPTIONS: readonly { id: ColorChoice; label: string }[] = [
+  { id: 'light', label: 'Light' },
+  { id: 'dark', label: 'Dark' },
+  { id: 'system', label: 'System' },
+]
+
 function SchemeToggle() {
   const { choice, setChoice } = useColorScheme()
-  const options: readonly { id: ColorChoice; label: string }[] = [
-    { id: 'light', label: 'Light' },
-    { id: 'dark', label: 'Dark' },
-    { id: 'system', label: 'System' },
-  ]
   return (
-    <div className="tc-segment" role="group" aria-label="Color scheme" data-testid="color-scheme">
-      {options.map((option) => {
+    <div className="tc-segment tc-scheme-full" role="group" aria-label="Color scheme" data-testid="color-scheme">
+      {SCHEME_OPTIONS.map((option) => {
         const selected = choice === option.id
         return (
           <button
@@ -67,6 +68,28 @@ function SchemeToggle() {
         )
       })}
     </div>
+  )
+}
+
+function SchemeMenu() {
+  const { choice, setChoice } = useColorScheme()
+  return (
+    <label className="tc-scheme-menu">
+      <span className="tc-sr">Color scheme</span>
+      <select
+        data-testid="scheme-menu"
+        aria-label="Color scheme"
+        value={choice}
+        style={{ ...tap, height: 40, minHeight: 40 }}
+        onChange={(event) => setChoice(event.target.value as ColorChoice)}
+      >
+        {SCHEME_OPTIONS.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }
 
@@ -160,34 +183,28 @@ export function AppShell({
           Skip to content
         </a>
         <header
+          className="tc-header"
           data-testid="app-header"
           style={{
             display: 'flex',
-            flexWrap: 'wrap',
+            flexWrap: 'nowrap',
             alignItems: 'center',
             gap: '8px',
             minHeight: '48px',
+            overflow: 'hidden',
             background: 'var(--tc-glass-fallback)',
             borderRadius: 'var(--tc-radius-card)',
             padding: '8px',
           }}
         >
           <ThemeWordmark />
-          <h1 style={{ margin: 0, fontSize: '1.25rem', lineHeight: 1.2, flex: '0 0 auto', fontWeight: 'var(--tc-heading-weight, 600)' }}>
-            Teller Copilot
-          </h1>
+          <h1 className="tc-header-title">Teller Copilot</h1>
           <LiveBadge mode={session?.mode ?? null} simulationTitle={simulationTitle} />
           <nav
             aria-label="Screens"
             data-testid="app-nav"
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '8px',
-              overflow: 'visible',
-              minHeight: '48px',
-              flex: '1 1 16rem',
-            }}
+            className="tc-header-nav"
+            style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', minWidth: 0, flex: '1 1 auto', minHeight: 48, gap: 8 }}
           >
             {routes.map((route) => {
               const path = routePath(route, session)
@@ -203,11 +220,13 @@ export function AppShell({
                   aria-current={current ? 'page' : undefined}
                   style={{
                     ...tap,
+                    flex: '0 0 auto',
                     textDecoration: 'none',
                     backgroundColor: current ? 'var(--tc-input)' : 'transparent',
                     borderColor: 'transparent',
                     borderBottom: current ? '3px solid var(--tc-accent)' : '3px solid transparent',
                     fontWeight: current ? 700 : 500,
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {label}
@@ -216,6 +235,7 @@ export function AppShell({
             })}
           </nav>
           <SchemeToggle />
+          <SchemeMenu />
           <button
             type="button"
             className="tc-btn"
@@ -225,6 +245,7 @@ export function AppShell({
             title="Presenter mode"
             style={{
               ...tap,
+              flex: '0 0 auto',
               ...(presenter.on
                 ? { backgroundColor: 'var(--tc-button)', color: 'var(--tc-button-text)', borderColor: 'transparent' }
                 : secondaryStyle),
@@ -240,7 +261,7 @@ export function AppShell({
             data-testid="shortcut-help-button"
             aria-label="Keyboard shortcuts"
             title="Keyboard shortcuts (?)"
-            style={{ ...tap, ...secondaryStyle }}
+            style={{ ...tap, ...secondaryStyle, flex: '0 0 auto' }}
             onClick={() => onHelp?.(!helpOpen)}
           >
             ?

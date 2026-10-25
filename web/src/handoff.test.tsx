@@ -5,6 +5,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { HandoffScreen } from './screens/HandoffScreen'
 import { TellerProvider, useTeller } from './teller'
+import { actorLabel, modeLabel, patternValue, shortId } from './ui/plain'
 import type { HandoffProjection, Library, SessionState } from './types'
 import { validateHandoff } from './validate'
 
@@ -35,13 +36,14 @@ describe('Handoff screen', () => {
     render(<HandoffScreen library={library} projection={projection} />)
 
     expect(screen.getByTestId('handoff-screen')).toBeTruthy()
-    expect(screen.getByTestId('handoff-session').textContent).toBe(projection.session_id)
-    expect(screen.getByTestId('handoff-mode').textContent).toBe(projection.mode)
+    expect(screen.getByTestId('handoff-session').textContent).toBe(shortId(projection.session_id))
+    expect(screen.getByTestId('handoff-session').getAttribute('title')).toBe(projection.session_id)
+    expect(screen.getByTestId('handoff-mode').textContent).toBe(modeLabel(projection.mode))
     expect(screen.getByTestId('handoff-answers').textContent).toBe(String(projection.answers))
     expect(screen.getByTestId('handoff-level').textContent).toBe('Caution')
     expect(screen.getByTestId('handoff-level').getAttribute('data-level')).toBe(projection.risk.level)
     expect(screen.getByTestId('handoff-score').textContent).toBe(String(projection.risk.score))
-    expect(screen.getByTestId('handoff-pattern').textContent).toBe(projection.risk.pattern_label)
+    expect(screen.getByTestId('handoff-pattern').textContent).toBe(patternValue(projection.risk.pattern_label))
     expect(screen.getAllByTestId('handoff-reason').map((item) => item.textContent)).toEqual(
       projection.risk.reasons.map((reason) => reason.label),
     )
@@ -51,9 +53,9 @@ describe('Handoff screen', () => {
     expect(screen.getByTestId('handoff-purpose').textContent).toBe(purpose?.label)
     expect(screen.queryByTestId('handoff-stop')).toBeNull()
     expect(screen.queryByTestId('question-text')).toBeNull()
-    expect(screen.getByTestId('handoff-outcome').textContent).toBe('Outcome: not recorded yet')
+    expect(screen.getByTestId('handoff-outcome').textContent).toBe('Not recorded yet')
     expect(screen.getByTestId('handoff-outcome').getAttribute('data-recorded')).toBe('false')
-    expect(screen.getByTestId('handoff-actor').textContent).toBe('Actor: not recorded yet')
+    expect(screen.getByTestId('handoff-actor').textContent).toBe(actorLabel(null))
     expect(screen.getByTestId('handoff-actor').getAttribute('data-recorded')).toBe('false')
   })
 
@@ -77,8 +79,8 @@ describe('Handoff screen', () => {
     expect(screen.getByTestId('handoff-pattern').textContent).toBe('From the server')
     expect(screen.getByTestId('handoff-suggested').textContent).toBe('Escalate')
     expect(screen.getByTestId('handoff-suggested').getAttribute('data-outcome')).toBe('escalate')
-    expect(screen.getByTestId('handoff-outcome').textContent).toBe('Outcome: not recorded yet')
-    expect(screen.getByTestId('handoff-actor').textContent).toBe('Actor: not recorded yet')
+    expect(screen.getByTestId('handoff-outcome').textContent).toBe('Not recorded yet')
+    expect(screen.getByTestId('handoff-actor').textContent).toBe(actorLabel(null))
   })
 
   it('renders a recorded outcome and actor', () => {
@@ -87,9 +89,9 @@ describe('Handoff screen', () => {
     projection.outcome = 'report'
     projection.actor = 'teller-1'
     render(<HandoffScreen library={library} projection={projection} />)
-    expect(screen.getByTestId('handoff-outcome').textContent).toBe('Outcome: Report')
+    expect(screen.getByTestId('handoff-outcome').textContent).toBe('Report')
     expect(screen.getByTestId('handoff-outcome').getAttribute('data-recorded')).toBe('true')
-    expect(screen.getByTestId('handoff-actor').textContent).toBe('Actor: teller-1')
+    expect(screen.getByTestId('handoff-actor').textContent).toBe('Teller-1')
     expect(screen.getByTestId('handoff-actor').getAttribute('data-recorded')).toBe('true')
   })
 
@@ -192,9 +194,9 @@ describe('handoff and outcome against the API', () => {
     await waitFor(() => {
       expect(screen.getByTestId('handoff-score').textContent).toBe('58')
     })
-    expect(screen.getByTestId('handoff-pattern').textContent).toBe(projection.risk.pattern_label)
-    expect(screen.getByTestId('handoff-outcome').textContent).toBe('Outcome: not recorded yet')
-    expect(screen.getByTestId('handoff-actor').textContent).toBe('Actor: not recorded yet')
+    expect(screen.getByTestId('handoff-pattern').textContent).toBe(patternValue(projection.risk.pattern_label))
+    expect(screen.getByTestId('handoff-outcome').textContent).toBe('Not recorded yet')
+    expect(screen.getByTestId('handoff-actor').textContent).toBe(actorLabel(null))
     const handoffCall = calls.find((call) => call.url.endsWith('/handoff'))
     expect(handoffCall?.method).toBe('GET')
     expect(handoffCall?.url).toBe(`http://api.test/sessions/${session.session_id}/handoff`)
@@ -209,10 +211,10 @@ describe('handoff and outcome against the API', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'load' }))
     await waitFor(() => {
-      expect(screen.getByTestId('handoff-outcome').textContent).toBe('Outcome: Escalate')
+      expect(screen.getByTestId('handoff-outcome').textContent).toBe('Escalate')
     })
     expect(screen.getByTestId('handoff-outcome').getAttribute('data-recorded')).toBe('true')
-    expect(screen.getByTestId('handoff-actor').textContent).toBe('Actor: teller-1')
+    expect(screen.getByTestId('handoff-actor').textContent).toBe('Teller-1')
     expect(screen.getByTestId('handoff-actor').getAttribute('data-recorded')).toBe('true')
     expect(recorded).toEqual({ outcome: 'escalate', actor: 'teller-1' })
     expect(validateHandoff({ ...projection, outcome: recorded.outcome, actor: recorded.actor })).toEqual([])

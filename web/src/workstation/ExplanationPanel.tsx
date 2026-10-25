@@ -1,11 +1,71 @@
 import { useEffect, useState } from 'react'
 import { apiSend } from '../api'
+import { listedChipIds, originText, sourceForChip } from '../feed'
 import { readHealth, type HealthReport } from '../screens/HealthScreen'
+import { Fact, FactGrid, SectionHeading } from '../ui/facts'
+import { LEVEL_WORD } from '../ui/LevelIcon'
+import { levelLabel, patternValue, recommenderPhrase, suggestedLabel } from '../ui/plain'
 import type { Library, SessionState } from '../types'
+import {
+  groupFactors,
+  humanLabel,
+  responseWeightTotal,
+  strengthShare,
+  strengthWord,
+  type LevelFactor,
+} from './explain'
 
-function chipForSignal(library: Library | null, signalId: string): string | null {
-  const chip = library?.context_chips.find((item) => item.signal === signalId)
-  return chip?.label ?? null
+function FactorList({
+  items,
+  total,
+  testId,
+  empty,
+}: {
+  items: readonly LevelFactor[]
+  total: number
+  testId: string
+  empty: string
+}) {
+  if (items.length === 0) {
+    return (
+      <p data-testid={testId} style={{ margin: 0, fontWeight: 400 }}>
+        {empty}
+      </p>
+    )
+  }
+  return (
+    <ul className="tc-factor-list">
+      {items.map((item) => {
+        const share = item.weight == null ? null : strengthShare(item.weight, total)
+        const word = item.weight == null ? null : strengthWord(item.weight, total)
+        return (
+          <li key={`${item.id}-${item.direction}`} data-testid={testId} data-direction={item.direction}>
+            <div className="tc-factor-head">
+              <strong>{item.label}</strong>
+              {word ? (
+                <span className="tc-factor-strength">
+                  <span aria-hidden="true">{item.direction === 'raises' ? '↑' : '↓'}</span> {word}
+                </span>
+              ) : null}
+            </div>
+            {share != null && word ? (
+              <span
+                className="tc-meter"
+                role="meter"
+                aria-label={word}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(share * 100)}
+              >
+                <span style={{ width: `${Math.round(share * 100)}%` }} />
+              </span>
+            ) : null}
+            {item.rationale ? <p className="tc-factor-why">{item.rationale}</p> : null}
+          </li>
+        )
+      })}
+    </ul>
+  )
 }
 
 export function ExplanationPanel({
@@ -43,100 +103,112 @@ export function ExplanationPanel({
     return null
   }
 
+  const grouped = groupFactors(session, library)
+  const factors = [...grouped.raises, ...grouped.lowers]
+  const total = responseWeightTotal(factors)
   const debug = session.debug
+  const noted = listedChipIds(postedChipIds, session.context_chips)
 
   return (
-    <section data-testid="explain-panel" aria-label="Why this level" className="tc-prose" style={{ display: 'grid', gap: 8, maxWidth: '70ch' }}>
-      <h2 style={{ margin: 0, fontSize: 18 }}>Why this level</h2>
-      <p style={{ margin: 0 }} data-testid="explain-level">
-        Shown level {session.risk.level}. Raw level {session.risk.raw_level}. Score {session.risk.score}. Pattern{' '}
-        {session.risk.pattern_label}. Suggested outcome {session.suggested_outcome}.
-      </p>
-      <h3 style={{ margin: 0, fontSize: 16 }}>What raised it</h3>
-      {session.risk.reasons.length === 0 ? (
-        <p data-testid="explain-reason" style={{ margin: 0 }}>
-          The response lists no reasons for this level.
-        </p>
+    <section data-testid="explain-panel" aria-label="Why this level" className="tc-explain">
+      <h2 className="tc-title">Why this level</h2>
+      <FactGrid label="Level summary">
+        <Fact term="Shown level" testId="explain-level">
+          {levelLabel(session.risk.level)}
+        </Fact>
+        <Fact term="Raw level">{LEVEL_WORD[session.risk.raw_level]}</Fact>
+        <Fact term="Score">{session.risk.score}</Fact>
+        <Fact term="Pattern">{patternValue(session.risk.pattern_label)}</Fact>
+        <Fact term="Suggested outcome">{suggestedLabel(session.suggested_outcome)}</Fact>
+      </FactGrid>
+
+      <SectionHeading>What raised it</SectionHeading>
+      <FactorList
+        items={grouped.raises}
+        total={total}
+        testId="explain-reason"
+        empty="Nothing in this visit raised the level."
+      />
+
+      <SectionHeading>What would lower it</SectionHeading>
+      <FactorList
+        items={grouped.lowers}
+        total={total}
+        testId="explain-counter"
+        empty="Nothing in this visit points toward it being safe."
+      />
+
+      <SectionHeading>What the teller and system noted</SectionHeading>
+      {noted.length === 0 ? (
+        <p style={{ margin: 0 }}>Nothing has been noted yet.</p>
       ) : (
-        <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
-          {session.risk.reasons.map((reason) => {
-            const input = chipForSignal(library, reason.id)
-            return (
-              <li key={reason.id} data-testid="explain-reason">
-                {reason.label}. {reason.rationale}
-                {input ? ` Input: ${input}.` : ''}
-              </li>
-            )
-          })}
-        </ul>
-      )}
-      <h3 style={{ margin: 0, fontSize: 16 }}>What would lower it</h3>
-      {session.risk.counterpoint ? (
-        <p data-testid="explain-counter" style={{ margin: 0 }}>
-          {session.risk.counterpoint.label}. {session.risk.counterpoint.rationale}
-        </p>
-      ) : (
-        <p data-testid="explain-counter" style={{ margin: 0 }}>
-          This response has no opposite-direction factor.
-        </p>
-      )}
-      <h3 style={{ margin: 0, fontSize: 16 }}>Inputs sent</h3>
-      {postedChipIds.length === 0 ? (
-        <p style={{ margin: 0 }}>No context signals have been posted.</p>
-      ) : (
-        <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
-          {postedChipIds.map((chipId) => {
+        <ul className="tc-factor-list">
+          {noted.map((chipId) => {
             const chip = library?.context_chips.find((item) => item.id === chipId)
+            const label = humanLabel(library, chip?.signal ?? chipId, chip?.label ?? chipId)
+            const source = sourceForChip(session.context_chips, chipId)
             return (
-              <li key={chipId} data-testid="explain-input">
-                {chip?.label ?? chipId}
-                {chip?.signal ? ` (${chip.signal})` : ''}
+              <li key={chipId} data-testid="explain-input" className="tc-note-row">
+                <span>{label}</span>
+                <span className="tc-badge">{originText(source, false)}</span>
               </li>
             )
           })}
         </ul>
       )}
-      <p style={{ margin: 0 }} data-testid="explain-recommender">
-        Recommender {debug?.recommender ?? 'not included'}. Rejections {debug?.rejections ?? 'not included'}. Latency{' '}
-        {debug?.latency_ms ?? 'not included'} ms.
-      </p>
-      <p style={{ margin: 0 }} data-testid="explain-health">
-        {health
-          ? `Process-wide agreement ${health.agreement_rate ?? 'not included'}. Process-wide fallback rate ${health.fallback_rate}. These are not this decision.`
-          : 'Process-wide agreement and fallback are not loaded.'}
-      </p>
-      {session.explanation ? (
-        <>
-          <h3 style={{ margin: 0, fontSize: 16 }}>Contributions</h3>
-          {session.explanation.contributions.length === 0 ? (
-            <p data-testid="explain-contribution" style={{ margin: 0 }}>
-              This response lists no contributions.
-            </p>
-          ) : (
-            <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
-              {session.explanation.contributions.map((row) => (
-                <li key={`${row.signal_id}-${row.direction}`} data-testid="explain-contribution">
-                  {row.label}. Weight {row.weight}. {row.direction === 'raises' ? 'Raises' : 'Lowers'}.
-                </li>
-              ))}
-            </ul>
-          )}
-          {session.explanation.confidence === null ? null : (
-            <p data-testid="explain-confidence" style={{ margin: 0 }}>
-              Confidence {session.explanation.confidence}.
-            </p>
-          )}
-          <p data-testid="explain-fallback" style={{ margin: 0 }}>
-            {session.explanation.used_fallback
-              ? 'This decision used the fallback.'
-              : 'This decision did not use the fallback.'}
+
+      <details className="tc-tech" data-testid="technical-details">
+        <summary>Technical details</summary>
+        <div className="tc-tech-body">
+          <p data-testid="explain-recommender" style={{ margin: 0 }}>
+            {debug
+              ? `Decided by: ${recommenderPhrase(debug.recommender)}.`
+              : 'Decided by: not included.'}
           </p>
-        </>
-      ) : (
-        <p data-testid="explain-gap" style={{ margin: 0 }}>
-          Per-signal weights, a confidence value, and a per-decision fallback flag are not in this response.
-        </p>
-      )}
+          <p style={{ margin: 0 }}>
+            {debug ? `Response time: ${debug.latency_ms} ms.` : 'Response time: not included.'}
+          </p>
+          <p style={{ margin: 0 }}>
+            {debug ? `Rejected tries: ${debug.rejections}.` : 'Rejected tries: not included.'}
+          </p>
+          <p data-testid="explain-health" style={{ margin: 0 }}>
+            {health
+              ? `Across recent visits, agreement with the rules is ${health.agreement_rate ?? 'not included'} and the fallback rate is ${health.fallback_rate}. That is the whole service, not this decision.`
+              : 'Service-wide rates are not loaded.'}
+          </p>
+          {grouped.explanation ? (
+            <>
+              <p data-testid="explain-confidence" style={{ margin: 0 }}>
+                {grouped.explanation.confidence === null
+                  ? 'Not applicable (rules engine).'
+                  : `Model confidence: ${grouped.explanation.confidence}.`}
+              </p>
+              <p data-testid="explain-fallback" style={{ margin: 0 }}>
+                {grouped.explanation.used_fallback
+                  ? 'This decision used the fallback.'
+                  : 'This decision did not use the fallback.'}
+              </p>
+              {factors.some((item) => item.weight != null) ? (
+                <ul>
+                  {factors.map((item) => (
+                    <li key={`tech-${item.id}-${item.direction}`} data-testid="explain-contribution">
+                      {item.label}. Weight {item.weight}. {item.id}. {item.direction === 'raises' ? 'Raises' : 'Lowers'}.
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p data-testid="explain-contribution" style={{ margin: 0 }}>
+                  This response lists no contributions.
+                </p>
+              )}
+            </>
+          ) : (
+            <p data-testid="explain-gap" style={{ margin: 0 }}>
+              Per-signal weights, a confidence value, and a per-decision fallback flag are not in this response.
+            </p>
+          )}
+        </div>
+      </details>
     </section>
   )
 }

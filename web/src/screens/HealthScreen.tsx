@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiSend } from '../api'
+import { Fact, FactGrid, PageTitle } from '../ui/facts'
+import { recommenderTitle } from '../ui/plain'
 
 export type HealthReport = {
   recommender: string
@@ -102,38 +104,38 @@ export function HealthScreen() {
   const report = load.kind === 'ready' ? load.report : null
 
   return (
-    <section data-testid="health-screen" style={{ display: 'grid', gap: 8 }}>
-      <h2 style={{ margin: 0, fontSize: 22 }}>Health</h2>
-      <p data-testid="health-config-note">Recommender follows the process config from startup.</p>
+    <section data-testid="health-screen" className="tc-card">
+      <PageTitle>Health</PageTitle>
+      <p data-testid="health-config-note">The decision engine follows the setup from startup. This screen does not change it.</p>
       {load.kind === 'unavailable' ? <p data-testid="health-unavailable">Health is unavailable.</p> : null}
       {load.kind === 'invalid' ? <p data-testid="health-invalid">Health response could not be read.</p> : null}
       {report ? (
-        <>
-          <p>
-            Recommender <span data-testid="health-recommender">{report.recommender}</span>
-          </p>
-          <p>
-            Model <span data-testid="health-model">{shown(report.model_id)}</span>
-          </p>
-          <p>
-            p50 <span data-testid="health-p50">{shown(report.p50)}</span>
-          </p>
-          <p>
-            p95 <span data-testid="health-p95">{shown(report.p95)}</span>
-          </p>
-          <p>
-            Last p95 <span data-testid="health-last-p95">{shown(report.last_p95)}</span>
-          </p>
-          <p>
-            Fallback rate <span data-testid="health-fallback">{shown(report.fallback_rate)}</span>
-          </p>
-          <p>
-            Rejections <span data-testid="health-rejections">{shown(report.rejection_count)}</span>
-          </p>
-          <p>
-            Agreement rate <span data-testid="health-agreement">{shown(report.agreement_rate)}</span>
-          </p>
-        </>
+        <FactGrid label="Service health">
+          <Fact term="Decision engine" testId="health-recommender" data={{ recommender: report.recommender }}>
+            {recommenderTitle(report.recommender)}
+          </Fact>
+          <Fact term="Model" testId="health-model">
+            {shown(report.model_id) || 'None'}
+          </Fact>
+          <Fact term="Typical response" testId="health-p50">
+            {shown(report.p50)}
+          </Fact>
+          <Fact term="Slow response" testId="health-p95">
+            {shown(report.p95)}
+          </Fact>
+          <Fact term="Last slow response" testId="health-last-p95">
+            {shown(report.last_p95)}
+          </Fact>
+          <Fact term="Fallback rate" testId="health-fallback">
+            {shown(report.fallback_rate)}
+          </Fact>
+          <Fact term="Rejections" testId="health-rejections">
+            {shown(report.rejection_count)}
+          </Fact>
+          <Fact term="Agreement with the rules" testId="health-agreement">
+            {shown(report.agreement_rate)}
+          </Fact>
+        </FactGrid>
       ) : null}
     </section>
   )

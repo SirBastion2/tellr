@@ -63,7 +63,8 @@ export function CopilotStrip({
   onUndo?: () => void
 }) {
   const level = session?.risk.level ?? 'clear'
-  const reason = session?.risk.reasons[0]?.label ?? 'No concern flagged'
+  const reason =
+    session?.risk.reasons[0]?.label ?? session?.risk.counterpoint?.label ?? 'No concern flagged'
   const action = session ? suggestedAction(session) : ''
   const script = session ? readAloud(session) : ''
 
@@ -92,8 +93,8 @@ export function CopilotStrip({
               gap: 8,
             }}
           >
-            <p className="tc-kicker">Suggested next action</p>
-            <p data-testid="copilot-action" className="tc-prose" style={{ margin: 0, fontSize: '1.75rem', lineHeight: 1.25, fontWeight: 650, maxWidth: '70ch' }}>
+            <p className="tc-kicker">Suggested action</p>
+            <p data-testid="copilot-action" className="tc-prose" style={{ margin: 0, fontSize: 'clamp(1.35rem, 1.4vw, 1.85rem)', lineHeight: 1.25, fontWeight: 700, maxWidth: '70ch' }}>
               {action}
             </p>
           </div>
@@ -206,7 +207,7 @@ export function CopilotStrip({
         </>
       ) : (
         <p className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-          Start a simulated customer to see the copilot.
+          Press play to start.
         </p>
       )}
     </aside>

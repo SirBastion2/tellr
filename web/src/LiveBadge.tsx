@@ -21,7 +21,11 @@ export function LiveBadge({ mode, simulationTitle = null }: { mode: Mode | null;
       style={{
         margin: 0,
         whiteSpace: 'nowrap',
-        flex: '0 0 auto',
+        flex: '0 1 auto',
+        minWidth: 0,
+        maxWidth: '16rem',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
         border: '1px solid var(--tc-accent, #1c1917)',
         color: 'var(--tc-text, #1c1917)',
         backgroundColor: 'var(--tc-glass-fallback, transparent)',
