@@ -1819,3 +1819,37 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/97. Do not merge. Concurrent header / signal-list / handoff work should conflict little: `App.tsx` only replaced the inline `keydown` effect in `ConnectedShell`. No contract / api / engine edits. No new npm dependency. No screenshots.
 
+---
+
+### [B1] Workstation answer control — Agent B1 — 2026-10-25 04:15
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS
+
+```
+── typecheck
+
+── lint
+
+── test
+ Test Files  27 passed (27)
+      Tests  88 passed (88)
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/workstation/QuestionCard.tsx` (new); `web/src/workstation/CopilotStrip.tsx`; `web/src/screens/HomeScreen.tsx`; `web/src/screens/InterviewScreen.tsx` (shared card); `web/src/App.tsx`; `web/mock/replay.ts`; `web/mock/live_answers.json` (new, recorded engine states); `web/src/workstation.test.tsx` (new); `web/src/mockReplay.test.ts`; `ARCHITECTURE.md`; `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - API already accepts `POST /sessions/{id}/answers` (`contract/api.md`, architecture §11.1). The Interview screen already had chips. The gap was the workstation / presenter Home surface, which hid Session. Added the same two-tap control on the copilot card (§12 two-tap opener; §7.2 stage 1 keeps the opener until it is answered).
+  - Suggested action stays `SessionState.question.text` when present, else the first talk-track line. After each answer the returned SessionState updates the prompt. `web/` does not compute risk, level, reasons, or the next question (§9, §12).
+  - Live mock cannot score. Recorded `web/mock/live_answers.json` from `engine.project` for demo chip sets (empty, government prefixes, contractor cash, romance/crypto) so `npm run dev` and `npm run dev:api` both return a SessionState. Unrecorded combinations keep the last recorded answer or the context projection and warn.
+  - Government demo path (engine): context chips → Caution/45 + opener; `relayed_by_caller` + `purpose.government_payment` → `q.secrecy.told_not_to_tell` at 52; `confirmed` → High/62.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR https://github.com/SirBastion2/tellr/pull/95. Do not merge from this agent.
+  - API can accept answers; nothing missing on A's side. Did not edit `api/`, `engine/`, `library/`, `contract/`, or goldens. No CROSS_LANE entry.
+  - On the workstation, pick a purpose then an answer chip. For the High/62 beat use government impersonation, play the visit, then "Answer came from the caller" and "Yes" on the secrecy question.
+  - No new dependency.
+

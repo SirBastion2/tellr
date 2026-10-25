@@ -1,4 +1,5 @@
 import library from '../../contract/library.json' with { type: 'json' }
+import liveAnswers from './live_answers.json' with { type: 'json' }
 import liveLevels from './live_levels.json' with { type: 'json' }
 import t1 from '../../contract/fixtures/T1.json' with { type: 'json' }
 import t2 from '../../contract/fixtures/T2.json' with { type: 'json' }
@@ -25,7 +26,8 @@ const byCase = new Map(fixtures.map((fixture) => [fixture.case, fixture]))
 
 type ChipSource = 'observed' | 'teller'
 
-type LiveStep = { kind: 'context'; chips: string[]; source: ChipSource } | { kind: 'answer' }
+type LiveAnswer = { kind: 'answer'; question_id: string; chip: string; purpose?: string }
+type LiveStep = { kind: 'context'; chips: string[]; source: ChipSource } | LiveAnswer
 
 type Replay = {
   caseId: string
@@ -42,6 +44,8 @@ type Replay = {
 }
 
 const recordedLevels = liveLevels as Record<string, Record<string, unknown>>
+const recordedAnswers = liveAnswers as Record<string, Record<string, unknown>>
+const libraryQuestions = (library as { questions: { id: string; role: string }[] }).questions
 
 let openedCount = 0
 
@@ -162,6 +166,82 @@ function chipSourceOf(body: unknown): ChipSource {
   return source === 'observed' || source === 'teller' ? source : 'teller'
 }
 
+function liveAnswersOf(replay: Replay): Omit<LiveAnswer, 'kind'>[] {
+  const answers: Omit<LiveAnswer, 'kind'>[] = []
+  for (const step of replay.liveLog) {
+    if (step.kind !== 'answer') {
+      continue
+    }
+    const item: Omit<LiveAnswer, 'kind'> = { question_id: step.question_id, chip: step.chip }
+    if (step.purpose !== undefined) {
+      item.purpose = step.purpose
+    }
+    answers.push(item)
+  }
+  return answers
+}
+
+function answerLookupKey(chips: string[], answers: readonly Omit<LiveAnswer, 'kind'>[]): string {
+  const chipPart = [...chips].sort().join('|')
+  const answerPart = answers
+    .map((answer) =>
+      answer.purpose ? `${answer.question_id}:${answer.chip}:${answer.purpose}` : `${answer.question_id}:${answer.chip}`,
+    )
+    .join('|')
+  return `${chipPart}||${answerPart}`
+}
+
+function recordedAnswerBody(replay: Replay, sessionId: string): unknown | null {
+  const chips = liveChips(replay)
+  const answers = liveAnswersOf(replay)
+  if (answers.length === 0) {
+    return null
+  }
+  for (let length = answers.length; length > 0; length -= 1) {
+    const recorded = recordedAnswers[answerLookupKey(chips, answers.slice(0, length))]
+    if (recorded) {
+      return { ...recorded, session_id: sessionId, mode: replay.mode }
+    }
+  }
+  return null
+}
+
+function parseAnswer(body: unknown): Omit<LiveAnswer, 'kind'> | null {
+  const record = recordOf(body)
+  if (!record || typeof record.question_id !== 'string' || typeof record.chip !== 'string') {
+    return null
+  }
+  const answer: Omit<LiveAnswer, 'kind'> = { question_id: record.question_id, chip: record.chip }
+  if (typeof record.purpose === 'string') {
+    answer.purpose = record.purpose
+  }
+  return answer
+}
+
+function answerRejection(body: unknown): MockResult | null {
+  const parsed = parseAnswer(body)
+  if (!parsed) {
+    return { status: 422, body: null, warnings: ['answer is missing question_id or chip'] }
+  }
+  const question = libraryQuestions.find((item) => item.id === parsed.question_id)
+  const opener = question?.role === 'opener'
+  if (opener && parsed.purpose === undefined) {
+    return {
+      status: 409,
+      body: { error: { code: 'purpose_required_on_opener', message: 'opener answer requires a purpose' } },
+      warnings: [],
+    }
+  }
+  if (question && !opener && parsed.purpose !== undefined) {
+    return {
+      status: 409,
+      body: { error: { code: 'purpose_not_allowed', message: 'purpose is only recorded on the opener' } },
+      warnings: [],
+    }
+  }
+  return null
+}
+
 function liveChips(replay: Replay): string[] {
   const seen = new Set<string>()
   const chips: string[] = []
@@ -206,7 +286,7 @@ function withOptionalFields(body: unknown, replay: Replay): unknown {
 
 function sessionBody(replay: Replay, fixture: Fixture, sessionId: string): unknown {
   const body =
-    replay.mode === 'live' && liveChips(replay).length > 0
+    replay.mode === 'live' && (liveChips(replay).length > 0 || liveAnswersOf(replay).length > 0)
       ? liveBody(replay, fixture, sessionId)
       : currentBody(fixture, replay.index, replay.mode)
   return withOptionalFields(body, replay)
@@ -242,6 +322,10 @@ function projectActivity(replay: Replay, fixture: Fixture, sessionId: string): {
 }
 
 function liveBody(replay: Replay, fixture: Fixture, sessionId: string): unknown {
+  const answered = recordedAnswerBody(replay, sessionId)
+  if (answered) {
+    return answered
+  }
   const chips = liveChips(replay)
   if (chips.length === 0) {
     return currentBody(fixture, replay.index, replay.mode)
@@ -474,8 +558,18 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
           warnings.push('no recorded level for these chips')
         }
       } else {
-        replay.liveLog.push({ kind: 'answer' })
-        warnings.push('live mock keeps the context projection; answers are scored by the API')
+        const rejected = answerRejection(body)
+        if (rejected) {
+          return rejected
+        }
+        const parsed = parseAnswer(body)
+        if (!parsed) {
+          return { status: 422, body: null, warnings: ['answer is missing question_id or chip'] }
+        }
+        replay.liveLog.push({ kind: 'answer', ...parsed })
+        if (!recordedAnswerBody(replay, sessionId)) {
+          warnings.push('no recorded SessionState for these answers')
+        }
       }
       return { status: 200, body: sessionBody(replay, fixture, sessionId), warnings }
     }

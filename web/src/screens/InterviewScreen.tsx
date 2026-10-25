@@ -1,10 +1,8 @@
-import { useState } from 'react'
-import type { CSSProperties } from 'react'
-import { controlStyle, inputFill, mutedColor, textColor } from '../theme/controls'
 import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { LevelIcon } from '../ui/LevelIcon'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
-import type { AnswerChipId, AnswerPost, Level, Library, QuestionView, SessionState } from '../types'
+import type { AnswerPost, Level, Library, SessionState } from '../types'
+import { QuestionCard } from '../workstation/QuestionCard'
 
 const LEVELS: readonly { id: Level; label: string; colour: string }[] = [
   { id: 'clear', label: 'Clear', colour: '#166534' },
@@ -13,16 +11,6 @@ const LEVELS: readonly { id: Level; label: string; colour: string }[] = [
 ]
 
 const RECOMMENDED_STOP = 'You have enough to decide, or ask one more'
-const QUIET_OPACITY = 0.7
-
-const tap: CSSProperties = {
-  ...controlStyle,
-  padding: '4px',
-}
-
-function chipLabel(library: Library | null, id: string): string {
-  return library?.chips.find((chip) => chip.id === id)?.label ?? id
-}
 
 function purposeLabel(library: Library | null, id: string): string {
   return library?.purposes.find((purpose) => purpose.id === id)?.label ?? id
@@ -78,116 +66,6 @@ function TalkTrack({ library, session }: { library: Library | null; session: Ses
         ))}
       </ul>
     </section>
-  )
-}
-
-function QuestionCard({
-  library,
-  question,
-  quiet,
-  onAnswer,
-}: {
-  library: Library | null
-  question: QuestionView
-  quiet: boolean
-  onAnswer?: (answer: AnswerPost) => void
-}) {
-  const [purposeId, setPurposeId] = useState<string | null>(null)
-  const opener = question.stage === 'opener'
-  const slots: (AnswerChipId | null)[] = [0, 1, 2, 3, 4].map((index) => question.chips[index] ?? null)
-  const waitingForPurpose = opener && purposeId === null
-
-  function choose(chip: AnswerChipId) {
-    if (!onAnswer || waitingForPurpose) {
-      return
-    }
-    if (opener && purposeId) {
-      onAnswer({ question_id: question.id, chip, purpose: purposeId })
-      return
-    }
-    onAnswer({ question_id: question.id, chip })
-  }
-
-  return (
-    <article
-      data-testid="question-card"
-      data-emphasis={quiet ? 'low' : 'normal'}
-      style={{
-        opacity: quiet ? QUIET_OPACITY : 1,
-        display: 'grid',
-        gap: '8px',
-        alignContent: 'start',
-        color: textColor,
-      }}
-    >
-      <p data-testid="question-text" style={{ margin: 0, fontSize: '18px', lineHeight: 1.3 }}>
-        {question.text}
-      </p>
-      {opener ? (
-        <div
-          data-testid="purpose-row"
-          style={{
-            display: 'flex',
-            flexWrap: 'nowrap',
-            gap: '8px',
-            overflowX: 'auto',
-            height: '48px',
-            minHeight: '48px',
-          }}
-        >
-          {(library?.purposes ?? []).map((purpose) => {
-            const selected = purposeId === purpose.id
-            return (
-              <button
-                key={purpose.id}
-                type="button"
-                data-testid="purpose"
-                data-selected={selected ? 'true' : 'false'}
-                aria-pressed={selected}
-                style={{
-                  ...tap,
-                  flex: '0 0 auto',
-                  backgroundColor: selected ? inputFill : 'transparent',
-                }}
-                onClick={() => setPurposeId(purpose.id)}
-              >
-                {purpose.label}
-              </button>
-            )
-          })}
-        </div>
-      ) : null}
-      <div
-        data-testid="chip-row"
-        style={{
-          height: '72px',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
-          gap: '8px',
-          overflow: 'hidden',
-        }}
-      >
-        {slots.map((chip, index) =>
-          chip ? (
-            <button
-              key={chip}
-              type="button"
-              data-testid="answer-chip"
-              aria-disabled={waitingForPurpose ? 'true' : 'false'}
-              style={{ ...tap, height: '100%', padding: '4px', fontSize: '14px', lineHeight: 1.2 }}
-              onClick={() => choose(chip)}
-            >
-              {chipLabel(library, chip)}
-            </button>
-          ) : (
-            <span key={`empty-${index}`} data-testid="chip-slot" aria-hidden="true" />
-          ),
-        )}
-      </div>
-      <p data-testid="question-why" style={{ margin: 0, color: mutedColor }}>
-        {question.why}
-      </p>
-    </article>
   )
 }
 
