@@ -1670,3 +1670,31 @@ Headless Chrome (`web/scripts/measure-fit.mjs`, live-API mode, F.N.B. theme, con
 - **Questions logged:** none
 - **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine edits. No new npm dependency. Do not attach screenshots. Re-run `node web/scripts/measure-fit.mjs http://127.0.0.1:5173` after `npm run dev:api` if the header grows again.
 
+---
+
+### [B] Demo polish: timer units, shortcuts, footer, width — Agent B (Sebastian / Driver A UI lane) — 2026-10-25 03:50
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 99 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  32 passed (32)
+      Tests  99 passed (99)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/demo/clock.ts`, `web/src/demo/clock.test.ts`, `web/src/demoPolish.test.tsx`, `web/src/App.tsx`, `web/src/ui/ShortcutHelp.tsx`, `web/src/theme/ThemeRoot.tsx`, `web/src/theme/tokens.ts`, `web/src/index.css`, `web/src/workstation/TransactionPanel.tsx`, tests, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Clock and timeline share simulated customer time (sum of `delayMs`). Speed still only changes wall-clock playback length (`ARCHITECTURE.md` workstation; stress-test finding 1).
+  - Demo layout is always on, so the old `?`/`P`/`N` filter hid working keys. Help and the handler now include Restart (`R`, confirm button reads Restart) plus Confirm, Dismiss, Escalate, and `[` / `]`.
+  - Footer was already `0.8125rem` (~13px) after #84/#88. Locked to explicit `13px` so the 105% demo root cannot shrink it.
+  - #88 raised the card cap to 1440px, so the ~770px card did not reproduce. A wide screen still letterboxed that cap. The card is now `width: 100%` of the padded page. 3fr/2fr from 1280 and the no-clip header stay.
+  - Outcome and Handoff stay labeled as hint tabs until a visit exists. No new screens.
+- **Questions logged:** none
+- **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine edits. No new npm dependency. Do not merge. Do not attach screenshots.
+

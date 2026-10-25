@@ -12,7 +12,7 @@ const ROWS: readonly { keys: string; what: string }[] = [
   { keys: '[ and ]', what: 'Switch simulated customer' },
 ]
 
-export function ShortcutHelp({ onClose, presenter = false }: { onClose: () => void; presenter?: boolean }) {
+export function ShortcutHelp({ onClose }: { onClose: () => void }) {
   const closeRef = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     closeRef.current?.focus()
@@ -50,7 +50,7 @@ export function ShortcutHelp({ onClose, presenter = false }: { onClose: () => vo
           Keyboard shortcuts
         </h2>
         <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
-          {(presenter ? ROWS.filter((row) => row.keys === '?' || row.keys === 'P' || row.keys === 'N') : ROWS).map((row) => (
+          {ROWS.map((row) => (
             <li key={row.keys}>
               <kbd>{row.keys}</kbd> {row.what}
             </li>

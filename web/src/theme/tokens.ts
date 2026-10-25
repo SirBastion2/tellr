@@ -18,6 +18,9 @@ export const UI_FONT = 'Poppins, "Segoe UI", system-ui, sans-serif'
 
 export const FOOTER_TEXT = 'Made for HackPSU 2026 © By Team KotR'
 
+/** Readable footer size. Absolute so the 105% demo root does not shrink it. */
+export const FOOTER_FONT_SIZE = '13px'
+
 export const PROGRESS_DOTS = 5
 
 /** Demo layout root size. ~16% below the old 125% so a 1280×720 laptop can see the fold. */

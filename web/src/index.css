@@ -374,6 +374,28 @@ button[data-loading='true'],
   display: none;
 }
 
+.tc-nav-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 12px;
+  color: var(--tc-muted, #44403c);
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  cursor: default;
+}
+
+.tc-page-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+.tc-footer {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 .tc-scheme-menu {
   display: none;
 }
