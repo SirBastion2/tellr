@@ -434,6 +434,7 @@ export function AppShell({
                     session={session}
                     closed={closed}
                     recorded={recorded}
+                    recordedOutcome={handoff?.outcome ?? null}
                     onSubmit={onSubmitOutcome}
                     onStartNew={onStartNew}
                   />
