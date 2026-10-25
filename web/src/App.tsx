@@ -16,6 +16,7 @@ import { HealthScreen } from './screens/HealthScreen'
 import { HistoryScreen } from './screens/HistoryScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { InterviewScreen } from './screens/InterviewScreen'
+import { NotFoundScreen } from './screens/NotFoundScreen'
 import { OutcomeScreen } from './screens/OutcomeScreen'
 import { TellerProvider, useTeller, type RecordedDecision } from './teller'
 import { controlStyle, secondaryStyle } from './theme/controls'
@@ -351,36 +352,57 @@ export function AppShell({
             <Route
               path="/sessions/:id/context"
               element={
-                <ContextScreen
-                  library={library}
-                  session={session}
-                  postedChipIds={postedChipIds}
-                  onPost={onPostContext}
-                />
+                session ? (
+                  <ContextScreen
+                    library={library}
+                    session={session}
+                    postedChipIds={postedChipIds}
+                    onPost={onPostContext}
+                  />
+                ) : (
+                  <NotFoundScreen kind="session" />
+                )
               }
             />
             <Route
               path="/sessions/:id/outcome"
               element={
-                <OutcomeScreen
-                  session={session}
-                  closed={closed}
-                  recorded={recorded}
-                  onSubmit={onSubmitOutcome}
-                  onStartNew={onStartNew}
-                />
+                session ? (
+                  <OutcomeScreen
+                    session={session}
+                    closed={closed}
+                    recorded={recorded}
+                    onSubmit={onSubmitOutcome}
+                    onStartNew={onStartNew}
+                  />
+                ) : (
+                  <NotFoundScreen kind="session" />
+                )
               }
             />
             <Route
               path="/sessions/:id/handoff"
-              element={<HandoffScreen library={library} projection={handoff} />}
+              element={
+                session ? (
+                  <HandoffScreen library={library} projection={handoff} />
+                ) : (
+                  <NotFoundScreen kind="session" />
+                )
+              }
             />
             <Route
               path="/sessions/:id"
-              element={<InterviewScreen library={library} session={session} onAnswer={onAnswer} />}
+              element={
+                session ? (
+                  <InterviewScreen library={library} session={session} onAnswer={onAnswer} />
+                ) : (
+                  <NotFoundScreen kind="session" />
+                )
+              }
             />
             <Route path="/health" element={<HealthScreen />} />
             <Route path="/settings" element={<Navigate to="/health" replace />} />
+            <Route path="*" element={<NotFoundScreen />} />
           </Routes>
         </main>
         {helpOpen ? <ShortcutHelp presenter={presenter.on} onClose={() => onHelp?.(false)} /> : null}

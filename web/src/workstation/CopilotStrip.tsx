@@ -75,7 +75,7 @@ export function CopilotStrip({
       <div style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: 8, alignItems: 'center' }}>
         <LevelIcon level={level} />
         <div style={{ minWidth: 0 }}>
-          <p data-testid="copilot-level" className="tc-level-badge" style={{ margin: 0, lineHeight: 1.2 }}>
+          <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0, lineHeight: 1.2 }}>
             {LEVEL_WORD[level]}
           </p>
           <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
