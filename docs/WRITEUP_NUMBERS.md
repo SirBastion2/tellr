@@ -1,7 +1,7 @@
 # Writeup numbers
 
 Counts only. No significance claims. J-01 steps 3–4 (ROSTER A3 hours 21–24).
-Sources: `eval/results/heldout/report.md`; HANDOFF A-08, A-07, and the CP3 (B-013) record in HANDOFF.
+Sources: `eval/results/heldout/report.md`; A-08, A-07, and the CP3 (B-013) record in `docs/handoff/000-archive.md`.
 
 ## 1. Held-out, 5 per population, wide intervals
 

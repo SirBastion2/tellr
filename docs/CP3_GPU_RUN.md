@@ -42,7 +42,7 @@ Stdout should end with: `wrote eval/results/<sha>/results.json and report.md (30
 
 ## What to paste back
 
-In `docs/B_TO_A.md` (new entry) and/or a `docs/HANDOFF.md` line:
+In `docs/B_TO_A.md` (new entry) and/or a new `docs/handoff/<yyyymmdd-hhmm>-<short-branch-slug>.md` (do not edit `docs/HANDOFF.md`):
 
 - the exact `git rev-parse HEAD` you ran
 - from `report.md`, the **Arm C** block: confusion matrix, catch, false-flag, friction, misses, questions to decision, `default_fired_rate`, validator rejections, Wilson intervals
