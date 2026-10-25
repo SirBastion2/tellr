@@ -15,6 +15,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from api.activity import register_activity_routes
 from api.errors import rejected_response
 from engine import (
     CommandRejected,
@@ -442,6 +443,7 @@ def create_app(
         sessions = store.list_sessions(conn, mode=mode)
         return {"sessions": sessions}
 
+    register_activity_routes(app, conn)
     return app
 
 
