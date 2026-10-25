@@ -61,9 +61,6 @@ export function TransactionPanel({
           <h2 className="tc-title">Transaction</h2>
           <CaseFileLink showCase={showCase} onToggleCase={onToggleCase} />
         </div>
-        <p data-testid="synthetic-banner" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-          Practice data.
-        </p>
       </div>
       <p
         data-testid="event-caption"

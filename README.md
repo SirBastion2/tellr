@@ -69,7 +69,7 @@ The same path covered those tasks, including the one-time run on a separate set 
 
 ## The demo vs real use
 
-The page you open always loads a simulated customer, so you see a Simulated customer picker, Play, Step, Restart, a 1× / 2× / 4× speed control, an elapsed timer, the script timeline, a header reading `Simulation: <customer title>`, and a Practice data note. The screen walk-through is in [How a teller uses it](#how-a-teller-uses-it).
+The page you open always loads a simulated customer, so you see a Simulated customer picker, Play, Step, Restart, a 1× / 2× / 4× speed control, an elapsed timer, the script timeline, and a header reading `Simulation: <customer title>`. The screen walk-through is in [How a teller uses it](#how-a-teller-uses-it).
 
 A scripted file plays on a timer and posts the signals a teller would tap, so the teller does not tap them. "Government impersonation", "Romance, crypto cash", and "Contractor cash, coached" also post the answer taps. "Car down payment" and "Routine Friday cash" post no signals and no answers. The demo never sends a typed note. With the server running, those posts are scored as a teller's own taps would be: the same events and the same version of the library files produce the same level, reasons, pattern, and question (`docs/architecture.md`). With no server, the page shows a saved reply and does not score it. The copilot, the score, the suggested action, and Handoff read that same session.
 
