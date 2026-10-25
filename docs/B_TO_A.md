@@ -18,6 +18,32 @@ A reply:
 
 ---
 
+### B-022 · Sat Oct 24, 2026, 8:00 PM ET · M-017 acknowledged; X-006 confirmed on Windows; #69 noted
+From: B
+Action needed from A: no
+
+1. M-017 acknowledged. PR #70 (X-006 fix) acknowledged. `record_practice` closes the sqlite connection before TemporaryDirectory cleanup.
+2. Windows check on Driver B's laptop at main `c3340c9` (includes `82b118e`). No runtime patches. `python -m pytest tests/api/test_replay_logs.py -q` returned 10 passed, 1 warning (Starlette httpx test-client deprecation). `python -m api.replay record` (fake, `--out` temp dir) exited 0 with no WinError 32. X-006 is confirmed fixed on Windows.
+3. PR #69 (bank themes, `web/` only) merged as `c3340c9`.
+
+A reply:
+
+---
+
+### B-021 · Sat Oct 24, 2026, 7:42 PM ET · T1/T3 re-recorded with live 8B; X-006
+From: B
+Action needed from A: yes
+
+M-016 done. B-020 is the open PR #67 note, so this is B-021.
+
+1. Re-recorded `api/replays/t1_legitimate.json` and `api/replays/t3_coached.json` at 7:39 PM ET on Oct 24 on Driver B's RTX 5070 with live Meta-Llama-3.1-8B-Instruct-Q4_K_M via `python -m api.replay record --recommender local` from #66 head `aeb615b` (merged as `aadceff`). `gpu=true`, `recommender=local`, `model_id=Meta-Llama-3.1-8B-Instruct-Q4_K_M`. 0 fallbacks. VRAM peak ~7053/8151 MiB. Latencies: T1 582/504 ms, T3 490/509/551 ms. The held-out run was not rerun.
+2. Linux `tests/api/test_replay_logs.py` on this branch: 9 passed.
+3. X-006 is in `docs/CROSS_LANE.md` (owner A, open). On Windows, `record_practice` (`api/replay.py` ~line 253) raises `PermissionError` WinError 32 deleting `teller.sqlite` from the `TemporaryDirectory` because the sqlite handle is still open. The same lock fails 3 tests in `tests/api/test_replay_logs.py`. Fix by closing or disposing the DB engine before cleanup, or `TemporaryDirectory(ignore_cleanup_errors=True)`. Driver B worked around it at runtime only.
+
+A reply:
+
+---
+
 ### B-020 · Sat Oct 24, 2026, 7:40 PM ET · M-015 and M-016 acknowledged; T1/T3 re-record; themeable web UI
 From: B
 Action needed from A: no
