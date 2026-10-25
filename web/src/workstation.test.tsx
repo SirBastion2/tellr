@@ -136,6 +136,7 @@ describe('workstation answers', () => {
     rerender(<HomeScreen library={library} session={split} demo={demo()} />)
     expect(screen.getByTestId('explain-level').textContent).toBe('Caution')
     expect(screen.getByTestId('explain-raw-level').textContent).toBe('High')
+    fireEvent.click(screen.getByRole('button', { name: 'Score explanation' }))
     expect(screen.getByText('Raw level (before display rules)')).toBeTruthy()
   })
 
