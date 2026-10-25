@@ -1983,3 +1983,30 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/100. Do not merge. Other theme notes: per-bank `space.gap` is still 13/11/8/13 (not on the 4–24 scale); connection pill is 0.75rem vs simulation 0.875rem; Outcome highlight is hardcoded `#fef3c7`; scheme segment + menu both stay in the DOM; theme-page `overflow-x: hidden` can clip focus rings. No new dependency.
 
+---
+
+### [B] Theme structure, pill radius, even header tabs — Agent B1 — 2026-10-25 05:09
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 156 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  44 passed (44)
+      Tests  156 passed (156)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/theme/tokens.ts`, `web/src/theme/types.ts`, `web/src/theme/vars.ts`, `web/src/theme/themes/{tellr,pnc,mtb,fnb}.ts`, `web/src/theme/controls.ts`, `web/src/theme/scheme.ts`, `web/src/theme/ThemeRoot.tsx`, `web/src/theme/Wordmark.tsx`, `web/src/App.tsx`, `web/src/index.css`, `web/src/screens/OutcomeScreen.tsx`, `web/src/screens/InterviewScreen.tsx`, `web/src/workstation/{Toolbar,CopilotStrip,TransactionPanel}.tsx`, `web/src/themeConsistency.test.tsx`, `web/src/theme.test.tsx`, `web/src/headerRhythm.test.tsx`, `web/src/workstationFit.test.tsx`, `web/src/a11y.test.tsx`, `web/src/outcome.test.tsx`, `ARCHITECTURE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Structural values (radius, heights, padding, weights, blur, type size/line-height) live on `DENSITY`, not `themes/*.ts`. Banks keep color, font family, brand mark, and accent (driver items 6–8).
+  - FNB/PNC rectangular radius overrides removed. Shared control/header radius is `999px`; card radius is `16px`. tellr and mtb already matched; all four now resolve the same `--tc-radius-*` tokens (item 7 clarification).
+  - Tellr Poppins x-height uses `font-size-adjust: 0.52` so the rem scale matches Arial/Segoe (item 8).
+  - Header tabs fill leftover space (`flex: 1 1 auto` on the group, `flex: 1 1 0` and centered text on each tab, `--tc-space-header` gap). `#93` wrap and unclipped labels at 1024/1180/1280 stay (item 9). `web/` still computes nothing (§9, §12).
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/101. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
+
