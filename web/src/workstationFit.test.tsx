@@ -10,7 +10,7 @@ import type { DemoView } from './demo/types'
 import { liveBadgeText } from './LiveBadge'
 import './index.css'
 import { THEMES } from './theme/registry'
-import { DEMO_ROOT_FONT, DENSITY, FOOTER_FONT_SIZE, HEADER_SCHEME_COLLAPSE_PX } from './theme/tokens'
+import { DEMO_ROOT_FONT, DENSITY, HEADER_SCHEME_COLLAPSE_PX } from './theme/tokens'
 
 const css = () => readFileSync('src/index.css', 'utf8')
 
@@ -77,7 +77,7 @@ describe('workstation laptop fit', () => {
     expect(titleRule).not.toMatch(/text-overflow:\s*ellipsis/)
     expect(badgeRule).toMatch(/text-overflow:\s*ellipsis/)
     expect(badgeRule).toMatch(/overflow:\s*hidden/)
-    expect(badgeRule).toMatch(/font-size:\s*var\(--tc-type-pill/)
+    expect(badgeRule).toMatch(/font-size:\s*var\(--tc-text-sm/)
     expect(badgeRule).not.toMatch(/max-width:\s*14rem/)
     expect(badgeRule).not.toMatch(/display:\s*inline-flex/)
     expect(headerRule(source, '.tc-connection')).toMatch(/text-overflow:\s*ellipsis/)
@@ -111,12 +111,14 @@ describe('workstation laptop fit', () => {
     }
     expect(screen.getByTestId('color-scheme')).toBeTruthy()
     expect(screen.queryByTestId('scheme-menu')).toBeNull()
-    expect(screen.getByTestId('theme-root').style.fontSize).toBe(DEMO_ROOT_FONT)
+    expect(screen.getByTestId('theme-root').style.getPropertyValue('--tc-root-font')).toBe(DEMO_ROOT_FONT)
+    expect(screen.getByTestId('theme-root').style.fontSize).toBe('var(--tc-root-live)')
     expect(screen.getByTestId('theme-card').style.width).toBe('100%')
     expect(screen.getByTestId('theme-card').className).toContain('tc-page-card')
-    expect(screen.getByTestId('theme-footer').style.fontSize).toBe(FOOTER_FONT_SIZE)
+    expect(screen.getByTestId('theme-footer').className).toContain('tc-footer')
+    expect(screen.getByTestId('theme-footer').style.fontSize).toBe('')
     expect(source).toMatch(/\.tc-page-card[\s\S]*width:\s*100%/)
-    expect(source).toMatch(/\.tc-footer[\s\S]*font-size:\s*13px/)
+    expect(source).toMatch(/\.tc-footer[\s\S]*font-size:\s*var\(--tc-text-xs/)
     expect(source).not.toMatch(/min\(1440px/)
   })
 
@@ -144,7 +146,8 @@ describe('workstation laptop fit', () => {
     expect(source).toContain(DENSITY.typeDisplay)
     expect(source).toContain(DENSITY.spaceWorkstation)
     expect(source).toContain(DENSITY.spaceCard)
-    expect(source).toContain(`--tc-type-title: ${DENSITY.typeTitle}`)
+    expect(source).toContain(`--tc-text-xl: ${DENSITY.typeTitle}`)
+    expect(source).toContain('--tc-type-title: var(--tc-text-xl)')
     expect(source).toContain(`--tc-space-workstation: ${DENSITY.spaceWorkstation}`)
     expect(source).toContain(`--tc-space-1: ${DENSITY.space1}`)
     expect(source).toContain(`--tc-space-header: ${DENSITY.spaceHeader}`)

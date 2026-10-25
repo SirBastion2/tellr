@@ -24,8 +24,6 @@ const kv: CSSProperties = {
 
 const term: CSSProperties = {
   margin: 0,
-  fontSize: '1rem',
-  fontWeight: 700,
 }
 
 export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) {
@@ -41,7 +39,9 @@ export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) 
       </div>
       {demo ? (
         <label htmlFor="customer-file-picker" className="tc-stack-heading" style={{ maxWidth: 360 }}>
-          <span style={term}>Simulated customer</span>
+          <span className="tc-text-base" style={term}>
+            Simulated customer
+          </span>
           <select
             id="customer-file-picker"
             data-testid="customer-file-picker"
@@ -67,20 +67,36 @@ export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) 
           <section style={card} aria-labelledby="profile-heading">
             <SectionHeading id="profile-heading">Profile</SectionHeading>
             <dl style={kv}>
-              <dt style={term}>Name</dt>
-              <dd data-testid="profile-name" style={{ margin: 0 }}>
+              <dt className="tc-fact-term" style={term}>
+                Name
+              </dt>
+              <dd className="tc-fact-value" data-testid="profile-name" style={{ margin: 0 }}>
                 {customer.profile.name}
               </dd>
-              <dt style={term}>Age band</dt>
-              <dd data-testid="profile-age" style={{ margin: 0 }}>
+              <dt className="tc-fact-term" style={term}>
+                Age band
+              </dt>
+              <dd className="tc-fact-value" data-testid="profile-age" style={{ margin: 0 }}>
                 {customer.profile.ageBand}
               </dd>
-              <dt style={term}>Tenure</dt>
-              <dd style={{ margin: 0 }}>{customer.profile.tenure}</dd>
-              <dt style={term}>Typical withdrawal</dt>
-              <dd style={{ margin: 0 }}>{customer.profile.typicalWithdrawal}</dd>
-              <dt style={term}>Channels</dt>
-              <dd style={{ margin: 0 }}>{customer.profile.channels}</dd>
+              <dt className="tc-fact-term" style={term}>
+                Tenure
+              </dt>
+              <dd className="tc-fact-value" style={{ margin: 0 }}>
+                {customer.profile.tenure}
+              </dd>
+              <dt className="tc-fact-term" style={term}>
+                Typical withdrawal
+              </dt>
+              <dd className="tc-fact-value" style={{ margin: 0 }}>
+                {customer.profile.typicalWithdrawal}
+              </dd>
+              <dt className="tc-fact-term" style={term}>
+                Channels
+              </dt>
+              <dd className="tc-fact-value" style={{ margin: 0 }}>
+                {customer.profile.channels}
+              </dd>
             </dl>
           </section>
         </>

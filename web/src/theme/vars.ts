@@ -1,9 +1,11 @@
 import type { BankTheme } from './types'
 import { DENSITY } from './tokens'
+import { TYPE_TOKEN_KEYS, TYPE_VARS } from './typeScale'
 
 /** CSS custom properties driven by one bank theme object. */
 export function themeVars(theme: BankTheme): Record<string, string> {
   return {
+    ...TYPE_VARS,
     '--tc-font': theme.fontFamily,
     '--tc-font-weight': DENSITY.fontWeight,
     '--tc-heading-weight': DENSITY.headingWeight,
@@ -92,9 +94,7 @@ export function themeVars(theme: BankTheme): Record<string, string> {
 
 /** Tokens that must be identical on every bank. */
 export const SHARED_STRUCTURE_VARS = [
-  '--tc-font-weight',
-  '--tc-heading-weight',
-  '--tc-strong-weight',
+  ...TYPE_TOKEN_KEYS,
   '--tc-radius-card',
   '--tc-radius-control',
   '--tc-header-control-h',
@@ -106,20 +106,6 @@ export const SHARED_STRUCTURE_VARS = [
   '--tc-shadow-card',
   '--tc-space-gap',
   '--tc-space-card',
-  '--tc-type-title',
-  '--tc-type-section',
-  '--tc-type-header',
-  '--tc-type-display',
-  '--tc-type-amount',
-  '--tc-type-level',
-  '--tc-type-action',
-  '--tc-type-pill',
-  '--tc-type-line-body',
-  '--tc-type-line-heading',
-  '--tc-type-line-ui',
-  '--tc-font-size-adjust',
   '--tc-glass-blur',
   '--tc-wordmark-h',
-  '--tc-wordmark-weight',
-  '--tc-wordmark-tracking',
 ] as const

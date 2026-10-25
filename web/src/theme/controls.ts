@@ -11,7 +11,7 @@ export const controlStyle: CSSProperties = {
   border: 'var(--tc-border-width, 1px) var(--tc-border-style, solid) var(--tc-accent, #1c1917)',
   borderRadius: 'var(--tc-radius-control, 999px)',
   fontFamily: 'inherit',
-  fontWeight: 'var(--tc-font-weight, 400)' as CSSProperties['fontWeight'],
+  fontWeight: 'var(--tc-font-weight)' as CSSProperties['fontWeight'],
   padding: 'var(--tc-space-control-pad-y, 8px) var(--tc-space-control-pad-x, 12px)',
 }
 
