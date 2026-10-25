@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { typeLineVar, typeVar, typeWeightVar } from '../theme/typeScale'
 import { formatTimeOfDay, msUntilNextMinute } from './localTime'
 
 export function LocalClock({
@@ -33,9 +32,9 @@ export function LocalClock({
       aria-label="Local time of day"
       className="tc-timer"
       style={{
-        fontSize: typeVar('sm'),
-        fontWeight: typeWeightVar('sm'),
-        lineHeight: typeLineVar('sm'),
+        fontSize: 'var(--tc-text-sm)',
+        fontWeight: 'var(--tc-text-sm-weight)',
+        lineHeight: 'var(--tc-text-sm-lh)',
         width: 'auto',
         minWidth: '8ch',
       }}
