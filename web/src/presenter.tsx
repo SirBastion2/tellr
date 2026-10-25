@@ -11,7 +11,7 @@ const PresenterContext = createContext<PresenterController>({
 })
 
 /**
- * The demo layout is always on: larger type, the short nav, and play/step keys.
+ * The demo layout is always on: larger type, the short nav, and the demo keys.
  * There is no toggle and `?present` is ignored.
  */
 export function PresenterProvider({ children }: { children: ReactNode }) {

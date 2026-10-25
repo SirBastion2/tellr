@@ -21,7 +21,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `eval/` except `heldout/` | A3 | Validator, 30 dev scenarios, harness (§13) | `validate.py`, `PREREGISTRATION.md`, `scenarios/dev/`, `run.py`, `arms/` |
 | `eval/scenarios/heldout/` | H | Held-out set, written once (B-07) | created at hour 20 |
 | `tests/eval/` | A3 | Scenario, validator, and harness tests | `test_validate.py`, `test_dev_scenarios.py`, `test_run.py` |
-| `web/` | B1 | React UI, mock, screens, bank themes, simulated workstation (§12) | `src/App.tsx`, `src/screens/`, `src/theme/`, `src/demo/`, `src/presenter.tsx`, `src/workstation/`, `src/ui/`, `src/assets/tellr-wordmark.png`, `src/index.css`, `index.html`, `mock/live_levels.json`, `vite.config.ts`, `.env.api`, `src/devApi.ts` |
+| `web/` | B1 | React UI, mock, screens, bank themes, simulated workstation (§12) | `src/App.tsx`, `src/screens/`, `src/theme/`, `src/demo/`, `src/presenter.tsx`, `src/workstation/`, `src/ui/`, `src/assets/tellr-wordmark.png`, `src/index.css`, `index.html`, `public/favicon.svg`, `mock/live_levels.json`, `vite.config.ts`, `.env.api`, `src/devApi.ts` |
 | `web/src/screens/history/` `…/settings/` `web/e2e/` | B2 | Leaf screens + e2e if added at hour 8. Not created. B-06 filled history and health in `web/src/screens/` | — |
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json` (incl. `activity.schema.json`, CHANGE-005), `fixtures/T1–T7.json`, `CHANGES.md` |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |
@@ -44,6 +44,7 @@ History and the read-only recommender view live in the existing screen files. Th
 | `web/src/history.test.tsx` | Added. Practice rows stay off the default list and appear after the practice request. |
 | `web/src/health.test.tsx` | Added. Health is a GET of `/health` with no recommender control and no `/settings` call. |
 | `web/src/screens/SettingsScreen.tsx` | Removed. `/settings` redirects to `/health` (`web/src/App.tsx`). It is not in `web/src/routes.ts`. |
+| `web/src/screens/NotFoundScreen.tsx` | Catch-all and session routes with no visit. Link back to Home. |
 | `web/mock/replay.ts` | Also serves `GET /sessions` (live by default, `mode=practice`, `mode=all`) and `GET /health`. |
 | `web/mock/plugin.ts` | Installed by `npm run dev`. Answers `/library`, `/health`, and `/sessions`. Not installed when `VITE_API_URL` is set. |
 
@@ -56,10 +57,10 @@ Each bank has a dark palette (the top-level color fields) and a `light` palette.
 | File | What it is |
 |---|---|
 | `web/src/theme/types.ts` | `BankTheme` plus `ThemePalette`. Dark colors sit on the theme. `light` is the other palette. Includes solid secondary, chip, action, and quote pairs. |
-| `web/src/theme/chrome.ts` | Shared solid control colors so dismiss text does not inherit a risk-panel color. |
+| `web/src/theme/chrome.ts` | Light `SOLID_CONTROLS` and dark `DARK_CONTROLS` plus `DARK_RISK`. Nested action, quote, chip, and secondary pairs follow the active scheme. |
 | `web/src/theme/palette.ts` | `darkPalette` and `themeForScheme`. Does not mutate the registered theme. |
 | `web/src/theme/scheme.ts` | `light` / `dark` / `system`, and `readSystemScheme`. |
-| `web/src/theme/tokens.ts` | Default id `tellr`, theme key, color-scheme key, presenter key, footer string, UI font, workstation `DENSITY` (type, space, demo root 105%). |
+| `web/src/theme/tokens.ts` | Default id `tellr`, theme key, color-scheme key, presenter key, footer string, 13px footer size, UI font, workstation `DENSITY` (type, space, demo root 105%). |
 | `web/src/theme/resolve.ts` | `resolveThemeId` (query, then storage, then `tellr`). |
 | `web/src/theme/registry.ts` | Loads every `web/src/theme/themes/*.ts`. Adding a bank is adding one file that exports `theme`. |
 | `web/src/theme/themes/tellr.ts` | Base. Poppins, comfortable density, pill controls, navy-to-indigo gradient and a light indigo field. Logo in the header. Footer centered. |
@@ -68,20 +69,23 @@ Each bank has a dark palette (the top-level color fields) and a `light` palette.
 | `web/src/theme/themes/pnc.ts` | PNC. Arial, comfortable density, medium radius, strong shadow. Orange `#EF7622` on slate-to-navy, and a warm light field. |
 | `web/src/theme/vars.ts` | Maps a `BankTheme` onto the `--tc-*` custom properties. |
 | `web/src/theme/ThemeProvider.tsx` | Reads `?theme=` and `localStorage`, resolves the color scheme, provides the theme. |
-| `web/src/theme/ThemeRoot.tsx` | Full-bleed background with a solid color under the image. The card starts at the top of the page so the header is not clipped. No progress-dot column. |
+| `web/src/theme/ThemeRoot.tsx` | Full-bleed background with a solid color under the image. The card fills the padded page so a wide screen does not letterbox a 1440px column. The header is not clipped. No progress-dot column. Footer is 13px. |
 | `web/src/theme/Wordmark.tsx` | Bank mark inside the app header. |
 | `web/src/theme/controls.ts` | Shared control styles, including filled secondary and link styles. |
 | `web/src/assets/tellr-wordmark.png` | Tellr wordmark (transparent). `mark: 'logo'` paints it with `--tc-logo` (periwinkle on the tellr dark theme). |
 | `web/src/theme.test.tsx` | Selection, unknown-id fallback, storage, both palettes, and the flow layout. |
 | `web/src/scheme.test.tsx` | Light/dark/system toggle, storage, native select popup tokens, and the color-scheme / forced-colors / contrast CSS. |
-| `web/index.html` | Poppins, `color-scheme`, and `darkreader-lock`. |
+| `web/index.html` | Poppins, `color-scheme`, `darkreader-lock`, and `/favicon.svg`. |
+| `web/public/favicon.svg` | Small app icon (navy tile, clear-level mark). |
+| `web/src/favicon.test.ts` | `index.html` links `public/favicon.svg`. |
 | `web/src/themeContrast.test.ts` | WCAG AA for text, buttons, glass, links, badges, select options (surface/text and button/button-text), and clear/caution/high on every bank in light and dark. |
+| `web/src/copilotTheme.test.tsx` | Dark copilot uses surface/text; level badge keeps risk colors; quote/action/chip follow Light/Dark. |
 
 Page gradients are hex and rgba only. Windows Chrome and Edge drop an entire `background-image` when any layer is invalid. Explicit percentage ellipse radii (`ellipse 72% 58%`) were that invalid layer; Safari on Mac still painted the linear layer underneath. The keyword `transparent` is also avoided, because Chromium interpolates it as transparent black. Each palette sets a solid `background.color` as well as the image, and `index.css` swaps the card to `glass.fallback` when `backdrop-filter` is unsupported.
 
 ### `web/` workstation
 
-Home is a teller workstation. A synthetic customer timeline plays beside a copilot card. The page card is `min(1440px, 100%)`. At 1280px and up the workstation is `3fr` / `2fr`. At 1024px the columns tighten. Below 900px they stack. The copilot card stretches to the column and stays sticky. Type and spacing use `clamp()`. The card reads the server level, the first reason or the counterpoint when reasons are empty, `question.text`, and `talk_track.lines`. It does not choose the next question, and it does not compute risk, level, reasons, or the next question.
+Home is a teller workstation. A synthetic customer timeline plays beside a copilot card. The page card fills the padded page (`width: 100%`). At 1280px and up the workstation is `3fr` / `2fr`. At 1024px the columns tighten. Below 900px they stack. The copilot card stretches to the column and stays sticky. Type and spacing use `clamp()`. The card itself uses `--tc-surface` and `--tc-text`. Clear / Caution / High color sits on the level badge (`--tc-risk-*`), not as a full-card fill. Action, quote, chip, and secondary pairs follow the active Light/Dark tokens. The card reads the server level, the first reason or the counterpoint when reasons are empty, `question.text`, and `talk_track.lines`. It does not choose the next question, and it does not compute risk, level, reasons, or the next question.
 
 CHANGE-005 fields are optional. `readExplanation` accepts `explanation` or `Explanation`, and `used_fallback` / `usedFallback`, `signal_id` / `signalId`. Contributions with `direction: "raises"` render under What raised it. `direction: "lowers"` render under What would lower it. There is no second contributions list. A strength word (Strong / Moderate / Minor factor) is the item's `|weight|` divided by the sum of `|weight|` in that response (`>= 1/3` strong, `>= 1/6` moderate, otherwise minor). The raw weight and any `sig.*` / `chip.*` id stay inside the collapsed Technical details. Confidence `null` reads "Not applicable (rules engine)". The gap sentence shows only when explanation is absent or null. Without an explanation, Clear puts `counterpoint` under What raised it and `reasons` under What would lower it, matching architecture §6.5. That is placement of server fields, not a new score.
 
@@ -91,18 +95,20 @@ A successful `POST /outcome` closes the visit on the server. SessionState does n
 
 Every screen uses a two-column fact grid: bold labels, normal values, bold section headings. Handoff is a card titled from the recorded outcome (`Handoff — Escalated by teller` when the teller escalated). The level is an icon plus a word. A UUID session id shows its first eight characters, with the full id on the tooltip and the copy button. Suggested outcome and the teller's decision are separate rows.
 
-The header is one row: bank mark, title, simulation pill, connection pill, tabs, Light/Dark/System, and `?`. It does not wrap. There is no Presenter control. Title, pills, and tabs shrink or ellipsize; the tab row scrolls inside the row. At viewports and header containers below 1280px, the theme segment collapses into a menu. The simulation pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. The connection pill says `Live API connected` or `Using sample data` from `GET /health` (`web/src/connection.ts`). Undo sits with the signal list on the workstation. Outcome and Handoff do not show a stray Undo above the heading. Context and Session still get the top Undo when those routes are open. Context, Session, History, and Health stay off the nav.
+The header is one row: bank mark, title, simulation pill, connection pill, tabs, Light/Dark/System, and `?`. It does not wrap. There is no Presenter control. Title, pills, and tabs shrink or ellipsize; the tab row scrolls inside the row. At viewports and header containers below 1280px, the theme segment collapses into a menu. The simulation pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. The connection pill says `Live API connected` or `Using sample data` from `GET /health` (`web/src/connection.ts`). Undo sits with the signal list on the workstation. Outcome and Handoff do not show a stray Undo above the heading. Context and Session still get the top Undo when those routes are open. Context, Session, History, and Health stay off the nav. The four demo tabs stay labeled: Home, Customer file, Outcome, and Handoff. Outcome and Handoff are hint labels until a visit exists; they do not add screens.
 
 The toolbar controls share a 40px height. Play keeps the icon and the word on one line. The customer select matches that height. Show case file sits on the same row. The elapsed timer is always on that row.
 
-Playback length at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. Timeline rows show step, elapsed time, and speaker, and bold amounts and phrases such as "on the phone" and "cash".
+Playback length at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. The on-screen clock and the timeline stamps are the same unit: simulated customer time (the running sum of `delayMs`). Speed changes wall-clock duration only. Timeline rows show step, elapsed time, and speaker, and bold amounts and phrases such as "on the phone" and "cash". The footer is 13px.
 
-The demo layout is always on. `?present` and `teller.presenter` are ignored, and nothing in the UI names that layout. It hides Context, Session, History, and Health; sets the root font size to 105%; resets the session when the customer changes; enlarges the current-event caption; and keeps keyboard play/pause (`P`), step (`N`), and shortcut help (`?`). Restart, confirm, dismiss, escalate, and customer-switch keys stay off. Type, gaps, and card padding come from `DENSITY` in `web/src/theme/tokens.ts` plus the matching `clamp()` tokens in `web/src/index.css` (~15–20% tighter than the first workstation pass) so a 1280×720 laptop sees the header, toolbar, transaction, and copilot without horizontal clip. The full UI reference is `docs/UI_REFERENCE.md`.
+The demo layout is always on. `?present` and `teller.presenter` are ignored, and nothing in the UI names that layout. It hides Context, Session, History, and Health; sets the root font size to 105%; resets the session when the customer changes; enlarges the current-event caption; and keeps the working keys: help (`?`), play/pause (`P`), step (`N`), restart (`R`, confirm button reads Restart), confirm (`C`), dismiss (`D`), escalate (`E`), and customer switch (`[` / `]`). Type, gaps, and card padding come from `DENSITY` in `web/src/theme/tokens.ts` plus the matching `clamp()` tokens in `web/src/index.css` (~15–20% tighter than the first workstation pass) so a 1280×720 laptop sees the header, toolbar, transaction, and copilot without horizontal clip. The full UI reference is `docs/UI_REFERENCE.md`.
 
 | File | What it is |
 |---|---|
 | `web/src/demo/customers.ts` | Five synthetic files and `SCRIPT_TARGETS_MS`. The last two post no chips. Name and age band are display-only. Activity rows have date, description, and amount for the customer-file table. |
-| `web/src/demo/clock.ts` | `m:ss` elapsed label. |
+| `web/src/demo/clock.ts` | Simulated `m:ss` elapsed (sum of `delayMs`) for the toolbar clock and timeline. |
+| `web/src/demo/clock.test.ts` | Clock and timeline stay on simulated time at 1× and 4×. |
+| `web/src/demoPolish.test.tsx` | Timer matches timeline, shortcut list, Restart confirm, four labeled tabs, full-width card, 13px footer. |
 | `web/src/presenter.tsx` | Demo layout, always on. No toggle and no `?present` switch. |
 | `web/src/screens/HomeScreen.tsx` | Toolbar, transaction panel, copilot card, explanation. |
 | `web/src/screens/CustomerFileScreen.tsx` | Profile, activity table, this withdrawal, and what was noted. Session activity replaces the synthetic table when `GET /activity` returns rows. Source badges prefer `context_chips` and otherwise stay Not yet, Observed, Teller confirmed, or Dismissed. |
@@ -111,16 +117,18 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 | `web/src/ui/plain.ts` | Teller-facing labels: pattern, mode, outcome, short id, amount band, recommender phrase. |
 | `web/src/ui/emphasis.tsx` | Bolds amounts and phrases such as "on the phone" in timeline copy. |
 | `web/src/workstation/Toolbar.tsx` | 40px customer picker, Play/Pause, Step, Restart, speed segments, timer, case-file link. |
-| `web/src/workstation/CopilotStrip.tsx` | Sticky card that fills the column. Idle placeholder before play. Updating state while a write is in flight. Level icon and word, one reason, suggested action, collapsible read-aloud quote, noted rows with an inline origin pill and confirm / dismiss / restore. |
+| `web/src/workstation/CopilotStrip.tsx` | Sticky card that fills the column. Surface/text tokens for the card; risk color on the level badge. Idle placeholder before play. Updating state while a write is in flight. Level icon and word, one reason, suggested action, collapsible read-aloud quote, noted rows with an inline origin pill and confirm / dismiss / restore. |
+| `web/src/screens/NotFoundScreen.tsx` | Unknown paths and session routes with no visit. Short “start a customer” copy and a Home link. |
+| `web/src/emptyRoutes.test.tsx` | `/outcome`, `/handoff`, `/history`, `/session`, `/context` and session URLs without a visit. `/health` already has content. |
 | `web/src/workstation/explain.ts` | Reads `explanation` and groups raises and lowers. Strength words from the response's own weights. |
 | `web/src/workstation/ExplanationPanel.tsx` | Why this level. Fact grid, two contribution lists with the Observed or Teller confirmed badge on the matching row, collapsed technical details. |
 | `web/src/workstation/TransactionPanel.tsx` | Key-value transaction, timeline with step and speaker, event progress. Session activity appears when `GET /activity` returns rows. |
-| `web/src/ui/ShortcutHelp.tsx` | `?` lists keyboard shortcuts. The demo layout lists `?`, `P`, and `N`. |
+| `web/src/ui/ShortcutHelp.tsx` | `?` lists the working keys: `?`, `P`, `N`, `R`, `C`, `D`, `E`, `[` / `]`. |
 | `web/src/ui/icons.tsx` | Play, pause, step, restart, confirm, and dismiss icons. |
 | `web/src/ui/ConfirmDialog.tsx` | Confirm before restart and escalate. Customer switch resets without a dialog. |
 | `web/src/connection.ts` | Probes `GET /health` and chooses the live origin or the sample-data fallback. |
 | `web/src/errors.ts` | Plain sentences for API errors. No status code and no error code on screen. |
-| `web/src/presenter.test.tsx` | Demo layout stays on when `?present=0` is set. Hidden dev tabs, type size 105%, no Presenter button. |
+| `web/src/presenter.test.tsx` | Demo layout stays on when `?present=0` is set. Hidden dev tabs, type size 105%, no Presenter button, four labeled tabs, Restart key. |
 | `web/src/workstationFit.test.tsx` | Laptop fit: 3fr/2fr at 1280, stack below 900, scheme collapse at 1280, header ellipsis, scaled clamps. |
 | `web/src/copilotCard.test.tsx` | Reversible dismiss/undo, idle placeholder, in-flight updating state, inline origin pill, no Outcome/Handoff Undo. |
 | `web/scripts/measure-fit.mjs` | Headless Chrome measures scrollWidth and header clip at 1024/1280/1440 in light and dark. Not part of `gate.sh b`. |

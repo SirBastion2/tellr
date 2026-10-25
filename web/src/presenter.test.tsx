@@ -12,7 +12,7 @@ function http(status: number, body: unknown) {
 }
 
 describe('presenter mode', () => {
-  it('enlarges type, hides dev tabs, and limits shortcuts', async () => {
+  it('enlarges type, hides dev tabs, and keeps the four demo tabs labeled', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -38,13 +38,17 @@ describe('presenter mode', () => {
     expect(screen.queryByRole('link', { name: 'Health' })).toBeNull()
     expect(screen.getByRole('link', { name: 'Home' })).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Customer file' })).toBeTruthy()
+    expect(screen.getByTestId('nav-hint-outcome').textContent).toBe('Outcome')
+    expect(screen.getByTestId('nav-hint-handoff').textContent).toBe('Handoff')
     expect(screen.getByTestId('elapsed-timer').textContent).toBe('0:00')
     expect(screen.getByTestId('event-caption').textContent).toMatch(/Press play/)
     expect(window.localStorage.getItem(PRESENTER_STORAGE_KEY)).toBe('0')
     expect(window.location.search).toContain('present=0')
 
     fireEvent.keyDown(window, { key: 'r' })
-    expect(screen.queryByTestId('confirm-dialog')).toBeNull()
+    expect(screen.getByTestId('confirm-dialog')).toBeTruthy()
+    expect(screen.getByTestId('confirm-accept').textContent).toBe('Restart')
+    fireEvent.click(screen.getByTestId('confirm-cancel'))
     fireEvent.keyDown(window, { key: 'p' })
     expect(screen.getByTestId('demo-play').getAttribute('aria-pressed')).toBe('true')
     fireEvent.keyDown(window, { key: 'p' })
