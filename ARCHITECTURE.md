@@ -40,7 +40,7 @@ History and the read-only recommender view live in the existing screen files. Th
 |---|---|
 | `web/src/screens/HistoryScreen.tsx` | `GET /sessions` (live only). Practice is a second request, `GET /sessions?mode=practice`. Renders `session_id`, `mode`, `opened_at`, `closed_at`, `library_version`. |
 | `web/src/screens/HealthScreen.tsx` | `GET /health` only. Shows recommender, model id, p50, p95, last p95, fallback rate, rejection count, agreement rate. The recommender follows process config from startup. |
-| `web/src/screens/HandoffScreen.tsx` | Unchanged. Outcome and actor come from the typed `GET /sessions/{id}/handoff` body (CHANGE-004). |
+| `web/src/screens/HandoffScreen.tsx` | Outcome and actor come from the typed `GET /sessions/{id}/handoff` body (CHANGE-004). Layout is the fact-grid card in the workstation section. |
 | `web/src/history.test.tsx` | Added. Practice rows stay off the default list and appear after the practice request. |
 | `web/src/health.test.tsx` | Added. Health is a GET of `/health` with no recommender control and no `/settings` call. |
 | `web/src/screens/SettingsScreen.tsx` | Removed. `/settings` redirects to `/health` (`web/src/App.tsx`). It is not in `web/src/routes.ts`. |
@@ -81,13 +81,21 @@ Page gradients are hex and rgba only. Windows Chrome and Edge drop an entire `ba
 
 ### `web/` workstation
 
-Home is a teller workstation. A synthetic customer timeline plays beside a copilot card. The card reads the server level, the first reason, `question.text`, and `talk_track.lines`. It does not choose the next question, and it does not compute risk, level, reasons, or the next question. CHANGE-005 fields are optional. `explanation` (contributions, confidence, `used_fallback`) renders in the why-this-level panel when present; confidence stays hidden when it is null. `context_chips` source renders as Observed or Teller confirmed. Simulation posts send `source: "observed"`; manual context posts send `source: "teller"`. `GET /sessions/{id}/activity` fills the recent-activity table when it returns rows. Absent fields, mock mode, and T1–T7 fixtures keep the previous copy and the synthetic activity table. Confirm still marks a chip locally and does not post it again. Dismiss undoes back to that chip and reposts the rest with the same source. Escalate records outcome `escalate` with actor `teller` and opens handoff. The two-tap opener on Session stays: purpose chip, then answer chips.
+Home is a teller workstation. A synthetic customer timeline plays beside a copilot card. The page card is `min(1440px, 100%)`. At 1280px and up the workstation is `3fr` / `2fr`. At 1024px the columns tighten. Below 900px they stack. The copilot card stretches to the column and stays sticky. Type and spacing use `clamp()`. The card reads the server level, the first reason or the counterpoint when reasons are empty, `question.text`, and `talk_track.lines`. It does not choose the next question, and it does not compute risk, level, reasons, or the next question.
 
-The header is the bank mark, the product title, a status pill, and tabs. The pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. Undo sits with the signal list on the workstation, and at the top of other screens that have a session. Dev tabs stay available unless presenter mode is on.
+CHANGE-005 fields are optional. `readExplanation` accepts `explanation` or `Explanation`, and `used_fallback` / `usedFallback`, `signal_id` / `signalId`. Contributions with `direction: "raises"` render under What raised it. `direction: "lowers"` render under What would lower it. There is no second contributions list. A strength word (Strong / Moderate / Minor factor) is the item's `|weight|` divided by the sum of `|weight|` in that response (`>= 1/3` strong, `>= 1/6` moderate, otherwise minor). The raw weight and any `sig.*` / `chip.*` id stay inside the collapsed Technical details. Confidence `null` reads "Not applicable (rules engine)". The gap sentence shows only when explanation is absent or null. Without an explanation, Clear puts `counterpoint` under What raised it and `reasons` under What would lower it, matching architecture §6.5. That is placement of server fields, not a new score.
 
-Playback length at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s.
+`context_chips` source renders as Observed or Teller confirmed. Simulation posts send `source: "observed"`; manual context posts send `source: "teller"`. `GET /sessions/{id}/activity` fills the recent-activity table when it returns rows, with plain labels in the table and the raw ids in Technical details. Absent fields, mock mode, and T1–T7 fixtures keep working. Confirm still marks a chip locally and does not post it again. Dismiss undoes back to that chip and reposts the rest with the same source. Escalate records outcome `escalate` with actor `teller` and opens handoff. The two-tap opener on Session stays: purpose chip, then answer chips.
 
-Presenter mode is the header toggle or `?present=1` (stored in `teller.presenter` when toggled). It hides Context, Session, History, and Health; sets the root font size to 125%; resets the session when the customer changes; shows an elapsed timer and a large current-event caption; and keeps only play/pause (`P`) and step (`N`).
+Every screen uses a two-column fact grid: bold labels, normal values, bold section headings. Handoff is a card titled from the recorded outcome (`Handoff — Escalated by teller` when the teller escalated). The level is an icon plus a word. A UUID session id shows its first eight characters, with the full id on the tooltip and the copy button. Suggested outcome and the teller's decision are separate rows.
+
+The header is one row: bank mark, title, status pill, tabs, Light/Dark/System, Presenter, and `?`. It does not wrap. The nav scrolls. Under a 1120px header, the theme segment collapses into a menu. The pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. Undo sits with the signal list on the workstation, and at the top of other screens that have a session. Dev tabs stay available unless presenter mode is on.
+
+The toolbar controls share a 40px height. Play keeps the icon and the word on one line. The customer select matches that height. Show case file sits on the same row. The elapsed timer is always on that row.
+
+Playback length at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. Timeline rows show step, elapsed time, and speaker, and bold amounts and phrases such as "on the phone" and "cash".
+
+Presenter mode is the header toggle or `?present=1` (stored in `teller.presenter` when toggled). It hides Context, Session, History, and Health; sets the root font size to 125%; resets the session when the customer changes; enlarges the current-event caption; and keeps only play/pause (`P`) and step (`N`).
 
 | File | What it is |
 |---|---|
@@ -95,11 +103,16 @@ Presenter mode is the header toggle or `?present=1` (stored in `teller.presenter
 | `web/src/demo/clock.ts` | `m:ss` elapsed label. |
 | `web/src/presenter.tsx` | Presenter flag from `?present=` or `localStorage`. |
 | `web/src/screens/HomeScreen.tsx` | Toolbar, transaction panel, copilot card, explanation. |
-| `web/src/screens/CustomerFileScreen.tsx` | Profile, activity table, live transaction, and signal rows. Session activity replaces the synthetic table when `GET /activity` returns rows. Source badges prefer `context_chips` and otherwise stay Not yet, Observed, Teller confirmed, or Dismissed. |
-| `web/src/workstation/Toolbar.tsx` | Customer picker, Play/Pause, Step, Restart, speed segments, case-file link. |
-| `web/src/workstation/CopilotStrip.tsx` | Sticky card. Level icon and word, one reason, suggested action, collapsible read-aloud quote, signal rows with badges and icon buttons. |
-| `web/src/workstation/ExplanationPanel.tsx` | Why this level. Renders `explanation` contributions, confidence (hidden when null), and `used_fallback` when the object is present. The gap sentence stays when it is absent or null. |
-| `web/src/workstation/TransactionPanel.tsx` | Key-value transaction, vertical timeline, and an event progress bar. Session activity appears when `GET /activity` returns rows. |
+| `web/src/screens/CustomerFileScreen.tsx` | Profile, activity table, this withdrawal, and what was noted. Session activity replaces the synthetic table when `GET /activity` returns rows. Source badges prefer `context_chips` and otherwise stay Not yet, Observed, Teller confirmed, or Dismissed. |
+| `web/src/screens/HandoffScreen.tsx` | Handoff card. Fact grid, level badge, flagged list, suggested outcome versus the teller's decision. |
+| `web/src/ui/facts.tsx` | Bold-label fact grid and section headings shared by the screens. |
+| `web/src/ui/plain.ts` | Teller-facing labels: pattern, mode, outcome, short id, amount band, recommender phrase. |
+| `web/src/ui/emphasis.tsx` | Bolds amounts and phrases such as "on the phone" in timeline copy. |
+| `web/src/workstation/Toolbar.tsx` | 40px customer picker, Play/Pause, Step, Restart, speed segments, timer, case-file link. |
+| `web/src/workstation/CopilotStrip.tsx` | Sticky card that fills the column. Level icon and word, one reason, suggested action, collapsible read-aloud quote, noted rows with badges and icon buttons. |
+| `web/src/workstation/explain.ts` | Reads `explanation` and groups raises and lowers. Strength words from the response's own weights. |
+| `web/src/workstation/ExplanationPanel.tsx` | Why this level. Fact grid, two contribution lists, noted items, collapsed technical details. |
+| `web/src/workstation/TransactionPanel.tsx` | Key-value transaction, timeline with step and speaker, event progress. Session activity appears when `GET /activity` returns rows. |
 | `web/src/ui/ShortcutHelp.tsx` | `?` lists keyboard shortcuts. Presenter mode notes the reduced set. |
 | `web/src/ui/icons.tsx` | Play, pause, step, restart, confirm, and dismiss icons. |
 | `web/src/ui/ConfirmDialog.tsx` | Confirm before restart, customer switch (off in presenter mode), and escalate. |

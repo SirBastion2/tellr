@@ -43,15 +43,15 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
           flexDirection: 'column',
           alignItems: 'stretch',
           justifyContent: 'flex-start',
-          padding: '24px 16px 32px',
-          gap: '16px',
+          padding: 'clamp(12px, 2vw, 28px) clamp(12px, 2vw, 32px) clamp(16px, 2.5vw, 40px)',
+          gap: 'clamp(12px, 1.5vw, 24px)',
         }}
       >
         <div
           data-testid="theme-card"
           style={{
             position: 'relative',
-            width: 'min(1180px, 100%)',
+            width: 'min(1440px, 100%)',
             margin: '0 auto',
             borderRadius: 'var(--tc-radius-card)',
             background: 'var(--tc-glass-fill)',
@@ -59,7 +59,7 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
             backdropFilter: 'blur(var(--tc-glass-blur))',
             WebkitBackdropFilter: 'blur(var(--tc-glass-blur))',
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), var(--tc-shadow-card)',
-            padding: '16px',
+            padding: 'clamp(12px, 1.4vw, 24px)',
             boxSizing: 'border-box',
           }}
         >
@@ -68,7 +68,7 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
         <p
           data-testid="theme-footer"
           style={{
-            width: 'min(1180px, 100%)',
+            width: 'min(1440px, 100%)',
             margin: '0 auto',
             fontSize: '0.8125rem',
             lineHeight: 1.4,

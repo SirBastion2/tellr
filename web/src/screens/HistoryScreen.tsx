@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { apiSend } from '../api'
 import { controlStyle, inputFill } from '../theme/controls'
+import { Fact, FactGrid, PageTitle } from '../ui/facts'
+import { modeLabel, shortId } from '../ui/plain'
 import type { Mode } from '../types'
 
 const tap: CSSProperties = controlStyle
@@ -103,8 +105,8 @@ export function HistoryScreen() {
       : []
 
   return (
-    <section data-testid="history-screen" style={{ display: 'grid', gap: 12 }}>
-      <h2 style={{ margin: 0, fontSize: 22 }}>History</h2>
+    <section data-testid="history-screen" className="tc-card">
+      <PageTitle>History</PageTitle>
       <div className="flex gap-2" data-testid="history-filter">
         <button
           type="button"
@@ -130,21 +132,25 @@ export function HistoryScreen() {
       <ul data-testid="history-list" className="space-y-2">
         {visible.map((session) => (
           <li key={session.session_id} data-testid="history-row" data-mode={session.mode}>
-            <p>
-              Session <span data-testid="history-session-id">{session.session_id}</span>
-            </p>
-            <p>
-              Mode <span data-testid="history-mode">{session.mode}</span>
-            </p>
-            <p>
-              Opened <span data-testid="history-opened">{session.opened_at}</span>
-            </p>
-            <p>
-              Closed <span data-testid="history-closed">{session.closed_at ?? ''}</span>
-            </p>
-            <p>
-              Library <span data-testid="history-library">{session.library_version}</span>
-            </p>
+            <FactGrid>
+              <Fact term="Session">
+                <span data-testid="history-session-id" title={session.session_id}>
+                  {shortId(session.session_id)}
+                </span>
+              </Fact>
+              <Fact term="Mode" testId="history-mode">
+                {modeLabel(session.mode)}
+              </Fact>
+              <Fact term="Opened" testId="history-opened">
+                {session.opened_at}
+              </Fact>
+              <Fact term="Closed" testId="history-closed">
+                {session.closed_at ?? 'Still open'}
+              </Fact>
+              <Fact term="Library version" testId="history-library">
+                {session.library_version}
+              </Fact>
+            </FactGrid>
           </li>
         ))}
       </ul>

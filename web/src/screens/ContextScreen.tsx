@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { controlStyle, inputFill, primaryStyle } from '../theme/controls'
+import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
 import { LEVEL_WORD } from '../ui/LevelIcon'
+import { shortId } from '../ui/plain'
 import type { Library, SessionState } from '../types'
 
 const tap: CSSProperties = controlStyle
@@ -26,8 +28,9 @@ export function ContextScreen({
   }
 
   return (
-    <section data-testid="context-screen" style={{ display: 'grid', gap: 16 }}>
-      <h2 style={{ margin: 0, fontSize: 22 }}>Context</h2>
+    <section data-testid="context-screen" className="tc-card">
+      <PageTitle>What you noticed</PageTitle>
+      <p style={{ margin: 0 }}>Add what you see at the window. This screen does not score the visit.</p>
       <ul className="flex flex-wrap gap-2">
         {(library?.context_chips ?? []).map((chip) => (
           <li key={chip.id}>
@@ -56,23 +59,23 @@ export function ContextScreen({
         style={{ ...tap, ...primaryStyle }}
         onClick={() => onPost?.(selected)}
       >
-        Add
+        Add to this visit
       </button>
       {session ? (
-        <dl style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 12px', margin: 0 }}>
-          <dt>Session</dt>
-          <dd data-testid="session-id" style={{ margin: 0 }}>
-            {session.session_id}
-          </dd>
-          <dt>Level</dt>
-          <dd data-testid="risk-level" style={{ margin: 0 }}>
-            {LEVEL_WORD[session.risk.level]}
-          </dd>
-          <dt>Score</dt>
-          <dd data-testid="risk-score" style={{ margin: 0 }}>
-            {session.risk.score}
-          </dd>
-        </dl>
+        <>
+          <SectionHeading>This visit</SectionHeading>
+          <FactGrid>
+            <Fact term="Session" testId="session-id">
+              <span title={session.session_id}>{shortId(session.session_id)}</span>
+            </Fact>
+            <Fact term="Level" testId="risk-level">
+              {LEVEL_WORD[session.risk.level]}
+            </Fact>
+            <Fact term="Score" testId="risk-score">
+              {session.risk.score}
+            </Fact>
+          </FactGrid>
+        </>
       ) : null}
     </section>
   )

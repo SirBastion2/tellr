@@ -135,15 +135,15 @@ describe('counter polish', () => {
     expect(purposes.compareDocumentPosition(chips) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0)
 
     const header = screen.getByTestId('app-header')
-    expect(getComputedStyle(header).flexWrap).toBe('wrap')
+    expect(getComputedStyle(header).flexWrap).toBe('nowrap')
     const purposeHeight = parseFloat(getComputedStyle(purposes).height)
     const chipHeight = parseFloat(getComputedStyle(chips).height)
     const headerHeight = parseFloat(getComputedStyle(header).minHeight)
     expect(purposeHeight).toBeLessThanOrEqual(48)
     expect(chipHeight).toBe(72)
     expect(headerHeight).toBeGreaterThanOrEqual(48)
-    expect(getComputedStyle(screen.getByTestId('app-nav')).flexWrap).toBe('wrap')
-    expect(getComputedStyle(screen.getByTestId('app-nav')).overflowX).toBe('visible')
+    expect(getComputedStyle(screen.getByTestId('app-nav')).flexWrap).toBe('nowrap')
+    expect(getComputedStyle(screen.getByTestId('app-nav')).overflowX).toBe('auto')
 
     const chrome = 8 + headerHeight + 8
     const foldHeight = 32 + 56 + 8 + purposeHeight + 8 + chipHeight

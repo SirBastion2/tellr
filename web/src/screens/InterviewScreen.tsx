@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { controlStyle, inputFill, mutedColor, textColor } from '../theme/controls'
+import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { LevelIcon } from '../ui/LevelIcon'
 import type { AnswerChipId, AnswerPost, Level, Library, QuestionView, SessionState } from '../types'
 
@@ -202,7 +203,7 @@ export function InterviewScreen({
 
   return (
     <section data-testid="interview-screen" style={{ display: 'grid', gap: '12px' }}>
-      <h2 className="tc-sr">Session</h2>
+      <h2 className="tc-title">This visit</h2>
       {session && level ? (
         <>
           <div
@@ -263,22 +264,27 @@ export function InterviewScreen({
               <p data-testid="pattern-label" style={{ fontSize: '14px', margin: 0 }}>
                 {session.risk.pattern_label}
               </p>
-              <p style={{ margin: 0 }}>
-                Score <span data-testid="risk-score">{session.risk.score}</span>
-              </p>
+              <FactGrid>
+                <Fact term="Score" testId="risk-score">
+                  {session.risk.score}
+                </Fact>
+              </FactGrid>
               {session.stated_purpose ? (
                 <p data-testid="stated-purpose" style={{ margin: 0 }}>
                   {purposeLabel(library, session.stated_purpose)}
                 </p>
               ) : null}
               {session.risk.reasons.length > 0 ? (
+                <>
+                <SectionHeading>Why it was flagged</SectionHeading>
                 <ul data-testid="reason-list" style={{ margin: 0, paddingLeft: '1.25rem' }}>
                   {session.risk.reasons.map((reason) => (
                     <li key={reason.id} data-testid="reason">
-                      {reason.label}
+                      <strong>{reason.label}</strong>
                     </li>
                   ))}
                 </ul>
+                </>
               ) : null}
               {session.risk.counterpoint ? (
                 <p data-testid="counterpoint" style={{ margin: 0 }}>

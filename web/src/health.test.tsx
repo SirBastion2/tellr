@@ -45,7 +45,8 @@ describe('Health screen', () => {
     render(<HealthScreen />)
 
     await waitFor(() => {
-      expect(screen.getByTestId('health-recommender').textContent).toBe('local_llm')
+      expect(screen.getByTestId('health-recommender').textContent).toBe('On-device model')
+      expect(screen.getByTestId('health-recommender').getAttribute('data-recommender')).toBe('local_llm')
     })
     expect(screen.getByTestId('health-model').textContent).toBe(health.model_id)
     expect(screen.getByTestId('health-last-p95').textContent).toBe('420')

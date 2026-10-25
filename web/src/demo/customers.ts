@@ -4,6 +4,8 @@ export type CustomerEvent = {
   id: string
   delayMs: number
   kind: 'dialogue' | 'transaction'
+  /** Who is speaking. Display only. Defaults to Customer or Transaction. */
+  speaker?: string
   text: string
   chips: string[]
 }
@@ -216,6 +218,7 @@ export const CUSTOMERS: readonly CustomerFile[] = [
         id: 'directing',
         delayMs: 10500,
         kind: 'dialogue',
+        speaker: 'Caller',
         text: 'The caller tells her what to say to the teller.',
         chips: ['chip.someone_directing'],
       },

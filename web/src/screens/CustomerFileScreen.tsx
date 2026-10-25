@@ -2,6 +2,8 @@ import type { CSSProperties } from 'react'
 import { customerById, scriptSignals } from '../demo/customers'
 import type { DemoView } from '../demo/types'
 import { fileSignalStatus, sourceForChip } from '../feed'
+import { humanLabel } from '../workstation/explain'
+import { PageTitle, SectionHeading } from '../ui/facts'
 import { controlStyle } from '../theme/controls'
 import type { ActivityRow, ContextChipEcho, Library } from '../types'
 import { SessionActivity } from '../workstation/ActivityFeed'
@@ -16,12 +18,6 @@ const card: CSSProperties = {
   gap: 12,
 }
 
-const heading: CSSProperties = {
-  margin: 0,
-  fontSize: '1rem',
-  fontWeight: 700,
-}
-
 const kv: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: '9.5rem minmax(0, 1fr)',
@@ -32,11 +28,8 @@ const kv: CSSProperties = {
 
 const term: CSSProperties = {
   margin: 0,
-  color: 'var(--tc-muted)',
-  fontSize: '0.75rem',
+  fontSize: '1rem',
   fontWeight: 700,
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
 }
 
 const badge: CSSProperties = {
@@ -52,7 +45,8 @@ const badge: CSSProperties = {
 }
 
 function chipLabel(library: Library | null, id: string): string {
-  return library?.context_chips.find((chip) => chip.id === id)?.label ?? id
+  const label = library?.context_chips.find((chip) => chip.id === id)?.label ?? id
+  return humanLabel(library, id, label)
 }
 
 export function CustomerFileScreen({
@@ -76,9 +70,9 @@ export function CustomerFileScreen({
   return (
     <section data-testid="customer-screen" style={{ display: 'grid', gap: 16 }}>
       <div style={{ display: 'grid', gap: 8 }}>
-        <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Customer file</h2>
+        <PageTitle>Customer file</PageTitle>
         <p data-testid="synthetic-banner" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-          Synthetic demo data. Name and age band stay on this screen and are not sent to the copilot.
+          Practice data. The name and age band stay on this screen. They are not sent to the copilot.
         </p>
       </div>
       {demo ? (
@@ -99,7 +93,7 @@ export function CustomerFileScreen({
           </select>
         </label>
       ) : (
-        <p style={{ margin: 0 }}>No simulated customer is loaded.</p>
+        <p style={{ margin: 0 }}>No practice customer is loaded.</p>
       )}
       {customer ? (
         <>
@@ -107,9 +101,7 @@ export function CustomerFileScreen({
             {customer.summary}
           </p>
           <section style={card} aria-labelledby="profile-heading">
-            <h3 id="profile-heading" style={heading}>
-              Profile
-            </h3>
+            <SectionHeading id="profile-heading">Profile</SectionHeading>
             <dl style={kv}>
               <dt style={term}>Name</dt>
               <dd data-testid="profile-name" style={{ margin: 0 }}>
@@ -128,9 +120,7 @@ export function CustomerFileScreen({
             </dl>
           </section>
           <section style={card} aria-labelledby="activity-heading">
-            <h3 id="activity-heading" style={heading}>
-              Recent activity
-            </h3>
+            <SectionHeading id="activity-heading">Recent activity</SectionHeading>
             {activity && activity.length > 0 ? (
               <SessionActivity library={library} rows={activity} showHeading={false} />
             ) : (
@@ -157,9 +147,7 @@ export function CustomerFileScreen({
             )}
           </section>
           <section style={card} aria-labelledby="live-txn-heading">
-            <h3 id="live-txn-heading" style={heading}>
-              Live transaction
-            </h3>
+            <SectionHeading id="live-txn-heading">This withdrawal</SectionHeading>
             <dl data-testid="file-transaction" style={kv}>
               <dt style={term}>Type</dt>
               <dd style={{ margin: 0 }}>{customer.transaction.type}</dd>
@@ -172,12 +160,10 @@ export function CustomerFileScreen({
             </dl>
           </section>
           <section style={card} aria-labelledby="signals-heading">
-            <h3 id="signals-heading" style={heading}>
-              Signals fed to the copilot
-            </h3>
+            <SectionHeading id="signals-heading">What was noted</SectionHeading>
             {signals.length === 0 ? (
               <p data-testid="file-no-signals" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-                This script posts no signals, so a clear level is not a false alarm.
+                Nothing unusual was noted for this visit.
               </p>
             ) : (
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>

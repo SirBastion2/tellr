@@ -1,26 +1,41 @@
-import type { HandoffProjection, Level, Library, OutcomeId, SuggestedOutcome } from '../types'
-
-const LEVEL_TEXT: Record<Level, string> = {
-  clear: 'Clear',
-  caution: 'Caution',
-  high: 'High',
-}
-
-const SUGGESTED_TEXT: Record<SuggestedOutcome, string> = {
-  proceed: 'Proceed',
-  slow_down: 'Slow down',
-  escalate: 'Escalate',
-}
-
-const OUTCOME_TEXT: Record<OutcomeId, string> = {
-  proceed: 'Proceed',
-  slow_down: 'Slow down',
-  escalate: 'Escalate',
-  report: 'Report',
-}
+import { useState } from 'react'
+import { controlStyle, secondaryStyle } from '../theme/controls'
+import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
+import { LevelIcon } from '../ui/LevelIcon'
+import { actorLabel, handoffTitle, levelLabel, modeLabel, outcomeLabel, patternValue, shortId, suggestedLabel } from '../ui/plain'
+import type { HandoffProjection, Library } from '../types'
 
 function purposeLabel(library: Library | null, id: string): string {
   return library?.purposes.find((purpose) => purpose.id === id)?.label ?? id
+}
+
+function CopyId({ id }: { id: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+      <span data-testid="handoff-session" title={id}>
+        {shortId(id)}
+      </span>
+      <button
+        type="button"
+        className="tc-btn"
+        data-variant="secondary"
+        data-testid="copy-session-id"
+        title={id}
+        aria-label={`Copy session id ${id}`}
+        style={{ ...controlStyle, ...secondaryStyle }}
+        onClick={() => {
+          const write = navigator.clipboard?.writeText(id)
+          if (!write) {
+            return
+          }
+          void write.then(() => setCopied(true)).catch(() => undefined)
+        }}
+      >
+        {copied ? 'Copied' : 'Copy'}
+      </button>
+    </span>
+  )
 }
 
 export function HandoffScreen({
@@ -31,61 +46,71 @@ export function HandoffScreen({
   projection: HandoffProjection | null
 }) {
   return (
-    <section data-testid="handoff-screen" style={{ display: 'grid', gap: 12 }}>
-      <h2 style={{ margin: 0, fontSize: 22 }}>Handoff</h2>
+    <section data-testid="handoff-screen" className="tc-card">
+      <PageTitle>{projection ? handoffTitle(projection.outcome, projection.actor) : 'Handoff'}</PageTitle>
       {projection ? (
         <>
-          <p>
-            Session <span data-testid="handoff-session">{projection.session_id}</span>
-          </p>
-          <p>
-            Mode <span data-testid="handoff-mode">{projection.mode}</span>
-          </p>
-          <p>
-            Answers <span data-testid="handoff-answers">{projection.answers}</span>
-          </p>
-          <p>
-            Level <span data-testid="handoff-level" data-level={projection.risk.level}>{LEVEL_TEXT[projection.risk.level]}</span>
-          </p>
-          <p>
-            Score <span data-testid="handoff-score">{projection.risk.score}</span>
-          </p>
-          <p>
-            Pattern <span data-testid="handoff-pattern">{projection.risk.pattern_label}</span>
-          </p>
-          {projection.stated_purpose ? (
-            <p>
-              Purpose <span data-testid="handoff-purpose">{purposeLabel(library, projection.stated_purpose)}</span>
-            </p>
-          ) : null}
+          <FactGrid label="Handoff summary">
+            <Fact term="Session">
+              <CopyId id={projection.session_id} />
+            </Fact>
+            <Fact term="Mode" testId="handoff-mode">
+              {modeLabel(projection.mode)}
+            </Fact>
+            <Fact term="Questions answered" testId="handoff-answers">
+              {projection.answers}
+            </Fact>
+            <Fact term="Level">
+              <span data-testid="handoff-level" data-level={projection.risk.level} className="tc-level-badge"><LevelIcon level={projection.risk.level} />{levelLabel(projection.risk.level)}</span>
+            </Fact>
+            <Fact term="Score" testId="handoff-score">
+              {projection.risk.score}
+            </Fact>
+            <Fact term="Pattern" testId="handoff-pattern">
+              {patternValue(projection.risk.pattern_label)}
+            </Fact>
+            {projection.stated_purpose ? (
+              <Fact term="Stated purpose" testId="handoff-purpose">
+                {purposeLabel(library, projection.stated_purpose)}
+              </Fact>
+            ) : null}
+            <Fact term="Suggested outcome" testId="handoff-suggested" data={{ outcome: projection.suggested_outcome }}>
+              {suggestedLabel(projection.suggested_outcome)}
+            </Fact>
+            <Fact
+              term="Teller's decision"
+              testId="handoff-outcome"
+              data={{ recorded: projection.outcome === null ? 'false' : 'true' }}
+            >
+              {projection.outcome === null ? 'Not recorded yet' : outcomeLabel(projection.outcome)}
+            </Fact>
+            <Fact term="Recorded by" testId="handoff-actor" data={{ recorded: projection.actor === null ? 'false' : 'true' }}>
+              {actorLabel(projection.actor)}
+            </Fact>
+            {projection.stop ? (
+              <Fact term="Stop" testId="handoff-stop" data={{ kind: projection.stop.kind }}>
+                {projection.stop.reason}
+              </Fact>
+            ) : null}
+          </FactGrid>
+          <SectionHeading>Why it was flagged</SectionHeading>
           {projection.risk.reasons.length > 0 ? (
-            <ul>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem', display: 'grid', gap: 6 }}>
               {projection.risk.reasons.map((reason) => (
                 <li key={reason.id} data-testid="handoff-reason">
-                  {reason.label}
+                  <strong>{reason.label}</strong>
                 </li>
               ))}
             </ul>
-          ) : null}
+          ) : (
+            <p style={{ margin: 0 }}>Nothing was flagged.</p>
+          )}
           {projection.risk.counterpoint ? (
-            <p data-testid="handoff-counterpoint">
-              {projection.risk.level === 'clear' ? 'Still noted:' : 'In their favor:'} {projection.risk.counterpoint.label}
+            <p data-testid="handoff-counterpoint" style={{ margin: 0 }}>
+              <strong>{projection.risk.level === 'clear' ? 'Still noted' : 'In their favor'}:</strong>{' '}
+              {projection.risk.counterpoint.label}
             </p>
           ) : null}
-          <p>
-            Suggested outcome <span data-testid="handoff-suggested" data-outcome={projection.suggested_outcome}>{SUGGESTED_TEXT[projection.suggested_outcome]}</span>
-          </p>
-          {projection.stop ? (
-            <p>
-              Stop <span data-testid="handoff-stop" data-kind={projection.stop.kind}>{projection.stop.reason}</span>
-            </p>
-          ) : null}
-          <p data-testid="handoff-outcome" data-recorded={projection.outcome === null ? 'false' : 'true'}>
-            Outcome: {projection.outcome === null ? 'not recorded yet' : OUTCOME_TEXT[projection.outcome]}
-          </p>
-          <p data-testid="handoff-actor" data-recorded={projection.actor === null ? 'false' : 'true'}>
-            Actor: {projection.actor === null ? 'not recorded yet' : projection.actor}
-          </p>
         </>
       ) : null}
     </section>

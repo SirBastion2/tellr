@@ -54,32 +54,85 @@ describe('CHANGE-005 fields', () => {
     expect(screen.getByTestId('explain-gap')).toBeTruthy()
   })
 
-  it('renders contributions, hides a null confidence, and shows fallback', () => {
+  it('groups raises and lowers and does not repeat a contributions list', () => {
     render(
       <ExplanationPanel
         library={library}
         session={{
           ...base,
+          risk: {
+            ...base.risk,
+            level: 'clear',
+            raw_level: 'clear',
+            score: 14,
+            reasons: [],
+            counterpoint: {
+              id: 'sig.third_party_call',
+              label: 'On the phone during the visit',
+              rationale: 'Scammers often stay on the line.',
+            },
+            pattern_label: 'Pattern unclear',
+          },
           explanation: {
             confidence: null,
-            used_fallback: true,
+            used_fallback: false,
             contributions: [
-              { signal_id: 'sig.on_phone', label: 'On the phone', weight: 2, direction: 'raises' },
-              { signal_id: 'sig.known', label: 'Known customer', weight: 1, direction: 'lowers' },
+              {
+                signal_id: 'sig.third_party_call',
+                label: 'On the phone during the visit',
+                weight: 14,
+                direction: 'raises',
+              },
+              { signal_id: 'mit.known', label: 'Known customer', weight: 4, direction: 'lowers' },
             ],
+          },
+        }}
+        postedChipIds={['chip.on_phone']}
+      />,
+    )
+    expect(screen.queryByTestId('explain-gap')).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Contributions' })).toBeNull()
+    expect(screen.getByTestId('explain-level').textContent).toBe('Clear')
+    expect(screen.getByText('Unclear')).toBeTruthy()
+    expect(screen.queryByText(/Pattern Pattern/)).toBeNull()
+    const raised = screen.getAllByTestId('explain-reason').map((row) => row.textContent ?? '')
+    expect(raised.some((text) => text.includes('On the phone during the visit'))).toBe(true)
+    expect(raised.some((text) => text.includes('Strong factor'))).toBe(true)
+    expect(raised.join(' ')).not.toMatch(/sig\./)
+    const lowered = screen.getAllByTestId('explain-counter').map((row) => row.textContent ?? '')
+    expect(lowered.some((text) => text.includes('Known customer'))).toBe(true)
+    expect(lowered.join(' ')).not.toMatch(/On the phone/)
+    expect(screen.getByTestId('explain-confidence').textContent).toMatch(/Not applicable \(rules engine\)/)
+    expect(screen.getByTestId('explain-fallback').textContent).toMatch(/did not use the fallback/)
+    const technical = screen.getByTestId('technical-details')
+    expect(technical.textContent).toMatch(/sig\.third_party_call/)
+    expect(technical.textContent).toMatch(/Weight 14/)
+    expect(screen.getByTestId('explain-input').textContent).not.toMatch(/sig\.|chip\./)
+  })
+
+  it('puts a raising counterpoint under what raised it when explanation is absent at Clear', () => {
+    render(
+      <ExplanationPanel
+        library={library}
+        session={{
+          ...base,
+          risk: {
+            ...base.risk,
+            level: 'clear',
+            reasons: [],
+            counterpoint: {
+              id: 'sig.third_party_call',
+              label: 'On the phone during the visit',
+              rationale: 'Scammers often stay on the line.',
+            },
           },
         }}
         postedChipIds={[]}
       />,
     )
-    expect(screen.queryByTestId('explain-gap')).toBeNull()
-    expect(screen.queryByTestId('explain-confidence')).toBeNull()
-    const rows = screen.getAllByTestId('explain-contribution').map((row) => row.textContent)
-    expect(rows[0]).toMatch(/On the phone/)
-    expect(rows[0]).toMatch(/Weight 2/)
-    expect(rows[0]).toMatch(/Raises/)
-    expect(rows[1]).toMatch(/Lowers/)
-    expect(screen.getByTestId('explain-fallback').textContent).toMatch(/used the fallback/)
+    expect(screen.getByTestId('explain-reason').textContent).toMatch(/On the phone during the visit/)
+    expect(screen.getByTestId('explain-counter').textContent).toMatch(/points toward it being safe/)
+    expect(screen.getByTestId('explain-gap')).toBeTruthy()
   })
 
   it('shows a numeric confidence when the response includes one', () => {
@@ -95,6 +148,7 @@ describe('CHANGE-005 fields', () => {
     )
     expect(screen.getByTestId('explain-confidence').textContent).toMatch(/0\.5/)
     expect(screen.getByTestId('explain-fallback').textContent).toMatch(/did not use the fallback/)
+    expect(screen.getByTestId('explain-contribution').textContent).toMatch(/no contributions/)
   })
 
   it('badges signal source from context_chips and falls back to local confirm', () => {
@@ -147,8 +201,12 @@ describe('CHANGE-005 fields', () => {
     )
     expect(screen.getByTestId('session-activity')).toBeTruthy()
     expect(screen.getByTestId('activity-row').getAttribute('data-feed')).toBe('session')
-    expect(screen.getByTestId('activity-row').textContent).toMatch(/5000_9999/)
-    expect(screen.getByTestId('activity-row').textContent).toMatch(/ContextAdded/)
+    expect(screen.getByTestId('activity-row').textContent).toMatch(/\$5,000/)
+    expect(screen.getByTestId('activity-row').textContent).toMatch(/Noted at the window/)
+    expect(screen.getByTestId('activity-row').textContent).not.toMatch(/chip\.|5000_9999|ContextAdded/)
+    expect(screen.getByTestId('activity-technical').textContent).toMatch(/5000_9999/)
+    expect(screen.getByTestId('activity-technical').textContent).toMatch(/ContextAdded/)
+    expect(screen.getByTestId('activity-technical').textContent).toMatch(/chip\.on_phone/)
     const confirmed = screen.getAllByTestId('file-signal').find((row) => row.textContent?.includes('phone'))
     expect(confirmed?.getAttribute('data-status')).toBe('Teller confirmed')
   })
