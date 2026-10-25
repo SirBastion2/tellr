@@ -69,6 +69,7 @@ export function TransactionPanel({
       <ol data-testid="demo-timeline" className="tc-timeline" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid' }}>
         {visible.map((event, index) => {
           const isCurrent = index === visible.length - 1
+          const isPast = index < shown - 1
           const last = index === visible.length - 1
           const elapsed = timelineElapsedMs(customer.events, index + 1)
           return (
@@ -77,6 +78,7 @@ export function TransactionPanel({
               data-testid="demo-event"
               data-kind={event.kind}
               data-current={isCurrent ? 'true' : 'false'}
+              data-past={isPast ? 'true' : undefined}
               aria-current={isCurrent ? 'step' : undefined}
               style={{
                 display: 'grid',
