@@ -1054,6 +1054,11 @@ body {
   overflow-wrap: break-word;
 }
 
+/* Prose inside a fact value keeps body size, color, and line-height, but the value weight. */
+.tc-fact-value > .tc-prose {
+  font-weight: inherit;
+}
+
 @media (prefers-contrast: more) {
   button,
   a,
