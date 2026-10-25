@@ -59,8 +59,7 @@ describe('workstation answers', () => {
     expect(suggestedAction(opener)).toBe('Complete the withdrawal.')
     expect(screen.getByTestId('copilot-action').textContent).toBe('Complete the withdrawal.')
     expect(screen.getByTestId('copilot-action').textContent).not.toBe(opener.question?.text)
-    expect(screen.getByTestId('read-aloud').textContent).toBe(opener.talk_track.lines.join(' '))
-    expect(screen.getByTestId('read-aloud').textContent).not.toContain('Complete the withdrawal.')
+    expect(screen.queryByTestId('read-aloud')).toBeNull()
     expect(screen.queryByTestId('answer-panel')).toBeNull()
     expect(screen.queryByText(/How did they answer/i)).toBeNull()
     expect(screen.queryByTestId('answer-chip')).toBeNull()
@@ -76,7 +75,6 @@ describe('workstation answers', () => {
     expect(secrecy.talk_track.action).toBe('Pause the cash. Verify the story, and offer a cashier\'s check.')
     expect(screen.getByTestId('copilot-action').textContent).toBe(secrecy.talk_track.action)
     expect(suggestedAction(secrecy)).toBe(secrecy.talk_track.action)
-    expect(screen.getByTestId('read-aloud').textContent).toBe(secrecy.talk_track.lines.join(' '))
     expect(screen.queryByTestId('answer-panel')).toBeNull()
 
     rerender(<HomeScreen library={library} session={afterSecrecy} demo={demo()} />)
@@ -85,7 +83,6 @@ describe('workstation answers', () => {
     expect(screen.getByTestId('copilot-action').textContent).toBe(afterSecrecy.talk_track.action)
     expect(suggestedAction(afterSecrecy)).toBe(afterSecrecy.talk_track.action)
     expect(suggestedAction(afterSecrecy)).not.toBe(opener.question?.text)
-    expect(screen.getByTestId('read-aloud').textContent).toBe(afterSecrecy.talk_track.lines.join(' '))
 
     const legacyTrack = { ...opener.talk_track }
     delete legacyTrack.action
@@ -112,7 +109,6 @@ describe('workstation answers', () => {
     }
     const { rerender } = render(<HomeScreen library={library} session={stopped} demo={demo()} />)
     expect(screen.getByTestId('copilot-action').textContent).toBe('Pause and call the supervisor.')
-    expect(screen.getByTestId('read-aloud').textContent).toBe('Pause and call the supervisor.')
     expect(screen.queryByTestId('answer-panel')).toBeNull()
     expect(screen.queryByTestId('answer-chip')).toBeNull()
 
@@ -122,7 +118,7 @@ describe('workstation answers', () => {
     }
     rerender(<HomeScreen library={library} session={withAction} demo={demo()} />)
     expect(screen.getByTestId('copilot-action').textContent).toBe('Ask the customer to step aside and get a manager.')
-    expect(screen.getByTestId('read-aloud').textContent).toBe('Pause and call the supervisor.')
+    expect(screen.queryByText('Pause and call the supervisor.')).toBeNull()
   })
 
   it('shows one Level row and a raw row only when the server values differ', () => {
