@@ -36,12 +36,13 @@ function demo(overrides: Partial<DemoView> = {}): DemoView {
 }
 
 describe('Home shell', () => {
-  it('renders labeled library fields and the simulated customer controls', () => {
+  it('renders the simulated customer controls', () => {
     const onPlay = vi.fn()
     render(<HomeScreen library={library} session={null} demo={demo({ onPlay })} />)
-    expect(screen.getByTestId('library-version').textContent).toBe(library.library_version)
-    expect(screen.getByTestId('copy-status').textContent).toBe(library.copy_status)
-    expect(screen.getByText(/Library/)).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Workstation' })).toBeTruthy()
+    expect(screen.queryByTestId('library-version')).toBeNull()
+    expect(screen.queryByTestId('copy-status')).toBeNull()
+    expect(screen.queryByText(/Copy status/)).toBeNull()
     expect(screen.getByTestId('customer-picker')).toBeTruthy()
     expect(screen.queryByTestId('scenario-picker')).toBeNull()
     expect(screen.getByTestId('synthetic-banner').textContent).toBe('Practice data.')
