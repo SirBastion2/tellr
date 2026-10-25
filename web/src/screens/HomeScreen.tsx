@@ -26,7 +26,7 @@ export function HomeScreen({
   const customer = demo ? customerById(demo.customerId) : null
 
   return (
-    <section data-testid="home-screen" style={{ display: 'grid', gap: 16 }}>
+    <section data-testid="home-screen" style={{ display: 'grid', gap: 'var(--tc-space-gap, 13px)' }}>
       <div style={{ display: 'grid', gap: 4 }}>
         <h2 className="tc-title">Workstation</h2>
         {library ? (

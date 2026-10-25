@@ -59,7 +59,7 @@ Each bank has a dark palette (the top-level color fields) and a `light` palette.
 | `web/src/theme/chrome.ts` | Shared solid control colors so dismiss text does not inherit a risk-panel color. |
 | `web/src/theme/palette.ts` | `darkPalette` and `themeForScheme`. Does not mutate the registered theme. |
 | `web/src/theme/scheme.ts` | `light` / `dark` / `system`, and `readSystemScheme`. |
-| `web/src/theme/tokens.ts` | Default id `tellr`, theme key, color-scheme key, presenter key, footer string, UI font. |
+| `web/src/theme/tokens.ts` | Default id `tellr`, theme key, color-scheme key, presenter key, footer string, UI font, workstation `DENSITY` (type, space, demo root 105%). |
 | `web/src/theme/resolve.ts` | `resolveThemeId` (query, then storage, then `tellr`). |
 | `web/src/theme/registry.ts` | Loads every `web/src/theme/themes/*.ts`. Adding a bank is adding one file that exports `theme`. |
 | `web/src/theme/themes/tellr.ts` | Base. Poppins, comfortable density, pill controls, navy-to-indigo gradient and a light indigo field. Logo in the header. Footer centered. |
@@ -91,13 +91,13 @@ A successful `POST /outcome` closes the visit on the server. SessionState does n
 
 Every screen uses a two-column fact grid: bold labels, normal values, bold section headings. Handoff is a card titled from the recorded outcome (`Handoff — Escalated by teller` when the teller escalated). The level is an icon plus a word. A UUID session id shows its first eight characters, with the full id on the tooltip and the copy button. Suggested outcome and the teller's decision are separate rows.
 
-The header is one row: bank mark, title, simulation pill, connection pill, tabs, Light/Dark/System, and `?`. It does not wrap. There is no Presenter control. The nav scrolls. Under a 1120px header, the theme segment collapses into a menu. The simulation pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. The connection pill says `Live API connected` or `Using sample data` from `GET /health` (`web/src/connection.ts`). Undo sits with the signal list on the workstation, and at the top of other screens that have an open session. Context, Session, History, and Health stay off the nav.
+The header is one row: bank mark, title, simulation pill, connection pill, tabs, Light/Dark/System, and `?`. It does not wrap. There is no Presenter control. Title, pills, and tabs shrink or ellipsize; the tab row scrolls inside the row. At viewports and header containers below 1280px, the theme segment collapses into a menu. The simulation pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. The connection pill says `Live API connected` or `Using sample data` from `GET /health` (`web/src/connection.ts`). Undo sits with the signal list on the workstation, and at the top of other screens that have an open session. Context, Session, History, and Health stay off the nav.
 
 The toolbar controls share a 40px height. Play keeps the icon and the word on one line. The customer select matches that height. Show case file sits on the same row. The elapsed timer is always on that row.
 
 Playback length at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. Timeline rows show step, elapsed time, and speaker, and bold amounts and phrases such as "on the phone" and "cash".
 
-The demo layout is always on. `?present` and `teller.presenter` are ignored, and nothing in the UI names that layout. It hides Context, Session, History, and Health; sets the root font size to 125%; resets the session when the customer changes; enlarges the current-event caption; and keeps keyboard play/pause (`P`), step (`N`), and shortcut help (`?`). Restart, confirm, dismiss, escalate, and customer-switch keys stay off. The full UI reference is `docs/UI_REFERENCE.md`.
+The demo layout is always on. `?present` and `teller.presenter` are ignored, and nothing in the UI names that layout. It hides Context, Session, History, and Health; sets the root font size to 105%; resets the session when the customer changes; enlarges the current-event caption; and keeps keyboard play/pause (`P`), step (`N`), and shortcut help (`?`). Restart, confirm, dismiss, escalate, and customer-switch keys stay off. Type, gaps, and card padding come from `DENSITY` in `web/src/theme/tokens.ts` plus the matching `clamp()` tokens in `web/src/index.css` (~15–20% tighter than the first workstation pass) so a 1280×720 laptop sees the header, toolbar, transaction, and copilot without horizontal clip. The full UI reference is `docs/UI_REFERENCE.md`.
 
 | File | What it is |
 |---|---|
@@ -120,7 +120,9 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 | `web/src/ui/ConfirmDialog.tsx` | Confirm before restart and escalate. Customer switch resets without a dialog. |
 | `web/src/connection.ts` | Probes `GET /health` and chooses the live origin or the sample-data fallback. |
 | `web/src/errors.ts` | Plain sentences for API errors. No status code and no error code on screen. |
-| `web/src/presenter.test.tsx` | Demo layout stays on when `?present=0` is set. Hidden dev tabs, type size, no Presenter button. |
+| `web/src/presenter.test.tsx` | Demo layout stays on when `?present=0` is set. Hidden dev tabs, type size 105%, no Presenter button. |
+| `web/src/workstationFit.test.tsx` | Laptop fit: 3fr/2fr at 1280, stack below 900, scheme collapse at 1280, header ellipsis, scaled clamps. |
+| `web/scripts/measure-fit.mjs` | Headless Chrome measures scrollWidth and header clip at 1024/1280/1440 in light and dark. Not part of `gate.sh b`. |
 | `web/mock/live_levels.json` | Recorded engine responses for context-chip subsets. The mock uses these when a live post is not the next fixture step. Answers on that path are scored by the real API (`npm run dev:api`). The mock echoes `context_chips` from the live log and serves `GET /activity`. It leaves `explanation` off unless the recorded body already has it. |
 | `web/src/routes.ts` | Nav labels are Home, Customer file, Context, Session, Outcome, Handoff, History, Health. |
 

@@ -49,15 +49,15 @@ The page card is `min(1440px, 100%)` and starts at the top of the page so the he
 | 900px and up | Transaction and copilot side by side, about `1.15fr` / `0.85fr` |
 | 1024px and up | Columns tighten to about `1.4fr` / `1fr` |
 | 1280px and up | `3fr` / `2fr`. Copilot stays sticky and scrolls inside the column |
-| Header container under 1120px | Light/Dark/System segment hides. A single scheme menu replaces it |
+| Header container or viewport under 1280px | Light/Dark/System segment hides. A single scheme menu replaces it |
 
-Type and padding use `clamp()`. Prose is at most `70ch`. Toolbar controls share a 40px height. Play keeps the icon and the word on one line. The customer select matches that height. Show case file and the elapsed timer sit on that row.
+Type and padding use `clamp()` from `DENSITY` in `web/src/theme/tokens.ts` (about 15–20% tighter than the first workstation pass). Prose is at most `70ch`. Toolbar controls share a 40px height. Play keeps the icon and the word on one line. The customer select matches that height. Show case file and the elapsed timer sit on that row.
 
 Target playback at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s.
 
 ## Header and toolbar
 
-One row, `flex-wrap: nowrap`, nav scrolls, no second line:
+One row, `flex-wrap: nowrap`, nav scrolls, no second line. Title, simulation pill, and connection pill may ellipsize. Nothing in the row may overflow the viewport width at 1024, 1280, or 1440.
 
 1. Bank mark
 2. Title "Teller Copilot"
@@ -133,7 +133,7 @@ The larger demo layout is always on. There is no toggle, no `?present` switch, a
 
 While it is on, which is always:
 
-- Root font size is 125%
+- Root font size is 105%
 - Context, Session, History, and Health are off the nav. The routes still exist
 - Changing the simulated customer resets the session without a confirm dialog
 - The current-event caption is the larger size

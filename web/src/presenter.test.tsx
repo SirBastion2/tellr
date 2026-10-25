@@ -29,7 +29,7 @@ describe('presenter mode', () => {
     render(<App />)
     const root = screen.getByTestId('theme-root')
     expect(root.getAttribute('data-presenter')).toBe('true')
-    expect(root.style.fontSize).toBe('125%')
+    expect(root.style.fontSize).toBe('105%')
     expect(screen.queryByTestId('presenter-toggle')).toBeNull()
     expect(screen.queryByRole('button', { name: 'Presenter' })).toBeNull()
     expect(screen.queryByRole('link', { name: 'Context' })).toBeNull()

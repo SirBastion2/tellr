@@ -75,7 +75,7 @@ export function CopilotStrip({
       <div style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: 8, alignItems: 'center' }}>
         <LevelIcon level={level} />
         <div style={{ minWidth: 0 }}>
-          <p data-testid="copilot-level" style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, lineHeight: 1.2 }}>
+          <p data-testid="copilot-level" className="tc-level-badge" style={{ margin: 0, lineHeight: 1.2 }}>
             {LEVEL_WORD[level]}
           </p>
           <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
@@ -90,13 +90,13 @@ export function CopilotStrip({
               background: 'var(--tc-action-bg)',
               color: 'var(--tc-action-fg)',
               borderRadius: 12,
-              padding: 16,
+              padding: 12,
               display: 'grid',
-              gap: 8,
+              gap: 6,
             }}
           >
             <p className="tc-kicker">Suggested action</p>
-            <p data-testid="copilot-action" className="tc-prose" style={{ margin: 0, fontSize: 'clamp(1.35rem, 1.4vw, 1.85rem)', lineHeight: 1.25, fontWeight: 700, maxWidth: '70ch' }}>
+            <p data-testid="copilot-action" className="tc-prose tc-action-copy" style={{ margin: 0, lineHeight: 1.25, fontWeight: 700, maxWidth: '70ch' }}>
               {action}
             </p>
           </div>

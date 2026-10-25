@@ -99,7 +99,7 @@ function ConnectionBadge() {
   const [link, setLink] = useState<ConnectionState>(connectionState)
   useEffect(() => subscribeConnection(setLink), [])
   return (
-    <p data-testid="connection-status" data-kind={link.kind} className="tc-connection">
+    <p data-testid="connection-status" data-kind={link.kind} className="tc-connection" title={connectionLabel(link.kind)}>
       {connectionLabel(link.kind)}
     </p>
   )
@@ -210,13 +210,17 @@ export function AppShell({
             gap: '8px',
             minHeight: '48px',
             overflow: 'hidden',
+            minWidth: 0,
+            maxWidth: '100%',
             background: 'var(--tc-glass-fallback)',
             borderRadius: 'var(--tc-radius-card)',
             padding: '8px',
           }}
         >
           <ThemeWordmark />
-          <h1 className="tc-header-title">Teller Copilot</h1>
+          <h1 className="tc-header-title" title="Teller Copilot">
+            Teller Copilot
+          </h1>
           <LiveBadge mode={session?.mode ?? null} simulationTitle={simulationTitle} />
           <ConnectionBadge />
           <nav

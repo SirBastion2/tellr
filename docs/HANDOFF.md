@@ -1631,3 +1631,42 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** Follow `docs/UI_REFERENCE.md`, including the native select contrast rule from #85. No new dependency. Did not edit `contract/`, `api/`, `engine/`, goldens, or `docs/DECISIONS.md`. No new cross-lane item. `web/` still does not compute risk, levels, reasons, or the next question. Board id is B-031. B-030 is the select-contrast note on main (#85). Rebased on `7d6d2eb`.
 
+---
+
+### [B] Fit workstation to laptop screens — Agent B (Sebastian / Driver A UI lane) — 2026-10-25 03:40
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 93 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  30 passed (30)
+      Tests  93 passed (93)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+Headless Chrome (`web/scripts/measure-fit.mjs`, live-API mode, F.N.B. theme, contractor-cash stepped once), all 6 cells pass. `document.documentElement.scrollWidth <= innerWidth`. Header children stayed inside the row. Transaction and copilot had no horizontal scroll. Title stayed `Teller Copilot`.
+
+| Viewport | Scheme | scrollWidth | innerWidth | Result |
+|---|---|---|---|---|
+| 1024×700 | light | 1024 | 1024 | pass |
+| 1024×700 | dark | 1024 | 1024 | pass |
+| 1280×720 | light | 1280 | 1280 | pass |
+| 1280×720 | dark | 1280 | 1280 | pass |
+| 1440×800 | light | 1440 | 1440 | pass |
+| 1440×800 | dark | 1440 | 1440 | pass |
+
+- **Changed:** `web/src/index.css`, `web/src/theme/tokens.ts` (`DENSITY`, demo root 105%), `web/src/theme/vars.ts`, theme space tokens, `ThemeRoot`, header/badge/wordmark, workstation panels, `web/src/workstationFit.test.tsx`, `web/scripts/measure-fit.mjs`, `web/eslint.config.js` (ignore `scripts/**`), `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Scaled type and spacing from shared `clamp()` tokens and theme space (~15–20%), not per-component hacks (`ARCHITECTURE.md` workstation; user card).
+  - Raised the Light/Dark/System collapse from 1120px to 1280px (container + viewport) so the 1280 laptop header no longer clips System / Handoff.
+  - Title, simulation pill, and connection pill ellipsize; nav still scrolls inside the row. Header `overflow: hidden` no longer cuts mid-glyph because children shrink first.
+  - Demo root font 125% → 105%. That 125% was the main reason a 1280×720 fold overflowed. 3fr/2fr from 1280 and stack below 900 unchanged.
+  - Playwright is not a package.json dependency. The measure script is optional local evidence. Lightweight overflow coverage is `workstationFit.test.tsx`.
+- **Questions logged:** none
+- **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine edits. No new npm dependency. Do not attach screenshots. Re-run `node web/scripts/measure-fit.mjs http://127.0.0.1:5173` after `npm run dev:api` if the header grows again.
+
