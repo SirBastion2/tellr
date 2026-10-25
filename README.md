@@ -1,5 +1,17 @@
 # tellr
 
+## Summary
+
+- tellr is an interview aid for a teller at a fast counter. It suggests a level, a next step, and words to say. The teller still decides. [How a teller uses it](#how-a-teller-uses-it)
+- The demo is five scripted synthetic customers on a timer. A real visit is a live session with no scenario, scored by the engine from the teller's taps. [The demo and a real visit](#the-demo-and-a-real-visit)
+- The question picker is Meta-Llama-3.1-8B-Instruct (Q4_K_M). Sebastian states an RTX 5070 was used to train it. That training run is not written down here. The model returns a question ID only. [The Llama 8B](#the-llama-8b)
+- Headline bench: 8B total p50 463.6 ms (typical reply) and p95 482.7 ms (slow end), both under the 1.5 second pause budget. On 30 dev scenarios the live 8B caught 14/15 coached visits (Caution or High) and false-flagged 0/15 genuine visits (none marked High), mean 3.10 questions, matching the rules. [Latency bench (A-03)](#latency-bench-a-03) · [Development set (30 scenarios)](#development-set-30-scenarios)
+- Stack: Python 3.12 engine, React screen, SQLite log. Measured inference ran on an RTX 5070 Laptop. Training hardware is Sebastian's RTX 5070 statement. [Specs and tech stack](#specs-and-tech-stack)
+- Four bank themes (tellr, pnc, mtb, fnb) share one layout. Color, font, and the brand mark change. At the counter the teller opens a live session, taps chips, and records the outcome. [How it's built](#how-its-built) · [How it would actually be used](#how-it-would-actually-be-used)
+- A person makes the final call. The copilot suggests and does not approve or deny. The demo is scripted, the model has not beaten the rules, and no compliance sign-off is in the repo. [Responsible use](#responsible-use) · [Safety and bank concerns](#safety-and-bank-concerns) · [Limitations / what's scripted](#limitations--whats-scripted)
+- Two people steered and agents wrote the code. We ran up to 12 agents in parallel, scaling up or down with the task, for roster cards and UI fixes alike. [How we built it](#how-we-built-it)
+- Entered in the HackPSU Grand Prize, the FNB Challenge, the Nittany AI Challenge, and MLH SpaceXSI. [Entered in](#entered-in)
+
 Teller Copilot (tellr) is a teller-facing interview aid. It keeps an append-only log of what the teller records, folds that log into a score and a level, and may ask a local model for the next question ID. The teller still chooses what happens to the transaction. It was built at HackPSU Fall 2026 by two people and a set of Cursor agents, against a frozen contract between the engine and the screen (`ARCHITECTURE.md`; `docs/architecture.md` §0–§3).
 
 The hard moment is the counter. A customer is standing there, the low-risk path is meant to finish in under 60 seconds, and a multi-second blank screen is dead air the teller has to fill. The screen is built against a 1.5 second budget on slow taps. That budget is a p95: the 95th percentile of the wait from a chip tap to the next question, so in a measured sample about 95% of waits are that fast or faster. The product suggests. It does not approve or deny (`docs/architecture.md` §1, §9).
