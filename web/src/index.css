@@ -411,6 +411,70 @@ button[data-loading='true'],
   }
 }
 
+/*
+  Native select popup. Windows Chrome and Edge paint the option list from
+  the select's own color-scheme. :root stays `light dark` so it can follow
+  the OS, which left a white list under the dark theme's light text.
+  data-scheme is the resolved mode, including System. The closed control's
+  shared style is transparent; the popup copies an opaque select background
+  when it ignores option backgrounds. Resting rows use surface/text. Hover
+  and selected rows use the button pair. Both pairs are opaque and WCAG AA.
+*/
+html[data-color-scheme='dark'] select,
+[data-testid='theme-root'][data-scheme='dark'] select,
+[data-scheme='dark'] select {
+  color-scheme: dark;
+  background-color: var(--tc-surface, #1e1b4b) !important;
+  color: var(--tc-text, #ffffff) !important;
+}
+
+html[data-color-scheme='light'] select,
+[data-testid='theme-root'][data-scheme='light'] select,
+[data-scheme='light'] select {
+  color-scheme: light;
+  background-color: var(--tc-surface, #ffffff) !important;
+  color: var(--tc-text, #1c1917) !important;
+}
+
+html[data-color-scheme='dark'] select option,
+[data-scheme='dark'] select option {
+  background-color: var(--tc-surface, #1e1b4b);
+  color: var(--tc-text, #ffffff);
+}
+
+html[data-color-scheme='light'] select option,
+[data-scheme='light'] select option {
+  background-color: var(--tc-surface, #ffffff);
+  color: var(--tc-text, #1c1917);
+}
+
+html[data-color-scheme='dark'] select option:hover,
+html[data-color-scheme='dark'] select option:focus,
+html[data-color-scheme='dark'] select option:focus-visible,
+html[data-color-scheme='dark'] select option:active,
+html[data-color-scheme='dark'] select option:checked,
+[data-scheme='dark'] select option:hover,
+[data-scheme='dark'] select option:focus,
+[data-scheme='dark'] select option:focus-visible,
+[data-scheme='dark'] select option:active,
+[data-scheme='dark'] select option:checked {
+  background-color: var(--tc-button, #f8fafc);
+  color: var(--tc-button-text, #1e1b4b);
+}
+
+html[data-color-scheme='light'] select option:hover,
+html[data-color-scheme='light'] select option:focus,
+html[data-color-scheme='light'] select option:focus-visible,
+html[data-color-scheme='light'] select option:active,
+html[data-color-scheme='light'] select option:checked,
+[data-scheme='light'] select option:hover,
+[data-scheme='light'] select option:focus,
+[data-scheme='light'] select option:focus-visible,
+[data-scheme='light'] select option:active,
+[data-scheme='light'] select option:checked {
+  background-color: var(--tc-button, #1e1b4b);
+  color: var(--tc-button-text, #ffffff);
+}
 
 :root {
   color-scheme: light dark;
@@ -441,6 +505,21 @@ body {
   :focus-visible {
     outline-width: 3px;
   }
+
+  select option {
+    background-color: var(--tc-surface, Canvas);
+    color: var(--tc-text, CanvasText);
+  }
+
+  select option:hover,
+  select option:focus,
+  select option:focus-visible,
+  select option:active,
+  select option:checked {
+    background-color: var(--tc-button, Highlight);
+    color: var(--tc-button-text, HighlightText);
+    outline: 2px solid var(--tc-text, CanvasText);
+  }
 }
 
 @media (forced-colors: active) {
@@ -460,6 +539,34 @@ body {
     background: ButtonFace !important;
     color: ButtonText !important;
     forced-color-adjust: auto;
+  }
+
+  html[data-color-scheme] select,
+  [data-testid='theme-root'][data-scheme] select,
+  [data-scheme] select,
+  select {
+    color-scheme: light dark !important;
+    background-color: ButtonFace !important;
+    background-image: none !important;
+    color: ButtonText !important;
+    border: 1px solid ButtonText !important;
+    forced-color-adjust: auto;
+  }
+
+  select option {
+    background-color: Field !important;
+    color: FieldText !important;
+    forced-color-adjust: none;
+  }
+
+  select option:hover,
+  select option:focus,
+  select option:focus-visible,
+  select option:active,
+  select option:checked {
+    background-color: Highlight !important;
+    color: HighlightText !important;
+    forced-color-adjust: none;
   }
 
   button:focus-visible,
