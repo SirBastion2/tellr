@@ -1,5 +1,19 @@
+let baseOverride: string | null = null
+
 export function apiBase(): string {
+  if (baseOverride !== null) {
+    return baseOverride
+  }
   return import.meta.env.VITE_API_URL ?? ''
+}
+
+/** Browser probe sets this after GET /health. Tests leave it unset. */
+export function setApiBase(base: string): void {
+  baseOverride = base
+}
+
+export function resetApiBase(): void {
+  baseOverride = null
 }
 
 export async function apiSend(

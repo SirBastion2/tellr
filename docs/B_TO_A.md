@@ -18,6 +18,22 @@ A reply:
 
 ---
 
+### B-031 · Sat Oct 24, 2026, 11:05 PM ET · Demo layout, one fact list, live sessions
+From: B
+Action needed from A: no
+
+UI-only. No contract change. `web/` still does not compute risk, levels, reasons, or the next question. Optional `explanation`, `context_chips`, and activity rows stay optional. Rebased on main `7d6d2eb` (#85). B-030 stays the select-contrast note.
+
+1. "What the teller and system noted" is gone. Each factor is shown once under What raised it or What would lower it, with Observed or Teller confirmed on that row when the chip was posted or echoed.
+2. Live opens send `{ mode, amount_band }`. After `POST /outcome` returns 200, or any `session_closed` response, the client treats the visit as closed, hides the decision controls, and offers Start new customer. The page does not show `Status 409` or `session_closed`.
+3. The header pill follows `GET /health`. A healthy API is "Live API connected". Otherwise the Vite mock is "Using sample data". `npm run dev` and `npm run dev:api` both keep the mock installed for that fallback. `dev:api` still pins `http://127.0.0.1:8000` via `web/.env.api`.
+4. The demo layout is always on. The Presenter button and `?present` are gone. Nothing in the UI names that layout.
+5. The UI decisions are in `docs/UI_REFERENCE.md`, linked from the `ARCHITECTURE.md` web section. That reference includes the native select contrast rule from B-030.
+
+A reply:
+
+---
+
 ### B-030 · Sat Oct 24, 2026, 11:04 PM ET · Native select popup contrast; M-022 acknowledged
 From: B
 Action needed from A: no

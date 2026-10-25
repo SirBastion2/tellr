@@ -1,4 +1,4 @@
-import type { ChipSource, ContextChipEcho } from './types'
+import type { ChipSource, ContextChipEcho, Library } from './types'
 
 export function sourceForChip(
   chips: readonly ContextChipEcho[] | undefined,
@@ -34,6 +34,31 @@ export function listedChipIds(
     }
   }
   return ids
+}
+
+/**
+ * Source badge for a factor already shown in Why this level.
+ * Matches a context chip by signal id, chip id, or label. Returns null when
+ * that chip was not posted and the session did not echo it.
+ */
+export function factorOrigin(
+  library: Library | null,
+  factorId: string,
+  factorLabel: string,
+  postedChipIds: readonly string[],
+  echoes: readonly ContextChipEcho[] | undefined,
+): 'Observed' | 'Teller confirmed' | null {
+  const chip = library?.context_chips.find(
+    (item) => item.signal === factorId || item.id === factorId || item.label === factorLabel,
+  )
+  if (!chip) {
+    return null
+  }
+  const echoed = (echoes ?? []).some((item) => item.id === chip.id)
+  if (!postedChipIds.includes(chip.id) && !echoed) {
+    return null
+  }
+  return originText(sourceForChip(echoes, chip.id), false)
 }
 
 export function fileSignalStatus(

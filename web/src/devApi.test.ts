@@ -29,11 +29,11 @@ describe('real API dev mode', () => {
     )
   })
 
-  it('does not install the mock plugin when VITE_API_URL is set', async () => {
+  it('keeps the mock plugin installed when VITE_API_URL is set', async () => {
     vi.stubEnv('VITE_API_URL', 'http://127.0.0.1:8000')
     try {
       const resolved = await loadConfig('development')
-      expect(pluginNames(resolved.plugins)).not.toContain('teller-mock')
+      expect(pluginNames(resolved.plugins)).toContain('teller-mock')
       expect(resolved.server?.proxy).toBeUndefined()
     } finally {
       vi.unstubAllEnvs()
@@ -51,10 +51,10 @@ describe('real API dev mode', () => {
     }
   })
 
-  it('loads .env.api in api mode and skips the mock', async () => {
+  it('loads api mode with the mock fallback still installed', async () => {
     vi.unstubAllEnvs()
     const resolved = await loadConfig('api')
-    expect(pluginNames(resolved.plugins)).not.toContain('teller-mock')
+    expect(pluginNames(resolved.plugins)).toContain('teller-mock')
   })
 })
 

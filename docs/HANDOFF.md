@@ -1603,3 +1603,31 @@ GATE PASS (a)
 - **Questions logged:** none
 - **The next agent needs to know:** B should renumber PR #85's B-029 board entry to B-030 and rebase #85 on main. B-028, B-029 (#84), and the 10:55 PM ET contrast note need nothing from A. Devpost facts are FYI. No new dependency.
 
+---
+
+### [B] Live sessions, one fact list, demo layout — Agent B — 2026-10-24 23:05
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 90 tests, contract OK) on `7d6d2eb`
+
+```
+── typecheck
+── lint
+── test
+ Test Files  29 passed (29)
+      Tests  90 passed (90)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/` (explanation panel, closed visits, health probe, demo layout always on); `ARCHITECTURE.md` (web section); `docs/UI_REFERENCE.md` (new); `docs/B_TO_A.md` (B-031); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Each factor is shown once. Observed or Teller confirmed sits on that row. The separate "What the teller and system noted" list repeated the same facts (workstation copy; `docs/UI_REFERENCE.md`).
+  - SessionState does not carry `closed` (CHANGE-003). The client remembers a 200 outcome and a `session_closed` response, hides the decision controls, and offers Start new customer. The four outcomes stay available while the visit is open (architecture §9: do not disable an outcome button by level).
+  - Live opens send `mode` and `amount_band` (contract `POST /sessions`). `GET /health` chooses the API origin when it answers, otherwise the Vite mock. The mock plugin stays installed so that fallback works for `npm run dev:api`.
+  - The demo layout is always on. `?present` is ignored and the header has no control for it.
+  - Errors are one plain sentence. The page does not show an HTTP status or an error code.
+- **Questions logged:** none
+- **The next agent needs to know:** Follow `docs/UI_REFERENCE.md`, including the native select contrast rule from #85. No new dependency. Did not edit `contract/`, `api/`, `engine/`, goldens, or `docs/DECISIONS.md`. No new cross-lane item. `web/` still does not compute risk, levels, reasons, or the next question. Board id is B-031. B-030 is the select-contrast note on main (#85). Rebased on `7d6d2eb`.
+

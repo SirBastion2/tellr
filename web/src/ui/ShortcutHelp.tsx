@@ -49,11 +49,8 @@ export function ShortcutHelp({ onClose, presenter = false }: { onClose: () => vo
         <h2 id="shortcut-title" style={{ margin: 0, fontSize: 20 }}>
           Keyboard shortcuts
         </h2>
-        {presenter ? (
-          <p style={{ margin: 0 }}>Presenter mode keeps play, pause, and step. The other shortcuts are off.</p>
-        ) : null}
         <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
-          {ROWS.map((row) => (
+          {(presenter ? ROWS.filter((row) => row.keys === '?' || row.keys === 'P' || row.keys === 'N') : ROWS).map((row) => (
             <li key={row.keys}>
               <kbd>{row.keys}</kbd> {row.what}
             </li>
