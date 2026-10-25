@@ -10,12 +10,13 @@ export function ConfirmDialog({
   onCancel,
 }: {
   title: string
-  body: string
+  body?: string
   confirmLabel: string
   pending: boolean
   onConfirm: () => void
   onCancel: () => void
 }) {
+  const description = body?.trim() ?? ''
   const cancelRef = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     cancelRef.current?.focus()
@@ -26,7 +27,7 @@ export function ConfirmDialog({
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="confirm-title"
-      aria-describedby="confirm-body"
+      aria-describedby={description ? 'confirm-body' : undefined}
       data-testid="confirm-dialog"
       style={{
         position: 'fixed',
@@ -52,9 +53,11 @@ export function ConfirmDialog({
         <h2 id="confirm-title" className="tc-title" style={{ margin: 0 }}>
           {title}
         </h2>
-        <p id="confirm-body" className="tc-prose" style={{ margin: 0 }}>
-          {body}
-        </p>
+        {description ? (
+          <p id="confirm-body" className="tc-prose" style={{ margin: 0 }}>
+            {description}
+          </p>
+        ) : null}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           <button
             type="button"

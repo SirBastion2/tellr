@@ -32,7 +32,7 @@ export function ContextScreen({
     <section data-testid="context-screen" className="tc-card">
       <PageTitle>What you noticed</PageTitle>
       <p className="tc-prose" style={{ margin: 0 }}>
-        Add what you see at the window. This screen does not score the visit.
+        Add what you see at the window.
       </p>
       <ul className="flex flex-wrap gap-2">
         {(library?.context_chips ?? []).map((chip) => (

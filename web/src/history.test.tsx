@@ -57,6 +57,8 @@ describe('History screen', () => {
     await waitFor(() => {
       expect(screen.getByTestId('history-session-id').textContent).toBe('live-1')
     })
+    expect(screen.queryByText('Library version')).toBeNull()
+    expect(screen.queryByText(liveRow.library_version)).toBeNull()
     expect(screen.getByTestId('history-opened').textContent).not.toBe(liveRow.opened_at)
     expect(screen.getByTestId('history-opened').textContent).not.toMatch(/UTC/)
     expect(screen.queryByText('practice-1')).toBeNull()

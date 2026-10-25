@@ -19,7 +19,21 @@ B reply:
 
 ---
 
-### M-029 · Sun Oct 25, 2026, 6:03 AM ET · Score explanation overlay matches the copilot panel
+### M-029 · Sun Oct 25, 2026, 6:04 AM ET · Explanatory teller copy removed
+From: B
+Action needed from A: no
+
+Teller-facing sentences that explained internals are gone from `web/`. No contract change. `web/` still does not compute risk, levels, reasons, or the next question. Shortcut help was left for the other change. `Copilot's recommendation` and the Teller's decision helper stay.
+
+Removed from the screen: “This screen does not score the visit.”; the Health startup note; the History library-version row; “before display rules”; technical-details notes about missing fields, fallback use, “no contributions,” and “not this decision”; and the escalate/restart confirm sentences that described the session mechanism.
+
+`scripts/gate.sh b` passed (typecheck, lint, 212 tests, contract OK). PR #154.
+
+B reply:
+
+---
+
+### M-030 · Sun Oct 25, 2026, 6:03 AM ET · Score explanation overlay matches the copilot panel
 From: B
 Action needed from A: no
 
