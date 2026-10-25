@@ -23,7 +23,7 @@ Bank chrome is one typed theme plus CSS variables. Screens read tokens. They do 
 | `--tc-accent`, `--tc-link`, `--tc-input` | Focus, links, fields |
 | `--tc-radius-card`, `--tc-radius-control` | Corners |
 
-`?theme=<id>` selects a registered theme and stores `teller.theme`. An unknown id falls back to the stored id, then `tellr`. Adding a bank is one file in `web/src/theme/themes/` that exports `theme`.
+`?theme=<id>` selects a registered theme and stores `teller.theme`. An unknown id falls back to the stored id, then `tellr`. A missing query is always `tellr` so a leftover stored bank does not surprise the demo. `T` cycles `THEME_IDS` (`tellr` → `pnc` → `mtb` → `fnb` → `tellr`) in place and writes storage; the session is not reset. Adding a bank is one file in `web/src/theme/themes/` that exports `theme`.
 
 | Id | What it is |
 |---|---|
@@ -222,6 +222,7 @@ The gap sentence ("not in this response") shows only when `explanation` is absen
 | `D` | Dismiss the latest signal |
 | `E` | Escalate to the supervisor |
 | `[` / `]` | Switch simulated customer |
+| `T` | Cycle bank theme (`tellr` → `pnc` → `mtb` → `fnb`) |
 
 Typing in a field, and holding Ctrl, Alt, or Meta, does not trigger these keys.
 

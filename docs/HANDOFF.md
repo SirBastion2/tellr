@@ -1793,3 +1793,19 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. PR #96. Do not merge from this card.
 
+---
+
+### [B] Bank theme toggle — Agent B1 — 2026-10-25 04:18
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → pending (this revision); update after the run
+- **Changed:** `web/src/theme/registry.ts`, `web/src/theme/resolve.ts`, `web/src/theme/ThemeProvider.tsx`, `web/src/theme/Wordmark.tsx`, `web/src/theme/themes/mtb.ts`, `web/src/App.tsx`, `web/src/ui/ShortcutHelp.tsx`, `web/src/themeCycle.test.tsx`, `web/src/theme.test.tsx`, `web/src/themeContrast.test.ts`, `web/src/demoPolish.test.tsx`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Reused the existing `ConnectedShell` keydown handler (PR #97 is still open). `T` is one more key in that listener so Home, Customer file, and the other screens share it. Inputs / textareas / selects and Ctrl / Cmd / Alt still ignore the key (architecture §12 screens; `ARCHITECTURE.md` workstation keys).
+  - `THEME_IDS` / `THEME_LIST` are `tellr`, `pnc`, `mtb`, `fnb` so `cycleThemeId` matches the requested wrap. Default id stays `tellr` in `tokens.ts`.
+  - First load without `?theme=` is `tellr` even if `teller.theme` is leftover, so the demo is not surprised. Valid `?theme=` and `T` still write storage; an unknown query still falls back to the stored id (`resolve.ts`).
+  - Theme name stays on the existing wordmark. No new header chrome.
+  - Visual fixes in this PR: M&T weave uses `url(${JSON.stringify(...)})` so a quoted data URL cannot drop the gradient stack (Windows Chrome/Edge); text wordmarks are `nowrap` so M&T / F.N.B. / PNC do not wrap in the header.
+  - No new npm dependency. No contract / api / engine / library / golden edits.
+- **Questions logged:** none
+- **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. `T` does not reload or reset the session. Do not merge from this card.
+

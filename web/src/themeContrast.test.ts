@@ -82,7 +82,7 @@ function checkPalette(label: string, palette: ThemePalette) {
 
 describe('theme contrast', () => {
   it('keeps text, buttons, and risk states at WCAG AA for every bank and color scheme', () => {
-    expect(THEME_LIST.map((theme) => theme.id)).toEqual(['fnb', 'mtb', 'pnc', 'tellr'])
+    expect(THEME_LIST.map((theme) => theme.id)).toEqual(['tellr', 'pnc', 'mtb', 'fnb'])
     for (const theme of THEME_LIST) {
       checkPalette(`${theme.id} dark`, darkPalette(theme))
       checkPalette(`${theme.id} light`, theme.light)
