@@ -1797,7 +1797,19 @@ GATE PASS (b)
 
 ### [B] Bank theme toggle — Agent B1 — 2026-10-25 04:18
 - **Status:** done
-- **Gate:** `scripts/gate.sh b` → pending (this revision); update after the run
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 129 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  38 passed (38)
+      Tests  129 passed (129)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
 - **Changed:** `web/src/theme/registry.ts`, `web/src/theme/resolve.ts`, `web/src/theme/ThemeProvider.tsx`, `web/src/theme/Wordmark.tsx`, `web/src/theme/themes/mtb.ts`, `web/src/App.tsx`, `web/src/ui/ShortcutHelp.tsx`, `web/src/themeCycle.test.tsx`, `web/src/theme.test.tsx`, `web/src/themeContrast.test.ts`, `web/src/demoPolish.test.tsx`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
 - **Decisions I made, and the section that justified each:**
   - Reused the existing `ConnectedShell` keydown handler (PR #97 is still open). `T` is one more key in that listener so Home, Customer file, and the other screens share it. Inputs / textareas / selects and Ctrl / Cmd / Alt still ignore the key (architecture §12 screens; `ARCHITECTURE.md` workstation keys).
