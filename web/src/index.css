@@ -72,9 +72,9 @@ button[data-loading='true'],
 .tc-strip {
   position: sticky;
   top: 8px;
-  height: 100%;
-  max-height: calc(100vh - 16px);
-  overflow: auto;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
   border-radius: var(--tc-radius-card, 16px);
   padding: var(--tc-space-card-fluid, clamp(10px, 1vw, 16px));
   display: grid;
@@ -91,6 +91,17 @@ button[data-loading='true'],
   gap: inherit;
   align-content: start;
   min-width: 0;
+  overflow: visible;
+}
+
+.tc-quote,
+[data-testid='read-aloud-block'] {
+  overflow: visible;
+}
+
+.tc-signal-list,
+.tc-strip ul[aria-label='Signals'] {
+  overflow: visible;
 }
 
 .tc-strip-body[data-dimmed='true'] {
@@ -281,6 +292,7 @@ button[data-loading='true'],
   padding: 0;
   display: grid;
   gap: 10px;
+  overflow: visible;
 }
 
 .tc-factor-head {
@@ -691,6 +703,7 @@ button[data-loading='true'],
   align-items: center;
   gap: 8px;
   min-width: 0;
+  overflow: visible;
   font-size: var(--tc-text-base);
   line-height: var(--tc-text-base-lh);
 }

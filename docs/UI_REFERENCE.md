@@ -49,7 +49,7 @@ The page card fills the padded page (`width: 100%`) and starts at the top of the
 | Below 900px | Workstation columns stack |
 | 900px and up | Transaction and copilot side by side, about `1.15fr` / `0.85fr` |
 | 1024px and up | Columns tighten to about `1.4fr` / `1fr` |
-| 1280px and up | `3fr` / `2fr`. Copilot stays sticky and scrolls inside the column |
+| 1280px and up | `3fr` / `2fr`. Copilot stays sticky and grows with its content; the page or column scrolls |
 | Header container or viewport under 1280px | Light/Dark/System segment hides. A single scheme menu replaces it |
 
 Type and padding use `clamp()` from `DENSITY` in `web/src/theme/tokens.ts` (about 15–20% tighter than the first workstation pass). Vertical rhythm is the 4 / 8 / 12 / 16 / 24 scale in that file and `web/src/index.css`. Header-to-content is 16px. Heading-to-body is 8px. Body-to-control is 12px. Pills and buttons pad 8×12 so text does not sit on an edge. Prose is at most `70ch`. Toolbar controls share a 40px height. Play keeps the icon and the word on one line. The customer select matches that height. Show case file, the elapsed timer, and the live local time-of-day clock sit on that row.
