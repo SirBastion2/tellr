@@ -58,7 +58,7 @@ Target playback at 1× is the sum of each event's `delayMs`. 2× halves it and 4
 
 ## Header and toolbar
 
-The header is one row at 1280 and 1180. At 1024 it tightens gaps and the scenario pill may ellipsize with a title tooltip; it stays one row when it can. Leftover space sits between groups (brand | status pills + clock | tabs | scheme + help), never inside a pill. Title stays complete. Tabs are content-sized and never clip (`Handoff` stays `Handoff`). Simulation and connection pills hug their text. Nothing may overflow the viewport width at 1024, 1180, 1280, or 1440. The tellr logo graphic is the control height minus small padding, centered in its rounded pill.
+The header is one row at 1280, 1180, and 1024 (`flex-wrap: nowrap`). At 1180 and 1024 it tightens gaps; the scenario pill may ellipsize with a title tooltip. Theme toggle and `?` stay on that row. Leftover space sits between groups (brand | status pills + clock | tabs | scheme + help), never inside a pill. Title stays complete. Tabs are content-sized and never clip (`Handoff` stays `Handoff`). Simulation and connection pills hug their text. Nothing may overflow the viewport width at 1024, 1180, 1280, or 1440. The tellr logo graphic is the control height minus small padding, centered in its rounded pill.
 
 1. Bank mark
 2. Title "Teller Copilot"

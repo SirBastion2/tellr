@@ -79,6 +79,8 @@ describe('header labels and spacing rhythm', () => {
     const badge = headerRule(source, '.tc-live-badge')
     const connection = headerRule(source, '.tc-connection')
     expect(headerCss).toMatch(/flex-wrap:\s*nowrap/)
+    expect(headerCss).not.toMatch(/flex-wrap:\s*wrap/)
+    expect(source).not.toMatch(/@media \(max-width:\s*(1023|1024|1180|1280)px\)[\s\S]{0,200}\.tc-header[^{]*\{[^}]*flex-wrap:\s*wrap/)
     expect(headerCss).toMatch(/overflow:\s*visible/)
     expect(navCss).toMatch(/flex-wrap:\s*nowrap/)
     expect(navCss).toMatch(/overflow:\s*visible/)

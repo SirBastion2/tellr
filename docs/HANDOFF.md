@@ -2199,3 +2199,31 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/108. Merged latest `origin/main` (`15ab04d`) before finalize. No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
 
+---
+
+### [B] One-row header, hugging pills — Agent B1 — 2026-10-25 05:40
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 178 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  50 passed (50)
+      Tests  178 passed (178)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/index.css`, `web/src/App.tsx`, `web/src/theme/{tokens,vars,controls,Wordmark}.tsx`, `web/src/ui/LocalClock.tsx`, `web/src/workstation/Toolbar.tsx`, header/fit/a11y/theme tests, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Removed `--tc-sim-pill-min` / `--tc-conn-pill-min` (the #103 fixed rem widths) so status pills hug text (`width: max-content`, `padding-inline: 0.85em`). Same control height (`48px`) in tellr / pnc / mtb / fnb.
+  - Tabs are `flex: 0 0 auto`. Nav keeps `flex: 1 1 auto` + `margin-inline: auto` so leftover space sits between groups (brand | status+clock | tabs | scheme+help), never inside a pill (#101).
+  - Tellr graphic is `--tc-wordmark-h` 40px (control minus pad), aspect 155/61. Title uses the 48px box.
+  - Local clock from #104 lives in the header status group. Only the digits reserve width (`tabular-nums` + `8ch`).
+  - One row at 1280 and 1180 (gaps tighten at 1180). At 1024 the scenario pill may ellipsize (`8em`–`12em`). Font sizes still from `typeScale.ts` only.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/107. Do not merge. Merged `origin/main` `#108` (`44b77a3`). Chromium measured 4 themes × 3 widths × idle/play: one row, 48px controls, no overflow. No new dependency. No screenshots or videos. Gate `b` only.
+

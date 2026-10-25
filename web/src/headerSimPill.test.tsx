@@ -135,7 +135,7 @@ describe('simulation pill stays the same size before and during play', () => {
     const timer = headerRule(source, '.tc-timer')
     expect(DENSITY.headerControlHeight).toBe(DENSITY.controlHeight)
     expect(DENSITY.typePill).toBe('0.875rem')
-    expect(DENSITY.simPillMaxWidth).toBe('100%')
+    expect(DENSITY.simPillMaxWidth).toBe('none')
     expect(source).not.toContain('--tc-sim-pill-min:')
     expect(source).not.toContain('--tc-conn-pill-min:')
     expect(source).toContain(`--tc-sim-pill-max: ${DENSITY.simPillMaxWidth}`)

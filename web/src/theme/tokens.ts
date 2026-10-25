@@ -105,7 +105,7 @@ export const DENSITY = {
    * Safety cap only. Status pills use natural content width; ellipsis
    * kicks in when the row is tight (1024). No min/fixed rem width.
    */
-  simPillMaxWidth: '100%',
+  simPillMaxWidth: 'none',
   /** Wide enough for the Pause label plus icon so Play does not jump. */
   playMinWidth: '7.5rem',
   /** `m:ss` with room for `10:00`. */
