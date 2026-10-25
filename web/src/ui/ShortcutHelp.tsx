@@ -47,43 +47,25 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
           gap: 'var(--tc-space-3)',
         }}
       >
-        <h2 id="shortcut-title" className="tc-text-xl" style={{ margin: 0 }}>
+        <h2 id="shortcut-title" className="tc-title">
           Keyboard shortcuts
         </h2>
-        <ul
-          data-testid="shortcut-list"
-          style={{
-            listStyle: 'none',
-            margin: 0,
-            padding: 0,
-            display: 'grid',
-            gap: 'var(--tc-space-2)',
-          }}
-        >
+        <dl className="tc-facts" data-testid="shortcut-list" aria-label="Keyboard shortcuts">
           {ROWS.map((row) => (
-            <li
-              key={row.keys.join('-')}
-              data-testid="shortcut-row"
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '7.5rem minmax(0, 1fr)',
-                columnGap: 'var(--tc-space-3)',
-                alignItems: 'baseline',
-              }}
-            >
-              <span>
+            <Fragment key={row.keys.join('-')}>
+              <dt className="tc-fact-term" data-testid="shortcut-row">
                 {row.keys.map((key, index) => (
                   <Fragment key={key}>
                     {index > 0 ? ' and ' : null}
                     <kbd>{key}</kbd>
                   </Fragment>
-                ))}{' '}
-              </span>
-              <span>{row.what}</span>
-            </li>
+                ))}
+              </dt>
+              <dd className="tc-fact-value">{row.what}</dd>
+            </Fragment>
           ))}
-        </ul>
-        <p data-testid="shortcut-scope" className="tc-prose" style={{ margin: 0, fontSize: 'var(--tc-text-sm)' }}>
+        </dl>
+        <p data-testid="shortcut-scope" className="tc-prose" style={{ margin: 0 }}>
           These keys work on every screen, including Customer file, Outcome, and Handoff.
           They do nothing while you type in a field, or while Ctrl, Alt, or Cmd is held.
         </p>

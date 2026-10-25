@@ -8,6 +8,7 @@ export function themeVars(theme: BankTheme): Record<string, string> {
     ...TYPE_VARS,
     '--tc-font': theme.fontFamily,
     '--tc-font-weight': DENSITY.fontWeight,
+    '--tc-weight-medium': DENSITY.mediumWeight,
     '--tc-heading-weight': DENSITY.headingWeight,
     '--tc-strong-weight': DENSITY.strongWeight,
     '--tc-bg-color': theme.background.color,

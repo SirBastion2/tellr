@@ -80,7 +80,7 @@ describe('Interview screen', () => {
         const pattern = screen.getByTestId('pattern-label')
         expect(pattern.textContent, where).toBe(session.risk.pattern_label)
         expect(level.compareDocumentPosition(pattern) & Node.DOCUMENT_POSITION_FOLLOWING, where).not.toBe(0)
-        expect(pattern.className, where).toContain('tc-text-sm')
+        expect(pattern.className, where).toContain('tc-fact-value')
         expect(level.className, where).toContain('tc-text-2xl')
         expect(parseFloat(TYPE_SIZE.sm), where).toBeLessThan(parseFloat(TYPE_SIZE['2xl']))
 

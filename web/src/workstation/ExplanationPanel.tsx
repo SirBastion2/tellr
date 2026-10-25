@@ -166,39 +166,39 @@ export function ExplanationPanel({
         originFor={originFor}
       />
 
-      <details className="tc-tech" data-testid="technical-details">
-        <summary>Technical details</summary>
+      <details className="tc-tech tc-block" data-testid="technical-details">
+        <summary className="tc-kicker">Technical details</summary>
         <div className="tc-tech-body">
-          <p data-testid="explain-recommender" style={{ margin: 0 }}>
+          <p data-testid="explain-recommender" className="tc-prose" style={{ margin: 0 }}>
             {debug
               ? `Decided by: ${recommenderPhrase(debug.recommender)}.`
               : 'Decided by: not included.'}
           </p>
-          <p style={{ margin: 0 }}>
+          <p className="tc-prose" style={{ margin: 0 }}>
             {debug ? `Response time: ${debug.latency_ms} ms.` : 'Response time: not included.'}
           </p>
-          <p style={{ margin: 0 }}>
+          <p className="tc-prose" style={{ margin: 0 }}>
             {debug ? `Rejected tries: ${debug.rejections}.` : 'Rejected tries: not included.'}
           </p>
-          <p data-testid="explain-health" style={{ margin: 0 }}>
+          <p data-testid="explain-health" className="tc-prose" style={{ margin: 0 }}>
             {health
               ? `Across recent visits, agreement with the rules is ${health.agreement_rate ?? 'not included'} and the fallback rate is ${health.fallback_rate}. That is the whole service, not this decision.`
               : 'Service-wide rates are not loaded.'}
           </p>
           {grouped.explanation ? (
             <>
-              <p data-testid="explain-confidence" style={{ margin: 0 }}>
+              <p data-testid="explain-confidence" className="tc-prose" style={{ margin: 0 }}>
                 {grouped.explanation.confidence === null
                   ? 'Not applicable (rules engine).'
                   : `Model confidence: ${grouped.explanation.confidence}.`}
               </p>
-              <p data-testid="explain-fallback" style={{ margin: 0 }}>
+              <p data-testid="explain-fallback" className="tc-prose" style={{ margin: 0 }}>
                 {grouped.explanation.used_fallback
                   ? 'This decision used the fallback.'
                   : 'This decision did not use the fallback.'}
               </p>
               {factors.some((item) => item.weight != null) ? (
-                <ul>
+                <ul className="tc-prose">
                   {factors.map((item) => (
                     <li key={`tech-${item.id}-${item.direction}`} data-testid="explain-contribution">
                       {item.label}. Weight {item.weight}. {item.id}. {item.direction === 'raises' ? 'Raises' : 'Lowers'}.
@@ -206,13 +206,13 @@ export function ExplanationPanel({
                   ))}
                 </ul>
               ) : (
-                <p data-testid="explain-contribution" style={{ margin: 0 }}>
+                <p data-testid="explain-contribution" className="tc-prose" style={{ margin: 0 }}>
                   This response lists no contributions.
                 </p>
               )}
             </>
           ) : (
-            <p data-testid="explain-gap" style={{ margin: 0 }}>
+            <p data-testid="explain-gap" className="tc-prose" style={{ margin: 0 }}>
               Per-signal weights, a confidence value, and a per-decision fallback flag are not in this response.
             </p>
           )}

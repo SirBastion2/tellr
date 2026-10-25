@@ -4,6 +4,7 @@ import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { CheckIcon, DismissIcon } from '../ui/icons'
 import { LEVEL_WORD, LevelIcon } from '../ui/LevelIcon'
 import type { Library, SessionState } from '../types'
+import { Fact, FactGrid } from '../ui/facts'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 
 const primary = { ...controlStyle, ...primaryStyle }
@@ -126,18 +127,18 @@ export function CopilotStrip({
           <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0 }}>
             {LEVEL_WORD[level]}
           </p>
-          <p className="tc-prose" style={{ margin: 0 }}>
-            <span className="tc-kicker">{URGENCY_SCORE_TERM}</span>{' '}
-            <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
+          <FactGrid label={URGENCY_SCORE_TERM}>
+            <Fact term={URGENCY_SCORE_TERM} testId="copilot-score">
               {formatUrgencyScore(session.risk.score)}
-            </span>
-          </p>
+            </Fact>
+          </FactGrid>
           <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
             {reason}
           </p>
         </div>
       </div>
       <div
+        className="tc-block"
         style={{
           background: 'var(--tc-action-bg)',
           color: 'var(--tc-action-fg)',
@@ -154,6 +155,7 @@ export function CopilotStrip({
       </div>
       <details
         open
+        className="tc-block"
         data-testid="read-aloud-block"
         style={{
           background: 'var(--tc-quote-bg)',
