@@ -134,7 +134,10 @@ describe('merged workstation signals', () => {
     expect(signalTexts().join('\n')).not.toContain(thresholdChip.label)
     expect(screen.getByTestId('copilot-strip').querySelector('[data-testid="signal-row"]')).toBeTruthy()
     expect(screen.queryByTestId('answer-panel')).toBeNull()
-    expect(screen.getByTestId('copilot-action').textContent).toBe(liveVisit.question?.text)
+    expect(liveVisit.talk_track.action).toBe('Pause the cash. Verify the story, and offer a cashier\'s check.')
+    expect(screen.getByTestId('copilot-action').textContent).toBe(liveVisit.talk_track.action)
+    expect(screen.getByTestId('copilot-action').textContent).not.toBe(liveVisit.question?.text)
+    expect(block.textContent).not.toContain(liveVisit.talk_track.action ?? '')
     expect(screen.getByTestId('txn-type').textContent).toBe('Cash withdrawal above the branch threshold')
     expect(screen.getByTestId('txn-type').textContent).toBe(
       CUSTOMERS.find((customer) => customer.id === 'romance-crypto')?.transaction.type,
@@ -148,7 +151,9 @@ describe('merged workstation signals', () => {
     expect(within(screen.getByTestId('explain-panel')).queryByTestId('signal-confirm')).toBeNull()
     expect(within(screen.getByTestId('explain-panel')).queryByTestId('signal-dismiss')).toBeNull()
     expect(screen.getByTestId('copilot-strip').querySelectorAll('[data-testid="signal-row"]').length).toBeGreaterThan(0)
-    expect(screen.getByTestId('copilot-action').textContent).toBe(liveVisit.question?.text)
+    expect(screen.getByTestId('copilot-action').textContent).toBe(
+      'Pause the cash. Verify the story, and offer a cashier\'s check.',
+    )
     expect(screen.getByTestId('explain-score').textContent).toMatch(/\d+\/100/)
   })
 

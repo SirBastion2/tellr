@@ -33,6 +33,10 @@ function chipLabel(library: Library | null, id: string): string {
 }
 
 export function suggestedAction(session: SessionState): string {
+  const action = session.talk_track.action?.trim() ?? ''
+  if (action) {
+    return action
+  }
   if (session.question?.text) {
     return session.question.text
   }

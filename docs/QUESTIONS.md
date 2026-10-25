@@ -309,6 +309,7 @@ Agents append; drivers answer. An open question blocks only the work that depend
   imperative copy (drafts are in the handoff note). After apply, re-record the
   live mock and point `suggestedAction()` at `talk_track.action`. Both drivers
   approve before R edits `contract/CHANGES.md`.
-- **Status:** open — no code until drivers answer
+- **Status:** resolved: CHANGE-007 applied 2026-10-25. Driver A (Sebastian)
+  approved. Driver B consent relayed by Sebastian.
 
 ---

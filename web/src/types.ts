@@ -43,6 +43,8 @@ export type TalkTrackView = {
   pattern: string | null
   lines: string[]
   avoid: string[]
+  /** CHANGE-007. Imperative teller move. Absent on older payloads. */
+  action?: string
 }
 
 export type OutcomeId = 'proceed' | 'slow_down' | 'escalate' | 'report'
@@ -146,7 +148,7 @@ export type Library = {
   signals: { id: string; label: string; rationale: string; direction: 'concern' | 'mitigating' }[]
   patterns: { id: string; label: string }[]
   look_alikes: { id: string; label: string; pattern: string }[]
-  talk_tracks: { id: string; lines: string[]; avoid: string[] }[]
+  talk_tracks: { id: string; lines: string[]; avoid: string[]; action?: string }[]
 }
 
 export type AnswerPost = {

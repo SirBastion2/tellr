@@ -71,16 +71,24 @@ SIGNAL_COPY = {
 }
 PATTERN_LABELS = {"pat.home_repair": "home repair pressure", "pat.bank_impersonation": "bank impersonation"}
 LOOK_LABELS = {"look.contractor_with_estimate": "contractor with estimate", "look.own_account_transfer": "own-account transfer"}
+# lines, avoid, action. CHANGE-007 action is the stage track's imperative.
+# reference_impl.py does not carry this prose. Pattern tracks keep an action for
+# GET /library; session_state copies the stage action only, matching talk_track_for.
 TALK_TRACKS = {
-    "tt.proceed": (["Thanks for walking me through that."], []),
+    "tt.proceed": (["Thanks for walking me through that."], [],
+                   "Complete the withdrawal."),
     "tt.slow_down": (["We see a lot of calls like this lately. Mind if I ask a couple of quick questions?",
                       "A cashier's check made out to them is safer than carrying cash.",
                       "Would you call them back on a number from your own records before we finish?"],
-                     ["You're being scammed.", "Who told you to say that?"]),
+                     ["You're being scammed.", "Who told you to say that?"],
+                     "Pause the cash. Verify the story, and offer a cashier's check."),
     "tt.escalate": (["I'd like my manager to take a quick look. It's routine for larger cash withdrawals."],
-                    ["Anything accusatory", "Anything the caller warned them the bank would say"]),
-    "tt.bank_impersonation": (["Your bank will never ask you to move money to keep it safe."], []),
-    "tt.home_repair": (["Reputable contractors take checks and give written estimates."], []),
+                    ["Anything accusatory", "Anything the caller warned them the bank would say"],
+                    "Ask the customer to step aside and get a manager."),
+    "tt.bank_impersonation": (["Your bank will never ask you to move money to keep it safe."], [],
+                              "Pause the move and tell them the bank does not move money to keep it safe."),
+    "tt.home_repair": (["Reputable contractors take checks and give written estimates."], [],
+                       "Verify the contractor and the written estimate before releasing cash."),
 }
 CASE_LABELS = {
     "T1": "Contractor, on the phone, wants cash", "T2": "Bank impersonation, 'moving money'",
@@ -111,7 +119,8 @@ def library():
                      "direction": "mitigating" if R.W[s][0] < 0 else "concern"} for s in R.W],
         "patterns": [{"id": p, "label": PATTERN_LABELS[p]} for p in R.PATTERNS],
         "look_alikes": [{"id": l, "label": LOOK_LABELS[l], "pattern": s["pattern"]} for l, s in R.LOOKALIKES.items()],
-        "talk_tracks": [{"id": t, "lines": a, "avoid": b} for t, (a, b) in TALK_TRACKS.items()],
+        "talk_tracks": [{"id": t, "lines": lines, "avoid": avoid, "action": action}
+                        for t, (lines, avoid, action) in TALK_TRACKS.items()],
     }
 
 
@@ -163,7 +172,7 @@ def session_state(case, answers, evidence, shown, raw, score, display, purpose, 
         "question": question(*nxt) if nxt else None,
         "stop": stop,
         "talk_track": {"stage": stage_tt, "pattern": pat_tt, "lines": lines,
-                       "avoid": TALK_TRACKS[stage_tt][1]},
+                       "avoid": TALK_TRACKS[stage_tt][1], "action": TALK_TRACKS[stage_tt][2]},
         "suggested_outcome": SUGGEST[level],
         "available_outcomes": ["proceed", "slow_down", "escalate", "report"],
         "debug": {"recommender": "rules", "latency_ms": 0, "rejections": 0},

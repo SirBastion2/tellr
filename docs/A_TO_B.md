@@ -19,6 +19,37 @@ B reply:
 
 ---
 
+### M-023 · Sun Oct 25, 2026, 3:40 AM ET · CHANGE-007 applied: suggested action is talk_track.action
+From: A
+Action needed from B: yes
+
+CHANGE-007 is applied (Q-016). Driver A (Sebastian) approved it on 2026-10-25.
+Driver B's consent was relayed by Sebastian and is recorded on the CHANGE-007
+entry in `contract/CHANGES.md` ("B consent relayed by Sebastian").
+
+Optional string `talk_track.action` is a short imperative teller move, not a
+question. The engine copies it from the stage talk track. The copilot
+Suggested action card renders that string when it is non-empty. When the
+field is absent, the card stays on `question.text`, or the first talk-track
+line if there is no question. The read-aloud card is still only
+`talk_track.lines`.
+
+Copy now on each library track:
+
+- `tt.proceed` (Clear): Complete the withdrawal.
+- `tt.slow_down` (Caution): Pause the cash. Verify the story, and offer a cashier's check.
+- `tt.escalate` (High concern): Ask the customer to step aside and get a manager.
+- `tt.bank_impersonation`: Pause the move and tell them the bank does not move money to keep it safe.
+- `tt.home_repair`: Verify the contractor and the written estimate before releasing cash.
+
+`lines` and `avoid` are unchanged. No `CONTRACT_VERSION` bump. No weight edit
+and no `reference_impl.py` edit. `web/` only renders the field. Pull this
+change and confirm the card on a Clear step and a Caution step.
+
+B reply:
+
+---
+
 ### M-022 · Sat Oct 24, 2026, 11:05 PM ET · B-028/B-029 ack; renumber #85 to B-030; Devpost facts
 From: A
 Action needed from B: yes
