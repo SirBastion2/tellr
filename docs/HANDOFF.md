@@ -1542,3 +1542,40 @@ GATE PASS (contract)
   - Parts (b) `context_chips` / `ContextAdded.source` and (c) `GET /sessions/{id}/activity` are not implemented.
   - No new dependency. Did not edit `reference_impl.py`, goldens, `contract/`, or `web/`.
 
+---
+
+### [CHANGE-005 (c)] GET /sessions/{id}/activity — Agent A2 — 2026-10-25 01:10
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+177 passed, 1 warning in 23.05s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+- **Changed:** `api/activity.py` (new); `api/main.py` (register only); `tests/api/test_activity.py` (new); `tests/api/conftest.py` (`assert_activity`); `ARCHITECTURE.md` (new files); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Isolated the route in `api/activity.py` so parallel SessionState work (CHANGE-005 a/b) does not collide. `main.py` only calls `register_activity_routes` (CHANGE-005 (c); user: keep a separate module).
+  - Rows come from live `ContextAdded` chips only. `channel` is the chip id; `type` is the event kind; `amount_band` is copied from `SessionOpened`. No invented branch/cash vocabulary — those ids are already in the log (CHANGE-005 (c); `contract/activity.schema.json`).
+  - `Truncated` uses the same 0-based pop as `api.main._live_indices` / `contract/events.md`, so undo drops those chips from the feed.
+  - Unknown session uses the existing `HTTPException(404, detail="session not found")` body, same as `GET /sessions/{id}`. CHANGE-002's `{error:{code,message}}` stays 409-only (`error.schema.json`).
+  - GET does not call `render` / `project` / the recommender. Notes and chip labels never appear. No POST route.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - PR https://github.com/SirBastion2/tellr/pull/80. Contract-v2 (`56e525f`) is the base.
+  - B can wire the workstation feed after merge. Treat `channel` as a context chip id and `type` as the stored event kind. Empty `rows` on a freshly opened session is required.
+  - CHANGE-005 (a) `explanation` and (b) `context_chips` / `source` are **not** in this PR. Do not edit `api/activity.py` for those.
+  - Did not edit `contract/`, `reference_impl.py`, goldens, or `web/`. No new dependency.
+

@@ -17,6 +17,9 @@ SESSION_SCHEMA = json.loads(
 HANDOFF_SCHEMA = json.loads(
     (ROOT / "contract" / "handoff.schema.json").read_text(encoding="utf-8")
 )
+ACTIVITY_SCHEMA = json.loads(
+    (ROOT / "contract" / "activity.schema.json").read_text(encoding="utf-8")
+)
 ERROR_SCHEMA = json.loads((ROOT / "contract" / "error.schema.json").read_text(encoding="utf-8"))
 IGNORE_FIELDS = frozenset({"session_id", "debug", "explanation", "context_chips"})
 
@@ -91,6 +94,13 @@ def assert_handoff(payload: object) -> None:
 def assert_error_body(payload: object) -> None:
     errors: list[str] = []
     validate(payload, ERROR_SCHEMA, "ErrorResponse", errors)
+    assert errors == [], errors
+
+
+def assert_activity(payload: object) -> None:
+    """CHANGE-005 (c): GET /activity bodies must match contract/activity.schema.json."""
+    errors: list[str] = []
+    validate(payload, ACTIVITY_SCHEMA, "Activity", errors)
     assert errors == [], errors
 
 
