@@ -22,6 +22,7 @@ import { NotFoundScreen } from './screens/NotFoundScreen'
 import { OutcomeScreen } from './screens/OutcomeScreen'
 import { TellerProvider, useTeller, type RecordedDecision } from './teller'
 import { controlStyle, headerControlStyle, secondaryStyle } from './theme/controls'
+import { DENSITY } from './theme/tokens'
 import { type ColorChoice, useSchemeCompact } from './theme/scheme'
 import { ThemeProvider, useColorScheme, useThemeActions } from './theme/ThemeProvider'
 import { ThemeRoot } from './theme/ThemeRoot'
@@ -101,7 +102,7 @@ function SchemeMenu() {
         data-testid="scheme-menu"
         aria-label="Color scheme"
         value={choice}
-        style={{ ...headerTap, height: 'var(--tc-header-control-h, 48px)', minHeight: 'var(--tc-header-control-h, 48px)' }}
+        style={{ ...headerTap }}
         onChange={(event) => setChoice(event.target.value as ColorChoice)}
       >
         {SCHEME_OPTIONS.map((option) => (
@@ -221,7 +222,7 @@ export function AppShell({
             flexWrap: 'wrap',
             alignItems: 'center',
             gap: 'var(--tc-space-header, 8px)',
-            minHeight: 'var(--tc-header-h, 48px)',
+            minHeight: DENSITY.headerMinHeight,
             overflow: 'visible',
             minWidth: 0,
             maxWidth: '100%',

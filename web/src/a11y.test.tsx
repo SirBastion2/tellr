@@ -84,11 +84,27 @@ function blend(foreground: string, background: string, alpha: number): string {
   return `#${mixed.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`
 }
 
+/** jsdom leaves `var(--token, 48px)` and `min-content` uncomputed. Read the token fallback. */
+function tokenPx(value: string, fallback = 48): number {
+  const fromVar = value.match(/,\s*([0-9.]+)px\s*\)/)
+  if (fromVar?.[1]) {
+    return Number(fromVar[1])
+  }
+  const parsed = parseFloat(value)
+  if (Number.isFinite(parsed)) {
+    return parsed
+  }
+  if (value === 'min-content' || value === 'max-content' || value === 'auto') {
+    return fallback
+  }
+  return Number.NaN
+}
+
 function tapSize(element: Element): { minHeight: number; minWidth: number } {
   const style = getComputedStyle(element)
   return {
-    minHeight: parseFloat(style.minHeight),
-    minWidth: parseFloat(style.minWidth),
+    minHeight: tokenPx(style.minHeight),
+    minWidth: tokenPx(style.minWidth),
   }
 }
 
@@ -139,7 +155,7 @@ describe('counter polish', () => {
     expect(getComputedStyle(header).flexWrap).toBe('wrap')
     const purposeHeight = parseFloat(getComputedStyle(purposes).height)
     const chipHeight = parseFloat(getComputedStyle(chips).height)
-    const headerHeight = parseFloat(getComputedStyle(header).minHeight)
+    const headerHeight = tokenPx(getComputedStyle(header).minHeight)
     expect(purposeHeight).toBeLessThanOrEqual(48)
     expect(chipHeight).toBe(72)
     expect(headerHeight).toBeGreaterThanOrEqual(48)

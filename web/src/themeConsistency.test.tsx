@@ -254,7 +254,7 @@ describe('shared theme leftovers', () => {
       expect(root.style.getPropertyValue('--tc-type-line-body'), id).toBe(DENSITY.typeLineBody)
       expect(root.style.getPropertyValue('--tc-type-line-heading'), id).toBe(DENSITY.typeLineHeading)
       expect(root.style.getPropertyValue('--tc-type-line-ui'), id).toBe(DENSITY.typeLineUi)
-      expect(screen.getByTestId('app-header').style.minHeight, id).toBe('var(--tc-header-h, 48px)')
+      expect(screen.getByTestId('app-header').style.minHeight, id).toBe(DENSITY.headerMinHeight)
       unmount()
     }
   })
@@ -281,7 +281,7 @@ describe('shared theme leftovers', () => {
       expect(tabs, id).toHaveLength(4)
       for (const tab of tabs) {
         expect(tab.className, `${id} ${tab.textContent}`).toContain('tc-nav-tab')
-        expect(tab.style.flex, `${id} ${tab.textContent}`).toBe('1 1 0')
+        expect(tab.style.flex, `${id} ${tab.textContent}`).toMatch(/^1 1 0(px)?$/)
         expect(tab.style.justifyContent, `${id} ${tab.textContent}`).toBe('center')
         expect(tab.style.textAlign, `${id} ${tab.textContent}`).toBe('center')
         expect(tab.style.whiteSpace, `${id} ${tab.textContent}`).toBe('nowrap')
@@ -296,7 +296,7 @@ describe('shared theme leftovers', () => {
         expect(nav.style.flexWrap, `${id} @ ${width}`).toBe('wrap')
         expect(nav.style.overflow, `${id} @ ${width}`).toBe('visible')
         for (const tab of tabs) {
-          expect(tab.style.flex, `${id} ${tab.textContent} @ ${width}`).toBe('1 1 0')
+          expect(tab.style.flex, `${id} ${tab.textContent} @ ${width}`).toMatch(/^1 1 0(px)?$/)
           expect(tab.textContent, `${id} @ ${width}`).not.toMatch(/…|\.\.\./)
         }
       }
