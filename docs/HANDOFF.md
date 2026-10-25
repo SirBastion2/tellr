@@ -1766,3 +1766,30 @@ GATE PASS (b)
 - **Questions logged:** Q-014
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/89. Drivers own Q-014. Smallest script CHANGE is §7.1 family-from-purpose + fixture regen + an extra post-hour-4 slot (004 and 005 already used) + B posting a purpose on the demo visits. Smallest *protocol* item for a higher observation-only government score is raising `observation_cap` (still Caution at 52) or raising it to ≥60 and dropping the High interview gate. A secrecy `confirmed` already yields High (62) with no protocol. `copy_status` stays DRAFT. `ARCHITECTURE.md` unchanged (no files added/removed/moved). No new dependency.
 
+---
+
+### [B] Urgency Score label + dismiss flicker — Agent B1 — 2026-10-25 04:12
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 118 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  37 passed (37)
+      Tests  118 passed (118)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/ui/urgencyScore.ts`, `web/src/ui/urgencyScore.test.ts`, `web/src/workstation/CopilotStrip.tsx`, `web/src/screens/HomeScreen.tsx`, `web/src/workstation/ExplanationPanel.tsx`, `web/src/screens/{Handoff,Interview,Context,Outcome}Screen.tsx`, `web/src/index.css`, tests, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Score max is 100 from `contract/session_state.schema.json` and `contract/handoff.schema.json` `risk.score.maximum`, matching architecture §6.2 `clamp(..., −45, +100)`. `web/` imports that maximum; it does not invent or clamp the displayed server score.
+  - Label is **Urgency Score** and the value is `<score>/<max>` on the workstation card, Why this level, Outcome, Handoff, Session, and Context.
+  - Dismiss flicker was the pending path replacing the card with “Updating copilot…”. The last full snapshot stays mounted (dim + inline chip). Home holds session / posted chips / activity while the write is in flight so `dismissChip`'s undo/repost steps cannot mix fields (#90 one-server-snapshot).
+  - No new npm dependency. No contract / api / engine / library / golden edits.
+- **Questions logged:** none
+- **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. PR #96. Do not merge from this card.
+

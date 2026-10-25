@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useState } from 'react'
 import { customerById } from '../demo/customers'
 import type { DemoView } from '../demo/types'
 import { CopilotStrip } from '../workstation/CopilotStrip'
@@ -8,11 +8,11 @@ import { TransactionPanel } from '../workstation/TransactionPanel'
 import type { ActivityRow, Library, SessionState } from '../types'
 
 function useHeldValue<T>(value: T, hold: boolean): T {
-  const slot = useRef(value)
-  if (!hold) {
-    slot.current = value
+  const [held, setHeld] = useState(value)
+  if (!hold && !Object.is(held, value)) {
+    setHeld(value)
   }
-  return hold ? slot.current : value
+  return hold ? held : value
 }
 
 export function HomeScreen({

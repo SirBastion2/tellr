@@ -121,13 +121,11 @@ export function CopilotStrip({
           <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0, lineHeight: 1.2 }}>
             {LEVEL_WORD[level]}
           </p>
-          <p
-            data-testid="copilot-score"
-            className="tc-prose"
-            title={URGENCY_SCORE_TERM}
-            style={{ margin: 0, lineHeight: 1.2 }}
-          >
-            {URGENCY_SCORE_TERM} {formatUrgencyScore(session.risk.score)}
+          <p className="tc-prose" style={{ margin: 0, lineHeight: 1.2 }}>
+            <span className="tc-kicker">{URGENCY_SCORE_TERM}</span>{' '}
+            <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
+              {formatUrgencyScore(session.risk.score)}
+            </span>
           </p>
           <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
             {reason}
