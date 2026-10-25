@@ -9,11 +9,14 @@ import { App } from './App'
 import { THEME_IDS, THEMES } from './theme/registry'
 import {
   FONT_SIZE_ADJUST,
+  TYPE_FG,
+  TYPE_FG_PCT,
   TYPE_ROLE,
   TYPE_SIZE,
   TYPE_STEPS,
   TYPE_TOKEN_KEYS,
   TYPE_VARS,
+  TYPE_WEIGHT,
 } from './theme/typeScale'
 import { COLOR_STORAGE_KEY, THEME_STORAGE_KEY } from './theme/tokens'
 import { SHARED_STRUCTURE_VARS, themeVars } from './theme/vars'
@@ -75,6 +78,13 @@ describe('shared type scale', () => {
     expect(TYPE_ROLE.footer).toBe('xs')
     expect(TYPE_ROLE.chip).toBe('sm')
     expect(TYPE_ROLE.nav).toBe('sm')
+    expect(TYPE_ROLE.label).toBe('sm')
+    expect(TYPE_ROLE.tag).toBe('xs')
+    expect(TYPE_WEIGHT.medium).toBe('500')
+    expect(TYPE_FG_PCT.soft).toBe('69%')
+    expect(TYPE_VARS['--tc-weight-medium']).toBe(TYPE_WEIGHT.medium)
+    expect(TYPE_VARS['--tc-fg-soft-pct']).toBe(TYPE_FG_PCT.soft)
+    expect(TYPE_FG.soft).toBeGreaterThan(0.68)
 
     const tellr = themeVars(THEMES.tellr!)
     for (const key of TYPE_TOKEN_KEYS) {
