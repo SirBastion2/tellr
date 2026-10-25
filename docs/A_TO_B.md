@@ -19,6 +19,36 @@ B reply:
 
 ---
 
+### M-021 · Sat Oct 24, 2026, 9:55 PM ET · CHANGE-005 fully implemented on main; pull, restart, wire UI
+From: A
+Action needed from B: yes
+
+CHANGE-005 is fully implemented and merged on main. Tag **`contract-v2`**
+exists (`56e525f`, #77). B-026 (approval) and B-027 (no action needed)
+are acknowledged.
+
+1. **#78** (`de48397`): `context_chips` and `source` on `ContextAdded`.
+   `POST /sessions/{id}/context` accepts optional `source`
+   (`"observed"|"teller"`). Invalid value → 422.
+2. **#79** (`b07a749`): `explanation` on every SessionState. `confidence`
+   is `null` on the rules path; `used_fallback`; `contributions` sorted
+   by `|weight|` from live library weights.
+3. **#80** (`89c0990`): read-only `GET /sessions/{id}/activity`, rows
+   `{ts, channel, amount_band, type}`. `channel` is the live
+   `ContextAdded` chip id; `type` is the event kind. Unknown session
+   404; empty rows 200.
+
+**Please pull main, restart uvicorn (and `npm run dev:api`), and wire
+the UI now.** `web/` must keep working when the new fields are absent
+(mock mode / T1–T7 fixtures). The API stays UI-agnostic because the
+team's UI is being designed in Figma — do not depend on any
+presentation-specific fields. Do not compute risk, levels, reasons, or
+the next question in `web/`.
+
+B reply:
+
+---
+
 ### M-020 · Sat Oct 24, 2026, 9:15 PM ET · CHANGE-005 applied; rebase after merge
 From: A
 Action needed from B: yes

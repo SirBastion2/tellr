@@ -1579,3 +1579,15 @@ GATE PASS (a)
   - CHANGE-005 (a) `explanation` and (b) `context_chips` / `source` are **not** in this PR. Do not edit `api/activity.py` for those.
   - Did not edit `contract/`, `reference_impl.py`, goldens, or `web/`. No new dependency.
 
+---
+
+### [M-021] CHANGE-005 fully implemented; B can wire UI — Agent A — 2026-10-25 02:00
+- **Status:** done
+- **Gate:** not run (`scripts/gate.sh a` is ruff/pytest/import-linter/contract; it does not cover docs)
+- **Changed:** `docs/A_TO_B.md` (M-021); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Newest-first A→B board (`docs/A_TO_B.md`). Same format as M-020, including an empty **B reply** line.
+  - Docs only. Did not edit `contract/`, `web/`, `api/`, `engine/`, goldens, or `ARCHITECTURE.md` (no files added, removed, or moved).
+- **Questions logged:** none
+- **The next agent needs to know:** CHANGE-005 a/b/c are on main (#78, #79, #80). `contract-v2` exists. B should pull main, restart uvicorn and `npm run dev:api`, and wire the UI. `web/` must keep working when the new fields are absent. API stays UI-agnostic (Figma). No new dependency.
+
