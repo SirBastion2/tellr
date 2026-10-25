@@ -2,11 +2,12 @@
 // @ts-expect-error node:fs is provided by the test runner
 import { readFileSync } from 'node:fs'
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { App } from './App'
 import './index.css'
 import { TYPE_ROOT } from './theme/typeScale'
 import { DENSITY, VIEWPORT_FIT } from './theme/tokens'
+import { revealCurrentStep } from './workstation/TransactionPanel'
 
 const css = () => readFileSync('src/index.css', 'utf8')
 
@@ -26,11 +27,20 @@ describe('home viewport fit', () => {
     expect(source).toMatch(/height:\s*100dvh/)
     expect(source).toMatch(/\.tc-home\s*\{[^}]*min-height:\s*0/)
     expect(source).toMatch(/\.tc-home\s*\{[^}]*height:\s*100%/)
-    expect(source).toMatch(/\.tc-home\s*\{[^}]*grid-template-rows:\s*auto\s+minmax\(0,\s*1fr\)/)
-    expect(source).toMatch(/\.tc-home\s*\{[^}]*grid-auto-rows:\s*minmax\(0,\s*0px\)/)
+    expect(source).toMatch(/\.tc-home\s*\{[^}]*grid-template-rows:\s*minmax\(0,\s*1fr\)/)
+    expect(source).toMatch(/\.tc-home-column\s*\{[^}]*min-height:\s*0/)
+    expect(source).toMatch(/\.tc-home-column\s*\{[^}]*height:\s*100%/)
     expect(source).toMatch(/\.tc-workstation\s*\{[^}]*min-height:\s*0/)
     expect(source).toMatch(/\.tc-workstation\s*\{[^}]*height:\s*100%/)
     expect(source).toMatch(/\.tc-transaction\.tc-screen > \.tc-timeline\s*\{[^}]*overflow-y:\s*auto/)
+    expect(source).toMatch(/\.tc-transaction\.tc-screen > \.tc-timeline\s*\{[^}]*scrollbar-width:\s*thin/)
+    expect(source).toMatch(/\.tc-strip\s*\{[^}]*height:\s*100%/)
+    expect(source).toMatch(/\.tc-strip\s*\{[^}]*max-height:\s*100%/)
+    expect(source).toMatch(/\.tc-strip\s*\{[^}]*min-height:\s*0/)
+    expect(source).toMatch(/\.tc-strip-body\s*\{[^}]*min-height:\s*0/)
+    expect(source).toMatch(/\.tc-strip ul\[aria-label='Signals'\]\s*\{[^}]*overflow-y:\s*auto/)
+    expect(source).toMatch(/\.tc-strip ul\[aria-label='Signals'\]\s*\{[^}]*min-height:\s*0/)
+    expect(source).toMatch(/\.tc-strip ul\[aria-label='Signals'\]\s*\{[^}]*scrollbar-width:\s*thin/)
     expect(source).toMatch(/\.tc-theme-page\s*\{[^}]*min-height:\s*0/)
     expect(source).toMatch(/\.tc-shell\s*\{[^}]*min-height:\s*0/)
 
@@ -87,5 +97,40 @@ describe('home viewport fit', () => {
     expect(screen.getByTestId('transaction-panel')).toBeTruthy()
     expect(screen.getByTestId('event-progress')).toBeTruthy()
     expect(screen.getByTestId('theme-footer').textContent).toMatch(/Made for HackPSU 2026/)
+  })
+
+  it('scrolls the timeline list to the current step without moving the page', () => {
+    const list = document.createElement('ol')
+    const item = document.createElement('li')
+    item.setAttribute('data-current', 'true')
+    list.append(item)
+    document.body.append(list)
+    const page = document.documentElement
+    page.scrollTop = 0
+    const box = (top: number, bottom: number): DOMRect =>
+      ({
+        top,
+        bottom,
+        left: 0,
+        right: 10,
+        width: 10,
+        height: bottom - top,
+        x: 0,
+        y: top,
+        toJSON() {
+          return {}
+        },
+      }) as DOMRect
+    vi.spyOn(list, 'getBoundingClientRect').mockReturnValue(box(0, 100))
+    vi.spyOn(item, 'getBoundingClientRect').mockReturnValue(box(80, 140))
+    revealCurrentStep(list)
+    expect(list.scrollTop).toBe(40)
+    expect(page.scrollTop).toBe(0)
+
+    vi.spyOn(item, 'getBoundingClientRect').mockReturnValue(box(10, 70))
+    const parked = list.scrollTop
+    revealCurrentStep(list)
+    expect(list.scrollTop).toBe(parked)
+    list.remove()
   })
 })

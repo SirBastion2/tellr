@@ -14,6 +14,7 @@ const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 const BASE = process.argv[2] ?? 'http://127.0.0.1:5173'
 const THEMES = ['tellr', 'pnc', 'mtb', 'fnb']
 const SCHEMES = ['light', 'dark']
+const CUSTOMERS = ['contractor-cash', 'government-impersonation']
 const VIEWPORTS = [
   { width: 1470, height: 780 },
   { width: 1440, height: 760 },
@@ -76,6 +77,19 @@ function collect() {
     return rect.height > 0 && rect.top >= -slack && rect.bottom <= window.innerHeight + slack
   }
   const timelineFits = timeline ? timeline.scrollHeight <= timeline.clientHeight + slack : false
+  const currentStep = timeline?.querySelector('[data-current="true"]') ?? null
+  const inside = (container, el) => {
+    if (!container || !el) {
+      return false
+    }
+    const outer = container.getBoundingClientRect()
+    const inner = el.getBoundingClientRect()
+    return inner.height > 0 && inner.top >= outer.top - slack && inner.bottom <= outer.bottom + slack
+  }
+  const signals = document.querySelector('[aria-label="Signals"]')
+  const level = document.querySelector('[data-testid="copilot-level"]')
+  const score = document.querySelector('[data-testid="score-explanation"]')
+  const action = document.querySelector('[data-testid="copilot-action"]')
   return {
     scrollHeight: doc.scrollHeight,
     innerHeight: window.innerHeight,
@@ -87,12 +101,19 @@ function collect() {
     timelineScrollHeight: timeline ? timeline.scrollHeight : null,
     timelineClientHeight: timeline ? timeline.clientHeight : null,
     timelineFits,
+    timelineCurrentVisible: inside(timeline, currentStep),
+    signalScrollHeight: signals ? signals.scrollHeight : null,
+    signalClientHeight: signals ? signals.clientHeight : null,
+    signalScrolls: signals ? signals.scrollHeight > signals.clientHeight + slack : false,
     header: inView(header),
     toolbar: inView(toolbar),
     footer: inView(footer),
     progress: inView(progress),
     undo: inView(undo),
     escalate: inView(escalate),
+    level: inView(level),
+    score: inView(score),
+    action: inView(action),
     copilot: inView(copilot),
     footerText: (footer?.textContent ?? '').trim(),
     progressText: (progress?.getAttribute('aria-label') ?? '').trim(),
@@ -121,13 +142,17 @@ async function main() {
   for (const viewport of VIEWPORTS) {
     for (const theme of THEMES) {
       for (const scheme of SCHEMES) {
+        for (const customer of CUSTOMERS) {
         const page = await browser.newPage({ viewport })
         await page.addInitScript((value) => {
           localStorage.setItem('teller.colorScheme', value)
         }, scheme)
         await page.goto(`${BASE}/?theme=${theme}`, { waitUntil: 'networkidle', timeout: 30_000 })
+        await page.getByTestId('customer-picker').waitFor({ state: 'visible', timeout: 15_000 })
+        await page.getByTestId('customer-picker').selectOption(customer)
         await page.getByTestId('demo-step').waitFor({ state: 'visible', timeout: 15_000 })
-        for (let step = 1; step <= 5; step += 1) {
+        const total = Number(await page.getByTestId('event-progress').getAttribute('aria-valuemax'))
+        for (let step = 1; step <= total; step += 1) {
           await page.getByTestId('demo-step').click()
           await page.waitForFunction(
             (count) => document.querySelectorAll('[data-testid="demo-event"]').length >= count,
@@ -136,18 +161,74 @@ async function main() {
           )
         }
         await page.waitForFunction(
-          () => document.querySelectorAll('[data-testid="signal-row"]').length >= 5,
+          () => {
+            const strip = document.querySelector('[data-testid="copilot-strip"]')
+            return Boolean(strip) && strip.getAttribute('data-updating') !== 'true' && document.querySelectorAll('[data-testid="signal-row"]').length >= 1
+          },
           { timeout: 15_000 },
         )
         const measured = await page.evaluate(collect)
-        rows.push({ viewport: `${viewport.width}x${viewport.height}`, theme, scheme, ...measured })
+        await page.evaluate(() => {
+          const list = document.querySelector('[aria-label="Signals"]')
+          const row = list?.querySelector('[data-testid="signal-row"]')
+          if (!list || !row) {
+            return
+          }
+          while (list.querySelectorAll('[data-testid="signal-row"]').length < 20) {
+            list.appendChild(row.cloneNode(true))
+          }
+        })
+        const stressed = await page.evaluate(collect)
+        rows.push({
+          viewport: `${viewport.width}x${viewport.height}`,
+          theme,
+          scheme,
+          customer,
+          ...measured,
+          stressedSignals: stressed.signals,
+          stressedPageFits: stressed.pageFits,
+          stressedTimelineCurrentVisible: stressed.timelineCurrentVisible,
+          stressedSignalScrolls: stressed.signalScrolls,
+          stressedLevel: stressed.level,
+          stressedScore: stressed.score,
+          stressedAction: stressed.action,
+          stressedUndo: stressed.undo,
+          stressedEscalate: stressed.escalate,
+          stressedFooter: stressed.footer,
+          stressedProgress: stressed.progress,
+        })
         await page.close()
+        }
       }
     }
   }
   console.log(JSON.stringify(rows, null, 2))
   await browser.close()
-  const failed = rows.filter((row) => !row.pageFits || !row.footer || !row.progress || !row.undo || !row.escalate || !row.copilot || !row.header || !row.toolbar)
+  const failed = rows.filter(
+    (row) =>
+      !row.pageFits ||
+      !row.footer ||
+      !row.progress ||
+      !row.undo ||
+      !row.escalate ||
+      !row.level ||
+      !row.score ||
+      !row.action ||
+      !row.copilot ||
+      !row.header ||
+      !row.toolbar ||
+      !row.timelineCurrentVisible ||
+      !row.stressedPageFits ||
+      !row.stressedTimelineCurrentVisible ||
+      !row.stressedSignalScrolls ||
+      !row.stressedLevel ||
+      !row.stressedScore ||
+      !row.stressedAction ||
+      !row.stressedUndo ||
+      !row.stressedEscalate ||
+      !row.stressedFooter ||
+      !row.stressedProgress,
+  )
   if (failed.length > 0) {
     process.exit(1)
   }

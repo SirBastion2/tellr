@@ -51,17 +51,27 @@ function forbidsInnerScroll(block: string) {
 }
 
 describe('copilot panel scroll', () => {
-  it('grows the panel without an inner overflow scroll or max-height', () => {
+  it('bounds the panel and scrolls only the signal list', () => {
     const source = css()
     const stripRule = rule(source, '.tc-strip')
-    forbidsInnerScroll(stripRule)
-    expect(stripRule).toMatch(/height:\s*auto/)
+    expect(stripRule).toMatch(/height:\s*100%/)
+    expect(stripRule).toMatch(/max-height:\s*100%/)
+    expect(stripRule).toMatch(/min-height:\s*0/)
     expect(stripRule).toMatch(/overflow:\s*visible/)
-    expect(stripRule).not.toMatch(/(?<![-\w])height:\s*100%/)
+    expect(stripRule).not.toMatch(/overflow(-y)?\s*:\s*(auto|scroll)/)
 
     const bodyRule = rule(source, '.tc-strip-body')
     forbidsInnerScroll(bodyRule)
+    expect(bodyRule).toMatch(/min-height:\s*0/)
     expect(bodyRule).toMatch(/overflow:\s*visible/)
+    expect(rule(source, '.tc-strip-body > :not(ul)')).toMatch(/flex:\s*0 0 auto/)
+
+    const listRule = rule(source, ".tc-strip ul[aria-label='Signals']")
+    expect(listRule).toMatch(/min-height:\s*0/)
+    expect(listRule).toMatch(/align-content:\s*start/)
+    expect(listRule).toMatch(/overflow-y:\s*auto/)
+    expect(listRule).toMatch(/scrollbar-width:\s*thin/)
+    expect(listRule).not.toMatch(/max-height\s*:/)
 
     forbidsInnerScroll(rule(source, '.tc-factor-list'))
     forbidsInnerScroll(rule(source, '.tc-signal-row'))
@@ -83,13 +93,26 @@ describe('copilot panel scroll', () => {
     )
 
     const panel = screen.getByTestId('copilot-strip')
-    const signals = screen.getByTestId('signal-row')
-    for (const node of [panel, signals]) {
-      const style = getComputedStyle(node)
-      expect(style.maxHeight).toMatch(/^(none|)$/)
+    const signals = screen.getByRole('list', { name: 'Signals' })
+    const row = screen.getByTestId('signal-row')
+    const level = screen.getByTestId('copilot-level')
+    const action = screen.getByText('Suggested action')
+    const undo = screen.getByTestId('undo')
+    const escalate = screen.getByTestId('escalate')
+    expect(signals.contains(row)).toBe(true)
+    expect(signals.contains(level)).toBe(false)
+    expect(signals.contains(action)).toBe(false)
+    expect(signals.contains(undo)).toBe(false)
+    expect(signals.contains(escalate)).toBe(false)
+    expect(action.parentElement?.nextElementSibling).toBe(signals)
+    expect(signals.nextElementSibling?.contains(undo)).toBe(true)
+    expect(signals.nextElementSibling?.contains(escalate)).toBe(true)
+
+    for (const node of [panel, panel.querySelector('.tc-strip-body'), row]) {
+      const style = getComputedStyle(node as Element)
       expect(style.overflowY).not.toMatch(/auto|scroll/)
-      expect(style.overflow).not.toMatch(/auto|scroll/)
     }
+    expect(signals.getAttribute('style') ?? '').not.toMatch(/overflow/)
     expect(screen.queryByTestId('read-aloud-block')).toBeNull()
   })
 
