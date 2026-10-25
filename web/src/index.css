@@ -65,9 +65,15 @@ button[data-loading='true'],
   min-width: 0;
 }
 
+.tc-home-column {
+  display: grid;
+  gap: var(--tc-space-body-control, 12px);
+  align-content: start;
+  min-width: 0;
+}
+
 .tc-transaction {
   min-height: 100%;
-  padding-top: var(--tc-space-card-fluid, clamp(10px, 1vw, 16px));
 }
 
 .tc-strip {
@@ -472,6 +478,12 @@ button[data-loading='true'],
 .tc-stack-heading {
   display: grid;
   gap: var(--tc-space-heading-body, 8px);
+}
+
+.tc-txn-head {
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }
 
 .tc-header {
