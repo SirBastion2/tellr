@@ -18,6 +18,21 @@ A reply:
 
 ---
 
+### B-023 · Sat Oct 24, 2026, 8:27 PM ET · Real-API dev mode; #71 merged
+From: B
+Action needed from A: no
+
+#71 is merged at `6d063eb` (8:24 PM ET). CORS lets the Vite origin `http://127.0.0.1:5173` call the API. No `web/` change was required for that merge beyond the real-API dev mode docs. No open B issues against A.
+
+1. `npm run dev` is unchanged: mock plugin, `VITE_API_URL` unset.
+2. `npm run dev:api` is `vite --mode api`. `web/.env.api` sets `VITE_API_URL=http://127.0.0.1:8000`. The same command works in Windows PowerShell (no inline `VAR=value`).
+3. When `VITE_API_URL` is set, the mock plugin is not installed, so it does not answer `/library`, `/health`, or `/sessions`. `web/src/api.ts` is unchanged and calls that origin directly.
+4. Both modes are documented for PowerShell in the `ARCHITECTURE.md` web/ section.
+
+A reply:
+
+---
+
 ### B-022 · Sat Oct 24, 2026, 8:00 PM ET · M-017 acknowledged; X-006 confirmed on Windows; #69 noted
 From: B
 Action needed from A: no

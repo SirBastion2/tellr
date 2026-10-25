@@ -21,7 +21,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `eval/` except `heldout/` | A3 | Validator, 30 dev scenarios, harness (§13) | `validate.py`, `PREREGISTRATION.md`, `scenarios/dev/`, `run.py`, `arms/` |
 | `eval/scenarios/heldout/` | H | Held-out set, written once (B-07) | created at hour 20 |
 | `tests/eval/` | A3 | Scenario, validator, and harness tests | `test_validate.py`, `test_dev_scenarios.py`, `test_run.py` |
-| `web/` | B1 | React UI, mock, screens, bank themes (§12) | `src/App.tsx`, `src/screens/`, `src/theme/`, `src/assets/tellr-wordmark.png`, `src/index.css`, `src/a11y.test.tsx`, `src/theme.test.tsx`, `src/history.test.tsx`, `src/health.test.tsx`, `mock/`, `src/talkTrack.test.tsx`, `src/undo.test.tsx`, `src/modes.test.tsx` |
+| `web/` | B1 | React UI, mock, screens, bank themes (§12) | `src/App.tsx`, `src/screens/`, `src/theme/`, `src/assets/tellr-wordmark.png`, `src/index.css`, `src/a11y.test.tsx`, `src/theme.test.tsx`, `src/history.test.tsx`, `src/health.test.tsx`, `mock/`, `src/talkTrack.test.tsx`, `src/undo.test.tsx`, `src/modes.test.tsx`, `vite.config.ts`, `.env.api`, `src/devApi.ts` |
 | `web/src/screens/history/` `…/settings/` `web/e2e/` | B2 | Leaf screens + e2e if added at hour 8. Not created. B-06 filled history and health in `web/src/screens/` | — |
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json`, `fixtures/T1–T7.json`, `CHANGES.md` |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |
@@ -45,7 +45,7 @@ History and the read-only recommender view live in the existing screen files. Th
 | `web/src/health.test.tsx` | Added. Health is a GET of `/health` with no recommender control and no `/settings` call. |
 | `web/src/screens/SettingsScreen.tsx` | Removed. `/settings` redirects to `/health` (`web/src/App.tsx`). It is not in `web/src/routes.ts`. |
 | `web/mock/replay.ts` | Also serves `GET /sessions` (live by default, `mode=practice`, `mode=all`) and `GET /health`. |
-| `web/mock/plugin.ts` | Dev server forwards `/health` to that mock. |
+| `web/mock/plugin.ts` | Installed by `npm run dev`. Answers `/library`, `/health`, and `/sessions`. Not installed when `VITE_API_URL` is set. |
 
 ### `web/` themes
 
@@ -68,6 +68,49 @@ Bank chrome is one typed theme plus CSS variables. Screens still render server s
 | `web/src/assets/tellr-wordmark.png` | Tellr wordmark (transparent). `mark: 'logo'` paints it with `--tc-logo` (periwinkle on the tellr theme). |
 | `web/src/theme.test.tsx` | Selection, unknown-id fallback, storage, and the registered theme objects. |
 | `web/index.html` | Loads Poppins. The theme `fontFamily` is Poppins. |
+
+### `web/` dev modes
+
+Two local runs. Neither script starts the API. `web/src/api.ts` keeps `apiBase()` as `import.meta.env.VITE_API_URL ?? ''`, so a set value is the request origin and an unset value stays on the Vite origin.
+
+Real-API mode uses the CORS middleware from #71, merged at `6d063eb` (8:24 PM ET). `api/main.py` allows any origin and sends no credentials, so a page on `http://127.0.0.1:5173` can call `http://127.0.0.1:8000`. That merge needed no further `web/` edits. Restart uvicorn if it was started before the pull.
+
+| File | What it is |
+|---|---|
+| `web/package.json` | `dev` is `vite` (mock). `dev:api` is `vite --mode api`. The script has no `VAR=value` prefix, so Windows PowerShell can run it. |
+| `web/.env.api` | Loaded only for mode `api`. Sets `VITE_API_URL=http://127.0.0.1:8000`. |
+| `web/vite.config.ts` | Reads `VITE_API_URL` with `loadEnv`. A non-empty value skips `mockApiPlugin`. |
+| `web/src/devApi.ts` | `useMockApi` (mock only when the URL is blank) and `directoryFromFileUrl` (config directory, including `C:/...`). |
+| `web/src/devApi.test.ts` | Scripts, `.env.api`, and mock on/off. |
+| `web/src/api.ts` | Unchanged. Sends browser requests to `VITE_API_URL` when it is set. |
+| `web/.gitignore` | Ignores `.env.local` and `.env.*.local` so a machine can override the origin. |
+
+Windows PowerShell, from the repo:
+
+Mock (default). Same data as before. `VITE_API_URL` stays unset, and the mock plugin answers `/library`, `/health`, and `/sessions`.
+
+```
+cd web
+npm run dev
+```
+
+Real API. Start the API on port 8000 from current main (`python -m uvicorn api.main:app --port 8000`). Then:
+
+```
+cd web
+npm run dev:api
+```
+
+The browser calls `http://127.0.0.1:8000`. The mock plugin is not installed, so it cannot answer those paths.
+
+To point at another origin, set the variable in that PowerShell window and then start the script:
+
+```
+$env:VITE_API_URL = "http://127.0.0.1:9000"
+npm run dev:api
+```
+
+Or put `VITE_API_URL=http://127.0.0.1:9000` in `web/.env.api.local`. A set `VITE_API_URL` also turns the mock off for `npm run dev`.
 
 ## Task cards (`prompts/`)
 
