@@ -143,4 +143,76 @@ describe('answer posting', () => {
     })
     expect(screen.getByTestId('chips').textContent).toBe('')
   })
+
+  it('sends observed for a simulation post and teller for a manual post', async () => {
+    vi.stubEnv('VITE_API_URL', 'http://api.test')
+    const calls: { url: string; body?: string }[] = []
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input)
+        const body = typeof init?.body === 'string' ? init.body : undefined
+        calls.push({ url, body })
+        const method = init?.method ?? 'GET'
+        if (method === 'GET' && url.endsWith('/library')) {
+          return http(200, library)
+        }
+        if (method === 'GET' && url.endsWith('/activity')) {
+          return http(200, { session_id: t1.steps[0]?.response.session_id, rows: [] })
+        }
+        if (method === 'POST' && url.endsWith('/sessions')) {
+          return http(200, t1.steps[0]?.response)
+        }
+        if (method === 'POST' && url.endsWith('/context')) {
+          return http(200, t1.steps[1]?.response)
+        }
+        return http(404, null)
+      }),
+    )
+
+    function Sources() {
+      const teller = useTeller()
+      return (
+        <>
+          <button type="button" onClick={() => void teller.startLive()}>
+            live
+          </button>
+          <button type="button" onClick={() => void teller.postContext(['chip.on_phone'], 'observed')}>
+            observed
+          </button>
+          <button type="button" onClick={() => void teller.postContext(['chip.cash_only'], 'teller')}>
+            manual
+          </button>
+        </>
+      )
+    }
+
+    render(
+      <TellerProvider>
+        <Sources />
+      </TellerProvider>,
+    )
+    await waitFor(() => {
+      expect(calls.some((call) => call.url.endsWith('/library'))).toBe(true)
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'live' }))
+    await waitFor(() => {
+      expect(calls.some((call) => call.url.endsWith('/sessions'))).toBe(true)
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'observed' }))
+    await waitFor(() => {
+      expect(calls.some((call) => call.url.endsWith('/context'))).toBe(true)
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'manual' }))
+    await waitFor(() => {
+      expect(calls.filter((call) => call.url.endsWith('/context'))).toHaveLength(2)
+    })
+    const bodies = calls
+      .filter((call) => call.url.endsWith('/context'))
+      .map((call) => JSON.parse(call.body ?? '{}') as unknown)
+    expect(bodies).toEqual([
+      { chips: ['chip.on_phone'], source: 'observed' },
+      { chips: ['chip.cash_only'], source: 'teller' },
+    ])
+  })
 })

@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { CheckIcon, DismissIcon } from '../ui/icons'
 import { LEVEL_WORD, LevelIcon } from '../ui/LevelIcon'
+import { listedChipIds, originText, sourceForChip } from '../feed'
 import type { Library, SessionState } from '../types'
 
 const primary = { ...controlStyle, ...primaryStyle }
@@ -115,10 +116,11 @@ export function CopilotStrip({
             </blockquote>
           </details>
           <ul aria-label="Signals" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
-            {postedChipIds.map((chipId) => {
-              const state = confirmed.includes(chipId) ? 'confirmed' : 'auto'
+            {listedChipIds(postedChipIds, session.context_chips).map((chipId) => {
+              const source = sourceForChip(session.context_chips, chipId)
+              const state = confirmed.includes(chipId) || source === 'teller' ? 'confirmed' : 'auto'
               const label = chipLabel(library, chipId)
-              const origin = state === 'confirmed' ? 'Teller confirmed' : 'Observed'
+              const origin = originText(source, confirmed.includes(chipId))
               return (
                 <li
                   key={chipId}

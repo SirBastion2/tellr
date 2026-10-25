@@ -4,18 +4,20 @@ import { CopilotStrip } from '../workstation/CopilotStrip'
 import { ExplanationPanel } from '../workstation/ExplanationPanel'
 import { SimulationToolbar } from '../workstation/Toolbar'
 import { TransactionPanel } from '../workstation/TransactionPanel'
-import type { Library, SessionState } from '../types'
+import type { ActivityRow, Library, SessionState } from '../types'
 
 export function HomeScreen({
   library,
   session,
   postedChipIds = [],
+  activity = null,
   demo = null,
   onUndo,
 }: {
   library: Library | null
   session: SessionState | null
   postedChipIds?: readonly string[]
+  activity?: readonly ActivityRow[] | null
   demo?: DemoView | null
   onUndo?: () => void
 }) {
@@ -42,6 +44,8 @@ export function HomeScreen({
               fired={demo.index}
               showCase={demo.showCase}
               presenter={demo.presenter}
+              library={library}
+              activity={activity}
             />
             <CopilotStrip
               library={library}

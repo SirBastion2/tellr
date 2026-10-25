@@ -24,7 +24,7 @@ import { ThemeWordmark } from './theme/Wordmark'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 import { LEVEL_WORD } from './ui/LevelIcon'
 import { ShortcutHelp } from './ui/ShortcutHelp'
-import type { AnswerPost, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
+import type { ActivityRow, AnswerPost, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import type { SchemaIssue } from './validate'
 import { suggestedAction } from './workstation/CopilotStrip'
 
@@ -96,6 +96,7 @@ export function AppShell({
   issues,
   postedChipIds = [],
   dismissed = [],
+  activity = null,
   onPostContext,
   onAnswer,
   onUndo,
@@ -115,6 +116,7 @@ export function AppShell({
   issues: readonly SchemaIssue[]
   postedChipIds?: readonly string[]
   dismissed?: readonly string[]
+  activity?: readonly ActivityRow[] | null
   onPostContext?: (chips: string[]) => void
   onAnswer?: (answer: AnswerPost) => void
   onUndo?: () => void
@@ -282,6 +284,7 @@ export function AppShell({
                   library={library}
                   session={session}
                   postedChipIds={postedChipIds}
+                  activity={activity}
                   demo={demo}
                   onUndo={onUndo}
                 />
@@ -294,6 +297,8 @@ export function AppShell({
                   library={library}
                   postedChipIds={postedChipIds}
                   dismissed={dismissed}
+                  contextChips={session?.context_chips}
+                  activity={activity}
                   demo={demo}
                 />
               }
@@ -426,7 +431,7 @@ function ConnectedShell() {
         await tellerRef.current.startLive()
       }
       if (event.chips.length > 0) {
-        await tellerRef.current.postContext(event.chips)
+        await tellerRef.current.postContext(event.chips, 'observed')
       }
       setIndex((value) => value + 1)
     } finally {
@@ -660,6 +665,7 @@ function ConnectedShell() {
       issues={import.meta.env.DEV ? teller.issues : []}
       postedChipIds={teller.postedChipIds}
       dismissed={dismissed}
+      activity={teller.activity?.rows ?? null}
       httpStatus={teller.httpStatus}
       error={teller.error}
       demo={demo}
@@ -669,7 +675,7 @@ function ConnectedShell() {
       onConfirmCancel={() => setConfirm(null)}
       onConfirmAccept={acceptConfirm}
       onPostContext={(chips) => {
-        void teller.postContext(chips)
+        void teller.postContext(chips, 'teller')
       }}
       onAnswer={(answer) => {
         void teller.postAnswer(answer)

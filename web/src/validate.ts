@@ -1,5 +1,6 @@
 import Ajv from 'ajv/dist/2020'
 import type { ErrorObject, ValidateFunction } from 'ajv'
+import activitySchema from '../../contract/activity.schema.json'
 import errorSchema from '../../contract/error.schema.json'
 import handoffSchema from '../../contract/handoff.schema.json'
 import librarySchema from '../../contract/library.schema.json'
@@ -19,6 +20,7 @@ function compile(schema: object): ValidateFunction {
 }
 
 const sessionValidate = compile(sessionSchema)
+const activityValidate = compile(activitySchema)
 const libraryValidate = compile(librarySchema)
 const errorValidate = compile(errorSchema)
 const handoffValidate = compile(handoffSchema)
@@ -35,6 +37,10 @@ function issues(validate: ValidateFunction, data: unknown): SchemaIssue[] {
 
 export function validateSessionState(data: unknown): SchemaIssue[] {
   return issues(sessionValidate, data)
+}
+
+export function validateActivity(data: unknown): SchemaIssue[] {
+  return issues(activityValidate, data)
 }
 
 export function validateLibrary(data: unknown): SchemaIssue[] {

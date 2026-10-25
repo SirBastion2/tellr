@@ -1,8 +1,10 @@
 import type { CSSProperties } from 'react'
 import { customerById, scriptSignals } from '../demo/customers'
 import type { DemoView } from '../demo/types'
+import { fileSignalStatus, sourceForChip } from '../feed'
 import { controlStyle } from '../theme/controls'
-import type { Library } from '../types'
+import type { ActivityRow, ContextChipEcho, Library } from '../types'
+import { SessionActivity } from '../workstation/ActivityFeed'
 
 const card: CSSProperties = {
   background: 'var(--tc-surface)',
@@ -53,28 +55,19 @@ function chipLabel(library: Library | null, id: string): string {
   return library?.context_chips.find((chip) => chip.id === id)?.label ?? id
 }
 
-function signalStatus(posted: boolean, confirmed: boolean, wasDismissed: boolean): string {
-  if (wasDismissed) {
-    return 'Dismissed'
-  }
-  if (confirmed) {
-    return 'Teller confirmed'
-  }
-  if (posted) {
-    return 'Observed'
-  }
-  return 'Not yet'
-}
-
 export function CustomerFileScreen({
   library,
   postedChipIds = [],
   dismissed = [],
+  contextChips,
+  activity = null,
   demo = null,
 }: {
   library: Library | null
   postedChipIds?: readonly string[]
   dismissed?: readonly string[]
+  contextChips?: readonly ContextChipEcho[]
+  activity?: readonly ActivityRow[] | null
   demo?: DemoView | null
 }) {
   const customer = demo ? customerById(demo.customerId) : null
@@ -138,26 +131,30 @@ export function CustomerFileScreen({
             <h3 id="activity-heading" style={heading}>
               Recent activity
             </h3>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={{ ...term, textAlign: 'left', padding: '8px 8px 8px 0' }}>Date</th>
-                  <th style={{ ...term, textAlign: 'left', padding: 8 }}>Description</th>
-                  <th style={{ ...term, textAlign: 'right', padding: '8px 0 8px 8px' }}>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customer.activity.map((item) => (
-                  <tr key={`${item.when}-${item.description}`} data-testid="activity-row">
-                    <td style={{ padding: '8px 8px 8px 0', verticalAlign: 'top' }}>{item.when}</td>
-                    <td style={{ padding: 8, verticalAlign: 'top' }}>{item.description}</td>
-                    <td style={{ padding: '8px 0 8px 8px', textAlign: 'right', fontWeight: 700, verticalAlign: 'top' }}>
-                      {item.amount}
-                    </td>
+            {activity && activity.length > 0 ? (
+              <SessionActivity library={library} rows={activity} showHeading={false} />
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={{ ...term, textAlign: 'left', padding: '8px 8px 8px 0' }}>Date</th>
+                    <th style={{ ...term, textAlign: 'left', padding: 8 }}>Description</th>
+                    <th style={{ ...term, textAlign: 'right', padding: '8px 0 8px 8px' }}>Amount</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {customer.activity.map((item) => (
+                    <tr key={`${item.when}-${item.description}`} data-testid="activity-row" data-feed="synthetic">
+                      <td style={{ padding: '8px 8px 8px 0', verticalAlign: 'top' }}>{item.when}</td>
+                      <td style={{ padding: 8, verticalAlign: 'top' }}>{item.description}</td>
+                      <td style={{ padding: '8px 0 8px 8px', textAlign: 'right', fontWeight: 700, verticalAlign: 'top' }}>
+                        {item.amount}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </section>
           <section style={card} aria-labelledby="live-txn-heading">
             <h3 id="live-txn-heading" style={heading}>
@@ -185,10 +182,11 @@ export function CustomerFileScreen({
             ) : (
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
                 {signals.map((signal) => {
-                  const posted = postedChipIds.includes(signal.chipId)
+                  const source = sourceForChip(contextChips, signal.chipId)
+                  const posted = postedChipIds.includes(signal.chipId) || source !== undefined
                   const wasDismissed = dismissed.includes(signal.chipId)
                   const confirmed = demo?.confirmed.includes(signal.chipId) ?? false
-                  const status = signalStatus(posted, confirmed, wasDismissed)
+                  const status = fileSignalStatus(posted, confirmed, wasDismissed, source)
                   return (
                     <li
                       key={`${signal.eventId}-${signal.chipId}`}

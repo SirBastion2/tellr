@@ -81,7 +81,7 @@ Page gradients are hex and rgba only. Windows Chrome and Edge drop an entire `ba
 
 ### `web/` workstation
 
-Home is a teller workstation. A synthetic customer timeline plays beside a copilot card. The card reads the server level, the first reason, `question.text`, and `talk_track.lines`. It does not choose the next question and does not read CHANGE-005 `explanation`, `context_chips`, or `GET /sessions/{id}/activity`. Those fields may be absent. Confirm marks a posted chip locally. Dismiss undoes back to that chip and reposts the rest. Escalate records outcome `escalate` with actor `teller` and opens handoff. The two-tap opener on Session stays: purpose chip, then answer chips.
+Home is a teller workstation. A synthetic customer timeline plays beside a copilot card. The card reads the server level, the first reason, `question.text`, and `talk_track.lines`. It does not choose the next question, and it does not compute risk, level, reasons, or the next question. CHANGE-005 fields are optional. `explanation` (contributions, confidence, `used_fallback`) renders in the why-this-level panel when present; confidence stays hidden when it is null. `context_chips` source renders as Observed or Teller confirmed. Simulation posts send `source: "observed"`; manual context posts send `source: "teller"`. `GET /sessions/{id}/activity` fills the recent-activity table when it returns rows. Absent fields, mock mode, and T1–T7 fixtures keep the previous copy and the synthetic activity table. Confirm still marks a chip locally and does not post it again. Dismiss undoes back to that chip and reposts the rest with the same source. Escalate records outcome `escalate` with actor `teller` and opens handoff. The two-tap opener on Session stays: purpose chip, then answer chips.
 
 The header is the bank mark, the product title, a status pill, and tabs. The pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. Undo sits with the signal list on the workstation, and at the top of other screens that have a session. Dev tabs stay available unless presenter mode is on.
 
@@ -95,16 +95,16 @@ Presenter mode is the header toggle or `?present=1` (stored in `teller.presenter
 | `web/src/demo/clock.ts` | `m:ss` elapsed label. |
 | `web/src/presenter.tsx` | Presenter flag from `?present=` or `localStorage`. |
 | `web/src/screens/HomeScreen.tsx` | Toolbar, transaction panel, copilot card, explanation. |
-| `web/src/screens/CustomerFileScreen.tsx` | Profile, activity table, live transaction, and signal rows with source badges (Not yet, Observed, Teller confirmed, Dismissed). |
+| `web/src/screens/CustomerFileScreen.tsx` | Profile, activity table, live transaction, and signal rows. Session activity replaces the synthetic table when `GET /activity` returns rows. Source badges prefer `context_chips` and otherwise stay Not yet, Observed, Teller confirmed, or Dismissed. |
 | `web/src/workstation/Toolbar.tsx` | Customer picker, Play/Pause, Step, Restart, speed segments, case-file link. |
 | `web/src/workstation/CopilotStrip.tsx` | Sticky card. Level icon and word, one reason, suggested action, collapsible read-aloud quote, signal rows with badges and icon buttons. |
-| `web/src/workstation/ExplanationPanel.tsx` | Why this level, from the session response plus posted chip labels. Names the fields the response does not include. Does not render CHANGE-005 explanation. |
-| `web/src/workstation/TransactionPanel.tsx` | Key-value transaction, vertical timeline, and an event progress bar. |
+| `web/src/workstation/ExplanationPanel.tsx` | Why this level. Renders `explanation` contributions, confidence (hidden when null), and `used_fallback` when the object is present. The gap sentence stays when it is absent or null. |
+| `web/src/workstation/TransactionPanel.tsx` | Key-value transaction, vertical timeline, and an event progress bar. Session activity appears when `GET /activity` returns rows. |
 | `web/src/ui/ShortcutHelp.tsx` | `?` lists keyboard shortcuts. Presenter mode notes the reduced set. |
 | `web/src/ui/icons.tsx` | Play, pause, step, restart, confirm, and dismiss icons. |
 | `web/src/ui/ConfirmDialog.tsx` | Confirm before restart, customer switch (off in presenter mode), and escalate. |
 | `web/src/presenter.test.tsx` | Presenter query, hidden dev tabs, type size, and customer switch without a confirm dialog. |
-| `web/mock/live_levels.json` | Recorded engine responses for context-chip subsets. The mock uses these when a live post is not the next fixture step. Answers on that path are scored by the real API (`npm run dev:api`). |
+| `web/mock/live_levels.json` | Recorded engine responses for context-chip subsets. The mock uses these when a live post is not the next fixture step. Answers on that path are scored by the real API (`npm run dev:api`). The mock echoes `context_chips` from the live log and serves `GET /activity`. It leaves `explanation` off unless the recorded body already has it. |
 | `web/src/routes.ts` | Nav labels are Home, Customer file, Context, Session, Outcome, Handoff, History, Health. |
 
 ### `web/` dev modes

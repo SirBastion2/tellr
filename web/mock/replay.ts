@@ -23,7 +23,9 @@ type Fixture = {
 const fixtures = [t1, t2, t3, t4, t5, t6, t7] as Fixture[]
 const byCase = new Map(fixtures.map((fixture) => [fixture.case, fixture]))
 
-type LiveStep = { kind: 'context'; chips: string[] } | { kind: 'answer' }
+type ChipSource = 'observed' | 'teller'
+
+type LiveStep = { kind: 'context'; chips: string[]; source: ChipSource } | { kind: 'answer' }
 
 type Replay = {
   caseId: string
@@ -35,6 +37,7 @@ type Replay = {
   openedAt: string
   closedAt: string | null
   libraryVersion: string
+  amountBand: string
   liveLog: LiveStep[]
 }
 
@@ -149,6 +152,16 @@ function currentBody(fixture: Fixture, index: number, mode: 'live' | 'practice')
   return present(fixture.steps[index]?.response ?? null, mode)
 }
 
+function amountBandOf(body: unknown): string {
+  const record = recordOf(body)
+  return typeof record?.amount_band === 'string' ? record.amount_band : ''
+}
+
+function chipSourceOf(body: unknown): ChipSource {
+  const source = recordOf(body)?.source
+  return source === 'observed' || source === 'teller' ? source : 'teller'
+}
+
 function liveChips(replay: Replay): string[] {
   const seen = new Set<string>()
   const chips: string[] = []
@@ -166,11 +179,66 @@ function liveChips(replay: Replay): string[] {
   return chips
 }
 
-function sessionBody(replay: Replay, fixture: Fixture, sessionId: string): unknown {
-  if (replay.mode === 'live' && liveChips(replay).length > 0) {
-    return liveBody(replay, fixture, sessionId)
+function contextEcho(replay: Replay): { id: string; source: ChipSource }[] {
+  const echo: { id: string; source: ChipSource }[] = []
+  for (const step of replay.liveLog) {
+    if (step.kind !== 'context') {
+      continue
+    }
+    for (const id of step.chips) {
+      echo.push({ id, source: step.source })
+    }
   }
-  return currentBody(fixture, replay.index, replay.mode)
+  return echo
+}
+
+function withOptionalFields(body: unknown, replay: Replay): unknown {
+  const record = recordOf(body)
+  if (!record) {
+    return body
+  }
+  const echo = contextEcho(replay)
+  if (echo.length === 0 || record.context_chips !== undefined) {
+    return body
+  }
+  return { ...record, context_chips: echo }
+}
+
+function sessionBody(replay: Replay, fixture: Fixture, sessionId: string): unknown {
+  const body =
+    replay.mode === 'live' && liveChips(replay).length > 0
+      ? liveBody(replay, fixture, sessionId)
+      : currentBody(fixture, replay.index, replay.mode)
+  return withOptionalFields(body, replay)
+}
+
+function projectActivity(replay: Replay, fixture: Fixture, sessionId: string): { session_id: string; rows: { ts: string; channel: string; amount_band: string; type: string }[] } {
+  const rows: { ts: string; channel: string; amount_band: string; type: string }[] = []
+  if (!replay.amountBand) {
+    return { session_id: sessionId, rows }
+  }
+  if (replay.liveLog.length > 0) {
+    replay.liveLog.forEach((step, index) => {
+      if (step.kind !== 'context') {
+        return
+      }
+      const ts = `2026-10-24T00:00:${String(index).padStart(2, '0')}Z`
+      for (const chip of step.chips) {
+        rows.push({ ts, channel: chip, amount_band: replay.amountBand, type: 'ContextAdded' })
+      }
+    })
+    return { session_id: sessionId, rows }
+  }
+  fixture.steps.slice(0, replay.index + 1).forEach((step, index) => {
+    if (!step.endpoint.endsWith('/context')) {
+      return
+    }
+    const ts = `2026-10-24T00:00:${String(index).padStart(2, '0')}Z`
+    for (const chip of chipList(step.request)) {
+      rows.push({ ts, channel: chip, amount_band: replay.amountBand, type: 'ContextAdded' })
+    }
+  })
+  return { session_id: sessionId, rows }
 }
 
 function liveBody(replay: Replay, fixture: Fixture, sessionId: string): unknown {
@@ -243,6 +311,7 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
       openedAt: nextOpenedAt(),
       closedAt: null,
       libraryVersion: libraryVersionOf(presented),
+      amountBand: amountBandOf(body),
       liveLog: [],
     })
     return { status: 200, body: presented, warnings }
@@ -288,7 +357,7 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
     return { status: 200, body: { sessions: rows }, warnings: [] }
   }
 
-  const match = /^\/sessions\/([^/]+)(?:\/(context|answers|undo|outcome|handoff))?$/.exec(path)
+  const match = /^\/sessions\/([^/]+)(?:\/(context|answers|undo|outcome|handoff|activity))?$/.exec(path)
   if (!match) {
     return { status: 404, body: null, warnings: ['not a replay route'] }
   }
@@ -313,6 +382,10 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
 
   if (verb === 'GET' && !action) {
     return { status: 200, body: sessionBody(replay, fixture, sessionId), warnings: [] }
+  }
+
+  if (verb === 'GET' && action === 'activity') {
+    return { status: 200, body: projectActivity(replay, fixture, sessionId), warnings: [] }
   }
 
   if (verb === 'GET' && action === 'handoff') {
@@ -395,7 +468,7 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
     if (replay.mode === 'live' && !matched) {
       const warnings: string[] = []
       if (action === 'context') {
-        replay.liveLog.push({ kind: 'context', chips: chipList(body) })
+        replay.liveLog.push({ kind: 'context', chips: chipList(body), source: chipSourceOf(body) })
         const key = [...liveChips(replay)].sort().join('|')
         if (liveChips(replay).length > 0 && !recordedLevels[key]) {
           warnings.push('no recorded level for these chips')

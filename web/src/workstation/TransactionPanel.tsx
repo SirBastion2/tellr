@@ -1,5 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react'
 import type { CustomerFile } from '../demo/customers'
+import type { ActivityRow, Library } from '../types'
+import { SessionActivity } from './ActivityFeed'
 
 const label: CSSProperties = {
   margin: 0,
@@ -26,11 +28,15 @@ export function TransactionPanel({
   fired,
   showCase,
   presenter = false,
+  library = null,
+  activity = null,
 }: {
   customer: CustomerFile
   fired: number
   showCase: boolean
   presenter?: boolean
+  library?: Library | null
+  activity?: readonly ActivityRow[] | null
 }) {
   const visible = customer.events.slice(0, fired)
   const current = fired > 0 ? customer.events[fired - 1] : null
@@ -64,6 +70,7 @@ export function TransactionPanel({
           </span>
         </Row>
       </dl>
+      {activity && activity.length > 0 ? <SessionActivity library={library} rows={activity} /> : null}
       {showCase ? (
         <section data-testid="case-file" aria-label="Synthetic case file" style={{ display: 'grid', gap: 8 }}>
           <h3 style={{ margin: 0, fontSize: '1rem' }}>Case file</h3>

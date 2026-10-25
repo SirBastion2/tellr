@@ -67,6 +67,36 @@ export type DebugView = {
   rejections: number
 }
 
+export type ChipSource = 'observed' | 'teller'
+
+export type ContextChipEcho = {
+  id: string
+  source: ChipSource
+}
+
+export type Explanation = {
+  confidence: number | null
+  used_fallback: boolean
+  contributions: {
+    signal_id: string
+    label: string
+    weight: number
+    direction: 'raises' | 'lowers'
+  }[]
+}
+
+export type ActivityRow = {
+  ts: string
+  channel: string
+  amount_band: string
+  type: string
+}
+
+export type ActivityFeed = {
+  session_id: string
+  rows: ActivityRow[]
+}
+
 export type SessionState = {
   session_id: string
   mode: Mode
@@ -88,6 +118,8 @@ export type SessionState = {
   suggested_outcome: SuggestedOutcome
   available_outcomes: ['proceed', 'slow_down', 'escalate', 'report']
   debug?: DebugView
+  explanation?: Explanation | null
+  context_chips?: ContextChipEcho[]
 }
 
 export type LibraryChip = {
