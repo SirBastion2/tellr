@@ -576,10 +576,12 @@ function ConnectedShell() {
   const snapshotsRef = useRef(new Map<number, { session: typeof teller.session; posted: typeof teller.postedChipIds }>())
 
   useEffect(() => {
-    if (index > 0 && index === postedRef.current && teller.session) {
+    // Skip while a step is still posting: the session then already holds the
+    // next step's chips, and saving it would overwrite the step still shown.
+    if (!lock.current && index > 0 && index === postedRef.current && teller.session) {
       snapshotsRef.current.set(index, { session: teller.session, posted: teller.postedChipIds })
     }
-  }, [index, teller.session, teller.postedChipIds])
+  }, [index, pending, teller.session, teller.postedChipIds])
 
   const engageClock = useCallback((on: boolean) => {
     if (clockOnRef.current === on) {
