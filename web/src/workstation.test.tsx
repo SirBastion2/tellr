@@ -67,6 +67,7 @@ describe('workstation answers', () => {
     expect(screen.getByTestId('copilot-action').textContent).toBe(opener.question?.text)
     expect(suggestedAction(opener)).toBe(opener.question?.text)
     expect(screen.getByTestId('answer-panel')).toBeTruthy()
+    expect(screen.getByTestId('explain-panel')).toBeTruthy()
     expect(screen.getByTestId('purpose-row')).toBeTruthy()
 
     const relayed = chipLabel('relayed_by_caller')

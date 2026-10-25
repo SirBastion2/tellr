@@ -67,8 +67,6 @@ export function HomeScreen({
               fired={demo.index}
               showCase={demo.showCase}
               presenter={demo.presenter}
-              library={library}
-              activity={shownActivity}
             />
             <CopilotStrip
               library={library}
@@ -88,7 +86,19 @@ export function HomeScreen({
             />
           </div>
           {idle ? null : (
-            <ExplanationPanel library={library} session={shownSession} postedChipIds={shownPosted} />
+            <ExplanationPanel
+              library={library}
+              session={shownSession}
+              postedChipIds={shownPosted}
+              confirmed={demo.confirmed}
+              dismissed={dismissed}
+              activity={shownActivity}
+              onConfirm={demo.onConfirmSignal}
+              onDismiss={demo.onDismissSignal}
+              onRestore={demo.onRestoreSignal}
+              closed={closed}
+              pending={pending}
+            />
           )}
         </>
       ) : null}

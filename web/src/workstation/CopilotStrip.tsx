@@ -1,23 +1,9 @@
-import type { CSSProperties } from 'react'
-import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
-import { CheckIcon, DismissIcon } from '../ui/icons'
+import { notesOnlyLabels } from '../feed'
+import { controlStyle, secondaryStyle } from '../theme/controls'
 import { LEVEL_WORD, LevelIcon } from '../ui/LevelIcon'
-import { listedChipIds, originText, sourceForChip } from '../feed'
 import type { AnswerPost, Library, SessionState } from '../types'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import { QuestionCard } from './QuestionCard'
-
-const primary = { ...controlStyle, ...primaryStyle }
-const iconButton: CSSProperties = {
-  ...controlStyle,
-  ...secondaryStyle,
-  width: 48,
-  padding: 0,
-}
-
-function chipLabel(library: Library | null, id: string): string {
-  return library?.context_chips.find((chip) => chip.id === id)?.label ?? id
-}
 
 export function suggestedAction(session: SessionState): string {
   if (session.question?.text) {
@@ -30,27 +16,12 @@ export function readAloud(session: SessionState): string {
   return session.talk_track.lines.join(' ')
 }
 
-function rowState(confirmed: boolean, dismissed: boolean, teller: boolean): 'dismissed' | 'confirmed' | 'auto' {
-  if (dismissed) {
-    return 'dismissed'
-  }
-  if (confirmed || teller) {
-    return 'confirmed'
-  }
-  return 'auto'
-}
-
 export function CopilotStrip({
   library,
   session,
   postedChipIds,
-  confirmed,
-  dismissed = [],
   pending,
   idle = false,
-  onConfirm,
-  onDismiss,
-  onRestore,
   onEscalate,
   onUndo,
   onAnswer,
@@ -59,12 +30,12 @@ export function CopilotStrip({
   library: Library | null
   session: SessionState | null
   postedChipIds: readonly string[]
-  confirmed: readonly string[]
+  confirmed?: readonly string[]
   dismissed?: readonly string[]
   pending: boolean
   idle?: boolean
-  onConfirm: (chipId: string) => void
-  onDismiss: (chipId: string) => void
+  onConfirm?: (chipId: string) => void
+  onDismiss?: (chipId: string) => void
   onRestore?: (chipId: string) => void
   onEscalate: () => void
   onUndo?: () => void
@@ -101,6 +72,9 @@ export function CopilotStrip({
   const reason = session.risk.reasons[0]?.label ?? session.risk.counterpoint?.label ?? 'No concern flagged'
   const action = suggestedAction(session)
   const script = readAloud(session)
+  const extraNotes = notesOnlyLabels(library, postedChipIds, session.context_chips).filter(
+    (label) => !script.includes(label),
+  )
 
   return (
     <aside
@@ -180,72 +154,12 @@ export function CopilotStrip({
         <blockquote data-testid="read-aloud" className="tc-prose" style={{ margin: '8px 0 0', maxWidth: '70ch' }}>
           {script}
         </blockquote>
+        {extraNotes.length > 0 ? (
+          <p data-testid="teller-notes" className="tc-prose" style={{ margin: '8px 0 0', maxWidth: '70ch' }}>
+            {extraNotes.join(' ')}
+          </p>
+        ) : null}
       </details>
-      <ul aria-label="Signals" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
-        {listedChipIds(postedChipIds, session.context_chips, dismissed).map((chipId) => {
-          const source = sourceForChip(session.context_chips, chipId)
-          const wasDismissed = dismissed.includes(chipId)
-          const state = rowState(confirmed.includes(chipId), wasDismissed, source === 'teller')
-          const label = chipLabel(library, chipId)
-          const origin = originText(source, confirmed.includes(chipId))
-          return (
-            <li key={chipId} data-testid="signal-row" data-state={state} className="tc-signal-row">
-              <span className="tc-signal-meta">
-                <span>{label}</span>
-                <span data-testid="signal-origin" className="tc-badge">
-                  {origin}
-                </span>
-              </span>
-              {closed ? null : wasDismissed ? (
-                <span className="tc-signal-actions">
-                  <button
-                    type="button"
-                    className="tc-btn"
-                    data-variant="secondary"
-                    data-testid="signal-restore"
-                    aria-label={`Restore ${label}`}
-                    title="Restore signal"
-                    style={{ ...controlStyle, ...secondaryStyle }}
-                    disabled={pending}
-                    onClick={() => onRestore?.(chipId)}
-                  >
-                    Restore
-                  </button>
-                </span>
-              ) : (
-                <span className="tc-signal-actions">
-                  <button
-                    type="button"
-                    className="tc-btn"
-                    data-variant="primary"
-                    data-testid="signal-confirm"
-                    aria-label={`Confirm ${label}`}
-                    title="Confirm signal (C)"
-                    style={primary}
-                    disabled={pending}
-                    onClick={() => onConfirm(chipId)}
-                  >
-                    <CheckIcon />
-                  </button>
-                  <button
-                    type="button"
-                    className="tc-btn"
-                    data-variant="dismiss"
-                    data-testid="signal-dismiss"
-                    aria-label={`Dismiss ${label}`}
-                    title="Dismiss signal (D)"
-                    style={iconButton}
-                    disabled={pending}
-                    onClick={() => onDismiss(chipId)}
-                  >
-                    <DismissIcon />
-                  </button>
-                </span>
-              )}
-            </li>
-          )
-        })}
-      </ul>
       {closed ? (
         <p className="tc-prose" style={{ margin: 0 }}>
           This visit is closed.

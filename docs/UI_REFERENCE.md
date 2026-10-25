@@ -78,8 +78,8 @@ Fact grids are two columns: a bold label beside a normal value. Section headings
 
 | Screen | Route | On the demo nav | Fields |
 |---|---|---|---|
-| Workstation | `/` | Yes | Library version and copy status. Toolbar. Transaction (type, amount, memo), timeline with step, time, and speaker, event progress. Copilot is idle (`Press play to start the simulation.`) until Play or Step. While a write is in flight the last server snapshot stays on the card (dimmed, small inline Updating copilot… chip); the card and signal list do not unmount. A live visit shows the server level, Urgency Score as `<score>/<max>` (`contract/session_state.schema.json` `risk.score.maximum`, architecture §6.2 +100), one reason (or the counterpoint when reasons are empty), suggested next action (`question.text`, else the first talk-track line), read-aloud script, and signal rows. Dismissed rows stay dimmed with Restore. The origin badge is an inline pill beside the factor label. Undo and Escalate stay off until a visit is live. Why this level sits below the columns |
-| Customer file | `/customer` | Yes | Banner that name and age band stay on this screen. Profile: name, age band, tenure, typical withdrawal, channels. Recent activity (session `GET /activity` when it has rows, otherwise the synthetic date / description / amount table). This withdrawal: type, amount, memo. What was noted: each script signal once, with Not yet, Observed, Teller confirmed, or Dismissed |
+| Workstation | `/` | Yes | Library version and copy status. Toolbar. Transaction (type, amount, memo once), then the timeline with step, time, and speaker, then event progress. Copilot is idle (`Press play to start the simulation.`) until Play or Step. While a write is in flight the last server snapshot stays on the card (dimmed, small inline Updating copilot… chip); the card and merged signal list do not unmount. A live visit shows the server level, Urgency Score as `<score>/<max>` (`contract/session_state.schema.json` `risk.score.maximum`, architecture §6.2 +100), one reason (or the counterpoint when reasons are empty), suggested next action (`question.text`, else the first talk-track line), an answer panel under that prompt (purpose chips on the opener, then the question's answer chips; `POST /sessions/{id}/answers`), and the read-aloud script. Notes-only chips (no mapped signal), including the branch-threshold label, append to those teller notes. Undo and Escalate stay off until a visit is live. Why this level sits below the columns and is the one signal list: each fact once, with its reason, origin pill, and confirm / dismiss / restore. Dismissed rows stay dimmed with Restore |
+| Customer file | `/customer` | Yes | Banner that name and age band stay on this screen. Profile: name, age band, tenure, typical withdrawal, channels. No Recent activity table, no This withdrawal copy of type/amount/memo, and no What was noted list |
 | Context | `/sessions/:id/context` | No | "What you noticed." Chip buttons from `GET /library`. Posts `source: "teller"`. Does not compute a score. A live visit shows the server Urgency Score as `<score>/<max>` |
 | Session | `/sessions/:id` | No | Level icon and word, three-step scale, pattern, Urgency Score `<score>/<max>`, stated purpose, "Why it was flagged", counterpoint ("In their favor" or "Still noted"). Question text, purpose row on the opener, five answer slots, why. Talk track and avoid list. A recommended stop says "You have enough to decide, or ask one more" and keeps the question quieter. A hard stop shows `stop.reason` and no question |
 | Outcome | `/sessions/:id/outcome` | Yes (hint until a visit exists) | Suggested outcome, Urgency Score `<score>/<max>`, questions answered. Teller's decision: Proceed, Slow down, Escalate, Report. All four stay available while the visit is open. The highlighted one is only a suggestion. Report is never highlighted. Teller name. Record decision, enabled once a choice and a name are set. After the visit closes, the choices, the name field, and Record decision are gone. The card shows the recorded decision and Start new customer. No Undo above the heading |
@@ -106,13 +106,13 @@ Teller-facing copy does not show `sig.*`, `chip.*`, `mit.*`, `pat.*`, `purpose.*
 | `hosted` / `hosted_llm` | hosted model |
 | `fake` | practice stand-in |
 | Amount band `5000_9999` | $5,000–$9,999. Unknown bands become "Amount on the visit" |
-| Activity `type` | Noted at the window, Customer answered, Visit opened, Decision recorded, Visit closed, Handoff opened, Undone |
+| Activity `type` | Kept in `plain.ts` for the contract feed. Not shown as a per-row Record label |
 | UUID session id | First eight characters. Shorter ids stay whole |
 | Actor `teller` | Teller |
 | Confidence `null` | Not applicable (rules engine) |
 | Strength | Strong factor, Moderate factor, or Minor factor from `\|weight\| / sum(\|weight\|)` in that response. `>= 1/3` strong, `>= 1/6` moderate, otherwise minor. This is presentation of server weights. It is not a new score |
 
-Signal source is Observed or Teller confirmed. That badge is a compact pill on the same row as the factor label, next to confirm and dismiss. Customer-file rows may also say Not yet or Dismissed. A dismissed copilot row stays visible and offers Restore. Undo reverses the last teller confirm, dismiss, or restore; otherwise it posts `/undo`.
+Signal source is Observed or Teller confirmed. That badge is a compact pill on the same Why this level row as the factor label, next to confirm and dismiss. A dismissed row stays visible and offers Restore. Undo reverses the last teller confirm, dismiss, or restore; otherwise it posts `/undo`.
 
 ## Accessibility
 
@@ -204,7 +204,7 @@ Name and age band render on the customer file only.
 
 Contributions with `raises` go under What raised it. `lowers` go under What would lower it. `readExplanation` accepts `explanation` or `Explanation`, `used_fallback` or `usedFallback`, and `signal_id` or `signalId`. Without an explanation, Clear puts `counterpoint` under What raised it and `reasons` under What would lower it. That follows architecture §6.5. It is placement, not a new score.
 
-When a factor matches a context chip that was posted or echoed, that row carries Observed or Teller confirmed. Do not add a second list of the same facts. The copilot rows stay, because they are the confirm and dismiss controls.
+When a factor matches a context chip that was posted or echoed, that row carries Observed or Teller confirmed, plus confirm / dismiss / restore. Do not add a second list of the same facts. There is no Recent activity table and no copilot copy of the same rows. A chip with no mapped signal is notes-only. `GET /activity` may contribute one local “Noted” time, not a When column.
 
 The gap sentence ("not in this response") shows only when `explanation` is absent or null. Confidence stays hidden from the summary when it is null; Technical details say "Not applicable (rules engine)." `used_fallback` is one sentence in Technical details. Raw weights and ids stay there too.
 
