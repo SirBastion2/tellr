@@ -791,6 +791,11 @@ button[data-loading='true'],
   display: grid;
 }
 
+/* Earlier steps only. Opacity keeps each bank's own ink, so tellr / pnc / mtb / fnb stay readable. */
+.tc-timeline > [data-past='true'] {
+  opacity: 0.55;
+}
+
 .tc-badge {
   display: inline-flex;
   align-items: center;
