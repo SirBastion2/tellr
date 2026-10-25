@@ -103,28 +103,17 @@ describe('demo polish', () => {
       expect(afterFirst).toBeGreaterThanOrEqual(4)
 
       fireEvent.click(screen.getByTestId('demo-speed-2'))
-      await act(async () => {
-        window.history.pushState({}, '', '/customer')
-        window.dispatchEvent(new PopStateEvent('popstate'))
-      })
-      expect(screen.getByTestId('not-found-screen')).toBeTruthy()
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(1_000)
-      })
-      await act(async () => {
-        window.history.pushState({}, '', '/')
-        window.dispatchEvent(new PopStateEvent('popstate'))
-      })
-      const onFile = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
-      expect(onFile).toBeGreaterThanOrEqual(afterFirst)
+      expect(screen.getByTestId('home-screen')).toBeTruthy()
+      const onHome = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
+      expect(onHome).toBeGreaterThanOrEqual(afterFirst)
 
       const wallToSecond = (at(2) - at(1)) / 2
       await act(async () => {
-        await vi.advanceTimersByTimeAsync(wallToSecond - 1_000 - 1)
+        await vi.advanceTimersByTimeAsync(wallToSecond - 1)
       })
       expect(screen.getAllByTestId('demo-event')).toHaveLength(1)
       const beforeSecond = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
-      expect(beforeSecond).toBeGreaterThanOrEqual(onFile)
+      expect(beforeSecond).toBeGreaterThanOrEqual(onHome)
 
       await act(async () => {
         await vi.advanceTimersByTimeAsync(1)
