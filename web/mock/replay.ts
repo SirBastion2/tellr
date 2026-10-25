@@ -1,4 +1,4 @@
-import { formatOffsetIso } from '../src/ui/localTime'
+import { formatOffsetIso } from '../src/ui/localTime.ts'
 import library from '../../contract/library.json' with { type: 'json' }
 import liveAnswers from './live_answers.json' with { type: 'json' }
 import liveLevels from './live_levels.json' with { type: 'json' }

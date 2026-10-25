@@ -111,7 +111,7 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 | `web/src/demo/clock.ts` | Simulated `m:ss` elapsed (sum of `delayMs`) for the toolbar elapsed timer and timeline. |
 | `web/src/demo/clock.test.ts` | Elapsed timer and timeline stay on simulated time at 1× and 4×. |
 | `web/src/ui/localTime.ts` | Parse session stamps (naive ISO = UTC), format local time of day, emit ISO with the client offset. |
-| `web/src/ui/localTime.test.ts` | UTC 05:17 on a UTC-4 client renders 1:17; live clock ticks each minute. |
+| `web/src/ui/localTime.test.tsx` | UTC 05:17 on a UTC-4 client renders 1:17; live clock ticks each minute. |
 | `web/src/ui/LocalClock.tsx` | Live local time-of-day on the toolbar. Ticks at the next minute. Display only. |
 | `web/src/demoPolish.test.tsx` | Timer matches timeline, shortcut list, Restart confirm, four labeled tabs, full-width card, 13px footer. |
 | `web/src/presenter.tsx` | Demo layout, always on. No toggle and no `?present` switch. |

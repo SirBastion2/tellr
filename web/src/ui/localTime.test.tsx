@@ -1,13 +1,13 @@
 import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { LocalClock } from './LocalClock'
-import { activityTime } from './plain'
 import {
   formatLocalDateTime,
   formatOffsetIso,
   formatTimeOfDay,
   parseTimestamp,
 } from './localTime'
+import { activityTime } from './plain'
 
 describe('local time of day', () => {
   afterEach(() => {
