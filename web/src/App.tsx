@@ -308,6 +308,7 @@ export function AppShell({
                   activity={activity}
                   demo={demo}
                   onUndo={onUndo}
+                  onAnswer={onAnswer}
                 />
               }
             />

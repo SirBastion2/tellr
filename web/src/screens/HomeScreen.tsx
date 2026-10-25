@@ -4,7 +4,7 @@ import { CopilotStrip } from '../workstation/CopilotStrip'
 import { ExplanationPanel } from '../workstation/ExplanationPanel'
 import { SimulationToolbar } from '../workstation/Toolbar'
 import { TransactionPanel } from '../workstation/TransactionPanel'
-import type { ActivityRow, Library, SessionState } from '../types'
+import type { ActivityRow, AnswerPost, Library, SessionState } from '../types'
 
 export function HomeScreen({
   library,
@@ -13,6 +13,7 @@ export function HomeScreen({
   activity = null,
   demo = null,
   onUndo,
+  onAnswer,
 }: {
   library: Library | null
   session: SessionState | null
@@ -20,6 +21,7 @@ export function HomeScreen({
   activity?: readonly ActivityRow[] | null
   demo?: DemoView | null
   onUndo?: () => void
+  onAnswer?: (answer: AnswerPost) => void
 }) {
   const customer = demo ? customerById(demo.customerId) : null
 
@@ -57,6 +59,7 @@ export function HomeScreen({
               onDismiss={demo.onDismissSignal}
               onEscalate={demo.onEscalate}
               onUndo={session ? onUndo : undefined}
+              onAnswer={onAnswer}
             />
           </div>
           <ExplanationPanel library={library} session={session} postedChipIds={postedChipIds} />

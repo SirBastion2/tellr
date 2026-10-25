@@ -21,7 +21,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `eval/` except `heldout/` | A3 | Validator, 30 dev scenarios, harness (§13) | `validate.py`, `PREREGISTRATION.md`, `scenarios/dev/`, `run.py`, `arms/` |
 | `eval/scenarios/heldout/` | H | Held-out set, written once (B-07) | created at hour 20 |
 | `tests/eval/` | A3 | Scenario, validator, and harness tests | `test_validate.py`, `test_dev_scenarios.py`, `test_run.py` |
-| `web/` | B1 | React UI, mock, screens, bank themes, simulated workstation (§12) | `src/App.tsx`, `src/screens/`, `src/theme/`, `src/demo/`, `src/presenter.tsx`, `src/workstation/`, `src/ui/`, `src/assets/tellr-wordmark.png`, `src/index.css`, `index.html`, `mock/live_levels.json`, `vite.config.ts`, `.env.api`, `src/devApi.ts` |
+| `web/` | B1 | React UI, mock, screens, bank themes, simulated workstation (§12) | `src/App.tsx`, `src/screens/`, `src/theme/`, `src/demo/`, `src/presenter.tsx`, `src/workstation/`, `src/ui/`, `src/assets/tellr-wordmark.png`, `src/index.css`, `index.html`, `mock/live_levels.json`, `mock/live_answers.json`, `vite.config.ts`, `.env.api`, `src/devApi.ts` |
 | `web/src/screens/history/` `…/settings/` `web/e2e/` | B2 | Leaf screens + e2e if added at hour 8. Not created. B-06 filled history and health in `web/src/screens/` | — |
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json` (incl. `activity.schema.json`, CHANGE-005), `fixtures/T1–T7.json`, `CHANGES.md` |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |
@@ -44,7 +44,7 @@ History and the read-only recommender view live in the existing screen files. Th
 | `web/src/history.test.tsx` | Added. Practice rows stay off the default list and appear after the practice request. |
 | `web/src/health.test.tsx` | Added. Health is a GET of `/health` with no recommender control and no `/settings` call. |
 | `web/src/screens/SettingsScreen.tsx` | Removed. `/settings` redirects to `/health` (`web/src/App.tsx`). It is not in `web/src/routes.ts`. |
-| `web/mock/replay.ts` | Also serves `GET /sessions` (live by default, `mode=practice`, `mode=all`) and `GET /health`. |
+| `web/mock/replay.ts` | Also serves `GET /sessions` (live by default, `mode=practice`, `mode=all`) and `GET /health`. Live answers look up `live_answers.json`. |
 | `web/mock/plugin.ts` | Installed by `npm run dev`. Answers `/library`, `/health`, and `/sessions`. Not installed when `VITE_API_URL` is set. |
 
 ### `web/` themes
@@ -81,7 +81,7 @@ Page gradients are hex and rgba only. Windows Chrome and Edge drop an entire `ba
 
 ### `web/` workstation
 
-Home is a teller workstation. A synthetic customer timeline plays beside a copilot card. The page card is `min(1440px, 100%)`. At 1280px and up the workstation is `3fr` / `2fr`. At 1024px the columns tighten. Below 900px they stack. The copilot card stretches to the column and stays sticky. Type and spacing use `clamp()`. The card reads the server level, the first reason or the counterpoint when reasons are empty, `question.text`, and `talk_track.lines`. It does not choose the next question, and it does not compute risk, level, reasons, or the next question.
+Home is a teller workstation. A synthetic customer timeline plays beside a copilot card. The page card is `min(1440px, 100%)`. At 1280px and up the workstation is `3fr` / `2fr`. At 1024px the columns tighten. Below 900px they stack. The copilot card stretches to the column and stays sticky. Type and spacing use `clamp()`. The card reads the server level, the first reason or the counterpoint when reasons are empty, `question.text`, and `talk_track.lines`. Suggested action is `question.text` when the server has a question, otherwise the first talk-track line. Under that prompt the teller records the customer's answer: purpose chips on the opener, then the question's answer chips, posted to `POST /sessions/{id}/answers`. The card renders the returned `SessionState`. It does not choose the next question, and it does not compute risk, level, reasons, or the next question.
 
 CHANGE-005 fields are optional. `readExplanation` accepts `explanation` or `Explanation`, and `used_fallback` / `usedFallback`, `signal_id` / `signalId`. Contributions with `direction: "raises"` render under What raised it. `direction: "lowers"` render under What would lower it. There is no second contributions list. A strength word (Strong / Moderate / Minor factor) is the item's `|weight|` divided by the sum of `|weight|` in that response (`>= 1/3` strong, `>= 1/6` moderate, otherwise minor). The raw weight and any `sig.*` / `chip.*` id stay inside the collapsed Technical details. Confidence `null` reads "Not applicable (rules engine)". The gap sentence shows only when explanation is absent or null. Without an explanation, Clear puts `counterpoint` under What raised it and `reasons` under What would lower it, matching architecture §6.5. That is placement of server fields, not a new score.
 
@@ -109,7 +109,9 @@ Presenter mode is the header toggle or `?present=1` (stored in `teller.presenter
 | `web/src/ui/plain.ts` | Teller-facing labels: pattern, mode, outcome, short id, amount band, recommender phrase. |
 | `web/src/ui/emphasis.tsx` | Bolds amounts and phrases such as "on the phone" in timeline copy. |
 | `web/src/workstation/Toolbar.tsx` | 40px customer picker, Play/Pause, Step, Restart, speed segments, timer, case-file link. |
-| `web/src/workstation/CopilotStrip.tsx` | Sticky card that fills the column. Level icon and word, one reason, suggested action, collapsible read-aloud quote, noted rows with badges and icon buttons. |
+| `web/src/workstation/CopilotStrip.tsx` | Sticky card that fills the column. Level icon and word, one reason, suggested action, answer panel for `SessionState.question`, collapsible read-aloud quote, noted rows with badges and icon buttons. |
+| `web/src/workstation/QuestionCard.tsx` | Shared two-tap opener and answer chips. Interview keeps the prompt; the workstation hides it because suggested action already shows `question.text`. |
+| `web/src/workstation.test.tsx` | Workstation posts purpose then chip on the opener, chip alone on a follow-up, updates suggested action from the returned question, and hides chips on a hard stop. |
 | `web/src/workstation/explain.ts` | Reads `explanation` and groups raises and lowers. Strength words from the response's own weights. |
 | `web/src/workstation/ExplanationPanel.tsx` | Why this level. Fact grid, two contribution lists, noted items, collapsed technical details. |
 | `web/src/workstation/TransactionPanel.tsx` | Key-value transaction, timeline with step and speaker, event progress. Session activity appears when `GET /activity` returns rows. |
@@ -117,7 +119,8 @@ Presenter mode is the header toggle or `?present=1` (stored in `teller.presenter
 | `web/src/ui/icons.tsx` | Play, pause, step, restart, confirm, and dismiss icons. |
 | `web/src/ui/ConfirmDialog.tsx` | Confirm before restart, customer switch (off in presenter mode), and escalate. |
 | `web/src/presenter.test.tsx` | Presenter query, hidden dev tabs, type size, and customer switch without a confirm dialog. |
-| `web/mock/live_levels.json` | Recorded engine responses for context-chip subsets. The mock uses these when a live post is not the next fixture step. Answers on that path are scored by the real API (`npm run dev:api`). The mock echoes `context_chips` from the live log and serves `GET /activity`. It leaves `explanation` off unless the recorded body already has it. |
+| `web/mock/live_levels.json` | Recorded engine responses for context-chip subsets. The mock uses these when a live post is not the next fixture step. The mock echoes `context_chips` from the live log and serves `GET /activity`. It leaves `explanation` off unless the recorded body already has it. |
+| `web/mock/live_answers.json` | Recorded engine responses for live answers on the demo chip sets (empty, government impersonation prefixes, contractor cash, romance/crypto). The mock looks them up after `POST /answers`; it does not score. Unrecorded combinations keep the last recorded answer state or the context projection and warn. `npm run dev:api` scores every answer through the API. |
 | `web/src/routes.ts` | Nav labels are Home, Customer file, Context, Session, Outcome, Handoff, History, Health. |
 
 ### `web/` dev modes

@@ -3,7 +3,8 @@ import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { CheckIcon, DismissIcon } from '../ui/icons'
 import { LEVEL_WORD, LevelIcon } from '../ui/LevelIcon'
 import { listedChipIds, originText, sourceForChip } from '../feed'
-import type { Library, SessionState } from '../types'
+import type { AnswerPost, Library, SessionState } from '../types'
+import { QuestionCard } from './QuestionCard'
 
 const primary = { ...controlStyle, ...primaryStyle }
 const iconButton: CSSProperties = {
@@ -51,6 +52,7 @@ export function CopilotStrip({
   onDismiss,
   onEscalate,
   onUndo,
+  onAnswer,
 }: {
   library: Library | null
   session: SessionState | null
@@ -61,6 +63,7 @@ export function CopilotStrip({
   onDismiss: (chipId: string) => void
   onEscalate: () => void
   onUndo?: () => void
+  onAnswer?: (answer: AnswerPost) => void
 }) {
   const level = session?.risk.level ?? 'clear'
   const reason =
@@ -97,6 +100,19 @@ export function CopilotStrip({
             <p data-testid="copilot-action" className="tc-prose" style={{ margin: 0, fontSize: 'clamp(1.35rem, 1.4vw, 1.85rem)', lineHeight: 1.25, fontWeight: 700, maxWidth: '70ch' }}>
               {action}
             </p>
+            {session.question ? (
+              <div data-testid="answer-panel" style={{ display: 'grid', gap: 8 }}>
+                <p className="tc-kicker">How did they answer?</p>
+                <QuestionCard
+                  key={session.question.id}
+                  library={library}
+                  question={session.question}
+                  quiet={session.stop?.kind === 'recommended'}
+                  hidePrompt
+                  onAnswer={onAnswer}
+                />
+              </div>
+            ) : null}
           </div>
           <details
             open
