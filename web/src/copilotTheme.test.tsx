@@ -73,4 +73,39 @@ describe('copilot theme', () => {
       session.risk.reasons[0]?.label ?? session.risk.counterpoint?.label ?? 'No concern flagged',
     )
   })
+
+  it('centers the same level icon inside the pill for clear, caution, and high', () => {
+    const css = readFileSync('src/index.css', 'utf8')
+    const badge = css.match(/\.tc-level-badge\s*\{([^}]*)\}/)?.[1] ?? ''
+    const icon = css.match(/\.tc-level-badge svg\s*\{([^}]*)\}/)?.[1] ?? ''
+    expect(badge).toMatch(/display:\s*inline-flex/)
+    expect(badge).toMatch(/align-items:\s*center/)
+    expect(icon).toMatch(/display:\s*block/)
+    expect(icon).toMatch(/flex:\s*0 0 auto/)
+    expect(icon).toMatch(/align-self:\s*center/)
+
+    for (const level of ['clear', 'caution', 'high'] as const) {
+      const { unmount } = render(
+        <CopilotStrip
+          library={library}
+          session={{ ...session, risk: { ...session.risk, level } }}
+          postedChipIds={[]}
+          confirmed={[]}
+          pending={false}
+          onConfirm={() => undefined}
+          onDismiss={() => undefined}
+          onEscalate={() => undefined}
+        />,
+      )
+      const pill = screen.getByTestId('copilot-level')
+      const mark = screen.getByTestId('level-icon')
+      expect(mark.parentElement).toBe(pill)
+      expect(mark.tagName.toLowerCase()).toBe('svg')
+      expect(mark.getAttribute('data-level')).toBe(level)
+      expect(mark.getAttribute('width')).toBe('20')
+      expect(mark.getAttribute('height')).toBe('20')
+      expect(pill.textContent).toBe(LEVEL_WORD[level])
+      unmount()
+    }
+  })
 })

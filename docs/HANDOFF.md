@@ -2447,6 +2447,32 @@ GATE PASS (b)
 
 ---
 
+### [B] Merge main into the copilot level-icon branch — Cloud agent — 2026-10-25 06:56
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 193 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  53 passed (53)
+      Tests  193 passed (193)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merge of `origin/main` (`d9e0b4e`, #114) into `cursor/copilot-level-icon-align-8049`. Conflict: `docs/HANDOFF.md`. `web/src/workstation/CopilotStrip.tsx` and `web/src/index.css` auto-merged.
+- **Decisions I made, and the section that justified each:**
+  - Kept #115: the level icon stays inside `.tc-level-badge` (`inline-flex`, svg `display: block; flex: 0 0 auto; align-self: center`). ARCHITECTURE workstation: the level is an icon plus a word.
+  - Kept #114: confirm (✓) and dismiss (✕) stay the 48px circles with grid `place-items: center` and the check path `M4.5 12l5 5L19.5 7`.
+  - Kept main's header (no clock, no Live API pill), shared type hierarchy, and fact grid. No new UI. `ARCHITECTURE.md` already matched main; this branch moved no files.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/115. Do not open a new PR. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos.
+
+---
+
 ### [B] Memo fact value weight — Agent B1 — 2026-10-25 06:52
 - **Status:** done
 - **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 191 tests, contract OK)
@@ -2456,5 +2482,30 @@ GATE PASS (b)
   - Other fact grids (customer file, case file, Outcome, Handoff, Health, History, Why this level, shortcuts) do not put body prose inside the value cell. Level badges and the Copy control are not the same kind of label/value text, so they stay as they are.
 - **Questions logged:** none
 - **The next agent needs to know:** No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+
+---
+
+### [B] Copilot level icon sits in the pill — Cloud agent — 2026-10-25 06:52
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 187 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  52 passed (52)
+      Tests  187 passed (187)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/workstation/CopilotStrip.tsx`, `web/src/index.css`, `web/src/copilotTheme.test.tsx`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - The existing Clear / Caution / High SVGs in `web/src/ui/LevelIcon.tsx` stay as they are (ARCHITECTURE workstation: level is an icon plus a word). Copilot had the icon in a side grid cell centered on the badge + Urgency Score + reason, so the triangle sat outside the pill, lower-left, in the card text color.
+  - The icon now sits inside `.tc-level-badge`, which is already `inline-flex` and `align-items: center` (same placement as Handoff). `.tc-level-badge svg` is `display: block; flex: 0 0 auto; align-self: center` so Clear, Caution, and High share one 20×20 box. Pill padding, type, colors, and min-height are unchanged.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/115. Do not merge. No contract / engine / library / golden edits. No new dependency. No screenshots or videos. ARCHITECTURE.md unchanged (no files moved).
 
 

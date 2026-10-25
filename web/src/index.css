@@ -401,6 +401,12 @@ button[data-loading='true'],
   width: fit-content;
 }
 
+.tc-level-badge svg {
+  display: block;
+  flex: 0 0 auto;
+  align-self: center;
+}
+
 .tc-shell {
   display: flex;
   flex-direction: column;

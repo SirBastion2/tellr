@@ -134,23 +134,20 @@ export function CopilotStrip({
         </p>
       ) : null}
       <div className="tc-strip-body" data-dimmed={pending ? 'true' : 'false'}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: 8, alignItems: 'center' }}>
-        <LevelIcon level={level} />
-        <div style={{ minWidth: 0 }}>
-          <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0 }}>
-            {LEVEL_WORD[level]}
-          </p>
-          <FactGrid label={URGENCY_SCORE_TERM}>
-            <Fact term={URGENCY_SCORE_TERM}>
-              <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
-                {formatUrgencyScore(session.risk.score)}
-              </span>
-            </Fact>
-          </FactGrid>
-          <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-            {reason}
-          </p>
-        </div>
+      <div style={{ minWidth: 0 }}>
+        <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0 }}>
+          <LevelIcon level={level} />{LEVEL_WORD[level]}
+        </p>
+        <FactGrid label={URGENCY_SCORE_TERM}>
+          <Fact term={URGENCY_SCORE_TERM}>
+            <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
+              {formatUrgencyScore(session.risk.score)}
+            </span>
+          </Fact>
+        </FactGrid>
+        <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
+          {reason}
+        </p>
       </div>
       <div
         className="tc-block"
