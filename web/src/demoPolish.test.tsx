@@ -257,8 +257,8 @@ describe('demo polish', () => {
     expect(help.textContent).toMatch(/C/)
     expect(help.textContent).toMatch(/D/)
     expect(help.textContent).toMatch(/E/)
-    expect(help.textContent).toMatch(/\[ and \]/)
-    expect(help.textContent).toMatch(/T Switch bank theme/)
+    expect(help.textContent).toMatch(/\[and\]/)
+    expect(help.textContent).toMatch(/TSwitch bank theme/)
     fireEvent.click(screen.getByTestId('shortcut-close'))
 
     fireEvent.keyDown(window, { key: 'r' })
