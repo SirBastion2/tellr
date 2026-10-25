@@ -336,25 +336,37 @@ button[data-loading='true'],
 .tc-header {
   container-type: inline-size;
   container-name: header;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
+}
+
+.tc-header .tc-segment,
+.tc-header .tc-scheme-menu,
+.tc-header .tc-btn {
+  flex: 0 0 auto;
 }
 
 .tc-connection {
+  box-sizing: border-box;
   margin: 0;
   white-space: nowrap;
   flex: 0 1 auto;
   min-width: 0;
-  max-width: 12rem;
+  width: max-content;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   border: 1px solid var(--tc-glass-border, #1c1917);
   border-radius: 999px;
   padding: 0 10px;
   min-height: 32px;
-  display: inline-flex;
-  align-items: center;
+  line-height: 32px;
   font-weight: 700;
   font-size: 0.75rem;
   background: var(--tc-chip-bg, #111827);
@@ -380,10 +392,9 @@ button[data-loading='true'],
 
 .tc-header-title {
   margin: 0;
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  overflow: visible;
   font-size: var(--tc-type-header, clamp(0.88rem, 0.45vw + 0.72rem, 1.05rem));
   line-height: 1.2;
   font-weight: var(--tc-heading-weight, 700);
@@ -391,23 +402,24 @@ button[data-loading='true'],
 }
 
 .tc-live-badge {
+  box-sizing: border-box;
   margin: 0;
   white-space: nowrap;
   flex: 0 1 auto;
   min-width: 0;
-  max-width: 14rem;
+  width: max-content;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   border: 1px solid var(--tc-accent, #1c1917);
   color: var(--tc-text, #1c1917);
   background-color: var(--tc-glass-fallback, transparent);
   border-radius: 999px;
-  padding: 0 10px;
-  min-height: 28px;
-  display: inline-flex;
-  align-items: center;
+  padding: 0 12px;
+  min-height: 32px;
+  line-height: 32px;
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .tc-header-nav {
@@ -417,8 +429,8 @@ button[data-loading='true'],
   gap: 8px;
   overflow-x: auto;
   min-height: 48px;
-  min-width: 0;
-  flex: 1 1 auto;
+  min-width: min(100%, 16rem);
+  flex: 1 1 20rem;
   scrollbar-width: none;
 }
 
