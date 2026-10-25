@@ -1,5 +1,6 @@
 import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { LevelIcon } from '../ui/LevelIcon'
+import { stopReasonLabel } from '../ui/plain'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import type { AnswerPost, Level, Library, SessionState } from '../types'
 import { QuestionCard } from '../workstation/QuestionCard'
@@ -180,7 +181,7 @@ export function InterviewScreen({
               ) : null}
               {session.stop?.kind === 'hard' ? (
                 <p data-testid="hard-stop" data-reason={session.stop.reason} className="tc-prose" style={{ margin: 0 }}>
-                  {session.stop.reason}
+                  {stopReasonLabel(session.stop.reason)}
                 </p>
               ) : null}
               {session.question ? (
