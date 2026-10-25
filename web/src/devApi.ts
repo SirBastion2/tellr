@@ -1,4 +1,7 @@
-/** True when the dev server should answer /library, /health, and /sessions with the mock. */
+/**
+ * True when no API origin is configured. The Vite mock stays installed either way.
+ * The browser probe in `connection.ts` prefers a healthy API and falls back to that mock.
+ */
 export function useMockApi(apiUrl: string | undefined): boolean {
   return (apiUrl ?? '').trim().length === 0
 }

@@ -61,6 +61,11 @@ function checkPalette(label: string, palette: ThemePalette) {
   expect(contrast(palette.text, palette.surface), `${label} text on surface`).toBeGreaterThanOrEqual(4.5)
   expect(contrast(palette.text, input), `${label} text on input`).toBeGreaterThanOrEqual(4.5)
   expect(contrast(palette.buttonText, palette.button), `${label} primary button`).toBeGreaterThanOrEqual(4.5)
+  expect(channels(palette.surface)[3], `${label} option surface opaque`).toBe(1)
+  expect(channels(palette.button)[3], `${label} option active opaque`).toBe(1)
+  expect(palette.surface.toLowerCase(), `${label} option active distinct`).not.toBe(palette.button.toLowerCase())
+  expect(contrast(palette.text, palette.surface), `${label} option`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.buttonText, palette.button), `${label} option selected`).toBeGreaterThanOrEqual(4.5)
   expect(contrast(palette.secondaryFg, palette.secondaryBg), `${label} secondary`).toBeGreaterThanOrEqual(4.5)
   expect(contrast(palette.chipFg, palette.chipBg), `${label} badge`).toBeGreaterThanOrEqual(4.5)
   expect(contrast(palette.actionFg, palette.actionBg), `${label} action`).toBeGreaterThanOrEqual(4.5)
@@ -77,7 +82,7 @@ function checkPalette(label: string, palette: ThemePalette) {
 
 describe('theme contrast', () => {
   it('keeps text, buttons, and risk states at WCAG AA for every bank and color scheme', () => {
-    expect(THEME_LIST.map((theme) => theme.id)).toEqual(['fnb', 'mtb', 'pnc', 'tellr'])
+    expect(THEME_LIST.map((theme) => theme.id)).toEqual(['tellr', 'pnc', 'mtb', 'fnb'])
     for (const theme of THEME_LIST) {
       checkPalette(`${theme.id} dark`, darkPalette(theme))
       checkPalette(`${theme.id} light`, theme.light)

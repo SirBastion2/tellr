@@ -7,7 +7,6 @@ import type { DemoView } from './demo/types'
 import { CustomerFileScreen } from './screens/CustomerFileScreen'
 import type { Library, SessionState } from './types'
 import { ExplanationPanel } from './workstation/ExplanationPanel'
-import { CopilotStrip } from './workstation/CopilotStrip'
 
 const library = libraryJson as Library
 const base = t1.steps[0]?.response as SessionState
@@ -108,7 +107,12 @@ describe('CHANGE-005 fields', () => {
     const technical = screen.getByTestId('technical-details')
     expect(technical.textContent).toMatch(/sig\.third_party_call/)
     expect(technical.textContent).toMatch(/Weight 14/)
-    expect(screen.getByTestId('explain-input').textContent).not.toMatch(/sig\.|chip\./)
+    expect(screen.queryByRole('heading', { name: 'What the teller and system noted' })).toBeNull()
+    const raisedRow = screen.getAllByTestId('explain-reason').find((row) => row.textContent?.includes('On the phone'))
+    expect(raisedRow?.querySelector('[data-testid="signal-origin"]')?.textContent).toBe('Observed')
+    expect(raisedRow?.textContent ?? '').not.toMatch(/sig\.|chip\./)
+    const loweredRow = screen.getAllByTestId('explain-counter').find((row) => row.textContent?.includes('Known customer'))
+    expect(loweredRow?.querySelector('[data-testid="signal-origin"]')).toBeNull()
   })
 
   it('puts a raising counterpoint under what raised it when explanation is absent at Clear', () => {
@@ -154,124 +158,75 @@ describe('CHANGE-005 fields', () => {
 
   it('badges signal source from context_chips and falls back to local confirm', () => {
     const { rerender } = render(
-      <CopilotStrip
+      <ExplanationPanel
         library={library}
         session={{
           ...base,
           context_chips: [{ id: 'chip.on_phone', source: 'observed' }],
         }}
         postedChipIds={[]}
-        confirmed={[]}
-        pending={false}
-        onConfirm={() => undefined}
-        onDismiss={() => undefined}
-        onEscalate={() => undefined}
       />,
     )
     expect(screen.getByTestId('signal-origin').textContent).toBe('Observed')
     rerender(
-      <CopilotStrip
+      <ExplanationPanel
         library={library}
         session={base}
         postedChipIds={['chip.on_phone']}
         confirmed={['chip.on_phone']}
-        pending={false}
-        onConfirm={() => undefined}
-        onDismiss={() => undefined}
-        onEscalate={() => undefined}
       />,
     )
     expect(screen.getByTestId('signal-origin').textContent).toBe('Teller confirmed')
   })
 
-  it('uses session activity when rows exist and the synthetic table when they do not', () => {
+  it('keeps the customer file on profile facts and leaves signals on Why this level', () => {
     const view = demo()
-    const { rerender } = render(
-      <CustomerFileScreen library={library} demo={view} postedChipIds={['chip.on_phone']} />,
-    )
-    expect(screen.getAllByTestId('activity-row')[0]?.getAttribute('data-feed')).toBe('synthetic')
-    const phone = screen.getAllByTestId('file-signal').find((row) => row.textContent?.includes('phone'))
-    expect(phone?.getAttribute('data-status')).toBe('Observed')
-    rerender(
-      <CustomerFileScreen
-        library={library}
-        demo={view}
-        contextChips={[{ id: 'chip.on_phone', source: 'teller' }]}
-        activity={[{ ts: '2026-10-24T00:00:00Z', channel: 'chip.on_phone', amount_band: '5000_9999', type: 'ContextAdded' }]}
-      />,
-    )
-    expect(screen.getByTestId('session-activity')).toBeTruthy()
-    expect(screen.getByTestId('activity-row').getAttribute('data-feed')).toBe('session')
-    expect(screen.getByTestId('activity-row').textContent).toMatch(/\$5,000/)
-    expect(screen.getByTestId('activity-row').textContent).toMatch(/Noted at the window/)
-    expect(screen.getByTestId('activity-row').textContent).not.toMatch(/chip\.|5000_9999|ContextAdded/)
-    expect(screen.getByTestId('activity-technical').textContent).toMatch(/5000_9999/)
-    expect(screen.getByTestId('activity-technical').textContent).toMatch(/ContextAdded/)
-    expect(screen.getByTestId('activity-technical').textContent).toMatch(/chip\.on_phone/)
-    const confirmed = screen.getAllByTestId('file-signal').find((row) => row.textContent?.includes('phone'))
-    expect(confirmed?.getAttribute('data-status')).toBe('Teller confirmed')
+    render(<CustomerFileScreen demo={view} />)
+    expect(screen.getByTestId('profile-name')).toBeTruthy()
+    expect(screen.queryByTestId('session-activity')).toBeNull()
+    expect(screen.queryByTestId('activity-row')).toBeNull()
+    expect(screen.queryByTestId('file-signal')).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Recent activity' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'This withdrawal' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'What was noted' })).toBeNull()
   })
 
-  it('keeps signal rows in first-seen order after dismiss, restore, and confirm', () => {
+  it('keeps merged Why this level rows in first-seen order after dismiss and confirm', () => {
     const posted = ['chip.on_phone', 'chip.cash_only', 'chip.rushed']
     const session = {
       ...base,
       context_chips: posted.map((id) => ({ id, source: 'observed' as const })),
     }
     const { rerender } = render(
-      <CopilotStrip
+      <ExplanationPanel
         library={library}
         session={session}
         postedChipIds={posted}
         confirmed={[]}
         dismissed={[]}
         chipOrder={posted}
-        pending={false}
-        onConfirm={() => undefined}
-        onDismiss={() => undefined}
-        onRestore={() => undefined}
-        onEscalate={() => undefined}
       />,
     )
-    expect(screen.getAllByTestId('signal-row').map((row) => row.textContent)).toEqual(
-      screen.getAllByTestId('signal-row').map((row) => row.textContent),
-    )
-    const before = screen.getAllByTestId('signal-row').map((row) => row.querySelector('span')?.textContent)
+    const ids = () => screen.getAllByTestId('signal-row').map((row) => row.getAttribute('data-chip'))
+    expect(ids()).toEqual(posted)
     rerender(
-      <CopilotStrip
+      <ExplanationPanel
         library={library}
-        session={{ ...session, context_chips: session.context_chips.filter((chip) => chip.id !== 'chip.cash_only') }}
+        session={{
+          ...session,
+          context_chips: session.context_chips.filter((chip) => chip.id !== 'chip.cash_only'),
+        }}
         postedChipIds={['chip.on_phone', 'chip.rushed']}
         confirmed={['chip.rushed']}
         dismissed={['chip.cash_only']}
         chipOrder={posted}
-        pending={false}
         onConfirm={() => undefined}
         onDismiss={() => undefined}
         onRestore={() => undefined}
-        onEscalate={() => undefined}
       />,
     )
-    const afterDismiss = screen.getAllByTestId('signal-row')
-    expect(afterDismiss.map((row) => row.querySelector('span')?.textContent)).toEqual(before)
-    expect(afterDismiss[1]?.getAttribute('data-state')).toBe('dismissed')
-    expect(afterDismiss[2]?.getAttribute('data-state')).toBe('confirmed')
+    expect(ids()).toEqual(posted)
+    expect(screen.getAllByTestId('signal-row')[1]?.getAttribute('data-state')).toBe('dismissed')
     expect(screen.getByTestId('signal-restore')).toBeTruthy()
-    rerender(
-      <CopilotStrip
-        library={library}
-        session={session}
-        postedChipIds={posted}
-        confirmed={['chip.rushed']}
-        dismissed={[]}
-        chipOrder={posted}
-        pending={false}
-        onConfirm={() => undefined}
-        onDismiss={() => undefined}
-        onRestore={() => undefined}
-        onEscalate={() => undefined}
-      />,
-    )
-    expect(screen.getAllByTestId('signal-row').map((row) => row.querySelector('span')?.textContent)).toEqual(before)
   })
 })

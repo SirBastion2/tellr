@@ -1,15 +1,21 @@
-import { SOLID_CONTROLS } from '../chrome'
+import { DARK_CONTROLS, DARK_RISK, SOLID_CONTROLS } from '../chrome'
 import type { BankTheme } from '../types'
 import { FOOTER_TEXT } from '../tokens'
 
 /** PNC Bank. Orange accent, medium radius, strong elevation. */
-const risk = {
+const riskLight = {
   clearBg: '#F7F4F1',
   clearFg: '#1A1208',
   cautionBg: '#FFEDD5',
   cautionFg: '#9A3412',
   highBg: '#7F1D1D',
   highFg: '#FFFFFF',
+}
+
+const riskDark = {
+  clearBg: '#1A1208',
+  clearFg: '#F7F4F1',
+  ...DARK_RISK,
 }
 
 export const theme: BankTheme = {
@@ -32,7 +38,7 @@ export const theme: BankTheme = {
   border: { width: '1px', style: 'solid' },
   shadow: { card: '0 16px 40px rgba(0, 20, 60, 0.45)' },
   density: 'comfortable',
-  space: { gap: '16px', cardPadding: '20px' },
+  space: { gap: '13px', cardPadding: '16px' },
   background: {
     color: '#24303A',
     image:
@@ -57,8 +63,8 @@ export const theme: BankTheme = {
     active: '#EF7622',
     inactive: 'rgba(77, 89, 100, 0.85)',
   },
-  risk,
-  ...SOLID_CONTROLS,
+  risk: riskDark,
+  ...DARK_CONTROLS,
   link: '#FFE4CC',
   surface: '#1A2744',
   light: {
@@ -84,7 +90,7 @@ export const theme: BankTheme = {
     buttonText: '#1A1208',
     logoColor: '#9A3412',
     progress: { active: '#C2410C', inactive: '#FDBA74' },
-    risk,
+    risk: riskLight,
     ...SOLID_CONTROLS,
     link: '#9A3412',
     surface: '#FFFFFF',

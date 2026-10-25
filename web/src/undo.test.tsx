@@ -9,6 +9,7 @@ import type { DemoView } from './demo/types'
 import { InterviewScreen } from './screens/InterviewScreen'
 import { TellerProvider, useTeller } from './teller'
 import type { Library, SessionState } from './types'
+import { formatUrgencyScore } from './ui/urgencyScore'
 
 const library = libraryJson as Library
 
@@ -117,7 +118,7 @@ describe('undo', () => {
     await waitFor(() => {
       expect(screen.getByTestId('question-text').textContent).toBe(opened.question?.text)
     })
-    expect(screen.getByTestId('risk-score').textContent).toBe(String(opened.risk.score))
+    expect(screen.getByTestId('risk-score').textContent).toBe(formatUrgencyScore(opened.risk.score))
     expect(screen.getAllByTestId('talk-pattern-line').length).toBeGreaterThan(0)
 
     fireEvent.click(screen.getByTestId('undo'))
@@ -128,7 +129,7 @@ describe('undo', () => {
     expect(undo?.method).toBe('POST')
     expect(undo?.body).toBeUndefined()
     expect(undo?.url).toBe(`http://api.test/sessions/${opened.session_id}/undo`)
-    expect(screen.getByTestId('risk-score').textContent).toBe('4')
+    expect(screen.getByTestId('risk-score').textContent).toBe(formatUrgencyScore(4))
     expect(screen.getByTestId('question-text').textContent).not.toBe(opened.question?.text)
     expect(screen.queryByTestId('talk-pattern-line')).toBeNull()
     expect(screen.getByTestId('talk-stage-line').textContent).toBe(returned.talk_track.lines[0])

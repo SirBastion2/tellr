@@ -41,16 +41,17 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Teller Copilot' })).toBeTruthy()
   })
 
-  it('keeps Undo on the workstation signal list and off the customer file', () => {
+  it('keeps Undo on the workstation and off the customer file', () => {
     const view = demo()
-    const { rerender } = render(
+    const home = render(
       <MemoryRouter initialEntries={['/']}>
         <AppShell library={null} session={session} issues={[]} demo={view} onUndo={() => undefined} />
       </MemoryRouter>,
     )
     const undo = screen.getByTestId('undo')
     expect(screen.getByTestId('copilot-strip').contains(undo)).toBe(true)
-    rerender(
+    home.unmount()
+    render(
       <MemoryRouter initialEntries={['/customer']}>
         <AppShell library={null} session={session} issues={[]} demo={view} onUndo={() => undefined} />
       </MemoryRouter>,
@@ -60,13 +61,15 @@ describe('App', () => {
   })
 
   it('leaves a gap between the header and the workstation or outcome heading', () => {
-    const { rerender } = render(
+    const home = render(
       <MemoryRouter initialEntries={['/']}>
         <AppShell library={null} session={session} issues={[]} demo={demo()} />
       </MemoryRouter>,
     )
     expect(getComputedStyle(screen.getByTestId('app-shell')).gap).not.toBe('0px')
-    rerender(
+    expect(screen.getByTestId('home-screen')).toBeTruthy()
+    home.unmount()
+    render(
       <MemoryRouter initialEntries={[`/sessions/${session.session_id}/outcome`]}>
         <AppShell library={null} session={session} issues={[]} />
       </MemoryRouter>,

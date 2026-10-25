@@ -18,15 +18,15 @@ const hiddenText: CSSProperties = {
 export function ThemeWordmark() {
   const theme = useTheme()
   return (
-    <div data-testid="theme-wordmark" data-mark={theme.mark} style={{ display: 'flex', alignItems: 'center', minHeight: 48 }}>
+    <div data-testid="theme-wordmark" data-mark={theme.mark} style={{ display: 'flex', alignItems: 'center', minHeight: 'var(--tc-wordmark-h, 40px)', flex: '0 0 auto' }}>
       {theme.mark === 'logo' ? (
         <span
           aria-hidden="true"
           data-testid="theme-logo"
           style={{
             display: 'block',
-            width: 132,
-            height: 48,
+            width: 'var(--tc-wordmark-w, 110px)',
+            height: 'var(--tc-wordmark-h, 40px)',
             backgroundColor: 'var(--tc-logo)',
             WebkitMaskImage: `url("${markUrl}")`,
             maskImage: `url("${markUrl}")`,
@@ -48,9 +48,11 @@ export function ThemeWordmark() {
                 color: 'var(--tc-wordmark)',
                 fontWeight: theme.wordmarkWeight,
                 letterSpacing: theme.wordmarkLetterSpacing,
-                fontSize: '1.35rem',
+                fontSize: 'var(--tc-type-header, 1.05rem)',
                 lineHeight: 1.1,
                 margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'visible',
               }
         }
       >

@@ -25,15 +25,15 @@ describe('theme selection', () => {
     expect(resolveThemeId('mtb', 'fnb', known)).toBe('mtb')
     expect(resolveThemeId('MTB', null, known)).toBe('mtb')
     expect(resolveThemeId('  pnc  ', 'tellr', known)).toBe('pnc')
-    expect(resolveThemeId(null, 'fnb', known)).toBe('fnb')
-    expect(resolveThemeId('', 'pnc', known)).toBe('pnc')
+    expect(resolveThemeId(null, 'fnb', known)).toBe(DEFAULT_THEME_ID)
+    expect(resolveThemeId('', 'pnc', known)).toBe(DEFAULT_THEME_ID)
     expect(resolveThemeId('not-a-bank', null, known)).toBe(DEFAULT_THEME_ID)
     expect(resolveThemeId('not-a-bank', 'fnb', known)).toBe('fnb')
     expect(resolveThemeId('not-a-bank', 'also-missing', known)).toBe(DEFAULT_THEME_ID)
   })
 
   it('registers one theme file per bank', () => {
-    expect([...THEME_IDS]).toEqual(['fnb', 'mtb', 'pnc', 'tellr'])
+    expect([...THEME_IDS]).toEqual(['tellr', 'pnc', 'mtb', 'fnb'])
     for (const id of THEME_IDS) {
       const theme = THEMES[id]
       expect(theme?.id, id).toBe(id)
@@ -108,11 +108,11 @@ describe('theme selection', () => {
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('mtb')
   })
 
-  it('uses the stored theme when the query is missing', () => {
+  it('keeps stored theme for an unknown query but first load without a query is tellr', () => {
     window.localStorage.setItem(THEME_STORAGE_KEY, 'pnc')
     at('')
-    expect(screen.getByTestId('theme-root').getAttribute('data-theme')).toBe('pnc')
-    expect(screen.getByTestId('theme-wordmark').textContent).toContain('PNC')
+    expect(screen.getByTestId('theme-root').getAttribute('data-theme')).toBe('tellr')
+    expect(screen.getByTestId('theme-wordmark').textContent).toContain('tellr')
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('pnc')
   })
 

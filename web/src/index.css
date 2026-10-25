@@ -60,8 +60,9 @@ button[data-loading='true'],
 .tc-workstation {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: clamp(12px, 1.6vw, 24px);
+  gap: var(--tc-space-workstation, clamp(10px, 1.3vw, 20px));
   align-items: stretch;
+  min-width: 0;
 }
 
 .tc-transaction {
@@ -75,10 +76,59 @@ button[data-loading='true'],
   max-height: calc(100vh - 16px);
   overflow: auto;
   border-radius: var(--tc-radius-card, 16px);
-  padding: clamp(12px, 1.2vw, 20px);
+  padding: var(--tc-space-card-fluid, clamp(10px, 1vw, 16px));
   display: grid;
-  gap: clamp(12px, 1.2vw, 16px);
+  gap: var(--tc-space-strip, clamp(10px, 1vw, 13px));
   align-content: start;
+  min-width: 0;
+  background: var(--tc-surface, #1e1b4b);
+  color: var(--tc-text, #ffffff);
+  border: 1px solid var(--tc-glass-border, #1c1917);
+}
+
+.tc-strip-body {
+  display: grid;
+  gap: inherit;
+  align-content: start;
+  min-width: 0;
+}
+
+.tc-strip-body[data-dimmed='true'] {
+  opacity: 0.72;
+}
+
+.tc-strip-updating {
+  position: absolute;
+  top: var(--tc-space-card-fluid, 10px);
+  right: var(--tc-space-card-fluid, 10px);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--tc-secondary-bg, #e7e5e4);
+  color: var(--tc-secondary-fg, #1c1917);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  pointer-events: none;
+}
+
+.tc-inline-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: tc-spin 0.7s linear infinite;
+}
+
+@keyframes tc-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (min-width: 900px) {
@@ -117,7 +167,8 @@ button[data-loading='true'],
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 12px 16px;
+  gap: 10px 12px;
+  min-width: 0;
 }
 
 .tc-toolbar-customer {
@@ -164,29 +215,29 @@ button[data-loading='true'],
 
 .tc-title {
   margin: 0;
-  font-size: clamp(1.35rem, 1vw + 1rem, 1.75rem);
+  font-size: var(--tc-type-title, clamp(1.1rem, 0.8vw + 0.82rem, 1.45rem));
   font-weight: 700;
   line-height: 1.2;
 }
 
 .tc-section-heading {
   margin: 0;
-  font-size: clamp(1.05rem, 0.35vw + 0.95rem, 1.15rem);
+  font-size: var(--tc-type-section, clamp(0.9rem, 0.28vw + 0.78rem, 0.98rem));
   font-weight: 600;
   line-height: 1.3;
 }
 
 .tc-facts {
   display: grid;
-  grid-template-columns: minmax(8.5rem, 12rem) minmax(0, 1fr);
-  gap: clamp(6px, 0.6vw, 10px) clamp(12px, 1.2vw, 20px);
+  grid-template-columns: minmax(7rem, 10rem) minmax(0, 1fr);
+  gap: var(--tc-space-facts, clamp(5px, 0.5vw, 8px) clamp(10px, 1vw, 16px));
   margin: 0;
   align-items: baseline;
 }
 
 .tc-explain {
   display: grid;
-  gap: clamp(8px, 1vw, 14px);
+  gap: var(--tc-space-explain, clamp(6px, 0.8vw, 12px));
   align-content: start;
 }
 
@@ -195,7 +246,7 @@ button[data-loading='true'],
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .tc-factor-head {
@@ -265,9 +316,9 @@ button[data-loading='true'],
   color: var(--tc-text);
   border: 1px solid var(--tc-glass-border, #1c1917);
   border-radius: var(--tc-radius-card, 16px);
-  padding: clamp(12px, 1.2vw, 20px);
+  padding: var(--tc-space-card-fluid, clamp(10px, 1vw, 16px));
   display: grid;
-  gap: clamp(8px, 1vw, 14px);
+  gap: var(--tc-space-explain, clamp(6px, 0.8vw, 12px));
 }
 
 .tc-level-badge {
@@ -275,7 +326,11 @@ button[data-loading='true'],
   align-items: center;
   gap: 8px;
   font-weight: 700;
-  font-size: clamp(1.15rem, 0.6vw + 1rem, 1.4rem);
+  font-size: var(--tc-type-level, clamp(0.95rem, 0.48vw + 0.82rem, 1.15rem));
+  padding: 4px 10px;
+  border-radius: 999px;
+  min-height: 32px;
+  width: fit-content;
 }
 
 .tc-shell {
@@ -286,16 +341,90 @@ button[data-loading='true'],
 .tc-header {
   container-type: inline-size;
   container-name: header;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.tc-header .tc-segment,
+.tc-header .tc-scheme-menu,
+.tc-header .tc-btn {
+  flex: 0 0 auto;
+}
+
+.tc-connection {
+  box-sizing: border-box;
+  margin: 0;
+  white-space: nowrap;
+  flex: 0 1 auto;
+  min-width: 0;
+  width: max-content;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid var(--tc-glass-border, #1c1917);
+  border-radius: 999px;
+  padding: 0 10px;
+  min-height: 32px;
+  line-height: 32px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  background: var(--tc-chip-bg, #111827);
+  color: var(--tc-chip-fg, #f9fafb);
+}
+
+.tc-connection[data-kind='live'] {
+  background: var(--tc-risk-clear-bg, #ecfdf5);
+  color: var(--tc-risk-clear-fg, #14532d);
+}
+
+.tc-closed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 8px 12px;
+  border-radius: var(--tc-radius-control, 8px);
+  background: var(--tc-action-bg, #1e1b4b);
+  color: var(--tc-action-fg, #ffffff);
 }
 
 .tc-header-title {
   margin: 0;
-  flex: 0 1 auto;
-  min-width: 0;
-  font-size: clamp(1rem, 0.6vw + 0.85rem, 1.25rem);
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  overflow: visible;
+  font-size: var(--tc-type-header, clamp(0.88rem, 0.45vw + 0.72rem, 1.05rem));
   line-height: 1.2;
   font-weight: var(--tc-heading-weight, 700);
   white-space: nowrap;
+}
+
+.tc-live-badge {
+  box-sizing: border-box;
+  margin: 0;
+  white-space: nowrap;
+  flex: 0 1 auto;
+  min-width: 0;
+  width: max-content;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid var(--tc-accent, #1c1917);
+  color: var(--tc-text, #1c1917);
+  background-color: var(--tc-glass-fallback, transparent);
+  border-radius: 999px;
+  padding: 0 12px;
+  min-height: 32px;
+  line-height: 32px;
+  font-weight: 600;
+  font-size: 0.875rem;
 }
 
 .tc-header-nav {
@@ -305,13 +434,35 @@ button[data-loading='true'],
   gap: 8px;
   overflow-x: auto;
   min-height: 48px;
-  min-width: 0;
-  flex: 1 1 auto;
+  min-width: min(100%, 16rem);
+  flex: 1 1 20rem;
   scrollbar-width: none;
 }
 
 .tc-header-nav::-webkit-scrollbar {
   display: none;
+}
+
+.tc-nav-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 12px;
+  color: var(--tc-muted, #44403c);
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  cursor: default;
+}
+
+.tc-page-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+.tc-footer {
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .tc-scheme-menu {
@@ -326,7 +477,18 @@ button[data-loading='true'],
 }
 
 /* After .tc-segment so the menu replaces the segment instead of sitting beside it. */
-@container header (max-width: 1120px) {
+@container header (max-width: 1280px) {
+  .tc-header .tc-segment.tc-scheme-full {
+    display: none;
+  }
+
+  .tc-header .tc-scheme-menu {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+@media (max-width: 1280px) {
   .tc-header .tc-segment.tc-scheme-full {
     display: none;
   }
@@ -339,15 +501,15 @@ button[data-loading='true'],
 
 .tc-kv {
   display: grid;
-  grid-template-columns: 9.5rem minmax(0, 1fr);
-  gap: 8px 16px;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: 6px 12px;
   margin: 0;
   align-items: baseline;
 }
 
 .tc-kv dt {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.88rem;
   font-weight: 700;
 }
 
@@ -365,6 +527,9 @@ button[data-loading='true'],
 .tc-badge {
   display: inline-flex;
   align-items: center;
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: 100%;
   min-height: 24px;
   padding: 0 8px;
   border-radius: 999px;
@@ -375,17 +540,47 @@ button[data-loading='true'],
   line-height: 1.2;
 }
 
-.tc-strip[data-level='clear'] {
+.tc-signal-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tc-signal-row[data-state='dismissed'] {
+  opacity: 0.55;
+}
+
+.tc-signal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.tc-signal-actions {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.tc-strip[data-level='clear'] .tc-level-badge,
+.tc-level-badge[data-level='clear'] {
   background: var(--tc-risk-clear-bg, #f5f5f4);
   color: var(--tc-risk-clear-fg, #1c1917);
 }
 
-.tc-strip[data-level='caution'] {
+.tc-strip[data-level='caution'] .tc-level-badge,
+.tc-level-badge[data-level='caution'] {
   background: var(--tc-risk-caution-bg, #ffedd5);
   color: var(--tc-risk-caution-fg, #9a3412);
 }
 
-.tc-strip[data-level='high'] {
+.tc-strip[data-level='high'] .tc-level-badge,
+.tc-level-badge[data-level='high'] {
   background: var(--tc-risk-high-bg, #7f1d1d);
   color: var(--tc-risk-high-fg, #ffffff);
 }
@@ -416,9 +611,91 @@ button[data-loading='true'],
   }
 }
 
+/*
+  Native select popup. Windows Chrome and Edge paint the option list from
+  the select's own color-scheme. :root stays `light dark` so it can follow
+  the OS, which left a white list under the dark theme's light text.
+  data-scheme is the resolved mode, including System. The closed control's
+  shared style is transparent; the popup copies an opaque select background
+  when it ignores option backgrounds. Resting rows use surface/text. Hover
+  and selected rows use the button pair. Both pairs are opaque and WCAG AA.
+*/
+html[data-color-scheme='dark'] select,
+[data-testid='theme-root'][data-scheme='dark'] select,
+[data-scheme='dark'] select {
+  color-scheme: dark;
+  background-color: var(--tc-surface, #1e1b4b) !important;
+  color: var(--tc-text, #ffffff) !important;
+}
+
+html[data-color-scheme='light'] select,
+[data-testid='theme-root'][data-scheme='light'] select,
+[data-scheme='light'] select {
+  color-scheme: light;
+  background-color: var(--tc-surface, #ffffff) !important;
+  color: var(--tc-text, #1c1917) !important;
+}
+
+html[data-color-scheme='dark'] select option,
+[data-scheme='dark'] select option {
+  background-color: var(--tc-surface, #1e1b4b);
+  color: var(--tc-text, #ffffff);
+}
+
+html[data-color-scheme='light'] select option,
+[data-scheme='light'] select option {
+  background-color: var(--tc-surface, #ffffff);
+  color: var(--tc-text, #1c1917);
+}
+
+html[data-color-scheme='dark'] select option:hover,
+html[data-color-scheme='dark'] select option:focus,
+html[data-color-scheme='dark'] select option:focus-visible,
+html[data-color-scheme='dark'] select option:active,
+html[data-color-scheme='dark'] select option:checked,
+[data-scheme='dark'] select option:hover,
+[data-scheme='dark'] select option:focus,
+[data-scheme='dark'] select option:focus-visible,
+[data-scheme='dark'] select option:active,
+[data-scheme='dark'] select option:checked {
+  background-color: var(--tc-button, #f8fafc);
+  color: var(--tc-button-text, #1e1b4b);
+}
+
+html[data-color-scheme='light'] select option:hover,
+html[data-color-scheme='light'] select option:focus,
+html[data-color-scheme='light'] select option:focus-visible,
+html[data-color-scheme='light'] select option:active,
+html[data-color-scheme='light'] select option:checked,
+[data-scheme='light'] select option:hover,
+[data-scheme='light'] select option:focus,
+[data-scheme='light'] select option:focus-visible,
+[data-scheme='light'] select option:active,
+[data-scheme='light'] select option:checked {
+  background-color: var(--tc-button, #1e1b4b);
+  color: var(--tc-button-text, #ffffff);
+}
 
 :root {
   color-scheme: light dark;
+  --tc-type-title: clamp(1.1rem, 0.8vw + 0.82rem, 1.45rem);
+  --tc-type-section: clamp(0.9rem, 0.28vw + 0.78rem, 0.98rem);
+  --tc-type-header: clamp(0.88rem, 0.45vw + 0.72rem, 1.05rem);
+  --tc-type-display: clamp(1.1rem, 1.1vw, 1.5rem);
+  --tc-type-amount: clamp(1.22rem, 1.3vw, 1.5rem);
+  --tc-type-level: clamp(0.95rem, 0.48vw + 0.82rem, 1.15rem);
+  --tc-type-action: clamp(1.1rem, 1.1vw, 1.5rem);
+  --tc-space-workstation: clamp(10px, 1.3vw, 20px);
+  --tc-space-card-fluid: clamp(10px, 1vw, 16px);
+  --tc-space-strip: clamp(10px, 1vw, 13px);
+  --tc-space-facts: clamp(5px, 0.5vw, 8px) clamp(10px, 1vw, 16px);
+  --tc-space-explain: clamp(6px, 0.8vw, 12px);
+}
+
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 body {
@@ -426,6 +703,18 @@ body {
   min-height: 100vh;
   font-family: Poppins, 'Segoe UI', system-ui, sans-serif;
   background-color: var(--tc-bg-color, #0b1026);
+}
+
+.tc-display {
+  font-size: var(--tc-type-display, clamp(1.1rem, 1.1vw, 1.5rem));
+}
+
+.tc-amount {
+  font-size: var(--tc-type-amount, clamp(1.22rem, 1.3vw, 1.5rem));
+}
+
+.tc-action-copy {
+  font-size: var(--tc-type-action, clamp(1.1rem, 1.1vw, 1.5rem));
 }
 
 @media (prefers-contrast: more) {
@@ -445,6 +734,21 @@ body {
 
   :focus-visible {
     outline-width: 3px;
+  }
+
+  select option {
+    background-color: var(--tc-surface, Canvas);
+    color: var(--tc-text, CanvasText);
+  }
+
+  select option:hover,
+  select option:focus,
+  select option:focus-visible,
+  select option:active,
+  select option:checked {
+    background-color: var(--tc-button, Highlight);
+    color: var(--tc-button-text, HighlightText);
+    outline: 2px solid var(--tc-text, CanvasText);
   }
 }
 
@@ -467,6 +771,34 @@ body {
     forced-color-adjust: auto;
   }
 
+  html[data-color-scheme] select,
+  [data-testid='theme-root'][data-scheme] select,
+  [data-scheme] select,
+  select {
+    color-scheme: light dark !important;
+    background-color: ButtonFace !important;
+    background-image: none !important;
+    color: ButtonText !important;
+    border: 1px solid ButtonText !important;
+    forced-color-adjust: auto;
+  }
+
+  select option {
+    background-color: Field !important;
+    color: FieldText !important;
+    forced-color-adjust: none;
+  }
+
+  select option:hover,
+  select option:focus,
+  select option:focus-visible,
+  select option:active,
+  select option:checked {
+    background-color: Highlight !important;
+    color: HighlightText !important;
+    forced-color-adjust: none;
+  }
+
   button:focus-visible,
   a:focus-visible,
   input:focus-visible,
@@ -485,8 +817,12 @@ body {
   }
 
   .tc-badge,
+  .tc-connection,
+  .tc-closed,
   [data-level] {
     border: 1px solid CanvasText;
+    background: Canvas !important;
+    color: CanvasText !important;
   }
 }
 

@@ -4,6 +4,7 @@ import { controlStyle, secondaryStyle } from '../theme/controls'
 import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
 import { LevelIcon } from '../ui/LevelIcon'
 import { actorLabel, handoffTitle, levelLabel, modeLabel, outcomeLabel, patternValue, shortId, suggestedLabel } from '../ui/plain'
+import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import type { HandoffProjection, Library, SessionState } from '../types'
 
 function purposeLabel(library: Library | null, id: string): string {
@@ -45,14 +46,16 @@ export function HandoffScreen({
   session = null,
   dismissed = [],
   confirmed = [],
+  postedChipIds = [],
 }: {
   library: Library | null
   projection: HandoffProjection | null
   session?: SessionState | null
   dismissed?: readonly string[]
   confirmed?: readonly string[]
+  postedChipIds?: readonly string[]
 }) {
-  const signals = flaggedSignals(session, projection, library, dismissed, confirmed)
+  const signals = flaggedSignals(session, projection, library, dismissed, confirmed, postedChipIds)
   return (
     <section data-testid="handoff-screen" className="tc-card">
       <PageTitle>{projection ? handoffTitle(projection.outcome, projection.actor) : 'Handoff'}</PageTitle>
@@ -71,8 +74,8 @@ export function HandoffScreen({
             <Fact term="Level">
               <span data-testid="handoff-level" data-level={projection.risk.level} className="tc-level-badge"><LevelIcon level={projection.risk.level} />{levelLabel(projection.risk.level)}</span>
             </Fact>
-            <Fact term="Score" testId="handoff-score">
-              {projection.risk.score}
+            <Fact term={URGENCY_SCORE_TERM} testId="handoff-score">
+              {formatUrgencyScore(projection.risk.score)}
             </Fact>
             <Fact term="Pattern" testId="handoff-pattern">
               {patternValue(projection.risk.pattern_label)}

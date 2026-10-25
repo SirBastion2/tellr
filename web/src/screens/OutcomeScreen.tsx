@@ -2,8 +2,10 @@ import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { buttonFill, buttonText, controlStyle, inputFill } from '../theme/controls'
 import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
-import { suggestedLabel } from '../ui/plain'
+import { outcomeLabel, suggestedLabel } from '../ui/plain'
+import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import type { OutcomeId, SessionState } from '../types'
+import type { RecordedDecision } from '../teller'
 
 const OUTCOME_LABEL: Record<OutcomeId, string> = {
   proceed: 'Proceed',
@@ -19,10 +21,16 @@ const tap: CSSProperties = controlStyle
 
 export function OutcomeScreen({
   session,
+  closed = false,
+  recorded = null,
   onSubmit,
+  onStartNew,
 }: {
   session: SessionState | null
+  closed?: boolean
+  recorded?: RecordedDecision | null
   onSubmit?: (body: { outcome: OutcomeId; actor: string }) => void
+  onStartNew?: () => void
 }) {
   const [actor, setActor] = useState('')
   const [chosen, setChosen] = useState<OutcomeId | null>(null)
@@ -38,10 +46,35 @@ export function OutcomeScreen({
   return (
     <section data-testid="outcome-screen" className="tc-card">
       <PageTitle>Outcome</PageTitle>
-      {session ? (
+      {session && closed ? (
+        <>
+          <p data-testid="visit-closed" style={{ margin: 0 }}>
+            This visit is closed. Start a new customer to record another decision.
+          </p>
+          {recorded ? (
+            <FactGrid label="Recorded decision">
+              <Fact term="Teller's decision">{outcomeLabel(recorded.outcome)}</Fact>
+              <Fact term="Teller name">{recorded.actor}</Fact>
+            </FactGrid>
+          ) : null}
+          <button
+            type="button"
+            className="tc-btn"
+            data-variant="primary"
+            data-testid="start-new-customer"
+            style={{ ...tap, backgroundColor: buttonFill, color: buttonText, borderColor: 'transparent' }}
+            onClick={() => onStartNew?.()}
+          >
+            Start new customer
+          </button>
+        </>
+      ) : session ? (
         <>
           <FactGrid label="Suggested outcome">
             <Fact term="Suggested outcome">{suggestedLabel(session.suggested_outcome)}</Fact>
+            <Fact term={URGENCY_SCORE_TERM} testId="outcome-score">
+              {formatUrgencyScore(session.risk.score)}
+            </Fact>
             <Fact term="Questions answered">{session.answers}</Fact>
           </FactGrid>
           <SectionHeading>Teller's decision</SectionHeading>
@@ -84,7 +117,7 @@ export function OutcomeScreen({
               onChange={(event) => {
                 setActor(event.target.value)
               }}
-              style={{ ...tap, marginLeft: '8px', backgroundColor: inputFill }}
+              style={{ ...tap, backgroundColor: inputFill }}
             />
           </label>
           <button

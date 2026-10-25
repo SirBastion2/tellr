@@ -10,9 +10,10 @@ const ROWS: readonly { keys: readonly string[]; what: string }[] = [
   { keys: ['D'], what: 'Dismiss the latest signal' },
   { keys: ['E'], what: 'Escalate to the supervisor' },
   { keys: ['[', ']'], what: 'Switch simulated customer' },
+  { keys: ['T'], what: 'Switch bank theme' },
 ]
 
-export function ShortcutHelp({ onClose, presenter = false }: { onClose: () => void; presenter?: boolean }) {
+export function ShortcutHelp({ onClose }: { onClose: () => void }) {
   const closeRef = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     closeRef.current?.focus()
@@ -49,9 +50,6 @@ export function ShortcutHelp({ onClose, presenter = false }: { onClose: () => vo
         <h2 id="shortcut-title" style={{ margin: 0, fontSize: 20 }}>
           Keyboard shortcuts
         </h2>
-        {presenter ? (
-          <p style={{ margin: 0 }}>Presenter mode keeps play, pause, and step. The other shortcuts are off.</p>
-        ) : null}
         <ul
           data-testid="shortcut-list"
           style={{
@@ -85,6 +83,10 @@ export function ShortcutHelp({ onClose, presenter = false }: { onClose: () => vo
             </li>
           ))}
         </ul>
+        <p data-testid="shortcut-scope" style={{ margin: 0, fontSize: 14 }}>
+          These keys work on every screen, including Customer file, Outcome, and Handoff.
+          They do nothing while you type in a field, or while Ctrl, Alt, or Cmd is held.
+        </p>
         <button
           ref={closeRef}
           type="button"

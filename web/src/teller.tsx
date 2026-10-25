@@ -1,12 +1,20 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { apiSend } from './api'
+import { ensureConnection } from './connection'
 import { openingRequest } from '../mock/replay'
 import type { ActivityFeed, AnswerPost, ChipSource, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import { validateActivity, validateError, validateHandoff, validateLibrary, validateSessionState, type SchemaIssue } from './validate'
 
+export type RecordedDecision = {
+  outcome: OutcomeId
+  actor: string
+}
+
 type TellerValue = {
   library: Library | null
   session: SessionState | null
+  closed: boolean
+  recorded: RecordedDecision | null
   issues: SchemaIssue[]
   httpStatus: number | null
   error: ErrorResponse | null
@@ -44,9 +52,18 @@ export function TellerProvider({ children }: { children: ReactNode }) {
   const [writes, setWrites] = useState<ClientWrite[]>([])
   const [handoff, setHandoff] = useState<HandoffProjection | null>(null)
   const [activity, setActivity] = useState<ActivityFeed | null>(null)
+  const [closed, setClosed] = useState(false)
+  const [recorded, setRecorded] = useState<RecordedDecision | null>(null)
   const sessionRef = useRef<SessionState | null>(null)
   const writesRef = useRef<ClientWrite[]>([])
   const activityToken = useRef(0)
+  const generation = useRef(0)
+  const closedRef = useRef(false)
+
+  const markClosed = useCallback((next: boolean) => {
+    closedRef.current = next
+    setClosed(next)
+  }, [])
 
   const rememberSession = useCallback((next: SessionState | null) => {
     sessionRef.current = next
@@ -62,6 +79,10 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     let cancelled = false
     void (async () => {
       try {
+        await ensureConnection()
+        if (cancelled) {
+          return
+        }
         const result = await apiSend('GET', '/library')
         if (cancelled) {
           return
@@ -107,12 +128,19 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const takeSession = useCallback((result: { status: number; body: unknown }): SessionState | null => {
+  const takeSession = useCallback((result: { status: number; body: unknown }, gen: number): SessionState | null => {
+    if (gen !== generation.current) {
+      return null
+    }
     setHttpStatus(result.status)
     if (result.status === 409) {
       const found = validateError(result.body)
       setIssues(found)
-      setError(found.length === 0 ? (result.body as ErrorResponse) : null)
+      const parsed = found.length === 0 ? (result.body as ErrorResponse) : null
+      setError(parsed)
+      if (parsed?.error.code === 'session_closed') {
+        markClosed(true)
+      }
       return null
     }
     if (result.status !== 200) {
@@ -128,7 +156,24 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     rememberSession(next)
     void loadActivity(next.session_id)
     return next
-  }, [loadActivity, rememberSession])
+  }, [loadActivity, markClosed, rememberSession])
+
+  function openGeneration(): number {
+    generation.current += 1
+    setError(null)
+    rememberWrites([])
+    setHandoff(null)
+    setActivity(null)
+    return generation.current
+  }
+
+  function acceptOpened(next: SessionState | null): SessionState | null {
+    if (next) {
+      markClosed(false)
+      setRecorded(null)
+    }
+    return next
+  }
 
   async function startCase(caseId: string): Promise<SessionState | null> {
     const request = openingRequest(caseId)
@@ -136,12 +181,13 @@ export function TellerProvider({ children }: { children: ReactNode }) {
       setHttpStatus(404)
       return null
     }
-    rememberWrites([])
-    setHandoff(null)
-    setActivity(null)
-    const body = { ...(request as Record<string, unknown>), scenario_id: caseId }
+    const gen = openGeneration()
+    const opened = request as Record<string, unknown>
+    const mode = opened.mode === 'live' || opened.mode === 'practice' ? opened.mode : 'practice'
+    const amountBand = typeof opened.amount_band === 'string' && opened.amount_band.length > 0 ? opened.amount_band : '5000_9999'
+    const body = { mode, amount_band: amountBand, scenario_id: caseId }
     const result = await apiSend('POST', `/sessions?case=${encodeURIComponent(caseId)}`, body)
-    return takeSession(result)
+    return acceptOpened(takeSession(result, gen))
   }
 
   async function startLive(): Promise<SessionState | null> {
@@ -150,24 +196,23 @@ export function TellerProvider({ children }: { children: ReactNode }) {
       sample && typeof sample === 'object' && typeof (sample as { amount_band?: unknown }).amount_band === 'string'
         ? (sample as { amount_band: string }).amount_band
         : '5000_9999'
-    rememberWrites([])
-    setHandoff(null)
-    setActivity(null)
+    const gen = openGeneration()
     const result = await apiSend('POST', '/sessions', { mode: 'live', amount_band: amountBand })
-    return takeSession(result)
+    return acceptOpened(takeSession(result, gen))
   }
 
   async function postContext(chips: string[], source?: ChipSource): Promise<void> {
     const current = sessionRef.current
-    if (!current) {
+    if (!current || closedRef.current) {
       return
     }
+    const gen = generation.current
     const body: { chips: string[]; source?: ChipSource } = { chips }
     if (source) {
       body.source = source
     }
     const result = await apiSend('POST', `/sessions/${current.session_id}/context`, body)
-    const next = takeSession(result)
+    const next = takeSession(result, gen)
     if (next) {
       rememberWrites([...writesRef.current, { kind: 'context', chips, source }])
     }
@@ -175,9 +220,10 @@ export function TellerProvider({ children }: { children: ReactNode }) {
 
   async function postAnswer(answer: AnswerPost): Promise<void> {
     const current = sessionRef.current
-    if (!current) {
+    if (!current || closedRef.current) {
       return
     }
+    const gen = generation.current
     const body: AnswerPost = {
       question_id: answer.question_id,
       chip: answer.chip,
@@ -186,7 +232,7 @@ export function TellerProvider({ children }: { children: ReactNode }) {
       body.purpose = answer.purpose
     }
     const result = await apiSend('POST', `/sessions/${current.session_id}/answers`, body)
-    const next = takeSession(result)
+    const next = takeSession(result, gen)
     if (next) {
       rememberWrites([...writesRef.current, { kind: 'answer', answer }])
     }
@@ -195,22 +241,34 @@ export function TellerProvider({ children }: { children: ReactNode }) {
   const postOutcome = useCallback(async (outcome: OutcomeId, actor: string): Promise<void> => {
     const current = sessionRef.current
     const trimmed = actor.trim()
-    if (!current || trimmed.length === 0) {
+    if (!current || trimmed.length === 0 || closedRef.current) {
       return
     }
+    const gen = generation.current
     const result = await apiSend('POST', `/sessions/${current.session_id}/outcome`, {
       outcome,
       actor: trimmed,
     })
-    takeSession(result)
-  }, [takeSession])
+    if (gen !== generation.current) {
+      return
+    }
+    if (result.status === 200) {
+      markClosed(true)
+      setRecorded({ outcome, actor: trimmed })
+    }
+    takeSession(result, gen)
+  }, [markClosed, takeSession])
 
   const loadHandoff = useCallback(async (): Promise<void> => {
     const current = sessionRef.current
     if (!current) {
       return
     }
+    const gen = generation.current
     const result = await apiSend('GET', `/sessions/${current.session_id}/handoff`)
+    if (gen !== generation.current) {
+      return
+    }
     setHttpStatus(result.status)
     if (result.status !== 200) {
       setHandoff(null)
@@ -228,11 +286,12 @@ export function TellerProvider({ children }: { children: ReactNode }) {
 
   async function undo(): Promise<void> {
     const current = sessionRef.current
-    if (!current) {
+    if (!current || closedRef.current) {
       return
     }
+    const gen = generation.current
     const result = await apiSend('POST', `/sessions/${current.session_id}/undo`)
-    const next = takeSession(result)
+    const next = takeSession(result, gen)
     if (next) {
       rememberWrites(writesRef.current.slice(0, -1))
     }
@@ -272,6 +331,8 @@ export function TellerProvider({ children }: { children: ReactNode }) {
   const value: TellerValue = {
     library,
     session,
+    closed,
+    recorded,
     issues,
     httpStatus,
     error,

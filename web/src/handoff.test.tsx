@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { HandoffScreen } from './screens/HandoffScreen'
 import { TellerProvider, useTeller } from './teller'
 import { actorLabel, modeLabel, patternValue, shortId } from './ui/plain'
+import { formatUrgencyScore, URGENCY_SCORE_TERM } from './ui/urgencyScore'
 import type { HandoffProjection, Library, SessionState } from './types'
 import { validateHandoff } from './validate'
 
@@ -42,7 +43,8 @@ describe('Handoff screen', () => {
     expect(screen.getByTestId('handoff-answers').textContent).toBe(String(projection.answers))
     expect(screen.getByTestId('handoff-level').textContent).toBe('Caution')
     expect(screen.getByTestId('handoff-level').getAttribute('data-level')).toBe(projection.risk.level)
-    expect(screen.getByTestId('handoff-score').textContent).toBe(String(projection.risk.score))
+    expect(screen.getByTestId('handoff-score').textContent).toBe(formatUrgencyScore(projection.risk.score))
+    expect(screen.getByText(URGENCY_SCORE_TERM)).toBeTruthy()
     expect(screen.getByTestId('handoff-pattern').textContent).toBe(patternValue(projection.risk.pattern_label))
     expect(screen.getAllByTestId('handoff-reason').map((item) => item.textContent)).toEqual(
       projection.risk.reasons.map((reason) => reason.label),
@@ -75,7 +77,7 @@ describe('Handoff screen', () => {
     projection.risk = { ...projection.risk, score: 12345, pattern_label: 'From the server' }
     projection.suggested_outcome = 'escalate'
     render(<HandoffScreen library={library} projection={projection} />)
-    expect(screen.getByTestId('handoff-score').textContent).toBe('12345')
+    expect(screen.getByTestId('handoff-score').textContent).toBe(formatUrgencyScore(12345))
     expect(screen.getByTestId('handoff-pattern').textContent).toBe('From the server')
     expect(screen.getByTestId('handoff-suggested').textContent).toBe('Escalate')
     expect(screen.getByTestId('handoff-suggested').getAttribute('data-outcome')).toBe('escalate')
@@ -220,7 +222,7 @@ describe('handoff and outcome against the API', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: 'load' }))
     await waitFor(() => {
-      expect(screen.getByTestId('handoff-score').textContent).toBe('58')
+      expect(screen.getByTestId('handoff-score').textContent).toBe(formatUrgencyScore(58))
     })
     expect(screen.getByTestId('handoff-pattern').textContent).toBe(patternValue(projection.risk.pattern_label))
     expect(screen.getByTestId('handoff-outcome').textContent).toBe('Not recorded yet')

@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import {
-  flaggedSignals,
-  listedChipIds,
-  rememberActivityRows,
-  rememberChipOrder,
-  visibleActivityRows,
-} from './feed'
-import type { ActivityRow, HandoffProjection, Library, SessionState } from './types'
+import { flaggedSignals, listedChipIds, mergeSignalRows, rememberChipOrder } from './feed'
+import type { HandoffProjection, Library, SessionState } from './types'
 
 const chips = [
   { id: 'chip.on_phone', source: 'observed' as const },
@@ -22,6 +16,12 @@ const library = {
     label: chip.id.replace('chip.', '').replaceAll('_', ' '),
     signal: `sig.${chip.id.slice(5)}`,
     probe: null,
+  })),
+  signals: chips.map((chip) => ({
+    id: `sig.${chip.id.slice(5)}`,
+    label: chip.id.replace('chip.', '').replaceAll('_', ' '),
+    rationale: '',
+    direction: 'concern' as const,
   })),
 } as Library
 
@@ -70,26 +70,36 @@ describe('chip order', () => {
     const afterConfirm = listedChipIds(posted, chips, [], order)
     expect(afterConfirm).toEqual(posted)
   })
-})
 
-describe('activity memory', () => {
-  const rows: ActivityRow[] = chips.map((chip, index) => ({
-    ts: `2026-10-24T00:00:0${index}Z`,
-    channel: chip.id,
-    amount_band: '5000_9999',
-    type: 'ContextAdded',
-  }))
-
-  it('keeps dismissed rows in the same first-seen order', () => {
-    const seen = rememberActivityRows([], rows)
-    const current = rows.filter((row) => row.channel !== 'chip.rushed')
-    const visible = visibleActivityRows(seen, current, ['chip.rushed'])
-    expect(visible.map((row) => row.channel)).toEqual(rows.map((row) => row.channel))
+  it('keeps merged leftover chips in first-seen order after dismiss', () => {
+    const posted = chips.map((chip) => chip.id)
+    const order = rememberChipOrder([], posted)
+    const reasons = [
+      { id: 'sig.on_phone', label: 'on phone', rationale: '' },
+      { id: 'sig.cash_only', label: 'cash only', rationale: '' },
+      { id: 'sig.rushed', label: 'rushed', rationale: '' },
+    ]
+    const session = sessionWith(chips, reasons)
+    const before = mergeSignalRows(library, session, posted, [], [], order)
+    const after = mergeSignalRows(
+      library,
+      sessionWith(
+        chips.filter((chip) => chip.id !== 'chip.cash_only'),
+        reasons.filter((reason) => reason.id !== 'sig.cash_only'),
+      ),
+      posted.filter((id) => id !== 'chip.cash_only'),
+      ['chip.rushed'],
+      ['chip.cash_only'],
+      order,
+    )
+    expect(after.raises.map((row) => row.chipId ?? row.id)).toEqual(before.raises.map((row) => row.chipId ?? row.id))
+    expect(after.raises.find((row) => row.chipId === 'chip.cash_only')?.state).toBe('dismissed')
+    expect(after.raises.find((row) => row.chipId === 'chip.rushed')?.state).toBe('confirmed')
   })
 })
 
 describe('handoff flagged list', () => {
-  it('lists the session chips, not only the three reasons, and marks dismiss/confirm', () => {
+  it('lists the merged session rows, not only the three reasons, and marks dismiss/confirm', () => {
     const reasons = [
       { id: 'sig.on_phone', label: 'On the phone', rationale: '' },
       { id: 'sig.cash_only', label: 'Cash only', rationale: '' },
@@ -97,7 +107,15 @@ describe('handoff flagged list', () => {
     ]
     const session = sessionWith(chips, reasons)
     const projection = { risk: session.risk } as HandoffProjection
-    const found = flaggedSignals(session, projection, library, ['chip.cash_only'], ['chip.rushed'])
+    const found = flaggedSignals(
+      session,
+      projection,
+      library,
+      ['chip.cash_only'],
+      ['chip.rushed'],
+      chips.map((chip) => chip.id),
+      chips.map((chip) => chip.id),
+    )
     expect(found.map((item) => item.id)).toEqual(chips.map((chip) => chip.id))
     expect(found.find((item) => item.id === 'chip.cash_only')?.status).toBe('Dismissed')
     expect(found.find((item) => item.id === 'chip.rushed')?.status).toBe('Teller confirmed')

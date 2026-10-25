@@ -1,15 +1,21 @@
-import { SOLID_CONTROLS } from '../chrome'
+import { DARK_CONTROLS, DARK_RISK, SOLID_CONTROLS } from '../chrome'
 import type { BankTheme } from '../types'
 import { FOOTER_TEXT } from '../tokens'
 
 /** F.N.B. Corporation. Square corners, gold rule, compact density. */
-const risk = {
+const riskLight = {
   clearBg: '#F8F4EC',
   clearFg: '#041E42',
   cautionBg: '#FFEDD5',
   cautionFg: '#9A3412',
   highBg: '#7F1D1D',
   highFg: '#FFFFFF',
+}
+
+const riskDark = {
+  clearBg: '#041E42',
+  clearFg: '#F8F4EC',
+  ...DARK_RISK,
 }
 
 export const theme: BankTheme = {
@@ -32,7 +38,7 @@ export const theme: BankTheme = {
   border: { width: '2px', style: 'solid' },
   shadow: { card: '0 10px 0 rgba(0, 0, 0, 0.35)' },
   density: 'compact',
-  space: { gap: '10px', cardPadding: '14px' },
+  space: { gap: '8px', cardPadding: '12px' },
   background: {
     color: '#041428',
     image:
@@ -57,8 +63,8 @@ export const theme: BankTheme = {
     active: '#C5A572',
     inactive: 'rgba(126, 182, 224, 0.45)',
   },
-  risk,
-  ...SOLID_CONTROLS,
+  risk: riskDark,
+  ...DARK_CONTROLS,
   link: '#F5E6C8',
   surface: '#062448',
   light: {
@@ -84,7 +90,7 @@ export const theme: BankTheme = {
     buttonText: '#F8F4EC',
     logoColor: '#041E42',
     progress: { active: '#041E42', inactive: '#7EB6E0' },
-    risk,
+    risk: riskLight,
     ...SOLID_CONTROLS,
     link: '#1D4E89',
     surface: '#FFFCF6',
