@@ -88,8 +88,11 @@ describe('header labels and spacing rhythm', () => {
 
     expect(headerRule(source, '.tc-kv dt')).toMatch(/line-height:\s*var\(--tc-line-fact/)
     expect(headerRule(source, '.tc-kv dd')).toMatch(/line-height:\s*var\(--tc-line-fact/)
+    expect(headerRule(source, '.tc-kv dd')).toMatch(/min-width:\s*0/)
+    expect(headerRule(source, '.tc-kv dd')).toMatch(/overflow-wrap:\s*break-word/)
     expect(source).toMatch(/\.tc-facts dt[\s\S]*?line-height:\s*var\(--tc-line-fact/)
     expect(source).toMatch(/\.tc-facts dd[\s\S]*?line-height:\s*var\(--tc-line-fact/)
+    expect(source).toMatch(/\.tc-facts dd[\s\S]*?overflow-wrap:\s*break-word/)
     expect(headerRule(source, '.tc-amount')).toMatch(/line-height:\s*var\(--tc-line-fact/)
     expect(headerRule(source, '.tc-amount')).toMatch(/font-size:\s*var\(--tc-text-2xl/)
   })

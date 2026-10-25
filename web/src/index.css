@@ -672,6 +672,7 @@ button[data-loading='true'],
   font-size: var(--tc-text-base);
   font-weight: var(--tc-font-weight);
   line-height: var(--tc-line-fact);
+  overflow-wrap: break-word;
 }
 
 .tc-timeline {
@@ -1019,6 +1020,7 @@ body {
   font-size: var(--tc-text-base);
   line-height: var(--tc-line-fact);
   font-weight: var(--tc-font-weight);
+  overflow-wrap: break-word;
 }
 
 @media (prefers-contrast: more) {

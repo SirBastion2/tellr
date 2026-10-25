@@ -74,7 +74,7 @@ export const CUSTOMERS: readonly CustomerFile[] = [
       { when: 'Three weeks ago', description: 'Cash withdrawal', amount: '$200' },
     ],
     transaction: {
-      type: 'Cash withdrawal',
+      type: 'Cash withdrawal above the branch threshold',
       amount: '$8,000',
       memo: 'Says a contractor needs cash today',
       amountBand: '5000_9999',
@@ -134,7 +134,7 @@ export const CUSTOMERS: readonly CustomerFile[] = [
       { when: 'Last month', description: 'Payroll deposit', amount: 'Usual' },
     ],
     transaction: {
-      type: 'Cash withdrawal',
+      type: 'Cash withdrawal above the branch threshold',
       amount: '$6,500',
       memo: 'Partner says the investment desk takes cash only',
       amountBand: '5000_9999',
@@ -194,7 +194,7 @@ export const CUSTOMERS: readonly CustomerFile[] = [
       { when: 'Last month', description: 'Cash withdrawal', amount: '$150' },
     ],
     transaction: {
-      type: 'Cash withdrawal',
+      type: 'Cash withdrawal above the branch threshold',
       amount: '$7,500',
       memo: 'Caller says a warrant must be paid in cash today',
       amountBand: '5000_9999',

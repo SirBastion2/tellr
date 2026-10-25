@@ -109,7 +109,8 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 
 | File | What it is |
 |---|---|
-| `web/src/demo/customers.ts` | Five synthetic files and `SCRIPT_TARGETS_MS`. The last two post no chips. Name and age band stay in the data and are not rendered. |
+| `web/src/demo/customers.ts` | Five synthetic files and `SCRIPT_TARGETS_MS`. The last two post no chips. Files that post `chip.above_threshold` set `transaction.type` to that chip's library label. Name and age band stay in the data and are not rendered. |
+| `web/src/demo/customers.test.ts` | Five files, script pacing, and Type strings for above-threshold vs routine files. |
 | `web/src/demo/clock.ts` | Simulated `m:ss` elapsed (sum of `delayMs`) for the toolbar elapsed timer and timeline. |
 | `web/src/demo/clock.test.ts` | Elapsed timer and timeline stay on simulated time at 1× and 4×. |
 | `web/src/ui/localTime.ts` | Parse session stamps (naive ISO = UTC), format local time of day, emit ISO with the client offset. |
@@ -138,7 +139,7 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 | `web/src/feed.test.ts` | Stable chip order, merged leftover chips, and handoff listing from the merged rows. |
 | `web/src/workstation/explain.ts` | Reads `explanation` and groups raises and lowers. Strength words from the response's own weights. |
 | `web/src/workstation/ExplanationPanel.tsx` | Why this level. Fact grid (one Level row, plus raw level only when it differs, Urgency Score `<score>/<max>`, pattern, suggested outcome). Read-only model list: reason, origin pill, strength, What would lower it. No confirm/dismiss. Optional single local noted time from `GET /activity`. Collapsed technical details. |
-| `web/src/workstation/TransactionPanel.tsx` | Key-value transaction (type, amount, memo once) on the shared `tc-kv` grid. Type is `customer.transaction.type`. Then the timeline (speaker Customer), optional case file without name/age, and event progress. Banner is `Practice data.` |
+| `web/src/workstation/TransactionPanel.tsx` | Key-value transaction (type, amount, memo once) on the shared `tc-kv` grid. Type is `customer.transaction.type` (no client rewrite). The label column is `max-content`; the value wraps (`overflow-wrap: break-word`). Then the timeline (speaker Customer), optional case file without name/age, and event progress. Banner is `Practice data.` |
 | `web/src/ui/ShortcutHelp.tsx` | `?` lists the working keys: `?`, `P`, `N`, `R`, `C`, `D`, `E`, `[` / `]`, `T` in a two-column grid so `[` and `]` align. Notes that they work on every screen. No key is route-limited. |
 | `web/src/ui/shortcuts.ts` | Pure key map, including `T` → theme. Escape always closes help or a confirm. Other keys no-op while typing or while Ctrl/Cmd/Alt is held. |
 | `web/src/ui/DemoShortcuts.tsx` | One window listener, mounted from `ConnectedShell`. Home, Customer file, Outcome, and Handoff share it. |
