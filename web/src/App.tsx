@@ -523,6 +523,7 @@ function ConnectedShell() {
   const [helpOpen, setHelpOpen] = useState(false)
   const [confirm, setConfirm] = useState<ConfirmKind>(null)
   const [elapsedMs, setElapsedMs] = useState(0)
+  const [clockOn, setClockOn] = useState(false)
   const indexRef = useRef(0)
   const customerRef = useRef(customerId)
   const speedRef = useRef(speed)
@@ -536,6 +537,14 @@ function ConnectedShell() {
   const actionsRef = useRef<SignalAction[]>([])
   const dismissedSource = useRef(new Map<string, ChipSource>())
 
+  const engageClock = useCallback((on: boolean) => {
+    if (clockOnRef.current === on) {
+      return
+    }
+    clockOnRef.current = on
+    setClockOn(on)
+  }, [])
+
   useEffect(() => {
     indexRef.current = index
     customerRef.current = customerId
@@ -547,15 +556,18 @@ function ConnectedShell() {
   }, [actions, customerId, index, playing, presenter.on, speed, teller])
 
   useEffect(() => {
-    // One interval for the shell. Index, speed, and route changes do not
-    // restart it. It advances while clockOnRef is set and stops on pause.
-    // The cap is the full script, not the beat currently posting.
+    if (!clockOn) {
+      return
+    }
+    // Started only when the clock is running, and not tied to index or route.
+    // Clearing this on each step froze the file timer while the step posted.
+    // The cap is the full script, not the beat currently in flight.
     let last = performance.now()
     const timer = window.setInterval(() => {
       const now = performance.now()
       const delta = now - last
       last = now
-      if (!clockOnRef.current || delta <= 0) {
+      if (delta <= 0) {
         return
       }
       const customer = customerById(customerRef.current)
@@ -569,7 +581,7 @@ function ConnectedShell() {
       setElapsedMs(next)
     }, 250)
     return () => window.clearInterval(timer)
-  }, [])
+  }, [clockOn])
 
   useEffect(() => {
     if (!sessionId || !location.pathname.endsWith('/handoff')) {
@@ -583,7 +595,7 @@ function ConnectedShell() {
       if (tellerRef.current.closed) {
         autoPlayRef.current = false
         playingRef.current = false
-        clockOnRef.current = false
+        engageClock(false)
         setPlaying(false)
       }
       return
@@ -593,7 +605,7 @@ function ConnectedShell() {
     if (!customer || !event) {
       autoPlayRef.current = false
       playingRef.current = false
-      clockOnRef.current = false
+      engageClock(false)
       setPlaying(false)
       return
     }
@@ -609,7 +621,7 @@ function ConnectedShell() {
       if (tellerRef.current.closed) {
         autoPlayRef.current = false
         playingRef.current = false
-        clockOnRef.current = false
+        engageClock(false)
         setPlaying(false)
         return
       }
@@ -619,15 +631,16 @@ function ConnectedShell() {
         elapsedRef.current = boundary
         setElapsedMs(elapsedRef.current)
       }
+      indexRef.current = next
       setIndex(next)
       if (!autoPlayRef.current) {
-        clockOnRef.current = false
+        engageClock(false)
       }
     } finally {
       lock.current = false
       setPending(false)
     }
-  }, [])
+  }, [engageClock])
 
   useEffect(() => {
     if (!playing) {
@@ -638,7 +651,7 @@ function ConnectedShell() {
     if (!event) {
       autoPlayRef.current = false
       playingRef.current = false
-      clockOnRef.current = false
+      engageClock(false)
       setPlaying(false)
       return
     }
@@ -653,7 +666,7 @@ function ConnectedShell() {
       void runCurrent()
     }, delay)
     return () => window.clearTimeout(timer)
-  }, [playing, index, runCurrent])
+  }, [playing, index, runCurrent, engageClock])
 
   const resetSession = useCallback(
     async (nextCustomerId?: string) => {
@@ -662,8 +675,9 @@ function ConnectedShell() {
       }
       autoPlayRef.current = false
       playingRef.current = false
-      clockOnRef.current = false
+      engageClock(false)
       setPlaying(false)
+      indexRef.current = 0
       setIndex(0)
       setConfirmed([])
       setDismissed([])
@@ -681,7 +695,7 @@ function ConnectedShell() {
         setPending(false)
       }
     },
-    [navigate],
+    [navigate, engageClock],
   )
 
   const requestSwitch = useCallback(
@@ -714,7 +728,7 @@ function ConnectedShell() {
     if (current.kind === 'escalate') {
       autoPlayRef.current = false
       playingRef.current = false
-      clockOnRef.current = false
+      engageClock(false)
       setPlaying(false)
       setPending(true)
       void (async () => {
@@ -736,7 +750,7 @@ function ConnectedShell() {
       return
     }
     void resetSession(current.id)
-  }, [confirm, navigate, resetSession])
+  }, [confirm, navigate, resetSession, engageClock])
 
   useDemoShortcuts({
     onEscape: () => {
@@ -750,13 +764,13 @@ function ConnectedShell() {
       const next = !autoPlayRef.current
       autoPlayRef.current = next
       playingRef.current = next
-      clockOnRef.current = next
+      engageClock(next)
       setPlaying(next)
     },
     onStep: () => {
       autoPlayRef.current = false
       playingRef.current = false
-      clockOnRef.current = true
+      engageClock(true)
       setPlaying(false)
       void runCurrent()
     },
@@ -832,19 +846,19 @@ function ConnectedShell() {
     onPlay: () => {
       autoPlayRef.current = true
       playingRef.current = true
-      clockOnRef.current = true
+      engageClock(true)
       setPlaying(true)
     },
     onPause: () => {
       autoPlayRef.current = false
       playingRef.current = false
-      clockOnRef.current = false
+      engageClock(false)
       setPlaying(false)
     },
     onStep: () => {
       autoPlayRef.current = false
       playingRef.current = false
-      clockOnRef.current = true
+      engageClock(true)
       setPlaying(false)
       void runCurrent()
     },
@@ -939,7 +953,7 @@ function ConnectedShell() {
       onSubmitOutcome={(body) => {
         autoPlayRef.current = false
         playingRef.current = false
-        clockOnRef.current = false
+        engageClock(false)
         setPlaying(false)
         void teller.postOutcome(body.outcome, body.actor)
       }}
