@@ -27,6 +27,7 @@ import { ThemeProvider, useColorScheme } from './theme/ThemeProvider'
 import { ThemeRoot } from './theme/ThemeRoot'
 import { ThemeWordmark } from './theme/Wordmark'
 import { ConfirmDialog } from './ui/ConfirmDialog'
+import { useDemoShortcuts } from './ui/DemoShortcuts'
 import { LEVEL_WORD } from './ui/LevelIcon'
 import { ShortcutHelp } from './ui/ShortcutHelp'
 import type { ActivityRow, AnswerPost, ChipSource, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
@@ -651,93 +652,68 @@ function ConnectedShell() {
     void resetSession(current.id)
   }, [confirm, navigate, resetSession])
 
-  useEffect(() => {
-    function onKey(event: KeyboardEvent) {
-      const target = event.target
-      const typing =
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement ||
-        target instanceof HTMLSelectElement
-      if (event.key === 'Escape') {
-        setHelpOpen(false)
-        setConfirm(null)
+  useDemoShortcuts({
+    onEscape: () => {
+      setHelpOpen(false)
+      setConfirm(null)
+    },
+    onHelp: () => {
+      setHelpOpen((open) => !open)
+    },
+    onPlay: () => {
+      setPlaying((value) => !value)
+    },
+    onStep: () => {
+      setPlaying(false)
+      void runCurrent()
+    },
+    onRestart: () => {
+      setPlaying(false)
+      setConfirm({ kind: 'restart' })
+    },
+    onEscalate: () => {
+      if (tellerRef.current.session) {
+        setConfirm({ kind: 'escalate' })
+      }
+    },
+    onConfirm: () => {
+      const chips = tellerRef.current.postedChipIds
+      const chipId = chips[chips.length - 1]
+      if (!chipId) {
         return
       }
-      if (typing || event.metaKey || event.ctrlKey || event.altKey) {
+      setConfirmed((current) => (current.includes(chipId) ? current : [...current, chipId]))
+      setActions((current) => [...current, { kind: 'confirm', chipId }])
+    },
+    onDismiss: () => {
+      const chips = tellerRef.current.postedChipIds
+      const chipId = chips[chips.length - 1]
+      if (!chipId) {
         return
       }
-      const key = event.key.toLowerCase()
-      if (key === '?') {
-        event.preventDefault()
-        setHelpOpen((open) => !open)
-        return
+      const source = sourceForChip(tellerRef.current.session?.context_chips, chipId) ?? 'observed'
+      dismissedSource.current.set(chipId, source)
+      setConfirmed((current) => current.filter((id) => id !== chipId))
+      setDismissed((current) => (current.includes(chipId) ? current : [...current, chipId]))
+      setActions((current) => [...current, { kind: 'dismiss', chipId, source }])
+      setPending(true)
+      void tellerRef.current.dismissChip(chipId).finally(() => setPending(false))
+    },
+    onPrevCustomer: () => {
+      const at = CUSTOMERS.findIndex((item) => item.id === customerRef.current)
+      const previous = CUSTOMERS[(at - 1 + CUSTOMERS.length) % CUSTOMERS.length]
+      if (previous) {
+        requestSwitch(previous.id)
       }
-      if (key === 'p') {
-        event.preventDefault()
-        setPlaying((value) => !value)
-        return
+    },
+    onNextCustomer: () => {
+      const at = CUSTOMERS.findIndex((item) => item.id === customerRef.current)
+      const next = CUSTOMERS[(at + 1) % CUSTOMERS.length]
+      if (next) {
+        requestSwitch(next.id)
       }
-      if (key === 'n') {
-        event.preventDefault()
-        setPlaying(false)
-        void runCurrent()
-        return
-      }
-      if (key === 'r') {
-        event.preventDefault()
-        setPlaying(false)
-        setConfirm({ kind: 'restart' })
-        return
-      }
-      if (key === 'e') {
-        event.preventDefault()
-        if (tellerRef.current.session) {
-          setConfirm({ kind: 'escalate' })
-        }
-        return
-      }
-      if (key === 'c' || key === 'd') {
-        const chips = tellerRef.current.postedChipIds
-        const chipId = chips[chips.length - 1]
-        if (!chipId) {
-          return
-        }
-        event.preventDefault()
-        if (key === 'c') {
-          setConfirmed((current) => (current.includes(chipId) ? current : [...current, chipId]))
-          setActions((current) => [...current, { kind: 'confirm', chipId }])
-        } else {
-          const source = sourceForChip(tellerRef.current.session?.context_chips, chipId) ?? 'observed'
-          dismissedSource.current.set(chipId, source)
-          setConfirmed((current) => current.filter((id) => id !== chipId))
-          setDismissed((current) => (current.includes(chipId) ? current : [...current, chipId]))
-          setActions((current) => [...current, { kind: 'dismiss', chipId, source }])
-          setPending(true)
-          void tellerRef.current.dismissChip(chipId).finally(() => setPending(false))
-        }
-        return
-      }
-      if (event.key === '[') {
-        event.preventDefault()
-        const at = CUSTOMERS.findIndex((item) => item.id === customerRef.current)
-        const previous = CUSTOMERS[(at - 1 + CUSTOMERS.length) % CUSTOMERS.length]
-        if (previous) {
-          requestSwitch(previous.id)
-        }
-        return
-      }
-      if (event.key === ']') {
-        event.preventDefault()
-        const at = CUSTOMERS.findIndex((item) => item.id === customerRef.current)
-        const next = CUSTOMERS[(at + 1) % CUSTOMERS.length]
-        if (next) {
-          requestSwitch(next.id)
-        }
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [requestSwitch, runCurrent])
+    },
+  })
 
   const demo: DemoView = {
     customers: CUSTOMERS,
