@@ -49,9 +49,7 @@ export function HomeScreen({
 
   return (
     <section data-testid="home-screen" className="tc-screen">
-      <div className="tc-stack-heading">
-        <h2 className="tc-title">Workstation</h2>
-      </div>
+      <h2 className="tc-title">Workstation</h2>
       {demo && customer ? (
         <>
           <SimulationToolbar demo={demo} />
