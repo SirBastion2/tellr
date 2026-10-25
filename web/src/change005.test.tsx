@@ -10,16 +10,17 @@ const library = libraryJson as Library
 const base = t1.steps[0]?.response as SessionState
 
 describe('CHANGE-005 fields', () => {
-  it('keeps the explanation gap when the field is absent or null', () => {
+  it('hides confidence when explanation is absent or null', () => {
     const { rerender } = render(
       <ExplanationPanel library={library} session={base} postedChipIds={[]} />,
     )
-    expect(screen.getByTestId('explain-gap').textContent).toMatch(/not in this response/)
+    expect(screen.queryByTestId('explain-gap')).toBeNull()
+    expect(screen.queryByText(/not in this response/)).toBeNull()
     expect(screen.queryByTestId('explain-confidence')).toBeNull()
     rerender(
       <ExplanationPanel library={library} session={{ ...base, explanation: null }} postedChipIds={[]} />,
     )
-    expect(screen.getByTestId('explain-gap')).toBeTruthy()
+    expect(screen.queryByTestId('explain-gap')).toBeNull()
   })
 
   it('groups raises and lowers and does not repeat a contributions list', () => {
@@ -71,7 +72,8 @@ describe('CHANGE-005 fields', () => {
     expect(lowered.some((text) => text.includes('Known customer'))).toBe(true)
     expect(lowered.join(' ')).not.toMatch(/On the phone/)
     expect(screen.getByTestId('explain-confidence').textContent).toMatch(/Not applicable \(rules engine\)/)
-    expect(screen.getByTestId('explain-fallback').textContent).toMatch(/did not use the fallback/)
+    expect(screen.queryByTestId('explain-fallback')).toBeNull()
+    expect(screen.queryByText(/use the fallback/)).toBeNull()
     const technical = screen.getByTestId('technical-details')
     expect(technical.textContent).toMatch(/sig\.third_party_call/)
     expect(technical.textContent).toMatch(/Weight 14/)
@@ -179,7 +181,7 @@ describe('CHANGE-005 fields', () => {
       expect(row.querySelector('[data-testid="signal-origin"]')).toBeNull()
       expect(row.textContent).not.toMatch(/Observed/)
     }
-    expect(screen.getByTestId('explain-gap')).toBeTruthy()
+    expect(screen.queryByTestId('explain-gap')).toBeNull()
 
     rerender(
       <ExplanationPanel
@@ -249,7 +251,8 @@ describe('CHANGE-005 fields', () => {
     )
     expect(screen.getByTestId('explain-reason').textContent).toMatch(/On the phone during the visit/)
     expect(screen.getByTestId('explain-counter').textContent).toMatch(/points toward it being safe/)
-    expect(screen.getByTestId('explain-gap')).toBeTruthy()
+    expect(screen.queryByTestId('explain-gap')).toBeNull()
+    expect(screen.queryByText(/not in this response/)).toBeNull()
   })
 
   it('shows a numeric confidence when the response includes one', () => {
@@ -264,8 +267,10 @@ describe('CHANGE-005 fields', () => {
       />,
     )
     expect(screen.getByTestId('explain-confidence').textContent).toMatch(/0\.5/)
-    expect(screen.getByTestId('explain-fallback').textContent).toMatch(/did not use the fallback/)
-    expect(screen.getByTestId('explain-contribution').textContent).toMatch(/no contributions/)
+    expect(screen.queryByTestId('explain-fallback')).toBeNull()
+    expect(screen.queryByText(/use the fallback/)).toBeNull()
+    expect(screen.queryByTestId('explain-contribution')).toBeNull()
+    expect(screen.queryByText(/no contributions/)).toBeNull()
   })
 
   it('badges signal source from context_chips on the model list', () => {
