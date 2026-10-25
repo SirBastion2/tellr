@@ -67,6 +67,7 @@ button[data-loading='true'],
 
 .tc-transaction {
   min-height: 100%;
+  padding-top: var(--tc-space-card-fluid, clamp(10px, 1vw, 16px));
 }
 
 .tc-strip {
