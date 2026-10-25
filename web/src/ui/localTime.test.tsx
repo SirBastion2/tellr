@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { LocalClock } from './LocalClock'
 import {
@@ -48,7 +48,9 @@ describe('local time of day', () => {
     vi.setSystemTime(new Date('2026-10-25T05:17:30.000Z'))
     render(<LocalClock timeZone="America/New_York" />)
     expect(screen.getByTestId('local-clock').textContent).toBe('1:17 AM')
-    vi.advanceTimersByTime(30_000)
+    act(() => {
+      vi.advanceTimersByTime(30_000)
+    })
     expect(screen.getByTestId('local-clock').textContent).toBe('1:18 AM')
   })
 })
