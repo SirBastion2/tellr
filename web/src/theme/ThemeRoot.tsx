@@ -27,6 +27,7 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
         fontFamily: 'var(--tc-font)',
         fontWeight: 'var(--tc-font-weight)' as CSSProperties['fontWeight'],
         fontSize: presenter.on ? DEMO_ROOT_FONT : '100%',
+        lineHeight: DENSITY.typeLineBody,
         colorScheme: scheme,
         backgroundColor: 'var(--tc-bg-color)',
         backgroundImage: 'var(--tc-bg-image)',

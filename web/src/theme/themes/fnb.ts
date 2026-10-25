@@ -2,7 +2,7 @@ import { DARK_CONTROLS, DARK_RISK, SOLID_CONTROLS } from '../chrome'
 import type { BankTheme } from '../types'
 import { FOOTER_TEXT } from '../tokens'
 
-/** F.N.B. Corporation. Square corners, gold rule, compact density. */
+/** F.N.B. Corporation. Gold rule. Structure is shared. */
 const riskLight = {
   clearBg: '#F8F4EC',
   clearFg: '#041E42',
@@ -28,17 +28,8 @@ export const theme: BankTheme = {
   footerPlacement: 'center',
   footerText: FOOTER_TEXT,
   fontFamily: '"Segoe UI", "Helvetica Neue", sans-serif',
-  fontWeight: 400,
-  headingWeight: 600,
   wordmarkFont: 'Georgia, "Times New Roman", serif',
   wordmarkColor: '#C5A572',
-  wordmarkWeight: 600,
-  wordmarkLetterSpacing: '0.14em',
-  radius: { card: '4px', control: '6px' },
-  border: { width: '2px', style: 'solid' },
-  shadow: { card: '0 10px 0 rgba(0, 0, 0, 0.35)' },
-  density: 'compact',
-  space: { cardPadding: '12px' },
   background: {
     color: '#041428',
     image:
@@ -49,7 +40,6 @@ export const theme: BankTheme = {
   glass: {
     fill: 'rgba(180, 205, 230, 0.14)',
     border: 'rgba(197, 165, 114, 0.5)',
-    blur: '20px',
     fallback: '#062448',
   },
   text: '#F8F4EC',
@@ -81,7 +71,6 @@ export const theme: BankTheme = {
     glass: {
       fill: 'rgba(255, 255, 255, 0.84)',
       border: 'rgba(4, 30, 66, 0.35)',
-      blur: '20px',
       fallback: '#FFFCF6',
     },
     text: '#041E42',

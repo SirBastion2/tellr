@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type RefObject } from 'react'
 import { HEADER_SCHEME_COLLAPSE_PX } from './tokens'
 
 export type ColorChoice = 'light' | 'dark' | 'system'
@@ -21,11 +21,11 @@ export function readSchemeCompact(header?: HTMLElement | null): boolean {
 }
 
 /** Mount the scheme menu or the segment, never both. */
-export function useSchemeCompact(header: HTMLElement | null): boolean {
+export function useSchemeCompact(headerRef: RefObject<HTMLElement | null>): boolean {
   const [compact, setCompact] = useState(() => readSchemeCompact(null))
 
   useEffect(() => {
-    const update = () => setCompact(readSchemeCompact(header))
+    const update = () => setCompact(readSchemeCompact(headerRef.current))
     update()
     let media: MediaQueryList | null = null
     try {
@@ -34,6 +34,7 @@ export function useSchemeCompact(header: HTMLElement | null): boolean {
     } catch {
       // jsdom
     }
+    const header = headerRef.current
     const observer = header && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null
     if (header && observer) {
       observer.observe(header)
@@ -44,7 +45,7 @@ export function useSchemeCompact(header: HTMLElement | null): boolean {
       observer?.disconnect()
       window.removeEventListener('resize', update)
     }
-  }, [header])
+  }, [headerRef])
 
   return compact
 }

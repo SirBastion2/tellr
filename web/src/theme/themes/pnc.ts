@@ -2,7 +2,7 @@ import { DARK_CONTROLS, DARK_RISK, SOLID_CONTROLS } from '../chrome'
 import type { BankTheme } from '../types'
 import { FOOTER_TEXT } from '../tokens'
 
-/** PNC Bank. Orange accent, medium radius, strong elevation. */
+/** PNC Bank. Orange accent. Structure is shared. */
 const riskLight = {
   clearBg: '#F7F4F1',
   clearFg: '#1A1208',
@@ -28,17 +28,8 @@ export const theme: BankTheme = {
   footerPlacement: 'center',
   footerText: FOOTER_TEXT,
   fontFamily: 'Arial, "Segoe UI", sans-serif',
-  fontWeight: 400,
-  headingWeight: 700,
   wordmarkFont: 'Arial, "Segoe UI", sans-serif',
   wordmarkColor: '#EF7622',
-  wordmarkWeight: 700,
-  wordmarkLetterSpacing: '0.06em',
-  radius: { card: '14px', control: '10px' },
-  border: { width: '1px', style: 'solid' },
-  shadow: { card: '0 16px 40px rgba(0, 20, 60, 0.45)' },
-  density: 'comfortable',
-  space: { cardPadding: '16px' },
   background: {
     color: '#24303A',
     image:
@@ -49,7 +40,6 @@ export const theme: BankTheme = {
   glass: {
     fill: 'rgba(255, 255, 255, 0.12)',
     border: 'rgba(239, 118, 34, 0.55)',
-    blur: '20px',
     fallback: '#1A2744',
   },
   text: '#F7F4F1',
@@ -81,7 +71,6 @@ export const theme: BankTheme = {
     glass: {
       fill: 'rgba(255, 255, 255, 0.86)',
       border: 'rgba(0, 45, 114, 0.28)',
-      blur: '20px',
       fallback: '#FFFFFF',
     },
     text: '#002D72',

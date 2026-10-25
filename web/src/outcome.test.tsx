@@ -8,10 +8,12 @@ import t7 from '../../contract/fixtures/T7.json'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { OutcomeScreen } from './screens/OutcomeScreen'
+import { THEMES } from './theme/registry'
 import type { OutcomeId, SessionState } from './types'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from './ui/urgencyScore'
 
 const fixtures = [t1, t2, t3, t4, t5, t6, t7]
+const HIGHLIGHT_BG = 'rgb(199, 210, 254)'
 const OUTCOMES: OutcomeId[] = ['proceed', 'slow_down', 'escalate', 'report']
 const LABELS: Record<OutcomeId, string> = {
   proceed: 'Proceed',
@@ -44,16 +46,16 @@ describe('Outcome screen', () => {
           expect(button.getAttribute('data-highlighted'), where).toBe(highlighted ? 'true' : 'false')
           expect(button.getAttribute('data-suggested'), where).toBe(highlighted ? 'true' : 'false')
           if (highlighted) {
-            expect(button.getAttribute('style'), where).toContain('var(--tc-highlight)')
-            expect(button.getAttribute('style'), where).toContain('var(--tc-highlight-fg)')
+            expect(THEMES.tellr!.highlightBg.toLowerCase(), where).not.toBe('#fef3c7')
+            expect(getComputedStyle(button).backgroundColor, where).toBe(HIGHLIGHT_BG)
           } else {
-            expect(button.getAttribute('style') ?? '', where).not.toContain('var(--tc-highlight)')
+            expect(getComputedStyle(button).backgroundColor, where).not.toBe(HIGHLIGHT_BG)
           }
         }
 
         const report = screen.getByTestId('outcome-report')
         expect(report.getAttribute('data-highlighted'), where).toBe('false')
-        expect(report.getAttribute('style') ?? '', where).not.toContain('var(--tc-highlight)')
+        expect(getComputedStyle(report).backgroundColor, where).not.toBe(HIGHLIGHT_BG)
         unmount()
       }
     }
@@ -67,7 +69,7 @@ describe('Outcome screen', () => {
       const button = screen.getByTestId(`outcome-${outcome}`)
       expect((button as HTMLButtonElement).disabled).toBe(false)
       expect(button.getAttribute('data-highlighted')).toBe('false')
-      expect(button.getAttribute('style') ?? '').not.toContain('var(--tc-highlight)')
+      expect(getComputedStyle(button).backgroundColor).not.toBe(HIGHLIGHT_BG)
     }
   })
 

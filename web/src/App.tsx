@@ -21,7 +21,7 @@ import { InterviewScreen } from './screens/InterviewScreen'
 import { NotFoundScreen } from './screens/NotFoundScreen'
 import { OutcomeScreen } from './screens/OutcomeScreen'
 import { TellerProvider, useTeller, type RecordedDecision } from './teller'
-import { controlStyle, secondaryStyle } from './theme/controls'
+import { controlStyle, headerControlStyle, secondaryStyle } from './theme/controls'
 import { type ColorChoice, useSchemeCompact } from './theme/scheme'
 import { ThemeProvider, useColorScheme, useThemeActions } from './theme/ThemeProvider'
 import { ThemeRoot } from './theme/ThemeRoot'
@@ -47,6 +47,14 @@ const tap: CSSProperties = {
   flex: '0 0 auto',
 }
 
+const headerTap: CSSProperties = {
+  ...headerControlStyle,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flex: '0 0 auto',
+}
+
 const SCHEME_OPTIONS: readonly { id: ColorChoice; label: string }[] = [
   { id: 'light', label: 'Light' },
   { id: 'dark', label: 'Dark' },
@@ -66,9 +74,11 @@ function SchemeToggle() {
             data-testid={`scheme-${option.id}`}
             aria-pressed={selected}
             style={{
-              ...tap,
+              ...headerTap,
               borderWidth: 0,
               borderRadius: 0,
+              height: '100%',
+              minHeight: '100%',
               backgroundColor: selected ? 'var(--tc-button)' : 'var(--tc-secondary-bg)',
               color: selected ? 'var(--tc-button-text)' : 'var(--tc-secondary-fg)',
             }}
@@ -91,7 +101,7 @@ function SchemeMenu() {
         data-testid="scheme-menu"
         aria-label="Color scheme"
         value={choice}
-        style={{ ...tap, height: 40, minHeight: 40 }}
+        style={{ ...headerTap, height: 'var(--tc-header-control-h, 48px)', minHeight: 'var(--tc-header-control-h, 48px)' }}
         onChange={(event) => setChoice(event.target.value as ColorChoice)}
       >
         {SCHEME_OPTIONS.map((option) => (
@@ -173,8 +183,8 @@ export function AppShell({
 }) {
   const location = useLocation()
   const presenter = usePresenter()
-  const [header, setHeader] = useState<HTMLElement | null>(null)
-  const schemeCompact = useSchemeCompact(header)
+  const headerRef = useRef<HTMLElement | null>(null)
+  const schemeCompact = useSchemeCompact(headerRef)
   const workstation = location.pathname === '/' && Boolean(demo)
   const routes = presenter.on ? APP_ROUTES.filter((route) => !PRESENTER_HIDDEN_ROUTES.has(route.id)) : APP_ROUTES
   const simulationTitle = demo ? (customerById(demo.customerId)?.title ?? null) : null
@@ -203,7 +213,7 @@ export function AppShell({
           Skip to content
         </a>
         <header
-          ref={setHeader}
+          ref={headerRef}
           className="tc-header"
           data-testid="app-header"
           style={{
@@ -211,12 +221,12 @@ export function AppShell({
             flexWrap: 'wrap',
             alignItems: 'center',
             gap: 'var(--tc-space-header, 8px)',
-            minHeight: '48px',
+            minHeight: 'var(--tc-header-h, 48px)',
             overflow: 'visible',
             minWidth: 0,
             maxWidth: '100%',
             background: 'var(--tc-glass-fallback)',
-            borderRadius: 'var(--tc-radius-card)',
+            borderRadius: 'var(--tc-radius-card, 16px)',
             padding: 'var(--tc-space-2)',
           }}
         >
@@ -230,28 +240,43 @@ export function AppShell({
             aria-label="Screens"
             data-testid="app-nav"
             className="tc-header-nav"
-            style={{ display: 'flex', flexWrap: 'wrap', overflow: 'visible', minWidth: 0, flex: '1 1 auto', minHeight: 48, gap: 'var(--tc-space-header, 8px)' }}
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              overflow: 'visible',
+              minWidth: 0,
+              flex: '1 1 auto',
+              minHeight: 'var(--tc-header-control-h, 48px)',
+              gap: 'var(--tc-space-header, 8px)',
+            }}
           >
             {routes.map((route) => {
               const path = routePath(route, session)
               const label = route.label
+              const tabFill: CSSProperties = {
+                ...headerTap,
+                flex: '1 1 0',
+                justifyContent: 'center',
+                textAlign: 'center',
+                minWidth: 'min-content',
+                overflow: 'visible',
+                borderColor: 'transparent',
+                whiteSpace: 'nowrap',
+              }
               if (!path) {
                 return (
                   <span
                     key={route.id}
                     data-testid={`nav-hint-${route.id}`}
-                    className="tc-nav-hint"
+                    className="tc-nav-tab tc-nav-hint"
                     aria-disabled="true"
                     title="Available after a visit starts"
                     style={{
-                      ...tap,
-                      flex: '0 0 auto',
-                      overflow: 'visible',
+                      ...tabFill,
                       color: 'var(--tc-muted)',
-                      borderColor: 'transparent',
                       borderBottom: '3px solid transparent',
                       fontWeight: 500,
-                      whiteSpace: 'nowrap',
                       cursor: 'default',
                     }}
                   >
@@ -264,17 +289,14 @@ export function AppShell({
                 <Link
                   key={route.id}
                   to={path}
+                  className="tc-nav-tab"
                   aria-current={current ? 'page' : undefined}
                   style={{
-                    ...tap,
-                    flex: '0 0 auto',
-                    overflow: 'visible',
+                    ...tabFill,
                     textDecoration: 'none',
                     backgroundColor: current ? 'var(--tc-input)' : 'transparent',
-                    borderColor: 'transparent',
                     borderBottom: current ? '3px solid var(--tc-accent)' : '3px solid transparent',
                     fontWeight: current ? 700 : 500,
-                    whiteSpace: 'nowrap',
                   }}
                 >
                   {label}
@@ -290,7 +312,7 @@ export function AppShell({
             data-testid="shortcut-help-button"
             aria-label="Keyboard shortcuts"
             title="Keyboard shortcuts (?)"
-            style={{ ...tap, ...secondaryStyle, flex: '0 0 auto' }}
+            style={{ ...headerTap, ...secondaryStyle, flex: '0 0 auto' }}
             onClick={() => onHelp?.(!helpOpen)}
           >
             ?

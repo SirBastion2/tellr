@@ -10,8 +10,17 @@ export const controlStyle: CSSProperties = {
   border: 'var(--tc-border-width, 1px) var(--tc-border-style, solid) var(--tc-accent, #1c1917)',
   borderRadius: 'var(--tc-radius-control, 999px)',
   fontFamily: 'inherit',
-  fontWeight: 'var(--tc-font-weight, 500)' as CSSProperties['fontWeight'],
+  fontWeight: 'var(--tc-font-weight, 400)' as CSSProperties['fontWeight'],
   padding: 'var(--tc-space-control-pad-y, 8px) var(--tc-space-control-pad-x, 12px)',
+}
+
+/** Header chrome. Shared height and pill radius; colors stay on the active theme. */
+export const headerControlStyle: CSSProperties = {
+  ...controlStyle,
+  height: 'var(--tc-header-control-h, 48px)',
+  minHeight: 'var(--tc-header-control-h, 48px)',
+  minWidth: 'var(--tc-header-control-h, 48px)',
+  borderRadius: 'var(--tc-header-radius, 999px)',
 }
 
 export const inputFill = 'var(--tc-input, #e7e5e4)'

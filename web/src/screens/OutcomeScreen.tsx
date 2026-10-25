@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { buttonFill, buttonText, controlStyle, inputFill } from '../theme/controls'
+import { useTheme } from '../theme/ThemeProvider'
 import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
 import { outcomeLabel, suggestedLabel } from '../ui/plain'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
@@ -29,6 +30,7 @@ export function OutcomeScreen({
   onSubmit?: (body: { outcome: OutcomeId; actor: string }) => void
   onStartNew?: () => void
 }) {
+  const theme = useTheme()
   const [actor, setActor] = useState('')
   const [chosen, setChosen] = useState<OutcomeId | null>(null)
   const ready = actor.trim().length > 0 && chosen !== null
@@ -94,9 +96,9 @@ export function OutcomeScreen({
                     aria-pressed={chosen === outcome}
                     style={{
                       ...tap,
-                      backgroundColor: highlighted ? 'var(--tc-highlight)' : 'transparent',
-                      color: highlighted ? 'var(--tc-highlight-fg)' : tap.color,
-                      borderColor: highlighted ? 'var(--tc-highlight-fg)' : undefined,
+                      backgroundColor: highlighted ? theme.highlightBg : 'transparent',
+                      color: highlighted ? theme.highlightFg : tap.color,
+                      borderColor: highlighted ? theme.highlightFg : undefined,
                     }}
                   >
                     {OUTCOME_LABEL[outcome]}

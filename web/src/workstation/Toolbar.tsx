@@ -10,8 +10,8 @@ const control: CSSProperties = {
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'center',
-  height: 40,
-  minHeight: 40,
+  height: 'var(--tc-control-h, 48px)',
+  minHeight: 'var(--tc-control-h, 48px)',
   boxSizing: 'border-box',
   gap: 8,
   padding: 'var(--tc-space-control-pad-y, 8px) var(--tc-space-control-pad-x, 12px)',
@@ -20,8 +20,8 @@ const control: CSSProperties = {
 const iconButton: CSSProperties = {
   ...control,
   ...secondaryStyle,
-  width: 40,
-  minWidth: 40,
+  width: 'var(--tc-control-h, 48px)',
+  minWidth: 'var(--tc-control-h, 48px)',
   padding: 0,
 }
 

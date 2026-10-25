@@ -8,7 +8,7 @@ function cssUrl(value: string): string {
   return `url(${JSON.stringify(value)})`
 }
 
-/** M&T Bank. Green field, weave texture, serif wordmark, round controls. */
+/** M&T Bank. Green field, weave texture, serif wordmark. Structure is shared. */
 const riskLight = {
   clearBg: '#F4FBF6',
   clearFg: '#0E3B2E',
@@ -34,17 +34,8 @@ export const theme: BankTheme = {
   footerPlacement: 'end',
   footerText: FOOTER_TEXT,
   fontFamily: '"Segoe UI", "Helvetica Neue", sans-serif',
-  fontWeight: 400,
-  headingWeight: 600,
   wordmarkFont: 'Georgia, "Palatino Linotype", Palatino, serif',
   wordmarkColor: '#F4FBF6',
-  wordmarkWeight: 500,
-  wordmarkLetterSpacing: '0.01em',
-  radius: { card: '20px', control: '999px' },
-  border: { width: '1px', style: 'solid' },
-  shadow: { card: '0 18px 40px rgba(8, 40, 28, 0.35)' },
-  density: 'regular',
-  space: { cardPadding: '15px' },
   background: {
     color: '#0E3B2E',
     image: `${cssUrl(weaveUrl)}, radial-gradient(ellipse at 18% 0%, rgba(214, 240, 220, 0.22) 0%, rgba(214, 240, 220, 0) 48%), linear-gradient(165deg, #0c3329 0%, #124d3b 46%, #1a6b4c 100%)`,
@@ -54,7 +45,6 @@ export const theme: BankTheme = {
   glass: {
     fill: 'rgba(210, 235, 214, 0.18)',
     border: 'rgba(232, 245, 233, 0.34)',
-    blur: '18px',
     fallback: '#0E3B2E',
   },
   text: '#F7FFF9',
@@ -85,7 +75,6 @@ export const theme: BankTheme = {
     glass: {
       fill: 'rgba(255, 255, 255, 0.82)',
       border: 'rgba(14, 59, 46, 0.28)',
-      blur: '18px',
       fallback: '#F7FFF9',
     },
     text: '#0E3B2E',

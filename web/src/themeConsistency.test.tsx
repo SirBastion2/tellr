@@ -12,7 +12,7 @@ import { readSchemeCompact } from './theme/scheme'
 import { ThemeProvider } from './theme/ThemeProvider'
 import { ThemeRoot } from './theme/ThemeRoot'
 import { COLOR_STORAGE_KEY, DENSITY, HEADER_SCHEME_COLLAPSE_PX, THEME_STORAGE_KEY } from './theme/tokens'
-import { themeVars } from './theme/vars'
+import { SHARED_STRUCTURE_VARS, themeVars } from './theme/vars'
 import type { ColorChoice } from './theme/scheme'
 import type { SessionState } from './types'
 
@@ -89,7 +89,7 @@ describe('shared theme leftovers', () => {
     for (const id of BANKS) {
       const theme = THEMES[id]
       expect(theme, id).toBeTruthy()
-      expect(theme?.space, id).not.toHaveProperty('gap')
+      expect(theme, id).not.toHaveProperty('space')
       expect(themeVars(theme!)['--tc-space-gap'], id).toBe(DENSITY.spaceGap)
       expect(themeVars(theme!)['--tc-space-gap'], id).toBe(themeVars(THEMES.tellr!)['--tc-space-gap'])
     }
@@ -123,14 +123,11 @@ describe('shared theme leftovers', () => {
         const suggested = screen.getByTestId(`outcome-${session.suggested_outcome}`)
         expect(root.style.getPropertyValue('--tc-highlight'), `${id} ${scheme}`).toBe(painted.highlightBg)
         expect(root.style.getPropertyValue('--tc-highlight-fg'), `${id} ${scheme}`).toBe(painted.highlightFg)
-        expect(suggested.getAttribute('style'), `${id} ${scheme}`).toContain('var(--tc-highlight)')
         expect(suggested.getAttribute('data-highlighted'), `${id} ${scheme}`).toBe('true')
-        const computed = getComputedStyle(suggested).backgroundColor
-        if (computed.startsWith('rgb')) {
-          expect(computed, `${id} ${scheme}`).toBe(hexRgb(painted.highlightBg))
-        }
-        expect(screen.getByTestId('outcome-report').getAttribute('style') ?? '', `${id} ${scheme}`).not.toContain(
-          'var(--tc-highlight)',
+        expect(getComputedStyle(suggested).backgroundColor, `${id} ${scheme}`).toBe(hexRgb(painted.highlightBg))
+        expect(getComputedStyle(suggested).color, `${id} ${scheme}`).toBe(hexRgb(painted.highlightFg))
+        expect(getComputedStyle(screen.getByTestId('outcome-report')).backgroundColor, `${id} ${scheme}`).not.toBe(
+          hexRgb(painted.highlightBg),
         )
         unmount()
       }
@@ -189,12 +186,119 @@ describe('shared theme leftovers', () => {
       expect(page.style.overflowX, id).not.toBe('hidden')
       expect(page.style.overflowClipMargin, id).toBe(DENSITY.focusClip)
       expect(page.style.maxWidth, id).toBe('100%')
-      expect(page.style.minWidth, id).toBe('0')
+      expect(page.style.minWidth, id).toMatch(/^0(px)?$/)
       for (const width of LAPTOP_WIDTHS) {
         Object.defineProperty(window, 'innerWidth', { configurable: true, value: width })
         window.dispatchEvent(new Event('resize'))
         expect(page.style.overflowX, `${id} @ ${width}`).toBe('clip')
         expect(page.style.maxWidth, `${id} @ ${width}`).toBe('100%')
+      }
+      unmount()
+    }
+  })
+
+  it('resolves the same pill and card radius tokens on every bank', () => {
+    expect(DENSITY.radiusControl).toBe('999px')
+    expect(DENSITY.headerRadius).toBe('999px')
+    expect(DENSITY.radiusCard).toBe('16px')
+    expect(css()).toContain(`--tc-radius-control: ${DENSITY.radiusControl}`)
+    expect(css()).toContain(`--tc-radius-card: ${DENSITY.radiusCard}`)
+    expect(css()).toContain(`--tc-header-radius: ${DENSITY.headerRadius}`)
+    expect(css()).not.toMatch(/\[data-theme=(?:fnb|pnc|tellr|mtb)\][^{]*\{[^}]*border-radius/)
+    const tellrVars = themeVars(THEMES.tellr!)
+    for (const id of BANKS) {
+      const source = readFileSync(`src/theme/themes/${id}.ts`, 'utf8')
+      expect(source, id).not.toMatch(/\bradius\s*:/)
+      expect(source, id).not.toMatch(/radiusControl|radiusCard|headerRadius/)
+      const theme = THEMES[id]
+      expect(theme, id).toBeTruthy()
+      expect(theme, id).not.toHaveProperty('radius')
+      const vars = themeVars(theme!)
+      expect(vars['--tc-radius-control'], id).toBe(DENSITY.radiusControl)
+      expect(vars['--tc-radius-card'], id).toBe(DENSITY.radiusCard)
+      expect(vars['--tc-header-radius'], id).toBe(DENSITY.headerRadius)
+      expect(vars['--tc-radius-control'], id).toBe(tellrVars['--tc-radius-control'])
+      expect(vars['--tc-radius-card'], id).toBe(tellrVars['--tc-radius-card'])
+      expect(vars['--tc-header-radius'], id).toBe(tellrVars['--tc-header-radius'])
+      const { unmount } = renderThemed(id)
+      const root = screen.getByTestId('theme-root')
+      expect(root.style.getPropertyValue('--tc-radius-control'), id).toBe(DENSITY.radiusControl)
+      expect(root.style.getPropertyValue('--tc-radius-card'), id).toBe(DENSITY.radiusCard)
+      expect(root.style.getPropertyValue('--tc-header-radius'), id).toBe(DENSITY.headerRadius)
+      expect(root.style.getPropertyValue('--tc-radius-control'), id).toBe(
+        screen.getByTestId('theme-root').style.getPropertyValue('--tc-radius-control'),
+      )
+      unmount()
+    }
+  })
+
+  it('shares header heights, type size, and line-height tokens across every bank', () => {
+    expect(DENSITY.headerMinHeight).toBe(DENSITY.headerControlHeight)
+    expect(DENSITY.controlHeight).toBe('48px')
+    expect(DENSITY.typeLineBody).toBe('1.5')
+    expect(DENSITY.typeLineHeading).toBe('1.2')
+    expect(DENSITY.typeLineUi).toBe('1.2')
+    const tellrVars = themeVars(THEMES.tellr!)
+    for (const id of BANKS) {
+      const vars = themeVars(THEMES[id]!)
+      for (const key of SHARED_STRUCTURE_VARS) {
+        expect(vars[key], `${id} ${key}`).toBe(tellrVars[key])
+      }
+      const { unmount } = renderThemed(id)
+      const root = screen.getByTestId('theme-root')
+      expect(root.style.getPropertyValue('--tc-header-h'), id).toBe(DENSITY.headerMinHeight)
+      expect(root.style.getPropertyValue('--tc-header-control-h'), id).toBe(DENSITY.headerControlHeight)
+      expect(root.style.getPropertyValue('--tc-control-h'), id).toBe(DENSITY.controlHeight)
+      expect(root.style.getPropertyValue('--tc-type-title'), id).toBe(DENSITY.typeTitle)
+      expect(root.style.getPropertyValue('--tc-type-pill'), id).toBe(DENSITY.typePill)
+      expect(root.style.getPropertyValue('--tc-type-line-body'), id).toBe(DENSITY.typeLineBody)
+      expect(root.style.getPropertyValue('--tc-type-line-heading'), id).toBe(DENSITY.typeLineHeading)
+      expect(root.style.getPropertyValue('--tc-type-line-ui'), id).toBe(DENSITY.typeLineUi)
+      expect(screen.getByTestId('app-header').style.minHeight, id).toBe('var(--tc-header-h, 48px)')
+      unmount()
+    }
+  })
+
+  it('fills leftover header space with four even tabs and keeps the #93 wrap', () => {
+    const source = css()
+    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*flex:\s*1 1 auto/)
+    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*flex-wrap:\s*wrap/)
+    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*overflow:\s*visible/)
+    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*gap:\s*var\(--tc-space-header/)
+    expect(source).toMatch(/\.tc-header-nav a[\s\S]*flex:\s*1 1 0/)
+    expect(source).toMatch(/\.tc-header-nav a[\s\S]*text-align:\s*center/)
+    expect(source).toMatch(/\.tc-header-nav a[\s\S]*min-width:\s*min-content/)
+    expect(source).toMatch(/\.tc-header-nav a[\s\S]*border-radius:\s*var\(--tc-header-radius/)
+    expect(source).not.toMatch(/\.tc-header-nav[\s\S]*overflow-x:\s*auto/)
+    for (const id of BANKS) {
+      const { unmount } = renderThemed(id)
+      const nav = screen.getByTestId('app-nav')
+      expect(nav.style.flex, id).toBe('1 1 auto')
+      expect(nav.style.flexWrap, id).toBe('wrap')
+      expect(nav.style.overflow, id).toBe('visible')
+      expect(nav.style.gap, id).toBe('var(--tc-space-header, 8px)')
+      const tabs = ['Home', 'Customer file', 'Outcome', 'Handoff'].map((label) => screen.getByText(label))
+      expect(tabs, id).toHaveLength(4)
+      for (const tab of tabs) {
+        expect(tab.className, `${id} ${tab.textContent}`).toContain('tc-nav-tab')
+        expect(tab.style.flex, `${id} ${tab.textContent}`).toBe('1 1 0')
+        expect(tab.style.justifyContent, `${id} ${tab.textContent}`).toBe('center')
+        expect(tab.style.textAlign, `${id} ${tab.textContent}`).toBe('center')
+        expect(tab.style.whiteSpace, `${id} ${tab.textContent}`).toBe('nowrap')
+        expect(tab.style.overflow, `${id} ${tab.textContent}`).toBe('visible')
+        expect(tab.style.minWidth, `${id} ${tab.textContent}`).toBe('min-content')
+        expect(tab.style.borderRadius, `${id} ${tab.textContent}`).toBe('var(--tc-header-radius, 999px)')
+        expect(tab.textContent, id).not.toMatch(/…|\.\.\./)
+      }
+      for (const width of LAPTOP_WIDTHS) {
+        Object.defineProperty(window, 'innerWidth', { configurable: true, value: width })
+        window.dispatchEvent(new Event('resize'))
+        expect(nav.style.flexWrap, `${id} @ ${width}`).toBe('wrap')
+        expect(nav.style.overflow, `${id} @ ${width}`).toBe('visible')
+        for (const tab of tabs) {
+          expect(tab.style.flex, `${id} ${tab.textContent} @ ${width}`).toBe('1 1 0')
+          expect(tab.textContent, `${id} @ ${width}`).not.toMatch(/…|\.\.\./)
+        }
       }
       unmount()
     }
