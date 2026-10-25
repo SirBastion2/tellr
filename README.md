@@ -23,6 +23,10 @@ Four outcomes stay available while the visit is open: proceed, slow down, escala
 
 Risk, level, reasons, and the next question are computed by the engine. The web UI renders `SessionState`. It does not compute them (`docs/architecture.md` §12; `ARCHITECTURE.md`; `WORKFLOW.md` §9).
 
+## Responsible use
+
+The teller makes the final call. The outcome is a human event, and it requires an actor. No endpoint approves or denies the withdrawal. The copilot suggests a level, a next action, and words to say. Why this level is the score explanation: what raised it, what would lower it, and a strength word taken from the weights in that response. The panel shows those server fields. It does not compute a new score (`docs/architecture.md` §1, §9; `ARCHITECTURE.md`; `contract/api.md`).
+
 ## The demo and a real visit
 
 The demo layout is always on. It is the scripted workstation used for the judging demo: five synthetic customer files play on a timer beside the copilot (`ARCHITECTURE.md`, `web/src/demo/customers.ts`). At 1×, playback targets are routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, and contractor cash 60s. Speed changes wall-clock time only. The on-screen clock is simulated customer time, the sum of each event's `delayMs`. The last two files post no chips (`ARCHITECTURE.md`).
@@ -45,6 +49,13 @@ The HackPSU Devpost video is capped at 5 minutes and is meant to cover who, why,
 **A real visit**
 
 A live session cannot load a scenario. The API rejects `scenario_id` when `mode` is `live` (`contract/api.md`; `docs/architecture.md` §14.1). The header pill reads `Simulation: <customer title>` for a synthetic file and `LIVE — no scenario loaded` for a live session with no simulation (`ARCHITECTURE.md`). The teller taps chips and records the outcome. If the model is slower than 1500 ms, or the GPU is down, that turn uses the rule engine, which is a complete product on its own (`docs/architecture.md` §7.3, §14.2). The repo does not describe a feed from a bank's core system.
+
+## Limitations / what's scripted
+
+- The judging demo plays five synthetic files on a timer. With no API, the page shows recorded engine answers and does not score them (`ARCHITECTURE.md`).
+- A live visit loads no scenario. The teller taps the chips. There is no described connection to a bank's core system (`contract/api.md`; `docs/architecture.md` §14.1).
+- On the dev set and the held-out set, the 8B matched the rules on catch and false-flag. The spec says to lead with the adaptive interview in that case, and to report the model as a part that has not yet earned its place (`docs/WRITEUP_NUMBERS.md`; `docs/architecture.md` §19.1).
+- The dev miss `scn.coached.bank_perfect_own_account` was left in place. A weight change that caught only that row was tried and not applied. The held-out run, five scenarios per group, missed `scn.coached.ssa_review_rehearsed` on every arm. Those ranges are wide, and the spec says to treat that run as a check, not the headline (`docs/handoff/000-archive.md`, [A-07]; `docs/B_TO_A.md`, B-018; `docs/architecture.md` §13.4).
 
 ## The Llama 8B
 
@@ -128,9 +139,17 @@ On time at the window, this run already multiplied questions by 13 seconds. Arm 
 
 Arm C latency p50 / p95 / max was 354 / 405 / 410 ms, fallback 0/13, validator rejections 0, VRAM peak 7114/8151 MiB. Every arm missed `scn.coached.ssa_review_rehearsed`. Arm A's false flag was `scn.legitimate.shelter_adoption_fuzzy` (`docs/B_TO_A.md`, B-018; `docs/WRITEUP_NUMBERS.md`). Those latency figures are again model time with the eval timeout off. Fallback 0/13 means all 13 model calls were answered by the model. The server stayed up. Validator rejections and VRAM mean the same thing as in the development run.
 
-### Reproduce
+## Reproduce our numbers
 
-Start `llama-server` with the 8B Q4_K_M: `-ngl 99 -c 4096 -np 1`, listening on `127.0.0.1:8080`. One GPU job at a time. On Git Bash or WSL, prefix model jobs with `scripts/with-gpu`. On native Windows, skip that wrapper (`docs/CP3_GPU_RUN.md`; `docs/ROSTER.md` §5.3).
+Gates, from the repo root. `a` is the Python suite, `b` is the web suite, and `contract` checks the fixtures against `reference_impl.py` (`ARCHITECTURE.md`).
+
+```bash
+scripts/gate.sh a
+scripts/gate.sh b
+scripts/gate.sh contract
+```
+
+The benchmarks need a local `llama-server` with the 8B Q4_K_M: `-ngl 99 -c 4096 -np 1`, listening on `127.0.0.1:8080`. One GPU job at a time. On Git Bash or WSL, prefix model jobs with `scripts/with-gpu`. On native Windows, skip that wrapper (`docs/CP3_GPU_RUN.md`; `docs/ROSTER.md` §5.3).
 
 Latency bench, from the script header. Defaults are 50 runs and 3 warm-ups (`scripts/bench_llm.py`):
 
@@ -173,7 +192,7 @@ flowchart LR
   api --> db["SQLite<br/>append-only log"]
 ```
 
-Four bank themes share one layout. `?theme=` or the `T` key cycles `tellr` → `pnc` → `mtb` → `fnb`. Screens read colour tokens. They do not branch on the bank id. Each theme has a light palette and a dark palette, plus Light / Dark / System (`ARCHITECTURE.md`, themes section).
+Four bank themes share one layout. `?theme=` or the `T` key cycles `tellr` → `pnc` → `mtb` → `fnb`. Color, font family, and the brand mark are what change. Screens read colour tokens. The bank id does not change the layout, the copy, or the score. Each theme has a light palette and a dark palette, plus Light / Dark / System. F.N.B. is the `fnb` theme, one of the four examples on that shared UI, and the team is opting into the FNB Challenge (`ARCHITECTURE.md`, themes section; `docs/B_TO_A.md`; `docs/A_TO_B.md`, M-022).
 
 | Id | Theme |
 |---|---|
@@ -194,13 +213,22 @@ Each card or fix is its own branch and pull request. `scripts/gate.sh a` (Python
 
 Conflicts stay rare because ownership is by directory, shared files have one owner, and the contract changes only through the protocol. Handoff notes are one new file per PR under `docs/handoff/`, so parallel notes do not edit the same log. Model jobs take a single GPU lock (`docs/ROSTER.md` §3, §5.3; `docs/HANDOFF.md`).
 
-Merges are serial. A driver merges. As of `bbbb10e` (2026-10-25 04:30 ET), `main` has 126 commits and no merge commit with two parents. 125 of those commits are merged pull requests; the first commit is the starter kit. Verified with `git rev-list`, `git log`, and `gh pr list --state merged --base main`.
+Merges are serial. A driver merges. As of `e3629f5` (2026-10-25 04:34 ET), `main` has 127 commits and no merge commit with two parents. 126 of those commits are merged pull requests. The first commit is the starter kit. Verified with `git rev-list`, `git log`, and `gh pr list --state merged --base main`.
 
 ## Entered in
 
 From the HackPSU Fall 2026 Devpost page, as recorded by the drivers: the Grand Prize is $3,500 (1st $2,000, 2nd $1,000, 3rd $500) and is the default entry for non-case submissions. The team is also opting into the FNB Challenge, the Nittany AI Challenge, and MLH SpaceXSI. The submission had to be created by midnight, with a hard deadline of noon Sunday (`docs/A_TO_B.md`, M-022; `docs/B_TO_A.md`, B-030).
 
 **Best use of Cursor.** The build itself is the Cursor entry. Two people kept a frozen contract and a one-page map, and agents took cards on separate branches. Section "How we built it" is that workflow: gates on every PR, a change protocol, and a straight line of merged pull requests.
+
+## What's next
+
+These are open in the spec. They are not in this build.
+
+- Spanish wording is a stretch goal. It would be more columns in the library, because the model writes no sentences (`docs/architecture.md` §12).
+- Whether the customer's own words should reach the model is undecided. That field is the only route to one signal, and strict mode keeps free text out (`docs/architecture.md` §19.2, §10.2).
+- The pattern name is for the teller. The spec says it is the wrong text for the customer to read, and that the demo should show how the screen handles that (`docs/architecture.md` §19.4).
+- Several tellers at once are out of scope for the 24-hour build. The event log could be routed later. One shared model server would be the bottleneck (`docs/architecture.md` §19.5).
 
 ## Quick start
 
@@ -223,13 +251,7 @@ npm run dev       # sample data if the API is down
 npm run dev:api   # pins VITE_API_URL to http://127.0.0.1:8000
 ```
 
-Gates:
-
-```bash
-scripts/gate.sh a
-scripts/gate.sh b
-scripts/gate.sh contract
-```
+Gate and benchmark commands are in [Reproduce our numbers](#reproduce-our-numbers).
 
 ## Repo layout
 
