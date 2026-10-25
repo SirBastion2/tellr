@@ -1,6 +1,6 @@
 ### [B] Restore factor strength; drop Observed on What raised it — Cloud agent — 2026-10-25 07:33
 - **Status:** done
-- **Gate:** `scripts/gate.sh b` (see the PR note after the run)
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 194 tests, contract OK)
 - **Changed:** `web/src/workstation/ExplanationPanel.tsx`, `web/src/change005.test.tsx`, this file
 - **Root cause:** The strength word and `.tc-meter` bar render only when `LevelFactor.weight != null` (`strengthWord` / `strengthShare`). That weight is copied only from `explanation.contributions` (`groupFactors`). With no explanation, `factorFromReason` sets `weight: null` (since `a324a90`, PR #84). Contract fixtures and `web/mock/live_levels.json` / `live_answers.json` omit `explanation` (recordings landed in `8e9655d`, PR #74, before CHANGE-005). The mock does not add it. `GET /library` signals have no weight (library schema, additionalProperties false). CSS does not hide `.tc-factor-strength` or `.tc-meter`. The live API still attaches explanation weights (`b07a749`, PR #79). The Observed badge on these rows arrived in `ef5e5f3` (PR #87) and still showed because origin does not depend on weight.
 - **What changed:** What raised it no longer shows the Observed pill. Teller confirmed on that list is unchanged. Copilot signal rows still show Observed. A weighted factor still renders `↑ Strong factor` and the bar under the title. No client weight table and no contract edit: sample sessions that omit `explanation` still have no strength, because the web does not invent a share.
