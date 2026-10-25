@@ -2,9 +2,12 @@ import type { CSSProperties } from 'react'
 import { DENSITY } from './tokens'
 
 /** Shared control surface. Colors come from the active theme's tokens, with a light fallback. */
+const controlHeight = `var(--tc-control-h, ${DENSITY.controlHeight})`
+const headerControlHeight = `var(--tc-header-control-h, ${DENSITY.headerControlHeight})`
+
 export const controlStyle: CSSProperties = {
-  minHeight: DENSITY.controlHeight,
-  minWidth: DENSITY.controlHeight,
+  minHeight: controlHeight,
+  minWidth: controlHeight,
   boxSizing: 'border-box',
   color: 'var(--tc-text, #1c1917)',
   backgroundColor: 'transparent',
@@ -18,9 +21,9 @@ export const controlStyle: CSSProperties = {
 /** Header chrome. Shared height and pill radius; colors stay on the active theme. */
 export const headerControlStyle: CSSProperties = {
   ...controlStyle,
-  height: DENSITY.headerControlHeight,
-  minHeight: DENSITY.headerControlHeight,
-  minWidth: DENSITY.headerControlHeight,
+  height: headerControlHeight,
+  minHeight: headerControlHeight,
+  minWidth: headerControlHeight,
   padding: `0 ${DENSITY.spaceControlPadInlineEm}`,
   borderRadius: 'var(--tc-header-radius, 999px)',
 }

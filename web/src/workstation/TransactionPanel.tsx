@@ -76,7 +76,7 @@ export function TransactionPanel({
                 display: 'grid',
                 gridTemplateColumns: '16px minmax(0, 1fr)',
                 columnGap: 'var(--tc-space-3)',
-                paddingBottom: last ? 0 : 'var(--tc-space-4)',
+                paddingBottom: last ? 0 : 'var(--tc-timeline-gap, var(--tc-space-4))',
               }}
             >
               <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -108,7 +108,7 @@ export function TransactionPanel({
                 <p className="tc-kicker" data-testid="event-marker" style={{ margin: 0 }}>
                   Step {index + 1} · {formatElapsed(elapsed)} · {eventSpeaker(event, names)}
                 </p>
-                <p className="tc-prose" style={{ margin: '4px 0 0' }}>
+                <p className="tc-prose" style={{ margin: 'var(--tc-space-1, 4px) 0 0' }}>
                   <Emphasis text={redactPersonalCopy(event.text, names)} />
                 </p>
               </div>
@@ -139,7 +139,7 @@ export function TransactionPanel({
           data-testid="event-progress"
           style={{
             height: 8,
-            marginTop: 8,
+            marginTop: 'var(--tc-space-2, 8px)',
             background: 'var(--tc-input)',
             borderRadius: 'var(--tc-radius-control, 999px)',
             overflow: 'hidden',

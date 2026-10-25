@@ -48,7 +48,7 @@ export function HomeScreen({
   const shownOrder = useHeldValue(chipOrder, pending)
 
   return (
-    <section data-testid="home-screen" className="tc-screen">
+    <section data-testid="home-screen" className="tc-screen tc-home">
       {demo && customer ? (
         <>
           <SimulationToolbar demo={demo} />
