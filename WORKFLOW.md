@@ -141,7 +141,8 @@ Adapted from ECC's plan → test first → review → verify workflow, tightened
 5. **Gate.** `scripts/gate.sh a` or `scripts/gate.sh b` must pass. Agents do not get to argue with
    the gate.
 6. **Review** the diff with the language reviewer agent (`python-reviewer` or `typescript-reviewer`).
-7. **Hand off.** Append an entry to `docs/HANDOFF.md` using its template, commit with a
+7. **Hand off.** Write a new file `docs/handoff/<yyyymmdd-hhmm>-<short-branch-slug>.md`
+   using the template in `docs/HANDOFF.md`. Do not edit `docs/HANDOFF.md`. Commit with a
    conventional message, and push the branch.
 8. **Stop at checkpoints.** If the card ends in a checkpoint, the agent stops and the driver decides.
 
@@ -156,7 +157,7 @@ Every one of these happened while the architecture was being written. They are w
 quietly do damage.
 
 **Reset rather than spiral.** If an agent is stuck for 20 minutes or its context is visibly bloated,
-start a fresh chat with the card plus the latest `HANDOFF.md` entry. ECC's `strategic-compact` skill
+start a fresh chat with the card plus the newest file in `docs/handoff/` (list that directory newest first). ECC's `strategic-compact` skill
 says the same thing more politely.
 
 ---
@@ -169,7 +170,9 @@ says the same thing more politely.
 | `web/` | B | read |
 | `contract/` | **nobody** — change protocol only (§5) | read |
 | `docs/architecture.md`, `reference_impl.py`, `tests/golden/reference_weights.yaml` | **nobody** — read-only oracles | read |
-| `docs/HANDOFF.md`, `docs/QUESTIONS.md` | everyone, append-only | append |
+| `docs/HANDOFF.md` | pointer only; do not edit per PR | read |
+| `docs/handoff/` | everyone; one new file per PR | add a file |
+| `docs/QUESTIONS.md` | everyone, append-only | append |
 | `docs/DECISIONS.md` | humans | read |
 
 Two rules matter more than the rest:
@@ -256,7 +259,7 @@ contract question. Neither one is a frontend workaround.
 - **Cross-lane findings** go in `docs/CROSS_LANE.md`: log the problem; do not fix the other lane's
   files. The owning driver triages at each phase end. Contract or golden-test changes go through
   `contract/CHANGES.md`; spec ambiguities still go in `docs/QUESTIONS.md`. An agent that finds a
-  problem must log it there **and** call out the `X-id` in its HANDOFF entry — do not report it
+  problem must log it there **and** call out the `X-id` in its new `docs/handoff/` file — do not report it
   only in chat.
 - **Integration runs** at hours 8, 15, and 20. Start the API and web in tmux and walk T1 and T2
   through the real UI with the chips from their fixtures. The screen should show exactly what the
@@ -334,7 +337,7 @@ touches only `eval/scenarios/heldout/` before A-08 runs it.
 | Symptom | Response |
 |---|---|
 | Agent edits outside its directories | Revert the commit; tighten the rule's `globs`; restart the chat |
-| Agent stuck for 20+ minutes | Fresh chat with the card and the last `HANDOFF.md` entry; `build-error-resolver` for build failures |
+| Agent stuck for 20+ minutes | Fresh chat with the card and the newest `docs/handoff/` file; `build-error-resolver` for build failures |
 | Golden test fails | Stop. Compare with `python reference_impl.py`. Log to `QUESTIONS.md`; a driver decides |
 | B's screen disagrees with the real API at hour 8 | Diff the API response against the fixture; it's an A bug or a contract question |
 | Contract conflict on merge | Stop both agents; R resolves on `main` through the change protocol |
@@ -348,7 +351,8 @@ touches only `eval/scenarios/heldout/` before A-08 runs it.
 ```
 WORKFLOW.md                     this document
 docs/architecture.md            architecture v1.2 (read-only)
-docs/HANDOFF.md                 append-only handoff log, with template
+docs/HANDOFF.md                 pointer only; do not edit per PR. Template lives here
+docs/handoff/                   one file per PR (`<yyyymmdd-hhmm>-<slug>.md`); list newest first. `000-archive.md` is the old log
 docs/QUESTIONS.md               spec questions; agents log, drivers answer
 docs/DECISIONS.md               checkpoint decisions (drivers only)
 reference_impl.py               executable spec for architecture §6–§8 (read-only oracle)

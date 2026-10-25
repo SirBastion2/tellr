@@ -33,4 +33,4 @@ Freeze the A/B interface so both agents can work independently for six hours. Ev
 
 ## Hand off
 
-Append an entry to `docs/HANDOFF.md` using its template. **Checkpoint: stop here.**
+Write a new file `docs/handoff/<yyyymmdd-hhmm>-<short-branch-slug>.md` (template in `docs/HANDOFF.md`; do not edit that pointer). **Checkpoint: stop here.**

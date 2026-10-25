@@ -174,13 +174,12 @@ export function CopilotStrip({
           color: 'var(--tc-quote-fg)',
           borderLeft: '4px solid var(--tc-quote-border)',
           borderRadius: 'var(--tc-radius-card, 16px)',
-          padding: '8px 12px',
         }}
       >
-        <summary style={{ cursor: 'pointer', minHeight: 48, display: 'flex', alignItems: 'center' }}>
+        <summary>
           <span className="tc-kicker">Read-aloud script</span>
         </summary>
-        <blockquote data-testid="read-aloud" className="tc-prose" style={{ margin: '8px 0 0', maxWidth: '70ch' }}>
+        <blockquote data-testid="read-aloud" className="tc-prose">
           {script}
         </blockquote>
       </details>

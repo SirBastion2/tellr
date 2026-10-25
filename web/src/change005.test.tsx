@@ -2,45 +2,12 @@ import libraryJson from '../../contract/library.json'
 import t1 from '../../contract/fixtures/T1.json'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { CUSTOMERS } from './demo/customers'
-import type { DemoView } from './demo/types'
-import { CustomerFileScreen } from './screens/CustomerFileScreen'
 import type { Library, SessionState } from './types'
 import { CopilotStrip } from './workstation/CopilotStrip'
 import { ExplanationPanel } from './workstation/ExplanationPanel'
 
 const library = libraryJson as Library
 const base = t1.steps[0]?.response as SessionState
-
-function demo(): DemoView {
-  const customer = CUSTOMERS[0]
-  if (!customer) {
-    throw new Error('missing customer')
-  }
-  return {
-    customers: CUSTOMERS,
-    customerId: customer.id,
-    index: 0,
-    playing: false,
-    speed: 1,
-    pending: false,
-    showCase: false,
-    confirmed: [],
-    presenter: false,
-    elapsedMs: 0,
-    onSelectCustomer: () => undefined,
-    onPlay: () => undefined,
-    onPause: () => undefined,
-    onStep: () => undefined,
-    onRestart: () => undefined,
-    onSpeed: () => undefined,
-    onToggleCase: () => undefined,
-    onConfirmSignal: () => undefined,
-    onDismissSignal: () => undefined,
-    onRestoreSignal: () => undefined,
-    onEscalate: () => undefined,
-  }
-}
 
 describe('CHANGE-005 fields', () => {
   it('keeps the explanation gap when the field is absent or null', () => {
@@ -242,18 +209,6 @@ describe('CHANGE-005 fields', () => {
       />,
     )
     expect(screen.getByTestId('signal-origin').textContent).toBe('Teller confirmed')
-  })
-
-  it('keeps the customer file on profile facts and leaves signals on Why this level', () => {
-    const view = demo()
-    render(<CustomerFileScreen demo={view} />)
-    expect(screen.getByTestId('profile-name')).toBeTruthy()
-    expect(screen.queryByTestId('session-activity')).toBeNull()
-    expect(screen.queryByTestId('activity-row')).toBeNull()
-    expect(screen.queryByTestId('file-signal')).toBeNull()
-    expect(screen.queryByRole('heading', { name: 'Recent activity' })).toBeNull()
-    expect(screen.queryByRole('heading', { name: 'This withdrawal' })).toBeNull()
-    expect(screen.queryByRole('heading', { name: 'What was noted' })).toBeNull()
   })
 
   it('keeps teller signal chips in first-seen order after dismiss and confirm', () => {

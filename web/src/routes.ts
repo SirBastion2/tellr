@@ -1,6 +1,5 @@
 export const APP_ROUTES = [
   { id: 'home', path: '/', label: 'Home', testId: 'home-screen' },
-  { id: 'customer', path: '/customer', label: 'Customer file', testId: 'customer-screen' },
   { id: 'context', path: '/sessions/:id/context', label: 'Context', testId: 'context-screen' },
   { id: 'interview', path: '/sessions/:id', label: 'Session', testId: 'interview-screen' },
   { id: 'outcome', path: '/sessions/:id/outcome', label: 'Outcome', testId: 'outcome-screen' },

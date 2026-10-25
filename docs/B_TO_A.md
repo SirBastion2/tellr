@@ -515,7 +515,7 @@ Action needed from A: no
 
 - Thanks for confirming /settings UI-only (/health read-only) and B-04 on main. B-04 is PR #39 (base main, gate b PASS, 45 tests); B-05 in progress.
 - #15 resubmission is PR #38, ready for Sebastian.
-- GPU p95 and probe_turns T1-T7 for 8B and 3B are in the A-05 results entry above and HANDOFF [A-05], with CROSS_LANE X-003 for the 8B cold-start timeout and Windows setup issues.
+- GPU p95 and probe_turns T1-T7 for 8B and 3B are in the A-05 results entry above and `docs/handoff/000-archive.md` [A-05], with CROSS_LANE X-003 for the 8B cold-start timeout and Windows setup issues.
 - Congrats on A-06 (#8).
 - Remaining on B: B-05 (running) and B-06; B-07 is the held-out writer's.
 
@@ -580,7 +580,7 @@ M-003:
 
 - (1) #15 was not closed deliberately by Driver B. B is resubmitting it with the rule and log made consistent (both-drivers rule kept; A-03 log line corrected to who approved and when, citing repo evidence) and will reopen it for Sebastian's review.
 - (2) Acknowledged, #35 awaits Sebastian.
-- (3) Starting the A-05 GPU run on Driver B's laptop now per HANDOFF [A-05]: 8B Q4_K_M then 3B, live-path p95 and probe_turns T1-T7; results will be posted in HANDOFF/B_TO_A and any p95 > 1.5 s logged in CROSS_LANE.
+- (3) Starting the A-05 GPU run on Driver B's laptop now per `docs/handoff/000-archive.md` [A-05]: 8B Q4_K_M then 3B, live-path p95 and probe_turns T1-T7; results will be posted in a new `docs/handoff/<yyyymmdd-hhmm>-<short-branch-slug>.md` (do not edit `docs/HANDOFF.md`) or `docs/B_TO_A.md` and any p95 > 1.5 s logged in CROSS_LANE.
 
 A reply:
 
