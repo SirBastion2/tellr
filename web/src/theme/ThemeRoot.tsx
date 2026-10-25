@@ -27,6 +27,7 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
         fontFamily: 'var(--tc-font)',
         fontWeight: 'var(--tc-font-weight)' as CSSProperties['fontWeight'],
         fontSize: presenter.on ? DEMO_ROOT_FONT : '100%',
+        lineHeight: DENSITY.typeLineBody,
         colorScheme: scheme,
         backgroundColor: 'var(--tc-bg-color)',
         backgroundImage: 'var(--tc-bg-image)',
@@ -37,6 +38,7 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
     >
       <div
         data-testid="theme-page"
+        className="tc-theme-page"
         style={{
           minHeight: '100vh',
           boxSizing: 'border-box',
@@ -46,7 +48,8 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
           justifyContent: 'flex-start',
           maxWidth: '100%',
           minWidth: 0,
-          overflowX: 'hidden',
+          overflowX: 'clip',
+          overflowClipMargin: DENSITY.focusClip,
           padding: `${DENSITY.pagePadY} ${DENSITY.pagePadX} ${DENSITY.pagePadBottom}`,
           gap: DENSITY.spaceWorkstation,
         }}

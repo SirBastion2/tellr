@@ -35,17 +35,8 @@ export const theme: BankTheme = {
   footerPlacement: 'center',
   footerText: FOOTER_TEXT,
   fontFamily: UI_FONT,
-  fontWeight: 400,
-  headingWeight: 600,
   wordmarkFont: UI_FONT,
   wordmarkColor: '#C7D2FE',
-  wordmarkWeight: 600,
-  wordmarkLetterSpacing: '-0.04em',
-  radius: { card: '28px', control: '999px' },
-  border: { width: '1px', style: 'solid' },
-  shadow: { card: '0 28px 70px rgba(0, 0, 0, 0.28)' },
-  density: 'comfortable',
-  space: { gap: '13px', cardPadding: '18px' },
   background: {
     color: '#0B1026',
     image:
@@ -56,7 +47,6 @@ export const theme: BankTheme = {
   glass: {
     fill: 'rgba(255, 255, 255, 0.16)',
     border: 'rgba(255, 255, 255, 0.42)',
-    blur: '22px',
     fallback: '#1E1B4B',
   },
   text: '#FFFFFF',
@@ -74,6 +64,8 @@ export const theme: BankTheme = {
   ...DARK_CONTROLS,
   link: '#E0E7FF',
   surface: '#1E1B4B',
+  highlightBg: '#C7D2FE',
+  highlightFg: '#1E1B4B',
   light: {
     wordmarkColor: '#312E81',
     background: {
@@ -86,7 +78,6 @@ export const theme: BankTheme = {
     glass: {
       fill: 'rgba(255, 255, 255, 0.82)',
       border: 'rgba(49, 46, 129, 0.28)',
-      blur: '22px',
       fallback: '#FFFFFF',
     },
     text: '#1E1B4B',
@@ -101,5 +92,7 @@ export const theme: BankTheme = {
     ...SOLID_CONTROLS,
     link: '#312E81',
     surface: '#FFFFFF',
+    highlightBg: '#E0E7FF',
+    highlightFg: '#1E1B4B',
   },
 }

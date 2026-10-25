@@ -123,7 +123,7 @@ export function TransactionPanel({
                   margin: 0,
                   maxWidth: '70ch',
                   padding: 'var(--tc-space-1) var(--tc-space-2)',
-                  borderRadius: 8,
+                  borderRadius: 'var(--tc-radius-card, 16px)',
                   background: isCurrent ? 'var(--tc-input)' : 'transparent',
                 }}
               >
@@ -165,7 +165,7 @@ export function TransactionPanel({
             height: 8,
             marginTop: 8,
             background: 'var(--tc-input)',
-            borderRadius: 999,
+            borderRadius: 'var(--tc-radius-control, 999px)',
             overflow: 'hidden',
             border: '1px solid var(--tc-accent)',
           }}

@@ -101,7 +101,7 @@ export function InterviewScreen({
                 alignContent: 'start',
                 backgroundColor: 'rgba(255, 255, 255, 0.92)',
                 color: '#1c1917',
-                borderRadius: '16px',
+                borderRadius: 'var(--tc-radius-card, 16px)',
                 padding: '12px',
               }}
             >

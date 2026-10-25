@@ -50,9 +50,33 @@ export const DENSITY = {
   pagePadY: 'clamp(8px, 1.6vw, 20px)',
   pagePadX: 'clamp(8px, 1.6vw, 24px)',
   pagePadBottom: 'clamp(12px, 2vw, 28px)',
-  cardPad: 'clamp(10px, 1.1vw, 18px)',
-  /** Tellr wordmark is 155×61. Height drives width so the box keeps that ratio. */
-  wordmarkHeight: '40px',
+  cardPad: 'clamp(10px, 1vw, 16px)',
+  /** Shared structure. Bank files no longer set radius, height, pad, or shadow. */
+  radiusControl: '999px',
+  radiusCard: '16px',
+  controlHeight: '48px',
+  headerControlHeight: '48px',
+  headerMinHeight: '48px',
+  headerRadius: '999px',
+  borderWidth: '1px',
+  borderStyle: 'solid',
+  shadowCard: '0 16px 40px rgba(0, 0, 0, 0.28)',
+  glassBlur: '20px',
+  fontWeight: '400',
+  headingWeight: '600',
+  strongWeight: '700',
+  wordmarkWeight: '600',
+  wordmarkLetterSpacing: '0.02em',
+  typeLineBody: '1.5',
+  typeLineHeading: '1.2',
+  typeLineUi: '1.2',
+  /**
+   * Arial / Segoe x-height. Poppins is taller at the same rem; tellr applies
+   * this as font-size-adjust so the rendered size matches the other banks.
+   */
+  fontSizeAdjust: '0.52',
+  /** Tellr wordmark is 155×61. Height matches the shared control box. */
+  wordmarkHeight: '48px',
   wordmarkAspect: '155 / 61',
   /** Shared 4 / 8 / 12 / 16 / 24 rhythm. Screens and chrome read these, not ad-hoc px. */
   space1: '4px',
@@ -66,4 +90,10 @@ export const DENSITY = {
   spaceBodyControl: '12px',
   spaceControlPadY: '8px',
   spaceControlPadX: '12px',
+  /** Shared gap after per-bank 13/11/8/13 overrides were removed. */
+  spaceGap: '12px',
+  /** Simulation and connection pills share this size. */
+  typePill: '0.875rem',
+  /** Room for a 2px outline + 2px offset + 3px ring outside the clip edge. */
+  focusClip: '8px',
 } as const
