@@ -205,9 +205,11 @@ export function CopilotStrip({
             >
               <span className="tc-signal-meta">
                 <span>{label}</span>
-                <span data-testid="signal-origin" className="tc-badge">
-                  {origin}
-                </span>
+                {origin === 'Observed' ? null : (
+                  <span data-testid="signal-origin" className="tc-badge">
+                    {origin}
+                  </span>
+                )}
               </span>
               {actions ? (
                 wasDismissed ? (

@@ -328,7 +328,7 @@ describe('Copilot card on latest main', () => {
     expect(screen.queryByTestId('escalate')).toBeNull()
   })
 
-  it('places the origin badge as a compact pill beside the factor label', () => {
+  it('omits the Observed badge on a signal row and keeps the name and actions', () => {
     render(
       <HomeScreen
         library={library}
@@ -338,13 +338,11 @@ describe('Copilot card on latest main', () => {
       />,
     )
     const row = screen.getByTestId('signal-row')
-    const badge = within(row).getByTestId('signal-origin')
     const label = within(row).getByText(/On the phone/)
-    expect(badge.textContent).toBe('Observed')
-    expect(badge.className).toContain('tc-badge')
-    expect(badge.parentElement).toBe(label.parentElement)
+    expect(within(row).queryByTestId('signal-origin')).toBeNull()
+    expect(row.textContent).not.toMatch(/Observed/)
     expect(row.className).toContain('tc-signal-row')
-    expect(row.querySelector('.tc-signal-meta')?.contains(badge)).toBe(true)
+    expect(row.querySelector('.tc-signal-meta')?.contains(label)).toBe(true)
     expect(row.querySelector('.tc-signal-actions')).toBeTruthy()
   })
 
