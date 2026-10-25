@@ -112,15 +112,19 @@ describe('demo polish', () => {
       const atStep = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
 
       fireEvent.click(screen.getByTestId('demo-speed-2'))
-      window.history.pushState({}, '', '/customer')
-      window.dispatchEvent(new PopStateEvent('popstate'))
+      await act(async () => {
+        window.history.pushState({}, '', '/customer')
+        window.dispatchEvent(new PopStateEvent('popstate'))
+      })
       expect(screen.getByTestId('not-found-screen')).toBeTruthy()
       expect(screen.queryByTestId('customer-screen')).toBeNull()
       await act(async () => {
         await vi.advanceTimersByTimeAsync(2_000)
       })
-      window.history.pushState({}, '', '/')
-      window.dispatchEvent(new PopStateEvent('popstate'))
+      await act(async () => {
+        window.history.pushState({}, '', '/')
+        window.dispatchEvent(new PopStateEvent('popstate'))
+      })
       const during = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
       expect(during).toBeGreaterThan(atStep)
 
