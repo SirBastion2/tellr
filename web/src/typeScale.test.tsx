@@ -22,8 +22,8 @@ const BANKS = ['tellr', 'pnc', 'mtb', 'fnb'] as const
 const SCALE_FILE = 'src/theme/typeScale.ts'
 const SRC_ROOT = 'src'
 
-const FONT_SIZE_PROP =
-  /(?<![A-Za-z-])font-size\s*:\s*(?!var\()|(?<![A-Za-z])fontSize\s*:\s*(?!['"`]?var\()/
+const FONT_SIZE_PROP = /(?:^|[^A-Za-z-])font-size\s*:|(?:^|[^A-Za-z])fontSize\s*:/
+const TYPE_TOKEN = /var\(\s*--tc-(?:text|type|root)-/
 
 function listSourceFiles(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
@@ -125,8 +125,8 @@ describe('shared type scale', () => {
       }
       const text = readFileSync(file, 'utf8')
       const lines = text.split('\n')
-      lines.forEach((line, index) => {
-        if (FONT_SIZE_PROP.test(line)) {
+      lines.forEach((line: string, index: number) => {
+        if (FONT_SIZE_PROP.test(line) && !TYPE_TOKEN.test(line)) {
           hits.push(`${rel}:${index + 1}:${line.trim()}`)
         }
       })

@@ -12,6 +12,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { AppShell } from './App'
 import { InterviewScreen } from './screens/InterviewScreen'
 import type { Library, SessionState } from './types'
+import { TYPE_SIZE } from './theme/typeScale'
 import { formatUrgencyScore } from './ui/urgencyScore'
 
 const library = libraryJson as Library
@@ -79,9 +80,9 @@ describe('Interview screen', () => {
         const pattern = screen.getByTestId('pattern-label')
         expect(pattern.textContent, where).toBe(session.risk.pattern_label)
         expect(level.compareDocumentPosition(pattern) & Node.DOCUMENT_POSITION_FOLLOWING, where).not.toBe(0)
-        expect(parseFloat(getComputedStyle(pattern).fontSize), where).toBeLessThan(
-          parseFloat(getComputedStyle(level).fontSize),
-        )
+        expect(pattern.className, where).toContain('tc-text-sm')
+        expect(level.className, where).toContain('tc-text-2xl')
+        expect(parseFloat(TYPE_SIZE.sm), where).toBeLessThan(parseFloat(TYPE_SIZE['2xl']))
 
         expect(screen.getByTestId('risk-score').textContent, where).toBe(formatUrgencyScore(session.risk.score))
 

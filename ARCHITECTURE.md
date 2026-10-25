@@ -76,7 +76,7 @@ Each bank has a dark palette (the top-level color fields) and a `light` palette.
 | `web/src/assets/tellr-wordmark.png` | Tellr wordmark (transparent, 155×61, tight crop). `mark: 'logo'` paints it with `--tc-logo` (periwinkle on the tellr dark theme). Height drives width. |
 | `web/src/theme.test.tsx` | Selection, unknown-id fallback, storage, both palettes, and the flow layout. |
 | `web/src/themeConsistency.test.tsx` | Shared gap, shared pill type, per-bank highlight, exclusive scheme control, theme-page clip, identical radius / header / type tokens, and even header-tab fill across tellr / pnc / mtb / fnb. |
-| `web/src/typeScale.test.ts` | All four banks resolve the same `--tc-text-*` tokens. Static check: no raw `font-size` / `fontSize` outside `web/src/theme/typeScale.ts`. |
+| `web/src/typeScale.test.tsx` | All four banks resolve the same `--tc-text-*` tokens. Static check: no raw `font-size` / `fontSize` outside `web/src/theme/typeScale.ts`. |
 | `web/src/themeCycle.test.tsx` | `T` cycles all four banks and wraps, default `tellr`, Customer file route, ignore-in-inputs, and a header / Urgency Score / copilot render per theme in light and dark. |
 | `web/src/scheme.test.tsx` | Light/dark/system toggle, storage, native select popup tokens, and the color-scheme / forced-colors / contrast CSS. |
 | `web/index.html` | Poppins, `color-scheme`, `darkreader-lock`, and `/favicon.svg`. |

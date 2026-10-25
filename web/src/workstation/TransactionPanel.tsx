@@ -54,7 +54,6 @@ export function TransactionPanel({
       </div>
       <p
         data-testid="event-caption"
-        className="tc-prose"
         className={presenter ? 'tc-prose tc-display' : 'tc-prose tc-text-base'}
         style={{
           margin: 0,

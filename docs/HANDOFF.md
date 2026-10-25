@@ -2113,3 +2113,29 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/103. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
 
+---
+
+### [B] One type scale across all four themes — Agent B1 — 2026-10-25 05:28
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 173 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  48 passed (48)
+      Tests  173 passed (173)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/theme/typeScale.ts` (new), `web/src/typeScale.test.tsx` (new), `web/src/theme/tokens.ts`, `web/src/theme/vars.ts`, `web/src/theme/ThemeRoot.tsx`, `web/src/theme/Wordmark.tsx`, `web/src/theme/controls.ts`, `web/src/index.css`, `web/src/App.tsx`, `web/src/ui/{facts,ShortcutHelp,ConfirmDialog}.tsx`, `web/src/screens/{Home,CustomerFile,Interview,Outcome}Screen.tsx`, `web/src/workstation/{CopilotStrip,ExplanationPanel,QuestionCard,TransactionPanel}.tsx`, theme/header/fit/presenter/demo/interview tests, `ARCHITECTURE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - One scale (`--tc-text-xs/sm/base/lg/xl/2xl`) in `typeScale.ts`. Themes keep font family and color only (architecture §12; #101 leftover). Simulation bar, answers, urgency, signals, Handoff, Outcome, pills, and buttons all read those tokens.
+  - `font-size-adjust: 0.52` (Arial x-height) is on every theme root, not only tellr, so Poppins and Segoe match Arial. Demo 105% is on `html`; theme-root stays 100% so rem does not double-scale.
+  - Merged `origin/main` `086587c` (#102 identity hide, #103 stable pills). Kept their width tokens, privacy redaction, and Play-label grid. Type still comes from the scale.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/105. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots or videos. Gate `b` only.
+
