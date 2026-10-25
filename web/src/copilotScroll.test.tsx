@@ -6,6 +6,10 @@ import t1 from '../../contract/fixtures/T1.json'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import './index.css'
+import type { CSSProperties } from 'react'
+import { themeForScheme } from './theme/palette'
+import { THEME_IDS, THEMES } from './theme/registry'
+import { themeVars } from './theme/vars'
 import type { Library, SessionState } from './types'
 import { CopilotStrip } from './workstation/CopilotStrip'
 
@@ -90,6 +94,75 @@ describe('copilot panel scroll', () => {
       expect(style.maxHeight).toMatch(/^(none|)$/)
       expect(style.overflowY).not.toMatch(/auto|scroll/)
       expect(style.overflow).not.toMatch(/auto|scroll/)
+    }
+  })
+
+  it('uses equal space-token padding and a small tag gap on every bank', () => {
+    const source = css()
+    const block = rule(source, "[data-testid='read-aloud-block'].tc-block")
+    expect(block).toMatch(/padding:\s*var\(--tc-space-4,\s*16px\)\s*;/)
+    expect(block).toMatch(/gap:\s*var\(--tc-space-2,\s*8px\)\s*;/)
+    expect(block).toMatch(/margin-bottom:\s*0/)
+    forbidsInnerScroll(block)
+    expect(block).toMatch(/height:\s*auto/)
+    expect(block).toMatch(/overflow:\s*visible/)
+
+    const summary = rule(source, "[data-testid='read-aloud-block'] > summary")
+    expect(summary).toMatch(/margin:\s*0/)
+    expect(summary).toMatch(/padding:\s*0/)
+    expect(summary).toMatch(/min-height:\s*0/)
+
+    const scriptRule = rule(source, "[data-testid='read-aloud'].tc-prose")
+    expect(scriptRule).toMatch(/margin:\s*0/)
+    expect(scriptRule).toMatch(/padding:\s*0/)
+    expect(scriptRule).toMatch(/text-box-trim:\s*trim-both/)
+    expect(scriptRule).toMatch(/text-box-edge:\s*text/)
+    forbidsInnerScroll(rule(source, "[data-testid='read-aloud-block']::details-content"))
+
+    const component = readFileSync('src/workstation/CopilotStrip.tsx', 'utf8')
+    const card = component.slice(component.indexOf('data-testid="read-aloud-block"'))
+    expect(card).not.toMatch(/minHeight/)
+    expect(card).not.toMatch(/padding:\s*'/)
+    expect(card).not.toMatch(/margin:\s*'/)
+
+    const longLine = 'Pause and read this back. '.repeat(24).trim()
+    let padding = ''
+    for (const themeId of THEME_IDS) {
+      for (const scheme of ['dark', 'light'] as const) {
+        const theme = THEMES[themeId]
+        expect(theme, themeId).toBeTruthy()
+        const { unmount } = render(
+          <div data-testid="theme-pad" style={themeVars(themeForScheme(theme!, scheme)) as CSSProperties}>
+            <CopilotStrip
+              library={library}
+              session={{ ...phoneVisit, talk_track: { ...phoneVisit.talk_track, lines: [longLine] } }}
+              postedChipIds={['chip.on_phone']}
+              confirmed={[]}
+              pending={false}
+              onConfirm={() => undefined}
+              onDismiss={() => undefined}
+              onEscalate={() => undefined}
+            />
+          </div>,
+        )
+        const node = screen.getByTestId('read-aloud-block')
+        const quote = screen.getByTestId('read-aloud')
+        const style = getComputedStyle(node)
+        const sides = [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft]
+        expect(sides.every((side) => side === sides[0] && side !== '' && side !== '0px'), `${themeId} ${scheme}`).toBe(true)
+        if (!padding) {
+          padding = sides[0] ?? ''
+        }
+        expect(sides[0], `${themeId} ${scheme}`).toBe(padding)
+        expect(style.overflow).not.toMatch(/auto|scroll/)
+        expect(style.overflowY).not.toMatch(/auto|scroll/)
+        expect(style.maxHeight).toMatch(/^(none|)$/)
+        expect(node.style.padding).toBe('')
+        expect(quote.style.margin).toBe('')
+        expect(quote.textContent).toBe(longLine)
+        expect(node.scrollHeight).toBeLessThanOrEqual(node.clientHeight + 1)
+        unmount()
+      }
     }
   })
 })
