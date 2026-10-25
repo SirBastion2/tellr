@@ -59,7 +59,7 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
                     {index > 0 ? ' and ' : null}
                     <kbd>{key}</kbd>
                   </Fragment>
-                ))}
+                ))}{' '}
               </dt>
               <dd className="tc-fact-value">{row.what}</dd>
             </Fragment>

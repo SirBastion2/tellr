@@ -186,7 +186,7 @@ export function ExplanationPanel({
               : 'Service-wide rates are not loaded.'}
           </p>
           {health?.level_bands?.map((band) => (
-            <p key={band.level} data-testid="explain-level-cutoff" style={{ margin: 0 }}>
+            <p key={band.level} data-testid="explain-level-cutoff" className="tc-prose" style={{ margin: 0 }}>
               {band.label}: {band.min}–{band.max}
             </p>
           ))}

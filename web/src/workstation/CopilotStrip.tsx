@@ -128,8 +128,10 @@ export function CopilotStrip({
             {LEVEL_WORD[level]}
           </p>
           <FactGrid label={URGENCY_SCORE_TERM}>
-            <Fact term={URGENCY_SCORE_TERM} testId="copilot-score">
-              {formatUrgencyScore(session.risk.score)}
+            <Fact term={URGENCY_SCORE_TERM}>
+              <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
+                {formatUrgencyScore(session.risk.score)}
+              </span>
             </Fact>
           </FactGrid>
           <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
