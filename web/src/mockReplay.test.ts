@@ -197,7 +197,16 @@ describe('fixture replay', () => {
     expect(practiceIds).toEqual([practiceId])
     const health = mockRequest('GET', '/health')
     expect(health.status).toBe(200)
-    expect(health.body).toMatchObject({ recommender: 'rules', model_id: null, fallback_rate: 0 })
+    expect(health.body).toMatchObject({
+      recommender: 'rules',
+      model_id: null,
+      fallback_rate: 0,
+      level_bands: [
+        { level: 'clear', label: 'Clear', min: 0, max: 24 },
+        { level: 'caution', label: 'Caution', min: 25, max: 59 },
+        { level: 'high', label: 'High concern', min: 60, max: 100 },
+      ],
+    })
     expect(mockRequest('POST', '/health').status).toBe(404)
   })
 

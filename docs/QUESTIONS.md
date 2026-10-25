@@ -267,4 +267,23 @@ Agents append; drivers answer. An open question blocks only the work that depend
   Caution).
 - **Status:** open — no code until drivers answer
 
+### Q-015 · Expose §6.3 score cutoffs for Technical details
+- **Raised by:** Driver request (Technical details cutoffs) · **Sections:**
+  architecture §6.3, §9, §11.1, §12; `engine/score.py` `level()` / `CAUTION` /
+  `HIGH`; `contract/api.md` `GET /health`; WORKFLOW.md §5
+- **Detail:** The workstation Technical details section must list the inclusive
+  0–100 bands that map Urgency Score onto Clear / Caution / High concern. Those
+  numbers already live in `engine.score` (`CAUTION=25`, `HIGH=60`, clamp +100)
+  and must not be hardcoded in `web/`. SessionState and `GET /library` do not
+  carry them. `GET /health` is the existing untyped read-only config view
+  (CHANGE-003 / Q-006 deferred its schema).
+- **Resolution:** CHANGE-006. Additive optional `level_bands` on `GET /health`.
+  No SessionState field, no fixture regen, no `CONTRACT_VERSION` bump, no
+  golden / `reference_impl.py` / weights-frozen edit. Health schema stays
+  deferred. WORKFLOW.md §5's two post-hour-4 slots are already used
+  (CHANGE-004, CHANGE-005); this is an extra additive slot on an untyped
+  endpoint because a required SessionState field cannot be done without
+  touching frozen fixtures.
+- **Status:** answered: applied as CHANGE-006
+
 ---
