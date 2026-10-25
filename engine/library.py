@@ -121,6 +121,7 @@ class TalkTrack(_Strict):
     id: str
     lines: list[str]
     avoid: list[str] = Field(default_factory=list)
+    action: str | None = None
 
 
 class Library(_Strict):
@@ -219,11 +220,21 @@ def export_library(library: Library) -> dict[str, object]:
             }
             for pattern_id, look in library.look_alikes
         ],
-        "talk_tracks": [
-            {"id": track.id, "lines": list(track.lines), "avoid": list(track.avoid)}
-            for track in library.talk_tracks
-        ],
+        "talk_tracks": [_talk_track_row(track) for track in library.talk_tracks],
     }
+
+
+def _talk_track_row(track: TalkTrack) -> dict[str, object]:
+    """GET /library talk track. CHANGE-007 action is omitted when the row has none."""
+    row: dict[str, object] = {
+        "id": track.id,
+        "lines": list(track.lines),
+        "avoid": list(track.avoid),
+    }
+    action = track.action.strip() if isinstance(track.action, str) else ""
+    if action:
+        row["action"] = action
+    return row
 
 
 def _from_validation(exc: ValidationError) -> LibraryBootError:

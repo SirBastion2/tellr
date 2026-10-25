@@ -157,5 +157,49 @@ Absent on older health payloads. Health screen does not render this field.
 
 Approved: Driver A ☑ (task request) · Driver B ☑ (task request) · Rejected ☐
 
+### CHANGE-007 · Suggested-action imperative on talk_track · applied additively
+Optional string `talk_track.action`: one short imperative teller move, not a
+question. Does not bump `CONTRACT_VERSION`. `question.text`, `talk_track.lines`,
+and `talk_track.avoid` stay. Q-016.
+
+**Reason:** The copilot suggested-action card was rendering `question.text`
+(the next spoken question). Choosing an imperative in `web/` would pick the
+teller's move on the client (architecture §12). The engine already selects
+the talk track for the step.
+
+**Shape:** `contract/session_state.schema.json` and `contract/library.schema.json`
+add `talk_track.properties.action` as a string. It is not in `required`.
+`additionalProperties` stays false. When `action` is absent, the card keeps
+its previous content (`question.text`, or the first talk-track line when
+there is no question).
+
+**Copy** on each existing row in `library/talk_tracks.yaml`. `copy_status`
+stays the compliance-review banner. `lines` are not edited.
+
+| Track | `action` |
+|---|---|
+| `tt.proceed` (Clear) | Complete the withdrawal. |
+| `tt.slow_down` (Caution) | Pause the cash. Verify the story, and offer a cashier's check. |
+| `tt.escalate` (High concern) | Ask the customer to step aside and get a manager. |
+| `tt.bank_impersonation` | Pause the move and tell them the bank does not move money to keep it safe. |
+| `tt.home_repair` | Verify the contractor and the written estimate before releasing cash. |
+
+`engine/rules.py` `talk_track_for` copies the **stage** track's `action` when
+that library row has one. Pattern lines still append only while a pattern is
+displayed. `avoid` stays the stage list. The projected `action` is the level's
+move, not the pattern track's sentence. Pattern-track actions stay on
+`GET /library`.
+
+**Fixtures.** `scripts/gen_fixtures.py` carries the same action strings.
+Regenerated `contract/library.json` and T1–T7 include `action`. Exact
+`talk_track` equality in `tests/golden/test_traces.py` and
+`tests/api/test_contract.py` cannot hold if the fold emits the key and the
+fixtures omit it. The optional-field addition is on the regenerated fixtures.
+`lines`, `avoid`, scores, question text, weights, and `reference_impl.py` are
+unchanged. `reference_impl.py` does not carry talk-track prose. No
+weights-frozen edit.
+
+Approved: Driver A ☑ Sebastian, 2026-10-25 · Driver B ☑ (B consent relayed by Sebastian) · Rejected ☐
+
 ### Approval of contract-v1
 Driver A ☑ · Driver B ☑

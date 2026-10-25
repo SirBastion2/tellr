@@ -176,7 +176,8 @@
           "lines": [
             "Thanks for walking me through that."
           ],
-          "avoid": []
+          "avoid": [],
+          "action": "Complete the withdrawal."
         },
         "suggested_outcome": "proceed",
         "available_outcomes": [
@@ -253,7 +254,8 @@
           "avoid": [
             "You're being scammed.",
             "Who told you to say that?"
-          ]
+          ],
+          "action": "Pause the cash. Verify the story, and offer a cashier's check."
         },
         "suggested_outcome": "slow_down",
         "available_outcomes": [
@@ -333,7 +335,8 @@
           "avoid": [
             "You're being scammed.",
             "Who told you to say that?"
-          ]
+          ],
+          "action": "Pause the cash. Verify the story, and offer a cashier's check."
         },
         "suggested_outcome": "slow_down",
         "available_outcomes": [
@@ -407,7 +410,8 @@
           "lines": [
             "Thanks for walking me through that."
           ],
-          "avoid": []
+          "avoid": [],
+          "action": "Complete the withdrawal."
         },
         "suggested_outcome": "proceed",
         "available_outcomes": [
@@ -490,7 +494,8 @@
           "lines": [
             "Thanks for walking me through that."
           ],
-          "avoid": []
+          "avoid": [],
+          "action": "Complete the withdrawal."
         },
         "suggested_outcome": "proceed",
         "available_outcomes": [
@@ -573,7 +578,8 @@
           "lines": [
             "Thanks for walking me through that."
           ],
-          "avoid": []
+          "avoid": [],
+          "action": "Complete the withdrawal."
         },
         "suggested_outcome": "proceed",
         "available_outcomes": [
@@ -645,7 +651,8 @@
           "lines": [
             "Thanks for walking me through that."
           ],
-          "avoid": []
+          "avoid": [],
+          "action": "Complete the withdrawal."
         },
         "suggested_outcome": "proceed",
         "available_outcomes": [
@@ -717,7 +724,8 @@
           "lines": [
             "Thanks for walking me through that."
           ],
-          "avoid": []
+          "avoid": [],
+          "action": "Complete the withdrawal."
         },
         "suggested_outcome": "proceed",
         "available_outcomes": [

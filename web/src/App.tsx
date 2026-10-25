@@ -520,6 +520,7 @@ function ConnectedShell() {
   const elapsedRef = useRef(0)
   const autoPlayRef = useRef(false)
   const clockOnRef = useRef(false)
+  const pumpDueRef = useRef<() => void>(() => {})
   const lock = useRef(false)
   const tellerRef = useRef(teller)
   const actionsRef = useRef<SignalAction[]>([])
@@ -534,7 +535,12 @@ function ConnectedShell() {
   }, [])
 
   useEffect(() => {
-    indexRef.current = index
+    // Clock ticks re-render on every elapsed update. Copying `index` onto the
+    // cursor unconditionally rewinds a beat that already advanced, so the next
+    // due check repeats the fired event and never arms the ones after it.
+    if (index >= indexRef.current) {
+      indexRef.current = index
+    }
     customerRef.current = customerId
     speedRef.current = speed
     playingRef.current = playing
@@ -555,18 +561,19 @@ function ConnectedShell() {
       const now = performance.now()
       const delta = now - last
       last = now
-      if (delta <= 0) {
-        return
+      if (delta > 0) {
+        const customer = customerById(customerRef.current)
+        const events = customer?.events ?? []
+        const cap = timelineElapsedMs(events, events.length)
+        const next = advanceSimulatedMs(elapsedRef.current, delta, speedRef.current, cap)
+        if (next !== elapsedRef.current) {
+          elapsedRef.current = next
+          setElapsedMs(next)
+        }
       }
-      const customer = customerById(customerRef.current)
-      const events = customer?.events ?? []
-      const cap = timelineElapsedMs(events, events.length)
-      const next = advanceSimulatedMs(elapsedRef.current, delta, speedRef.current, cap)
-      if (next === elapsedRef.current) {
-        return
-      }
-      elapsedRef.current = next
-      setElapsedMs(next)
+      // Events arm from this clock. A separate delay timeout drifts after the
+      // first beat and lets later timestamps pass with the timer still moving.
+      pumpDueRef.current()
     }, 250)
     return () => window.clearInterval(timer)
   }, [clockOn])
@@ -628,7 +635,33 @@ function ConnectedShell() {
       lock.current = false
       setPending(false)
     }
+    if (autoPlayRef.current) {
+      pumpDueRef.current()
+    }
   }, [engageClock])
+
+  const pumpDue = useCallback(() => {
+    if (!autoPlayRef.current || lock.current) {
+      return
+    }
+    const customer = customerById(customerRef.current)
+    const events = customer?.events ?? []
+    if (indexRef.current >= events.length) {
+      autoPlayRef.current = false
+      playingRef.current = false
+      engageClock(false)
+      setPlaying(false)
+      return
+    }
+    const due = timelineElapsedMs(events, indexRef.current + 1)
+    if (elapsedRef.current >= due) {
+      void runCurrent()
+    }
+  }, [engageClock, runCurrent])
+
+  useEffect(() => {
+    pumpDueRef.current = pumpDue
+  }, [pumpDue])
 
   useEffect(() => {
     if (!playing) {
@@ -647,12 +680,14 @@ function ConnectedShell() {
     try {
       reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     } catch {
-      // jsdom has no matchMedia; play on the scripted delay.
+      // jsdom has no matchMedia; the elapsed clock arms the events.
     }
-    const delay = reduced ? 0 : Math.round(event.delayMs / speedRef.current)
+    if (!reduced) {
+      return
+    }
     const timer = window.setTimeout(() => {
       void runCurrent()
-    }, delay)
+    }, 0)
     return () => window.clearTimeout(timer)
   }, [playing, index, runCurrent, engageClock])
 
@@ -765,6 +800,7 @@ function ConnectedShell() {
     onRestart: () => {
       autoPlayRef.current = false
       playingRef.current = false
+      engageClock(false)
       setPlaying(false)
       setConfirm({ kind: 'restart' })
     },
@@ -853,6 +889,7 @@ function ConnectedShell() {
     onRestart: () => {
       autoPlayRef.current = false
       playingRef.current = false
+      engageClock(false)
       setPlaying(false)
       setConfirm({ kind: 'restart' })
     },

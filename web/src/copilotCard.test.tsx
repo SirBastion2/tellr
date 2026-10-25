@@ -188,7 +188,8 @@ describe('Copilot card on latest main', () => {
     expect(screen.getByTestId('signal-row')).toBe(row)
     expect(screen.getByTestId('copilot-updating').textContent).toMatch(/Updating/)
     expect(screen.getByTestId('copilot-level').textContent).toBe('Clear')
-    expect(screen.getByTestId('copilot-action').textContent).toBe(phoneVisit.question?.text)
+    expect(screen.getByTestId('copilot-action').textContent).toBe('Complete the withdrawal.')
+    expect(screen.getByTestId('copilot-action').textContent).not.toBe(phoneVisit.question?.text)
     expect(screen.getByTestId('read-aloud')).toBeTruthy()
   })
 
@@ -251,8 +252,11 @@ describe('Copilot card on latest main', () => {
     render(strip({ session: emptyVisit, postedChipIds: [] }))
     expect(screen.getByTestId('copilot-level').textContent).toBe('Clear')
     expect(screen.getByTestId('copilot-reason').textContent).toMatch(/No concern flagged/)
-    expect(screen.getByTestId('copilot-action').textContent).toBe(emptyVisit.question?.text)
+    expect(emptyVisit.talk_track.action).toBe('Complete the withdrawal.')
+    expect(screen.getByTestId('copilot-action').textContent).toBe('Complete the withdrawal.')
+    expect(screen.getByTestId('copilot-action').textContent).not.toBe(emptyVisit.question?.text)
     expect(screen.getByTestId('read-aloud').textContent).toBe(emptyVisit.talk_track.lines.join(' '))
+    expect(screen.getByTestId('read-aloud').textContent).not.toContain('Complete the withdrawal.')
   })
 
   it('keeps the read-aloud card to the label and talk-track script only', () => {

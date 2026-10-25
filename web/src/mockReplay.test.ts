@@ -219,7 +219,16 @@ describe('fixture replay', () => {
     expect(posted.status).toBe(200)
     expect(posted.warnings).toEqual([])
     expect(validateSessionState(posted.body)).toEqual([])
-    expect(posted.body).toMatchObject({ mode: 'live', session_id: sessionId, risk: { level: 'caution' } })
+    expect(posted.body).toMatchObject({
+      mode: 'live',
+      session_id: sessionId,
+      risk: { level: 'caution' },
+      question: { text: "What's the money for today?" },
+      talk_track: {
+        stage: 'tt.slow_down',
+        action: 'Pause the cash. Verify the story, and offer a cashier\'s check.',
+      },
+    })
     const undone = mockRequest('POST', `/sessions/${sessionId}/undo`)
     expect(undone.body).toMatchObject({ risk: { level: 'clear', score: 0 } })
   })
