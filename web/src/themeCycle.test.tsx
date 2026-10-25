@@ -154,7 +154,7 @@ describe('bank theme cycle', () => {
     renderApp('/')
     fireEvent.click(screen.getByTestId('shortcut-help-button'))
     const help = screen.getByTestId('shortcut-help')
-    expect(help.textContent).toMatch(/T Switch bank theme/)
+    expect(help.textContent).toMatch(/TSwitch bank theme/)
   })
 })
 

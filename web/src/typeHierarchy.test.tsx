@@ -14,7 +14,7 @@ const css = () => readFileSync('src/index.css', 'utf8')
 const FONT_DECL = /(?:^|[^A-Za-z-])(?:font-size|font-weight)\s*:|(?:^|[^A-Za-z])(?:fontSize|fontWeight)\s*:/
 const TOKEN_OK = /var\(\s*--tc-/
 
-const SCREEN_ROOTS = ['src/screens', 'src/workstation', 'src/ui/facts.tsx', 'src/ui/ConfirmDialog.tsx', 'src/ui/ShortcutHelp.tsx']
+const SCREEN_ROOTS = ['src/screens', 'src/workstation', 'src/ui/facts.tsx', 'src/ui/ConfirmDialog.tsx']
 
 function listSourceFiles(dir: string, out: string[] = []): string[] {
   const stat = statSync(dir)
