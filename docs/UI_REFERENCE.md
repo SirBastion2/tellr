@@ -18,7 +18,8 @@ Bank chrome is one typed theme plus CSS variables. Screens read tokens. They do 
 | `--tc-chip-bg`, `--tc-chip-fg` | Badges |
 | `--tc-action-bg`, `--tc-action-fg` | Suggested-action block and the closed-visit bar |
 | `--tc-quote-bg`, `--tc-quote-fg`, `--tc-quote-border` | Read-aloud script |
-| `--tc-risk-clear-*`, `--tc-risk-caution-*`, `--tc-risk-high-*` | Level surfaces. The level is an icon plus a word |
+| `--tc-surface` | Opaque nested card, including the copilot panel |
+| `--tc-risk-clear-*`, `--tc-risk-caution-*`, `--tc-risk-high-*` | Level badge only. The copilot card uses `--tc-surface` / `--tc-text`. The level is an icon plus a word |
 | `--tc-accent`, `--tc-link`, `--tc-input` | Focus, links, fields |
 | `--tc-radius-card`, `--tc-radius-control` | Corners |
 
@@ -31,7 +32,7 @@ Bank chrome is one typed theme plus CSS variables. Screens read tokens. They do 
 | `fnb` | F.N.B. Compact density, square corners, hard shadow |
 | `pnc` | Arial, comfortable density, orange `#EF7622` on slate-to-navy |
 
-Each theme has a dark palette on the theme object and a `light` palette. `themeForScheme` does not mutate the registered theme. `web/src/themeContrast.test.ts` checks WCAG AA for text, buttons, glass, links, badges, select options (surface/text and button/button-text), and clear/caution/high on every bank in light and dark.
+Each theme has a dark palette on the theme object and a `light` palette. Dark uses `DARK_CONTROLS` and a darker Clear / Caution / High pair so the copilot card, script box, badges, and buttons follow Light/Dark. `themeForScheme` does not mutate the registered theme. `web/src/themeContrast.test.ts` checks WCAG AA for text, buttons, glass, links, badges, select options (surface/text and button/button-text), and clear/caution/high on every bank in light and dark.
 
 The header control is Light / Dark / System, stored as `teller.colorScheme`. System follows `prefers-color-scheme` and is dark when that query is missing. `web/index.html` sets `color-scheme` to `light dark` and `darkreader-lock`. `:root` sets `color-scheme: light dark`. The active scheme is also set on the theme root so form controls match.
 
@@ -85,8 +86,9 @@ Fact grids are two columns: a bold label beside a normal value. Section headings
 | Handoff | `/sessions/:id/handoff` | Yes (hint until a visit exists) | Title from the recorded outcome (`Handoff — Escalated by teller` when the teller escalated). Short session id (first eight characters of a UUID) with the full id on the tooltip and Copy. Mode, questions answered, level badge, score, pattern, stated purpose, suggested outcome, teller's decision, recorded by, stop. "Why it was flagged" and the counterpoint line. No Undo above the heading |
 | History | `/sessions` | No | Live rows from `GET /sessions`. Practice is a second request, `GET /sessions?mode=practice`. Session id, mode, opened, closed, library version |
 | Health | `/health` | No | `GET /health` only. Decision engine, model, typical response, slow response, last slow response, fallback rate, rejections, agreement with the rules. The screen does not change the engine. `/settings` redirects here |
+| Missing page | any other path, or a session route with no visit | No | "Page not found" or "Start a customer first", with a link back to Home. `/health` and History (`/sessions`) still render without a visit |
 
-Name and age band are display-only on the customer file. They are not posted.
+Name and age band are display-only on the customer file. They are not posted. `web/index.html` links `/favicon.svg`.
 
 ## Plain language
 

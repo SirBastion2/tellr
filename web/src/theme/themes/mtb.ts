@@ -1,16 +1,22 @@
 import weaveUrl from '../../assets/weave.svg'
-import { SOLID_CONTROLS } from '../chrome'
+import { DARK_CONTROLS, DARK_RISK, SOLID_CONTROLS } from '../chrome'
 import type { BankTheme } from '../types'
 import { FOOTER_TEXT } from '../tokens'
 
 /** M&T Bank. Green field, weave texture, serif wordmark, round controls. */
-const risk = {
+const riskLight = {
   clearBg: '#F4FBF6',
   clearFg: '#0E3B2E',
   cautionBg: '#FFEDD5',
   cautionFg: '#9A3412',
   highBg: '#7F1D1D',
   highFg: '#FFFFFF',
+}
+
+const riskDark = {
+  clearBg: '#0E3B2E',
+  clearFg: '#F4FBF6',
+  ...DARK_RISK,
 }
 
 export const theme: BankTheme = {
@@ -57,8 +63,8 @@ export const theme: BankTheme = {
     active: '#E7F6EC',
     inactive: 'rgba(231, 246, 236, 0.35)',
   },
-  risk,
-  ...SOLID_CONTROLS,
+  risk: riskDark,
+  ...DARK_CONTROLS,
   link: '#D1FAE5',
   surface: '#0E3B2E',
   light: {
@@ -83,7 +89,7 @@ export const theme: BankTheme = {
     buttonText: '#F4FBF6',
     logoColor: '#0E3B2E',
     progress: { active: '#0E3B2E', inactive: '#9DDCB4' },
-    risk,
+    risk: riskLight,
     ...SOLID_CONTROLS,
     link: '#0E3B2E',
     surface: '#F7FFF9',
