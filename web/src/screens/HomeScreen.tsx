@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { customerById } from '../demo/customers'
 import type { DemoView } from '../demo/types'
 import { CopilotStrip } from '../workstation/CopilotStrip'
-import { PlaybackBar, SimulationToolbar } from '../workstation/Toolbar'
-import { TransactionPanel } from '../workstation/TransactionPanel'
+import { MiniTransport, PlaybackBar, SimulationToolbar } from '../workstation/Toolbar'
+import { StepCard, TransactionPanel } from '../workstation/TransactionPanel'
 import type { ActivityRow, Library, SessionState } from '../types'
 
 const EMPTY_IDS: readonly string[] = []
@@ -54,7 +54,10 @@ export function HomeScreen({
         <>
           <div className="tc-workstation">
             <div className="tc-home-column">
-              <SimulationToolbar demo={demo} />
+              <div className="tc-left-tools">
+                <SimulationToolbar demo={demo} />
+                <MiniTransport demo={demo} />
+              </div>
               <TransactionPanel
                 customer={customer}
                 fired={demo.index}
@@ -64,6 +67,7 @@ export function HomeScreen({
               />
               {showPlayback ? <PlaybackBar demo={demo} /> : null}
             </div>
+            <StepCard customer={customer} fired={demo.index} presenter={demo.presenter} />
             <CopilotStrip
               library={library}
               session={shownSession}

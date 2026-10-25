@@ -1,6 +1,6 @@
 import libraryJson from '../../contract/library.json'
 import t1 from '../../contract/fixtures/T1.json'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { AppShell } from './App'
@@ -97,8 +97,6 @@ describe('demo personal identification', () => {
       </MemoryRouter>,
     )
     assertNoPersonalId(screen.getByTestId('home-screen'))
-    expect(within(screen.getByTestId('demo-timeline')).getAllByTestId('event-marker').some((row) => (row.textContent ?? '').includes(CUSTOMER_LABEL))).toBe(
-      true,
-    )
+    expect(screen.getAllByTestId('event-marker').some((row) => (row.textContent ?? '').includes(CUSTOMER_LABEL))).toBe(true)
   })
 })

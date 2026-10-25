@@ -19,12 +19,16 @@ export function ThemeRoot({ children, footer = null }: { children: ReactNode; fo
       data-theme={theme.id}
       data-scheme={scheme}
       data-presenter={presenter.on ? 'true' : 'false'}
+      className="tc-letterbox"
       style={{
         ...(themeVars(theme) as CSSProperties),
         height: '100dvh',
         minHeight: 0,
         maxHeight: '100dvh',
         position: 'relative',
+        display: 'grid',
+        placeItems: 'center',
+        overflow: 'hidden',
         color: 'var(--tc-text)',
         fontFamily: 'var(--tc-font)',
         fontWeight: 'var(--tc-font-weight)' as CSSProperties['fontWeight'],
@@ -40,45 +44,59 @@ export function ThemeRoot({ children, footer = null }: { children: ReactNode; fo
       }}
     >
       <div
+        className="tc-stage"
+        data-testid="theme-stage"
+        style={{
+          width: 'min(100vw, calc(100dvh * 16 / 9))',
+          aspectRatio: '16 / 9',
+          containerType: 'inline-size',
+          ['--u' as string]: 'calc(1cqw / 10.24)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+      <div
         data-testid="theme-page"
         className="tc-theme-page"
         style={{
-          height: '100%',
-          minHeight: 0,
-          boxSizing: 'border-box',
+          position: 'absolute',
+          inset: 0,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'stretch',
-          justifyContent: 'flex-start',
+          height: '100%',
+          minHeight: 0,
+          boxSizing: 'border-box',
           maxWidth: '100%',
           minWidth: 0,
           overflowX: 'clip',
+          overflowY: 'hidden',
           overflowClipMargin: DENSITY.focusClip,
-          padding: 'var(--tc-page-pad-y) var(--tc-page-pad-x) var(--tc-page-pad-bottom)',
-          gap: 'var(--tc-space-workstation)',
+          padding: 0,
         }}
       >
         <div
           data-testid="theme-card"
           className="tc-page-card"
           style={{
-            position: 'relative',
+            position: 'absolute',
+            inset: 0,
             width: '100%',
             maxWidth: '100%',
             minWidth: 0,
             minHeight: 0,
+            height: '100%',
             flex: '1 1 auto',
             display: 'flex',
             flexDirection: 'column',
-            margin: '0 auto',
-            borderRadius: 'var(--tc-radius-card)',
-            background: 'var(--tc-glass-fill)',
-            border: 'var(--tc-border-width) var(--tc-border-style) var(--tc-glass-border)',
-            backdropFilter: 'blur(var(--tc-glass-blur))',
-            WebkitBackdropFilter: 'blur(var(--tc-glass-blur))',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), var(--tc-shadow-card)',
-            padding: 'var(--tc-space-card)',
+            margin: 0,
+            borderRadius: 0,
+            background: 'transparent',
+            border: 'none',
+            boxShadow: 'none',
+            padding: 0,
             boxSizing: 'border-box',
+            overflow: 'hidden',
           }}
         >
           {children}
@@ -99,6 +117,7 @@ export function ThemeRoot({ children, footer = null }: { children: ReactNode; fo
             {theme.footerText}
           </p>
         </div>
+      </div>
       </div>
     </div>
   )
