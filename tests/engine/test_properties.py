@@ -166,7 +166,7 @@ def test_level_bands_match_level_on_urgency_score_range() -> None:
     assert [row["label"] for row in bands] == ORDER
     assert bands[0]["min"] == 0
     assert bands[-1]["max"] == 100
-    for value in range(0, 101):
+    for value in range(101):
         matched = [row for row in bands if row["min"] <= value <= row["max"]]
         assert len(matched) == 1
         assert matched[0]["label"] == level(value, tables)

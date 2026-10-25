@@ -5,9 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+from tests.recommenders.conftest import FakeRecommender, t2_steps
 
 from engine.score import level_bands
-from tests.recommenders.conftest import FakeRecommender, t2_steps
 
 
 def _walk_t2(client: TestClient, through: int) -> str:
