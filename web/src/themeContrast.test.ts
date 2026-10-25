@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { darkPalette } from './theme/palette'
 import { THEME_LIST } from './theme/registry'
+import { TYPE_FG } from './theme/typeScale'
 import type { ThemePalette } from './theme/types'
 
 function channels(color: string): [number, number, number, number] {
@@ -47,12 +48,25 @@ function composite(foreground: string, background: string): string {
   return `#${mixed.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`
 }
 
+function withAlpha(color: string, alpha: number): string {
+  const [red, green, blue] = channels(color)
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`
+}
+
 function checkPalette(label: string, palette: ThemePalette) {
   const page = palette.background.color
   const glass = channels(palette.glass.fill)
   const card = composite(`rgba(${glass[0]}, ${glass[1]}, ${glass[2]}, ${glass[3]})`, page)
   const input = composite(palette.inputFill, palette.glass.fallback)
+  const soft = withAlpha(palette.text, TYPE_FG.soft)
+  const body = withAlpha(palette.text, TYPE_FG.body)
   expect(contrast(palette.text, page), `${label} text on field`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(composite(soft, page), page), `${label} soft label on field`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(composite(soft, card), card), `${label} soft label on glass`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(composite(soft, palette.surface), palette.surface), `${label} soft label on surface`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(composite(soft, palette.glass.fallback), palette.glass.fallback), `${label} soft label on fallback`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(composite(body, page), page), `${label} body on field`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(composite(body, card), card), `${label} body on glass`).toBeGreaterThanOrEqual(4.5)
   expect(contrast(palette.text, card), `${label} text on glass`).toBeGreaterThanOrEqual(4.5)
   expect(contrast(palette.mutedText, page), `${label} muted on field`).toBeGreaterThanOrEqual(4.5)
   expect(contrast(palette.mutedText, card), `${label} muted on glass`).toBeGreaterThanOrEqual(4.5)
@@ -82,6 +96,13 @@ function checkPalette(label: string, palette: ThemePalette) {
 }
 
 describe('theme contrast', () => {
+  it('raises the soft-label tint just enough for AA (0.68 fails mtb light page)', () => {
+    expect(TYPE_FG.soft).toBeGreaterThan(0.68)
+    expect(TYPE_FG.soft).toBeLessThanOrEqual(0.72)
+    expect(TYPE_FG.body).toBe(0.85)
+    expect(TYPE_FG.line).toBe(0.18)
+  })
+
   it('keeps text, buttons, and risk states at WCAG AA for every bank and color scheme', () => {
     expect(THEME_LIST.map((theme) => theme.id)).toEqual(['tellr', 'pnc', 'mtb', 'fnb'])
     for (const theme of THEME_LIST) {

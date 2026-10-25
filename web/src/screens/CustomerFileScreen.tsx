@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
 import { customerById } from '../demo/customers'
 import type { DemoView } from '../demo/types'
-import { PageTitle, SectionHeading } from '../ui/facts'
+import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
 import { displayCustomerLabel, personalNamesFrom, redactPersonalCopy } from '../ui/privacy'
 import { controlStyle } from '../theme/controls'
 
@@ -13,10 +13,6 @@ const card: CSSProperties = {
   padding: 'var(--tc-space-4)',
   display: 'grid',
   gap: 'var(--tc-space-3)',
-}
-
-const term: CSSProperties = {
-  margin: 0,
 }
 
 export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) {
@@ -32,9 +28,7 @@ export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) 
       </div>
       {demo ? (
         <label htmlFor="customer-file-picker" className="tc-stack-heading" style={{ maxWidth: 360 }}>
-          <span className="tc-text-base" style={term}>
-            Simulated customer
-          </span>
+          <span className="tc-fact-term">Simulated customer</span>
           <select
             id="customer-file-picker"
             data-testid="customer-file-picker"
@@ -50,7 +44,9 @@ export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) 
           </select>
         </label>
       ) : (
-        <p style={{ margin: 0 }}>No practice customer is loaded.</p>
+        <p className="tc-prose" style={{ margin: 0 }}>
+          No practice customer is loaded.
+        </p>
       )}
       {customer ? (
         <>
@@ -59,18 +55,14 @@ export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) 
           </p>
           <section style={card} aria-labelledby="profile-heading">
             <SectionHeading id="profile-heading">Profile</SectionHeading>
-            <dl className="tc-kv">
-              <dt className="tc-fact-term">Customer</dt>
-              <dd className="tc-fact-value" data-testid="profile-name">
+            <FactGrid className="tc-kv" label="Profile">
+              <Fact term="Customer" testId="profile-name">
                 {displayCustomerLabel()}
-              </dd>
-              <dt className="tc-fact-term">Tenure</dt>
-              <dd className="tc-fact-value">{customer.profile.tenure}</dd>
-              <dt className="tc-fact-term">Typical withdrawal</dt>
-              <dd className="tc-fact-value">{customer.profile.typicalWithdrawal}</dd>
-              <dt className="tc-fact-term">Channels</dt>
-              <dd className="tc-fact-value">{customer.profile.channels}</dd>
-            </dl>
+              </Fact>
+              <Fact term="Tenure">{customer.profile.tenure}</Fact>
+              <Fact term="Typical withdrawal">{customer.profile.typicalWithdrawal}</Fact>
+              <Fact term="Channels">{customer.profile.channels}</Fact>
+            </FactGrid>
           </section>
         </>
       ) : null}

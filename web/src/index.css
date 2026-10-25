@@ -165,6 +165,7 @@ button[data-loading='true'],
   font-size: var(--tc-text-base);
   line-height: var(--tc-type-line-body);
   font-weight: var(--tc-font-weight);
+  color: color-mix(in srgb, currentColor var(--tc-fg-body-pct), transparent);
 }
 
 .tc-kicker {
@@ -174,6 +175,7 @@ button[data-loading='true'],
   letter-spacing: var(--tc-kicker-tracking);
   text-transform: var(--tc-kicker-transform);
   line-height: var(--tc-text-xs-lh);
+  color: color-mix(in srgb, currentColor var(--tc-fg-soft-pct), transparent);
 }
 
 .tc-toolbar {
@@ -261,9 +263,26 @@ button[data-loading='true'],
 
 .tc-section-heading {
   margin: 0;
-  font-size: var(--tc-text-base);
-  font-weight: var(--tc-heading-weight);
-  line-height: var(--tc-text-base-lh);
+  font-size: var(--tc-text-xs);
+  font-weight: var(--tc-text-xs-weight);
+  letter-spacing: var(--tc-kicker-tracking);
+  text-transform: var(--tc-kicker-transform);
+  line-height: var(--tc-text-xs-lh);
+  color: color-mix(in srgb, currentColor var(--tc-fg-soft-pct), transparent);
+}
+
+.tc-block,
+.tc-section-heading {
+  border-top: 1px solid color-mix(in srgb, currentColor var(--tc-fg-line-pct), transparent);
+  margin-top: var(--tc-space-5);
+  padding-top: var(--tc-space-5);
+}
+
+.tc-block:first-child,
+.tc-section-heading:first-child {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .tc-facts {
@@ -315,6 +334,7 @@ button[data-loading='true'],
   font-size: var(--tc-text-base);
   line-height: var(--tc-text-base-lh);
   max-width: 70ch;
+  color: color-mix(in srgb, currentColor var(--tc-fg-body-pct), transparent);
 }
 
 .tc-note-row {
@@ -342,15 +362,11 @@ button[data-loading='true'],
 }
 
 .tc-tech {
-  border-top: 1px solid var(--tc-glass-border, #1c1917);
-  padding-top: 8px;
+  border-top: none;
 }
 
 .tc-tech summary {
   cursor: pointer;
-  font-size: var(--tc-text-base);
-  font-weight: var(--tc-strong-weight);
-  line-height: var(--tc-text-base-lh);
   min-height: 48px;
   display: flex;
   align-items: center;
@@ -383,6 +399,12 @@ button[data-loading='true'],
   border-radius: var(--tc-radius-control, 999px);
   min-height: 32px;
   width: fit-content;
+}
+
+.tc-level-badge svg {
+  display: block;
+  flex: 0 0 auto;
+  align-self: center;
 }
 
 .tc-shell {
@@ -664,15 +686,16 @@ button[data-loading='true'],
 .tc-kv dt {
   margin: 0;
   font-size: var(--tc-text-sm);
-  font-weight: var(--tc-strong-weight);
+  font-weight: var(--tc-weight-medium);
   line-height: var(--tc-line-fact);
+  color: color-mix(in srgb, currentColor var(--tc-fg-soft-pct), transparent);
 }
 
 .tc-kv dd {
   margin: 0;
   min-width: 0;
   font-size: var(--tc-text-base);
-  font-weight: var(--tc-font-weight);
+  font-weight: var(--tc-strong-weight);
   line-height: var(--tc-line-fact);
   overflow-wrap: break-word;
 }
@@ -891,7 +914,11 @@ html[data-color-scheme='light'] select option:checked,
   --tc-border-width: 1px;
   --tc-border-style: solid;
   --tc-font-weight: 400;
+  --tc-weight-medium: 500;
   --tc-heading-weight: 600;
+  --tc-fg-soft-pct: 69%;
+  --tc-fg-body-pct: 85%;
+  --tc-fg-line-pct: 18%;
   --tc-space-workstation: clamp(10px, 1.3vw, 20px);
   --tc-space-card-fluid: clamp(10px, 1vw, 16px);
   --tc-space-strip: clamp(10px, 1vw, 13px);
@@ -1008,21 +1035,28 @@ body {
   font-size: var(--tc-text-xl);
   line-height: var(--tc-text-xl-lh);
   font-weight: var(--tc-text-xl-weight);
+  color: inherit;
 }
 
 .tc-facts dt,
 .tc-fact-term {
-  font-size: var(--tc-text-base);
+  font-size: var(--tc-text-sm);
   line-height: var(--tc-line-fact);
-  font-weight: var(--tc-strong-weight);
+  font-weight: var(--tc-weight-medium);
+  color: color-mix(in srgb, currentColor var(--tc-fg-soft-pct), transparent);
 }
 
 .tc-facts dd,
 .tc-fact-value {
   font-size: var(--tc-text-base);
   line-height: var(--tc-line-fact);
-  font-weight: var(--tc-font-weight);
+  font-weight: var(--tc-strong-weight);
   overflow-wrap: break-word;
+}
+
+/* Prose inside a fact value keeps body size, color, and line-height, but the value weight. */
+.tc-fact-value > .tc-prose {
+  font-weight: inherit;
 }
 
 @media (prefers-contrast: more) {

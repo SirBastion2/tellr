@@ -106,7 +106,7 @@ export function HandoffScreen({
           </FactGrid>
           <SectionHeading>Why it was flagged</SectionHeading>
           {signals.length > 0 ? (
-            <ul style={{ margin: 0, paddingLeft: '1.2rem', display: 'grid', gap: 'var(--tc-space-2)' }}>
+            <ul className="tc-prose" style={{ margin: 0, paddingLeft: '1.2rem', display: 'grid', gap: 'var(--tc-space-2)' }}>
               {signals.map((signal) => (
                 <li
                   key={signal.id}
@@ -121,10 +121,12 @@ export function HandoffScreen({
               ))}
             </ul>
           ) : (
-            <p style={{ margin: 0 }}>Nothing was flagged.</p>
+            <p className="tc-prose" style={{ margin: 0 }}>
+              Nothing was flagged.
+            </p>
           )}
           {projection.risk.counterpoint ? (
-            <p data-testid="handoff-counterpoint" style={{ margin: 0 }}>
+            <p data-testid="handoff-counterpoint" className="tc-prose" style={{ margin: 0 }}>
               <strong>{projection.risk.level === 'clear' ? 'Still noted' : 'In their favor'}:</strong>{' '}
               {projection.risk.counterpoint.label}
             </p>

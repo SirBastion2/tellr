@@ -128,8 +128,16 @@ export function HistoryScreen() {
           Practice
         </button>
       </div>
-      {load.kind === 'unavailable' ? <p data-testid="history-unavailable">History is unavailable.</p> : null}
-      {load.kind === 'invalid' ? <p data-testid="history-invalid">History response could not be read.</p> : null}
+      {load.kind === 'unavailable' ? (
+        <p data-testid="history-unavailable" className="tc-prose">
+          History is unavailable.
+        </p>
+      ) : null}
+      {load.kind === 'invalid' ? (
+        <p data-testid="history-invalid" className="tc-prose">
+          History response could not be read.
+        </p>
+      ) : null}
       <ul data-testid="history-list" className="space-y-2">
         {visible.map((session) => (
           <li key={session.session_id} data-testid="history-row" data-mode={session.mode}>

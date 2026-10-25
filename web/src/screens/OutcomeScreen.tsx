@@ -47,7 +47,7 @@ export function OutcomeScreen({
       <PageTitle>Outcome</PageTitle>
       {session && closed ? (
         <>
-          <p data-testid="visit-closed" style={{ margin: 0 }}>
+          <p data-testid="visit-closed" className="tc-prose" style={{ margin: 0 }}>
             This visit is closed. Start a new customer to record another decision.
           </p>
           {recorded ? (
@@ -77,7 +77,9 @@ export function OutcomeScreen({
             <Fact term="Questions answered">{session.answers}</Fact>
           </FactGrid>
           <SectionHeading>Teller's decision</SectionHeading>
-          <p style={{ margin: 0 }}>All four choices stay available. The highlighted one is only a suggestion.</p>
+          <p className="tc-prose" style={{ margin: 0 }}>
+            All four choices stay available. The highlighted one is only a suggestion.
+          </p>
           <ul className="flex flex-wrap gap-2">
             {session.available_outcomes.map((outcome) => {
               const highlighted = outcome !== 'report' && outcome === session.suggested_outcome
@@ -107,8 +109,8 @@ export function OutcomeScreen({
               )
             })}
           </ul>
-          <label className="tc-stack-heading tc-text-base block" htmlFor="outcome-actor" style={{ fontWeight: 'var(--tc-strong-weight)' }}>
-            Teller name
+          <label className="tc-stack-heading block" htmlFor="outcome-actor">
+            <span className="tc-fact-term">Teller name</span>
             <input
               id="outcome-actor"
               data-testid="actor"

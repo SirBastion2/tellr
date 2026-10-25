@@ -73,7 +73,7 @@ The toolbar is the simulated-customer select, Play/Pause, Step, Restart, speed `
 
 ## Screens and fields
 
-Fact grids are two columns: a bold label beside a normal value, `--tc-space-4` between columns, `--tc-space-2` between rows, and `align-items: center` so a wrapping Type value and the large Amount share a vertical center with their labels. Section headings are bold. Do not put a label in a paragraph and the value on the next line when a fact grid fits.
+Fact grids are two columns: a small medium-weight soft label (`--tc-text-sm`, weight 500, `--tc-fg-soft-pct`) beside a bold full-strength value, `--tc-space-4` between columns, `--tc-space-2` between rows, and `align-items: center` so a wrapping Type value and the large Amount share a vertical center with their labels. Sub-headings use the shared uppercase tag (`tc-kicker` / `tc-section-heading`). The large title stays for the one primary heading per card. Body copy uses `tc-prose` (weight 400, `--tc-fg-body-pct`). Multi-block cards separate blocks with `tc-block` (1px `--tc-fg-line-pct` rule and `--tc-space-5` above and below the line). Do not put a label in a paragraph and the value on the next line when a fact grid fits.
 
 | Screen | Route | On the demo nav | Fields |
 |---|---|---|---|

@@ -64,6 +64,7 @@ export const DENSITY = {
   shadowCard: '0 16px 40px rgba(0, 0, 0, 0.28)',
   glassBlur: '20px',
   fontWeight: TYPE_WEIGHT.body,
+  mediumWeight: TYPE_WEIGHT.medium,
   headingWeight: TYPE_WEIGHT.heading,
   strongWeight: TYPE_WEIGHT.strong,
   wordmarkWeight: TYPE_WEIGHT.heading,
