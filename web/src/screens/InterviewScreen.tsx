@@ -1,5 +1,6 @@
 import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { LevelIcon } from '../ui/LevelIcon'
+import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import type { AnswerPost, Level, Library, SessionState } from '../types'
 import { QuestionCard } from '../workstation/QuestionCard'
 
@@ -143,8 +144,8 @@ export function InterviewScreen({
                 {session.risk.pattern_label}
               </p>
               <FactGrid>
-                <Fact term="Score" testId="risk-score">
-                  {session.risk.score}
+                <Fact term={URGENCY_SCORE_TERM} testId="risk-score">
+                  {formatUrgencyScore(session.risk.score)}
                 </Fact>
               </FactGrid>
               {session.stated_purpose ? (

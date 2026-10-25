@@ -9,6 +9,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { OutcomeScreen } from './screens/OutcomeScreen'
 import type { OutcomeId, SessionState } from './types'
+import { formatUrgencyScore, URGENCY_SCORE_TERM } from './ui/urgencyScore'
 
 const fixtures = [t1, t2, t3, t4, t5, t6, t7]
 const OUTCOMES: OutcomeId[] = ['proceed', 'slow_down', 'escalate', 'report']
@@ -32,6 +33,8 @@ describe('Outcome screen', () => {
         const where = `${fixture.case} step ${index}`
         const { unmount } = render(<OutcomeScreen session={session} />)
 
+        expect(screen.getByText(URGENCY_SCORE_TERM), where).toBeTruthy()
+        expect(screen.getByTestId('outcome-score').textContent, where).toBe(formatUrgencyScore(session.risk.score))
         expect(session.available_outcomes, where).toEqual(OUTCOMES)
         expect(session.suggested_outcome, where).not.toBe('report')
 
