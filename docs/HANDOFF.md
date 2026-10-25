@@ -2344,6 +2344,32 @@ GATE PASS (b)
 
 ---
 
+### [B] Header fit after #107: drop clock and Live API pill — Agent B1 — 2026-10-25 06:08
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 186 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  51 passed (51)
+      Tests  186 passed (186)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/App.tsx`, `web/src/index.css`, `web/src/theme/scheme.ts`, `web/src/theme/tokens.ts`, `web/src/theme/vars.ts`, `web/src/ui/LocalClock.tsx` (removed), `web/src/ui/localTime.test.tsx`, header/fit/theme tests, `web/scripts/measure-fit.mjs`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - #107 only measured ≤1280, where the hardcoded collapse hid Light/Dark/System. Above that the full segment plus clock plus Live API pill overflowed the header pill (architecture header / UI_REFERENCE).
+  - Removed the header clock and the Live API / connection pill. No replacement indicator. `web/src/ui/localTime.ts` and `web/src/connection.ts` stay for API timestamps and health probe.
+  - Scheme collapse is measured (`schemeNeedsCompact`): brand + hugged sim + nav min-content + full segment + help + gaps vs header content box. Not a 1280px breakpoint. Sim pill may ellipsize (`min-width: 0`) before overflow. Equal `--tc-space-2` padding on both ends.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/113. Do not merge. Merged `origin/main` including #107 and #110. Playwright header table is scratch (gate cannot run a committed Playwright header test). No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+
+---
+
 ### [B] Shared type hierarchy for fact rows and subheads — Agent B1 — 2026-10-25 06:09
 - **Status:** done
 - **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 190 tests, contract OK)
@@ -2367,5 +2393,31 @@ GATE PASS (b)
   - Soft tint started at 68% and failed AA on mtb light page (4.45:1). Raised to **69%**, the lowest value that clears 4.5:1 on every bank surface. Header / nav / buttons / pills untouched.
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/112. Do not merge. Merged `origin/main` including #111 cutoff rows; those rows now use `tc-prose`. No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+
+---
+
+### [B] Merge #113 header into the type-hierarchy branch — Agent B1 — 2026-10-25 06:32
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 191 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  53 passed (53)
+      Tests  191 passed (191)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merge of `origin/main` (`2ea2ec8`, #113) into `cursor/type-hierarchy-2ec2`. Conflicts: `ARCHITECTURE.md`, `docs/HANDOFF.md`.
+- **Decisions I made, and the section that justified each:**
+  - Kept #112 label/value typography on every screen (`--tc-text-sm` / weight 500 / `--tc-fg-soft-pct` labels, bold values, shared tags and prose). Header, nav, buttons, and pills stay as #113 left them (architecture header / UI_REFERENCE).
+  - Header has no clock and no Live API pill. Scheme collapse stays measured (`schemeNeedsCompact`). Equal `--tc-space-2` padding on both ends. `web/src/ui/LocalClock.tsx` stays removed.
+  - `ARCHITECTURE.md` scheme row is #113; type-scale row keeps the #112 tints. Toolbar row no longer says the clock sits in the header, because that file was removed.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/112. Do not open a new PR. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos.
 
 

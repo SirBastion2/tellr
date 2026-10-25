@@ -4,7 +4,6 @@ import { Link, BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate 
 import { advanceSimulatedMs, simulatedCapMs, timelineElapsedMs } from './demo/clock'
 import { CUSTOMERS, customerById } from './demo/customers'
 import type { ConfirmKind, DemoSpeed, DemoView } from './demo/types'
-import { connectionLabel, connectionState, subscribeConnection, type ConnectionState } from './connection'
 import { friendlyApiError } from './errors'
 import { notesOnlyChip, rememberChipOrder, sourceForChip } from './feed'
 import { LiveBadge } from './LiveBadge'
@@ -28,7 +27,6 @@ import { ThemeProvider, useColorScheme, useThemeActions } from './theme/ThemePro
 import { ThemeRoot } from './theme/ThemeRoot'
 import { ThemeWordmark } from './theme/Wordmark'
 import { ConfirmDialog } from './ui/ConfirmDialog'
-import { LocalClock } from './ui/LocalClock'
 import { useDemoShortcuts } from './ui/DemoShortcuts'
 import { LEVEL_WORD } from './ui/LevelIcon'
 import { ShortcutHelp } from './ui/ShortcutHelp'
@@ -97,7 +95,7 @@ function SchemeToggle() {
 function SchemeMenu() {
   const { choice, setChoice } = useColorScheme()
   return (
-    <label className="tc-scheme-menu" style={{ display: 'inline-flex', alignItems: 'center' }}>
+    <label className="tc-scheme-menu">
       <span className="tc-sr">Color scheme</span>
       <select
         data-testid="scheme-menu"
@@ -113,16 +111,6 @@ function SchemeMenu() {
         ))}
       </select>
     </label>
-  )
-}
-
-function ConnectionBadge() {
-  const [link, setLink] = useState<ConnectionState>(connectionState)
-  useEffect(() => subscribeConnection(setLink), [])
-  return (
-    <p data-testid="connection-status" data-kind={link.kind} className="tc-connection" title={connectionLabel(link.kind)}>
-      {connectionLabel(link.kind)}
-    </p>
   )
 }
 
@@ -235,10 +223,12 @@ export function AppShell({
           ref={headerRef}
           className="tc-header"
           data-testid="app-header"
+          data-scheme-compact={schemeCompact ? 'true' : 'false'}
           style={{
             display: 'flex',
             flexWrap: 'nowrap',
             alignItems: 'center',
+            boxSizing: 'border-box',
             gap: 'var(--tc-space-header, 8px)',
             minHeight: DENSITY.headerMinHeight,
             overflow: 'visible',
@@ -246,7 +236,8 @@ export function AppShell({
             maxWidth: '100%',
             background: 'var(--tc-glass-fallback)',
             borderRadius: 'var(--tc-radius-card, 16px)',
-            padding: 'var(--tc-space-2)',
+            paddingBlock: 'var(--tc-space-2)',
+            paddingInline: 'var(--tc-space-2)',
           }}
         >
           <div className="tc-header-brand" data-testid="header-brand">
@@ -257,8 +248,6 @@ export function AppShell({
           </div>
           <div className="tc-header-status" data-testid="header-status">
             <LiveBadge mode={session?.mode ?? null} simulationTitle={simulationTitle} />
-            <ConnectionBadge />
-            <LocalClock />
           </div>
           <nav
             aria-label="Screens"
@@ -331,7 +320,8 @@ export function AppShell({
             })}
           </nav>
           <div className="tc-header-tools" data-testid="header-tools">
-            {schemeCompact ? <SchemeMenu /> : <SchemeToggle />}
+            <SchemeToggle />
+            <SchemeMenu />
             <button
               type="button"
               className="tc-btn"

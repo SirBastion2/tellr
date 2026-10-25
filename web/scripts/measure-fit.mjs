@@ -23,7 +23,6 @@ function collectFit() {
   const named = [
     ['title', document.querySelector('.tc-header-title')],
     ['pill', document.querySelector('[data-testid="live-badge"]')],
-    ['connection', document.querySelector('[data-testid="connection-status"]')],
     ['tabs', document.querySelector('[data-testid="app-nav"]')],
     ['theme-segment', document.querySelector('[data-testid="color-scheme"]')],
     ['theme-menu', document.querySelector('[data-testid="scheme-menu"]')],

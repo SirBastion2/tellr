@@ -421,6 +421,7 @@ button[data-loading='true'],
 .tc-header {
   container-type: inline-size;
   container-name: header;
+  box-sizing: border-box;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
@@ -429,6 +430,8 @@ button[data-loading='true'],
   min-width: 0;
   max-width: 100%;
   overflow: visible;
+  padding-block: var(--tc-space-2);
+  padding-inline: var(--tc-space-2);
 }
 
 .tc-header-brand,
@@ -442,41 +445,14 @@ button[data-loading='true'],
 }
 
 .tc-header-status {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .tc-header .tc-segment,
 .tc-header .tc-scheme-menu,
 .tc-header .tc-btn {
   flex: 0 0 auto;
-}
-
-.tc-connection {
-  display: inline-flex;
-  align-items: center;
-  box-sizing: border-box;
-  margin: 0;
-  white-space: nowrap;
-  flex: 0 0 auto;
-  width: max-content;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border: var(--tc-border-width, 1px) solid var(--tc-glass-border, #1c1917);
-  border-radius: var(--tc-radius-control, 999px);
-  padding-block: 0;
-  padding-inline: var(--tc-control-pad-inline, 0.85em);
-  height: var(--tc-header-control-h, 48px);
-  min-height: var(--tc-header-control-h, 48px);
-  line-height: var(--tc-type-line-ui);
-  font-weight: var(--tc-strong-weight);
-  font-size: var(--tc-text-sm);
-  background: var(--tc-chip-bg, #111827);
-  color: var(--tc-chip-fg, #f9fafb);
-}
-
-.tc-connection[data-kind='live'] {
-  background: var(--tc-risk-clear-bg, #ecfdf5);
-  color: var(--tc-risk-clear-fg, #14532d);
 }
 
 .tc-closed {
@@ -514,9 +490,10 @@ button[data-loading='true'],
   box-sizing: border-box;
   margin: 0;
   white-space: nowrap;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-width: 0;
   width: max-content;
-  max-width: var(--tc-sim-pill-max, none);
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   border: 1px solid var(--tc-accent, #1c1917);
@@ -537,30 +514,6 @@ button[data-loading='true'],
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.tc-local-clock {
-  display: inline-flex;
-  align-items: center;
-  box-sizing: border-box;
-  margin: 0;
-  flex: 0 0 auto;
-  height: var(--tc-header-control-h, 48px);
-  min-height: var(--tc-header-control-h, 48px);
-  padding-block: 0;
-  padding-inline: var(--tc-control-pad-inline, 0.85em);
-  font-size: var(--tc-text-sm);
-  font-weight: var(--tc-text-sm-weight);
-  line-height: var(--tc-text-sm-lh);
-  width: max-content;
-  white-space: nowrap;
-}
-
-.tc-local-clock-slot {
-  display: inline-block;
-  font-variant-numeric: tabular-nums;
-  min-width: var(--tc-clock-min, 8ch);
-  text-align: end;
 }
 
 .tc-header-nav {
@@ -678,7 +631,8 @@ button[data-loading='true'],
 }
 
 .tc-scheme-menu {
-  display: none;
+  display: inline-flex;
+  align-items: center;
 }
 
 .tc-segment {
@@ -688,27 +642,14 @@ button[data-loading='true'],
   overflow: hidden;
 }
 
-/* After .tc-segment so the menu replaces the segment instead of sitting beside it. */
-@container header (max-width: 1280px) {
-  .tc-header .tc-segment.tc-scheme-full {
-    display: none;
-  }
-
-  .tc-header .tc-scheme-menu {
-    display: inline-flex;
-    align-items: center;
-  }
-}
-
-@media (max-width: 1280px) {
-  .tc-header .tc-segment.tc-scheme-full {
-    display: none;
-  }
-
-  .tc-header .tc-scheme-menu {
-    display: inline-flex;
-    align-items: center;
-  }
+/* Inactive scheme control stays in the tree so its width can be measured. */
+.tc-header[data-scheme-compact='true'] .tc-scheme-full,
+.tc-header:not([data-scheme-compact='true']) .tc-scheme-menu {
+  position: fixed;
+  left: -200vw;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 @media (max-width: 1180px) {
@@ -722,14 +663,7 @@ button[data-loading='true'],
 }
 
 @media (max-width: 1024px) {
-  .tc-header-status {
-    flex: 0 1 auto;
-    min-width: 0;
-  }
-
   .tc-live-badge {
-    flex: 0 1 auto;
-    min-width: 8em;
     max-width: 12em;
   }
 }
@@ -954,7 +888,6 @@ html[data-color-scheme='light'] select option:checked,
   --tc-sim-pill-max: none;
   --tc-play-min: 7.5rem;
   --tc-timer-min: 5ch;
-  --tc-clock-min: 8ch;
   --tc-control-pad-inline: 0.85em;
   --tc-speed-min: 2.75rem;
   --tc-case-link-min: 9.5rem;
@@ -1215,7 +1148,6 @@ body {
   }
 
   .tc-badge,
-  .tc-connection,
   .tc-closed,
   [data-level] {
     border: 1px solid CanvasText;
