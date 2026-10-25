@@ -1,12 +1,13 @@
-### [docs] Shorter README summary — Agent — 2026-10-25 08:59
+### [docs] Short judge README — Agent — 2026-10-25 09:09
 - **Status:** done
-- **Gate:** not run. Docs only. No `scripts/gate.sh` (no code, contract, or golden edits).
-- **Changed:** `README.md`, `docs/handoff/20261025-0859-readme-summary-shorter.md`
+- **Gate:** `scripts/gate.sh a` → PASS (ruff, 216 passed, import-linter, contract OK). `scripts/gate.sh b` → PASS (typecheck, lint, 197 passed, contract OK).
+- **Changed:** `README.md`, `docs/assets/tellr-logo.png`, `docs/handoff/20261025-0859-readme-summary-shorter.md`
 - **Decisions I made, and the section that justified each:**
-  - Replaced the Summary bullets and the two intro paragraphs with one sentence, an At a glance table, and a Jump to line. The paragraphs were dropped because the table covers them.
-  - Table figures are the ones already in the README body: 5 synthetic customers, p50 463.6 ms, p95 482.7 ms, 1.5 s budget, 14/15 coached caught, 0/15 false flags, 30-scenario dev set, 4 bank themes, up to 12 agents in parallel. No other numbers in the table.
-  - Sebastian's RTX 5070 training statement stays in Specs and tech stack only. It is not in the table.
-  - Removed the read-aloud script from the copilot list. The panel line is the suggested action. Also removed "words to say" and the read-aloud lines from Responsible use, How it would actually be used, and Templates.
-  - The only Cursor usage count left is "up to 12 agents in parallel." The sentence that the count moves with the task is gone.
+  - Rewrote the whole README to a short judge page (118 lines). Order: logo, one sentence, At a glance (6 rows), Jump to, How we built it with Cursor, demo vs real use, Llama 8B, how a teller uses it, safety and limitations, specs, quick start.
+  - Logo is the attached file, copied unchanged to `docs/assets/tellr-logo.png`. Nothing sits above it. Did not use `web/src/assets/tellr-wordmark.png`. Did not open or edit the image.
+  - Dropped the Entered in section and every prize, deadline, and challenge mention. Dropped the read-aloud script and "words to say." The copilot line is the suggested action.
+  - Benchmark figures are the ones already in the previous README: 8B p50 463.6 ms, p95 482.7 ms, 3B p50 273.2 ms, p95 296.3 ms, dev catch 14/15, false-flag 0/15, mean 3.10 (rules 3.07), held-out catch 4/5 and false-flag 0/5. Reproduce commands are the existing bench and dev-eval commands.
+  - Specs keep Sebastian's statement: an RTX 5070 was used to train the Llama 8B, and that run is not written down in the repo.
+  - Cursor workflow examples are card A-08, card B-06, and the signal-row UI fix. The only agent count is "up to 12 agents in parallel."
 - **Questions logged:** none
-- **The next agent needs to know:** Do not edit `docs/HANDOFF.md`. Do not put the read-aloud script, "words to say," or another agent count back into `README.md`.
+- **The next agent needs to know:** Do not edit `docs/HANDOFF.md`. Do not put prizes, deadlines, challenge entries, the read-aloud script, or another agent count back into `README.md`.
