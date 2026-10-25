@@ -1670,3 +1670,30 @@ Headless Chrome (`web/scripts/measure-fit.mjs`, live-API mode, F.N.B. theme, con
 - **Questions logged:** none
 - **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine edits. No new npm dependency. Do not attach screenshots. Re-run `node web/scripts/measure-fit.mjs http://127.0.0.1:5173` after `npm run dev:api` if the header grows again.
 
+---
+
+### [B] Dark copilot panel, empty routes, favicon — Agent B (Sebastian / Driver A UI lane) — 2026-10-25 03:55
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 100 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  33 passed (33)
+      Tests  100 passed (100)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/theme/chrome.ts` (`DARK_CONTROLS`, `DARK_RISK`), bank themes, `web/src/index.css`, `web/src/workstation/CopilotStrip.tsx`, `web/src/screens/NotFoundScreen.tsx`, `web/src/App.tsx`, `web/public/favicon.svg`, `web/index.html`, `web/src/copilotTheme.test.tsx`, `web/src/emptyRoutes.test.tsx`, `web/src/favicon.test.ts`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Confirmed all three stress findings still reproduced on `c1b9d00` (#88). `/health` already rendered without a session, so it was left alone (architecture §12 one-screen-one-endpoint).
+  - Copilot card uses `--tc-surface` / `--tc-text`. Clear / Caution / High color stays on the level badge so the meaning is still an icon plus a word (architecture §12). Dark palettes get their own control and risk pairs; `themeContrast` still requires WCAG AA.
+  - Unknown paths and session routes with no visit show a short “start a customer first” / not-found card with a Home link. No redirect, so the teller can see why the screen is empty.
+  - Favicon is a small SVG in `web/public`. No new npm dependency.
+- **Questions logged:** none
+- **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine edits. PR #92. Do not merge from this card.
+
