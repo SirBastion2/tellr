@@ -4,7 +4,7 @@
 
 Tellr is a real-time copilot that helps a bank teller make quick decisions when an older customer may be being scammed at the counter.
 
-Built by Team KotR for HackPSU Fall 2026: Sebastian ([@SirBastion2](https://github.com/SirBastion2)) and Jonathan Zheng ([@jonathanzheng2020-eng](https://github.com/jonathanzheng2020-eng)).
+Built by Team KotR for HackPSU Fall 2026: Sebastian Villalba and Jonathan Zheng.
 
 **Jump to:** [The problem](#the-problem) · [Why a teller](#why-a-teller) · [What we built](#what-we-built) · [How we built it with Cursor](#how-we-built-it-with-cursor) · [The demo vs real use](#the-demo-vs-real-use) · [The Llama 8B and benchmarks](#the-llama-8b-and-benchmarks) · [How a teller uses it](#how-a-teller-uses-it) · [Safety and limitations](#safety-and-limitations) · [Specs and tech stack](#specs-and-tech-stack) · [Quick start](#quick-start) · [Sources](#sources)
 
