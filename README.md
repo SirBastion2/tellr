@@ -2,7 +2,7 @@
 
 Teller Copilot (tellr) is a teller-facing interview aid. It keeps an append-only log of what the teller records, folds that log into a score and a level, and may ask a local model for the next question ID. The teller still chooses what happens to the transaction. It was built at HackPSU Fall 2026 by two people and a set of Cursor agents, against a frozen contract between the engine and the screen (`ARCHITECTURE.md`; `docs/architecture.md` §0–§3).
 
-The hard moment is the counter. A customer is standing there, the low-risk path is meant to finish in under 60 seconds, and a multi-second blank screen is dead air the teller has to fill. The screen is built against a 1.5 second p95 from a chip tap to the next question. The product suggests. It does not approve or deny (`docs/architecture.md` §1, §9).
+The hard moment is the counter. A customer is standing there, the low-risk path is meant to finish in under 60 seconds, and a multi-second blank screen is dead air the teller has to fill. The screen is built against a 1.5 second budget on slow taps. That budget is a p95: the 95th percentile of the wait from a chip tap to the next question, so in a measured sample about 95% of waits are that fast or faster. The product suggests. It does not approve or deny (`docs/architecture.md` §1, §9).
 
 ## How a teller uses it
 
@@ -63,7 +63,16 @@ RTX 5070 Laptop, 8151 MiB, `llama-server -ngl 99 -c 4096 -np 1`, temperature 0, 
 | Llama-3.2-3B-Instruct Q4_K_M | 273.2 ms | 296.3 ms | 92.2 ms | 184.0 ms | 4865 MiB |
 | Meta-Llama-3.1-8B-Instruct Q4_K_M | 463.6 ms | 482.7 ms | 171.7 ms | 291.9 ms | 7379 MiB |
 
-A later live-path check on the same laptop, 11 model calls across fixtures T1–T7, warm, fallback 0: 8B p50 663 ms / p95 742 ms / max 765 ms; 3B p50 255 ms / p95 342 ms. Agreement with the rules was 9/11 for both (`docs/handoff/000-archive.md`, [A-05] live p95).
+What those columns measure (`docs/handoff/000-archive.md`, [A-03]; `scripts/bench_llm.py`; `docs/architecture.md` §1, §8.3):
+
+- **Total** is the wait for one reply, timed on the client from send to answer. This is the pause before a question ID comes back.
+- **p50** is the 50th percentile of the 50 timed runs, the midpoint of that sample. It is the typical reply in the test.
+- **p95** is the 95th percentile, the slow end. The product is built against 1.5 seconds here, because the slow tap is the dead air. The design sketch hoped for about 0.7 seconds. Both models landed under both lines, which is why the bench marked them pass. On a live visit, a model call past 1.5 seconds is handed to the rule engine, so the teller still gets a next question.
+- **Prefill** is the server time spent reading the prompt. The design sketch budgets 250 ms at p95. Both rows are under that.
+- **Decode** is the server time spent writing the short answer. The sketch budgets 400 ms at p95. Both rows are under that. In this run the writing step was most of the wait.
+- **VRAM** is graphics memory in use. The laptop had 8151 MiB. The 8B used 7379 MiB, about 7.4 of 8 GB, which the drivers called tight if anything else needed the GPU. The 3B used less. If the 8B does not fit, the documented fallback is the 3B, or the rules with no model.
+
+A later live-path check on the same laptop, 11 model calls across fixtures T1–T7, warm, fallback 0: 8B p50 663 ms / p95 742 ms / max 765 ms; 3B p50 255 ms / p95 342 ms. Agreement with the rules was 9/11 for both (`docs/handoff/000-archive.md`, [A-05] live p95). Same percentiles as above, on a smaller sample. The max is the slowest of those 11 calls. A fallback is a turn the rules answered because the model missed the 1.5 second cutoff or the server was down. Zero means every one of these calls got a model reply. Agreement is how often that reply was the same question the rules would have picked. The health notes say a rate near 100% means the model is adding wait and nothing else (`docs/architecture.md` §14.2, §16).
 
 ### Development set (30 scenarios)
 
@@ -75,7 +84,22 @@ CP3, library 1.2.0, 8B Q4_K_M on the RTX 5070, before the threshold change. Arm 
 | B (rules) | 14/15 (95% Wilson 70–99%) | 0/15 (95% Wilson 0–20%) | 3.07 |
 | C (live 8B) | 14/15 (95% Wilson 70–99%) | 0/15 (95% Wilson 0–20%) | 3.10 |
 
+What those columns measure (`docs/architecture.md` §13.1–§13.3; `docs/ROSTER.md` §5.2). Each run is 15 coached scenarios and 15 legitimate ones. A coached scenario is a customer who has been walked through a scam story. A legitimate scenario is a genuine reason for the withdrawal, including some with an innocent warning sign.
+
+- **Catch** counts coached scenarios that finish at Caution or High. 15/15 means every coached story was at least Caution. A miss is a coached scenario that finishes Clear. A higher catch means fewer of those Clear finishes. Catch by itself is a weak score: a sheet that marked every customer Caution would catch all 15 and still show no false flags.
+- **False-flag** counts legitimate scenarios that finish High. That is a genuine customer marked high concern. The writeup keeps this beside catch so flagging everyone cannot look like a perfect score. On the fixed questionnaire, moving the bar from 3 to 4 took this count from 8/15 to 0/15 and dropped catch with it.
+- The **Wilson** range next to a count is a 95% interval. On 15 scenarios it is wide. The spec's own example is that 13/15 still spans roughly 62% to 96%. Read the fraction, and treat a gap between arms as unproven on a sample this small.
+- **Mean questions** is the average number of questions before the interview stopped. The spec turns that into time at the window by multiplying by about 13 seconds of human time per question. This run recorded a mean of 40 seconds for the arms that asked about three questions. Arm A asked 6 every time. The low-risk path is meant to finish in under 60 seconds, so this column is the clock. The catch and false-flag columns show what that shorter or longer interview did to coached and legitimate customers.
+
 Arm C on that run: friction 0/15, max 5 questions, scripted time-to-decision mean 40 s, `default_fired` 0/93, validator rejections 0, latency p50 / p95 / max 486 / 576 / 619 ms, no fallbacks. Coached customers finished 1 Clear, 7 Caution, 7 High. All 15 legitimate customers finished Clear. VRAM about 7064/8151 MiB. The shared miss is `scn.coached.bank_perfect_own_account` (`docs/B_TO_A.md`, B-013; `docs/A_TO_B.md`).
+
+The extra figures in that paragraph (`docs/architecture.md` §7.5, §13.1, §13.3–§13.4; `docs/B_TO_A.md`, B-013):
+
+- **Friction** counts legitimate scenarios that finish Caution or High, not High alone. It is the genuine customers who still leave under some concern. False-flag hides them when they are only Caution. Here friction is 0/15, matching a sheet of all Clear.
+- **default_fired** counts questions the scenario had no scripted answer for, so a generic answer was used. 0/93 means every question was one the scenario knew how to answer. A high rate means the test is weaker than it looks.
+- **Validator rejections** count model replies that named a question outside the allowed list. Those are dropped and the rules' question is used. Zero means that did not happen on this run.
+- **Latency** here is model time with the eval timeout turned off, so it is not the live 1.5 second test. p50, p95, and max are the midpoint, the slow end, and the slowest call. The live check is the bench above.
+- **Fallback** on the live path is a turn the rules answered because the model missed the time cutoff, or the GPU was unavailable. When that happens, the rules supply the question for that turn. This eval reported none.
 
 A-07 then moved only arm A's threshold from 3 to 4. Scoring weights were not changed (`docs/WRITEUP_NUMBERS.md`; `docs/handoff/000-archive.md`, [A-07]).
 
@@ -84,19 +108,25 @@ A-07 then moved only arm A's threshold from 3 to 4. Scoring weights were not cha
 | Before (threshold 3) | 15/15 | 8/15 | 8/15 | 6.00 |
 | After (threshold 4) | 13/15 | 0/15 | 0/15 | 6.00 |
 
+Catch, false-flag, and mean questions are the same measures as the table above. Friction is defined in that note. The threshold is how many "concerning" answers the fixed questionnaire needs before it flags someone. It moved from 3 to 4. All eight false flags had a count of 3, so 4 clears them, and friction falls in step because those eight were High. Two coached scenarios sat on that same count and become misses. The questionnaire is no shorter: it still asks 6 questions. For a teller using that fixed sheet, fewer genuine customers are marked High, and two scam stories that used to be caught now finish Clear (`docs/handoff/000-archive.md`, [A-07]; `docs/architecture.md` §13.3–§13.4).
+
 New arm A misses after the change: `scn.coached.gov_perfect_fine` and `scn.coached.tech_refund_perfect`. Arm B stayed 14/15 catch, 0/15 false-flag, mean 3.07 questions (`docs/handoff/000-archive.md`, [A-07]).
 
 ### Held-out (10 scenarios, run once)
 
 Five coached and five legitimate, written in a worktree that could not see the dev scenarios or the weights, then run once on Driver B's GPU laptop. No rerun. Arm C matched arm B on catch rate and false-flag rate on this set and on the dev set (`docs/WRITEUP_NUMBERS.md`; `docs/B_TO_A.md`, B-018; `WORKFLOW.md` §10).
 
-| Arm | Catch | False-flag | Friction | Mean questions | Coached C / Ca / H | Legitimate C / Ca / H |
+| Arm | Catch | False-flag | Friction | Mean questions | Coached Clear / Caution / High | Legitimate Clear / Caution / High |
 |---|---|---|---|---:|---|---|
 | A | 4/5 (Wilson 38–96%) | 1/5 (Wilson 4–62%) | 1/5 | 6.00 | 1 / 0 / 4 | 4 / 0 / 1 |
 | B | 4/5 (Wilson 38–96%) | 0/5 (Wilson 0–43%) | 0/5 | 2.30 | 1 / 0 / 4 | 5 / 0 / 0 |
 | C | 4/5 (Wilson 38–96%) | 0/5 (Wilson 0–43%) | 0/5 | 2.30 | 1 / 0 / 4 | 5 / 0 / 0 |
 
-Wilson intervals are 95%. Arm C latency p50 / p95 / max was 354 / 405 / 410 ms, fallback 0/13, validator rejections 0, VRAM peak 7114/8151 MiB. Every arm missed `scn.coached.ssa_review_rehearsed`. Arm A's false flag was `scn.legitimate.shelter_adoption_fuzzy` (`docs/B_TO_A.md`, B-018; `docs/WRITEUP_NUMBERS.md`).
+Same measures as above, on 5 coached and 5 legitimate scenarios. One scenario moves a rate by 1/5, so the Wilson ranges are very wide. The spec says to read this run as a check that the 30-scenario result was not a one-time fit, not as the headline rate. A catch of 4/5 with a range of 38–96% is consistent with anything from a bit over a third to nearly all. The level columns are the raw counts behind those rates: a coached Clear is a miss, a legitimate High is a false flag, and a legitimate Caution or High is friction (`docs/architecture.md` §13.3–§13.4; `docs/B_TO_A.md`, B-018).
+
+On time at the window, this run already multiplied questions by 13 seconds. Arm A's mean of 6.00 questions is 78 seconds. Arms B and C, mean 2.30 questions, are 30 seconds mean and 39 seconds max. On this one run, B and C match A's 4/5 catch, and their false-flag count is 0/5 where A's is 1/5. The ranges overlap by a lot, so that is the count for these 10 scenarios, not a settled gap (`docs/B_TO_A.md`, B-018; `docs/architecture.md` §13.4).
+
+Arm C latency p50 / p95 / max was 354 / 405 / 410 ms, fallback 0/13, validator rejections 0, VRAM peak 7114/8151 MiB. Every arm missed `scn.coached.ssa_review_rehearsed`. Arm A's false flag was `scn.legitimate.shelter_adoption_fuzzy` (`docs/B_TO_A.md`, B-018; `docs/WRITEUP_NUMBERS.md`). Those latency figures are again model time with the eval timeout off. Fallback 0/13 means all 13 model calls were answered by the model. The server stayed up. Validator rejections and VRAM mean the same thing as in the development run.
 
 ### Reproduce
 
