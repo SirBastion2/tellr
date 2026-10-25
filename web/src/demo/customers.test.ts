@@ -24,6 +24,24 @@ describe('synthetic customers', () => {
     }
   })
 
+  it('records teller answers on the fraud scripts only', () => {
+    for (const customer of CUSTOMERS) {
+      const answers = customer.events.filter((event) => event.answer)
+      const benign = customer.id === 'benign-car' || customer.id === 'benign-routine'
+      if (benign) {
+        expect(answers, customer.id).toHaveLength(0)
+        expect(customer.events.every((event) => event.chips.length === 0), customer.id).toBe(true)
+      } else {
+        expect(answers.length, customer.id).toBeGreaterThan(0)
+        for (const event of answers) {
+          expect(event.chips, `${customer.id} ${event.id}`).toEqual([])
+          expect(event.answer?.question_id, event.id).toBeTruthy()
+          expect(event.answer?.chip, event.id).toBeTruthy()
+        }
+      }
+    }
+  })
+
   it('paces scripts for a narrated demo and halves them at 2×', () => {
     for (const customer of CUSTOMERS) {
       const target = SCRIPT_TARGETS_MS[customer.id]

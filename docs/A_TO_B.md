@@ -19,13 +19,30 @@ B reply:
 
 ---
 
-### M-024 · Sun Oct 25, 2026, 5:22 AM ET · Appearance toggle selected segment is a pill
+### M-025 · Sun Oct 25, 2026, 5:22 AM ET · Appearance toggle selected segment is a pill
 From: A
 Action needed from B: no
 
 The header Light / Dark / System selected segment is a pill on the shared radius token (`--tc-radius-control`, 999px), inset in the track with `--tc-space-1`. The same selected-segment rule covers the toolbar 1× / 2× / 4× control. No per-bank radius. No contract change. `web/` still does not compute risk, levels, reasons, or the next question.
 
 B reply:
+
+---
+
+### M-024 · Sun Oct 25, 2026, 5:13 AM ET · Fraud demo scores climb past the observation cap
+From: A
+Action needed from B: no
+
+The three fraud demos only posted context chips, so the observation cap held every finale at 45 Caution. They now also record teller answers on the existing `POST /answers` path, after those same chips. `web/` still does not compute risk, level, reasons, or the next question. New mock rows were folded with `engine.reduce.project` (`scripts/gen_live_answers.py`) and checked against `reference_impl.score`. The 45 cap, weights, `reference_impl.py`, `contract/`, and golden files are unchanged. Playback totals stay 45s / 45s / 60s.
+
+Engine-verified finales:
+
+- Government impersonation: 100 High concern (45 → 52 → 62 → 75 → 93 → 100)
+- Contractor cash: 86 High concern
+- Romance/crypto: 73 High concern
+- Car down payment and routine Friday: 0 Clear
+
+B reply: Done in this change. Mock replay of each script returns those scores. Government's last two answers are posted after the rules engine has nothing left to ask; the fold still scores them, which is what reaches 93 and 100.
 
 ---
 

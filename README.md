@@ -1,8 +1,8 @@
-<p align="center"><img src="docs/assets/tellr-logo.png" alt="tellr" width="260"></p>
+<p align="center"><img src="docs/assets/tellr-logo.png" alt="Tellr" width="260"></p>
 
-# tellr
+# Tellr
 
-tellr is an interview aid for a teller at a fast counter: a low-risk visit is meant to finish in under 60 seconds, a multi-second blank screen is dead air, and the teller always decides.
+Tellr is an interview aid for a teller at a fast counter: a low-risk visit is meant to finish in under 60 seconds, a multi-second blank screen is dead air, and the teller always decides.
 
 ## At a glance
 

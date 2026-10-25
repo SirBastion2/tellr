@@ -26,7 +26,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json` (incl. `activity.schema.json`, CHANGE-005), `fixtures/T1–T7.json`, `CHANGES.md` (CHANGE-006: optional `level_bands` on untyped `GET /health`; CHANGE-007: optional `talk_track.action`) |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |
 | `docs/` | mixed | Spec and logs (see below) | `architecture.md`, `ROSTER.md`, `HANDOFF.md` (pointer), `handoff/` (one file per PR; newest first), `CP3_GPU_RUN.md`, `A08_HELDOUT_RUN.md`, `WRITEUP_NUMBERS.md` |
-| `scripts/` | A2* | Gates; A2 owns `bench_*` + `with-gpu` | `gate.sh`, `with-gpu`, `bench_llm.py`, `check_contract.py` |
+| `scripts/` | A2* | Gates; A2 owns `bench_*` + `with-gpu`. `gen_live_answers.py` records demo answer climbs into `web/mock/live_answers.json` from `engine.reduce.project` | `gate.sh`, `with-gpu`, `bench_llm.py`, `check_contract.py`, `gen_live_answers.py` |
 | `reference_impl.py` | — | Executable spec of §6–§8 | never edit |
 | `WORKFLOW.md` | — | How the build is run | §3 loop, §5 contract, §8 gates |
 | `ARCHITECTURE.md` | all | This map | edit only when files are added, removed, or moved, and only those lines |
@@ -111,7 +111,7 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 
 | File | What it is |
 |---|---|
-| `web/src/demo/customers.ts` | Five synthetic files and `SCRIPT_TARGETS_MS`. The last two post no chips. Files that post `chip.above_threshold` set `transaction.type` to that chip's library label. Name and age band stay in the data and are not rendered. |
+| `web/src/demo/customers.ts` | Five synthetic files and `SCRIPT_TARGETS_MS`. The three fraud files post context chips, then teller answers (`POST /answers`); the client does not score them. The last two post no chips and no answers. Files that post `chip.above_threshold` set `transaction.type` to that chip's library label. Name and age band stay in the data and are not rendered. Playback totals stay 20s / 32s / 45s / 45s / 60s. |
 | `web/src/demo/customers.test.ts` | Five files, script pacing, and Type strings for above-threshold vs routine files. |
 | `web/src/demo/clock.ts` | Simulated `m:ss` elapsed (sum of `delayMs`) for the toolbar elapsed timer and timeline. |
 | `web/src/demo/clock.test.ts` | Elapsed timer and timeline stay on simulated time at 1× and 4×. |
@@ -161,7 +161,7 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 | `web/scripts/measure-fit.mjs` | Headless Chrome measures header padding slack, logo size, and overflow at laptop widths. Not part of `gate.sh b`. |
 | `web/scripts/measure-fact-grid.mjs` | Headless Chrome measures Amount label/value centers, Type→Amount / Amount→Memo row gaps, and the label-to-value column gap at 1280. `--fixture` or a live Vite URL. No screenshots. |
 | `web/mock/live_levels.json` | Recorded engine responses for context-chip subsets. The mock uses these when a live post is not the next fixture step. The mock echoes `context_chips` from the live log and serves `GET /activity`. It leaves `explanation` off unless the recorded body already has it. |
-| `web/mock/live_answers.json` | Recorded engine responses for live answers on the demo chip sets (empty, government impersonation prefixes, contractor cash, romance/crypto). The mock looks them up after `POST /answers`; it does not score. Unrecorded combinations keep the last recorded answer state or the context projection and warn. `npm run dev:api` scores every answer through the API. |
+| `web/mock/live_answers.json` | Recorded engine responses for live answers on the demo chip sets (empty, government impersonation prefixes, contractor cash, romance/crypto), including the fraud-script climbs past the observation cap. `scripts/gen_live_answers.py` appends those climbs from `engine.reduce.project`. The mock looks them up after `POST /answers`; it does not score. Unrecorded combinations keep the last recorded answer state or the context projection and warn. `npm run dev:api` scores every answer through the API. |
 | `web/src/routes.ts` | Nav labels are Home, Customer file, Context, Session, Outcome, Handoff, History, Health. |
 
 ### `web/` dev modes
