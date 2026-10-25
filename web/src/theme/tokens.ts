@@ -8,9 +8,10 @@ export const THEME_QUERY = 'theme'
 /** `light` | `dark` | `system`. Header toggle. System follows prefers-color-scheme. */
 export const COLOR_STORAGE_KEY = 'teller.colorScheme'
 
-/** `1` when presenter mode is on. `?present=1` wins over this key. */
+/** Kept so older browsers do not error. The demo layout no longer reads this key. */
 export const PRESENTER_STORAGE_KEY = 'teller.presenter'
 
+/** Kept so older links do not error. `?present` is ignored. */
 export const PRESENTER_QUERY = 'present'
 
 export const UI_FONT = 'Poppins, "Segoe UI", system-ui, sans-serif'

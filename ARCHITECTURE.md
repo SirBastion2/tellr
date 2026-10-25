@@ -85,23 +85,25 @@ Home is a teller workstation. A synthetic customer timeline plays beside a copil
 
 CHANGE-005 fields are optional. `readExplanation` accepts `explanation` or `Explanation`, and `used_fallback` / `usedFallback`, `signal_id` / `signalId`. Contributions with `direction: "raises"` render under What raised it. `direction: "lowers"` render under What would lower it. There is no second contributions list. A strength word (Strong / Moderate / Minor factor) is the item's `|weight|` divided by the sum of `|weight|` in that response (`>= 1/3` strong, `>= 1/6` moderate, otherwise minor). The raw weight and any `sig.*` / `chip.*` id stay inside the collapsed Technical details. Confidence `null` reads "Not applicable (rules engine)". The gap sentence shows only when explanation is absent or null. Without an explanation, Clear puts `counterpoint` under What raised it and `reasons` under What would lower it, matching architecture §6.5. That is placement of server fields, not a new score.
 
-`context_chips` source renders as Observed or Teller confirmed. Simulation posts send `source: "observed"`; manual context posts send `source: "teller"`. `GET /sessions/{id}/activity` fills the recent-activity table when it returns rows, with plain labels in the table and the raw ids in Technical details. Absent fields, mock mode, and T1–T7 fixtures keep working. Confirm still marks a chip locally and does not post it again. Dismiss undoes back to that chip and reposts the rest with the same source. Escalate records outcome `escalate` with actor `teller` and opens handoff. The two-tap opener on Session stays: purpose chip, then answer chips.
+`context_chips` source renders as Observed or Teller confirmed on the same row as the factor in What raised it or What would lower it. There is no second list titled "What the teller and system noted". A noted chip that is not a factor stays on the copilot row, which is the confirm/dismiss control, and on the customer file. Simulation posts send `source: "observed"`; manual context posts send `source: "teller"`. `GET /sessions/{id}/activity` fills the recent-activity table when it returns rows, with plain labels in the table and the raw ids in Technical details. Absent fields, mock mode, and T1–T7 fixtures keep working. Confirm still marks a chip locally and does not post it again. Dismiss undoes back to that chip and reposts the rest with the same source. Escalate records outcome `escalate` with actor `teller` and opens handoff. The two-tap opener on Session stays: purpose chip, then answer chips.
+
+A successful `POST /outcome` closes the visit on the server. SessionState does not carry `closed`, so the client remembers it. The four outcome choices stay enabled while the visit is open. After the decision, or after a `session_closed` response, those controls and undo, confirm, dismiss, and escalate are hidden. The screen offers Start new customer, which opens another live session with `mode` and `amount_band`. Errors are one plain sentence. The page does not show `Status 409` or `session_closed`.
 
 Every screen uses a two-column fact grid: bold labels, normal values, bold section headings. Handoff is a card titled from the recorded outcome (`Handoff — Escalated by teller` when the teller escalated). The level is an icon plus a word. A UUID session id shows its first eight characters, with the full id on the tooltip and the copy button. Suggested outcome and the teller's decision are separate rows.
 
-The header is one row: bank mark, title, status pill, tabs, Light/Dark/System, Presenter, and `?`. It does not wrap. The nav scrolls. Under a 1120px header, the theme segment collapses into a menu. The pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. Undo sits with the signal list on the workstation, and at the top of other screens that have a session. Dev tabs stay available unless presenter mode is on.
+The header is one row: bank mark, title, simulation pill, connection pill, tabs, Light/Dark/System, and `?`. It does not wrap. There is no Presenter control. The nav scrolls. Under a 1120px header, the theme segment collapses into a menu. The simulation pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. The connection pill says `Live API connected` or `Using sample data` from `GET /health` (`web/src/connection.ts`). Undo sits with the signal list on the workstation, and at the top of other screens that have an open session. Context, Session, History, and Health stay off the nav.
 
 The toolbar controls share a 40px height. Play keeps the icon and the word on one line. The customer select matches that height. Show case file sits on the same row. The elapsed timer is always on that row.
 
 Playback length at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. Timeline rows show step, elapsed time, and speaker, and bold amounts and phrases such as "on the phone" and "cash".
 
-Presenter mode is the header toggle or `?present=1` (stored in `teller.presenter` when toggled). It hides Context, Session, History, and Health; sets the root font size to 125%; resets the session when the customer changes; enlarges the current-event caption; and keeps only play/pause (`P`) and step (`N`).
+The demo layout is always on. `?present` and `teller.presenter` are ignored, and nothing in the UI names that layout. It hides Context, Session, History, and Health; sets the root font size to 125%; resets the session when the customer changes; enlarges the current-event caption; and keeps keyboard play/pause (`P`), step (`N`), and shortcut help (`?`). Restart, confirm, dismiss, escalate, and customer-switch keys stay off. The full UI reference is `docs/UI_REFERENCE.md`.
 
 | File | What it is |
 |---|---|
 | `web/src/demo/customers.ts` | Five synthetic files and `SCRIPT_TARGETS_MS`. The last two post no chips. Name and age band are display-only. Activity rows have date, description, and amount for the customer-file table. |
 | `web/src/demo/clock.ts` | `m:ss` elapsed label. |
-| `web/src/presenter.tsx` | Presenter flag from `?present=` or `localStorage`. |
+| `web/src/presenter.tsx` | Demo layout, always on. No toggle and no `?present` switch. |
 | `web/src/screens/HomeScreen.tsx` | Toolbar, transaction panel, copilot card, explanation. |
 | `web/src/screens/CustomerFileScreen.tsx` | Profile, activity table, this withdrawal, and what was noted. Session activity replaces the synthetic table when `GET /activity` returns rows. Source badges prefer `context_chips` and otherwise stay Not yet, Observed, Teller confirmed, or Dismissed. |
 | `web/src/screens/HandoffScreen.tsx` | Handoff card. Fact grid, level badge, flagged list, suggested outcome versus the teller's decision. |
@@ -111,48 +113,50 @@ Presenter mode is the header toggle or `?present=1` (stored in `teller.presenter
 | `web/src/workstation/Toolbar.tsx` | 40px customer picker, Play/Pause, Step, Restart, speed segments, timer, case-file link. |
 | `web/src/workstation/CopilotStrip.tsx` | Sticky card that fills the column. Level icon and word, one reason, suggested action, collapsible read-aloud quote, noted rows with badges and icon buttons. |
 | `web/src/workstation/explain.ts` | Reads `explanation` and groups raises and lowers. Strength words from the response's own weights. |
-| `web/src/workstation/ExplanationPanel.tsx` | Why this level. Fact grid, two contribution lists, noted items, collapsed technical details. |
+| `web/src/workstation/ExplanationPanel.tsx` | Why this level. Fact grid, two contribution lists with the Observed or Teller confirmed badge on the matching row, collapsed technical details. |
 | `web/src/workstation/TransactionPanel.tsx` | Key-value transaction, timeline with step and speaker, event progress. Session activity appears when `GET /activity` returns rows. |
-| `web/src/ui/ShortcutHelp.tsx` | `?` lists keyboard shortcuts. Presenter mode notes the reduced set. |
+| `web/src/ui/ShortcutHelp.tsx` | `?` lists keyboard shortcuts. The demo layout lists `?`, `P`, and `N`. |
 | `web/src/ui/icons.tsx` | Play, pause, step, restart, confirm, and dismiss icons. |
-| `web/src/ui/ConfirmDialog.tsx` | Confirm before restart, customer switch (off in presenter mode), and escalate. |
-| `web/src/presenter.test.tsx` | Presenter query, hidden dev tabs, type size, and customer switch without a confirm dialog. |
+| `web/src/ui/ConfirmDialog.tsx` | Confirm before restart and escalate. Customer switch resets without a dialog. |
+| `web/src/connection.ts` | Probes `GET /health` and chooses the live origin or the sample-data fallback. |
+| `web/src/errors.ts` | Plain sentences for API errors. No status code and no error code on screen. |
+| `web/src/presenter.test.tsx` | Demo layout stays on when `?present=0` is set. Hidden dev tabs, type size, no Presenter button. |
 | `web/mock/live_levels.json` | Recorded engine responses for context-chip subsets. The mock uses these when a live post is not the next fixture step. Answers on that path are scored by the real API (`npm run dev:api`). The mock echoes `context_chips` from the live log and serves `GET /activity`. It leaves `explanation` off unless the recorded body already has it. |
 | `web/src/routes.ts` | Nav labels are Home, Customer file, Context, Session, Outcome, Handoff, History, Health. |
 
 ### `web/` dev modes
 
-Two local runs. Neither script starts the API. `web/src/api.ts` keeps `apiBase()` as `import.meta.env.VITE_API_URL ?? ''`, so a set value is the request origin and an unset value stays on the Vite origin.
+Two local runs. Neither script starts the API. On load, `web/src/connection.ts` calls `GET /health` on `VITE_API_URL` when that is set, otherwise on `http://127.0.0.1:8000`. A health report selects that origin (`Live API connected`) and `setApiBase` points later requests there. If that probe fails and the Vite origin answers `/health`, requests stay on the page origin (`Using sample data`). If neither answers, the pill says `API not connected`. Vitest skips the probe and uses `VITE_API_URL` or the page origin. See `docs/UI_REFERENCE.md`.
 
-Real-API mode uses the CORS middleware from #71, merged at `6d063eb` (8:24 PM ET). `api/main.py` allows any origin and sends no credentials, so a page on `http://127.0.0.1:5173` can call `http://127.0.0.1:8000`. That merge needed no further `web/` edits. Restart uvicorn if it was started before the pull.
+Real-API mode uses the CORS middleware from #71, merged at `6d063eb` (8:24 PM ET). `api/main.py` allows any origin and sends no credentials, so a page on `http://127.0.0.1:5173` can call `http://127.0.0.1:8000`. Restart uvicorn if it was started before the pull.
 
 | File | What it is |
 |---|---|
-| `web/package.json` | `dev` is `vite` (mock). `dev:api` is `vite --mode api`. The script has no `VAR=value` prefix, so Windows PowerShell can run it. |
+| `web/package.json` | `dev` is `vite`. `dev:api` is `vite --mode api`. The script has no `VAR=value` prefix, so Windows PowerShell can run it. |
 | `web/.env.api` | Loaded only for mode `api`. Sets `VITE_API_URL=http://127.0.0.1:8000`. |
-| `web/vite.config.ts` | Reads `VITE_API_URL` with `loadEnv`. A non-empty value skips `mockApiPlugin`. |
-| `web/src/devApi.ts` | `useMockApi` (mock only when the URL is blank) and `directoryFromFileUrl` (config directory, including `C:/...`). |
-| `web/src/devApi.test.ts` | Scripts, `.env.api`, and mock on/off. |
-| `web/src/api.ts` | Unchanged. Sends browser requests to `VITE_API_URL` when it is set. |
+| `web/vite.config.ts` | Always installs `mockApiPlugin`, including when `VITE_API_URL` is set, so a failed health probe can fall back. |
+| `web/src/devApi.ts` | `useMockApi` (true when the URL is blank) and `directoryFromFileUrl` (config directory, including `C:/...`). |
+| `web/src/devApi.test.ts` | Scripts, `.env.api`, and the mock plugin staying installed. |
+| `web/src/api.ts` | `apiBase()` is the probed origin when set, otherwise `VITE_API_URL`. |
 | `web/.gitignore` | Ignores `.env.local` and `.env.*.local` so a machine can override the origin. |
 
 Windows PowerShell, from the repo:
 
-Mock (default). Same data as before. `VITE_API_URL` stays unset, and the mock plugin answers `/library`, `/health`, and `/sessions`.
+Either script. If the API is already on port 8000, the page uses it. If it is not, the page uses sample data.
 
 ```
 cd web
 npm run dev
 ```
 
-Real API. Start the API on port 8000 from current main (`python -m uvicorn api.main:app --port 8000`). Then:
+Real API, with the origin pinned in `web/.env.api`. Start the API on port 8000 from current main (`python -m uvicorn api.main:app --port 8000`). Then:
 
 ```
 cd web
 npm run dev:api
 ```
 
-The browser calls `http://127.0.0.1:8000`. The mock plugin is not installed, so it cannot answer those paths.
+The browser calls `http://127.0.0.1:8000` when `GET /health` succeeds. The mock plugin remains installed for the fallback. Live session opens send `{ mode: "live", amount_band }`.
 
 To point at another origin, set the variable in that PowerShell window and then start the script:
 
@@ -161,7 +165,7 @@ $env:VITE_API_URL = "http://127.0.0.1:9000"
 npm run dev:api
 ```
 
-Or put `VITE_API_URL=http://127.0.0.1:9000` in `web/.env.api.local`. A set `VITE_API_URL` also turns the mock off for `npm run dev`.
+Or put `VITE_API_URL=http://127.0.0.1:9000` in `web/.env.api.local`. The probe uses that origin when its `/health` succeeds, and sample data when it does not.
 
 ## Task cards (`prompts/`)
 
@@ -183,7 +187,7 @@ Or put `VITE_API_URL=http://127.0.0.1:9000` in `web/.env.api.local`. A set `VITE
 | Scoring, fold, domain, eligibility, stop | `docs/architecture.md` §4–§8 |
 | Safety / fairness promises | `docs/architecture.md` §9 |
 | API / SessionState | `docs/architecture.md` §11; `contract/api.md` |
-| Frontend screens | `docs/architecture.md` §12 |
+| Frontend screens | `docs/architecture.md` §12; UI decisions in `docs/UI_REFERENCE.md` |
 | Eval, scenarios, metrics | `docs/architecture.md` §13 |
 | Storage, demo, fallbacks | `docs/architecture.md` §10, §14 |
 | Driver decisions already made | `docs/DECISIONS.md` |

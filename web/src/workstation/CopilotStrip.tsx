@@ -51,6 +51,7 @@ export function CopilotStrip({
   onDismiss,
   onEscalate,
   onUndo,
+  closed = false,
 }: {
   library: Library | null
   session: SessionState | null
@@ -61,6 +62,7 @@ export function CopilotStrip({
   onDismiss: (chipId: string) => void
   onEscalate: () => void
   onUndo?: () => void
+  closed?: boolean
 }) {
   const level = session?.risk.level ?? 'clear'
   const reason =
@@ -140,6 +142,7 @@ export function CopilotStrip({
                       {origin}
                     </span>
                   </span>
+                  {closed ? null : (
                   <span style={{ display: 'flex', gap: 8 }}>
                     <button
                       type="button"
@@ -166,10 +169,16 @@ export function CopilotStrip({
                       <DismissIcon />
                     </button>
                   </span>
+                  )}
                 </li>
               )
             })}
           </ul>
+          {closed ? (
+            <p className="tc-prose" style={{ margin: 0 }}>
+              This visit is closed.
+            </p>
+          ) : (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {onUndo ? (
               <button
@@ -204,6 +213,7 @@ export function CopilotStrip({
               Escalate to supervisor
             </button>
           </div>
+          )}
         </>
       ) : (
         <p className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>

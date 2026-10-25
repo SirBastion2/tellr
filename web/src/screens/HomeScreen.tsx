@@ -12,6 +12,7 @@ export function HomeScreen({
   postedChipIds = [],
   activity = null,
   demo = null,
+  closed = false,
   onUndo,
 }: {
   library: Library | null
@@ -19,6 +20,7 @@ export function HomeScreen({
   postedChipIds?: readonly string[]
   activity?: readonly ActivityRow[] | null
   demo?: DemoView | null
+  closed?: boolean
   onUndo?: () => void
 }) {
   const customer = demo ? customerById(demo.customerId) : null
@@ -57,6 +59,7 @@ export function HomeScreen({
               onDismiss={demo.onDismissSignal}
               onEscalate={demo.onEscalate}
               onUndo={session ? onUndo : undefined}
+              closed={closed}
             />
           </div>
           <ExplanationPanel library={library} session={session} postedChipIds={postedChipIds} />

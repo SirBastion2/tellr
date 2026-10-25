@@ -3,6 +3,8 @@ import type { CSSProperties } from 'react'
 import { Link, BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { CUSTOMERS, customerById } from './demo/customers'
 import type { ConfirmKind, DemoSpeed, DemoView } from './demo/types'
+import { connectionLabel, connectionState, subscribeConnection, type ConnectionState } from './connection'
+import { friendlyApiError } from './errors'
 import { LiveBadge } from './LiveBadge'
 import { PRESENTER_HIDDEN_ROUTES, PresenterProvider, usePresenter } from './presenter'
 import { SchemaBanner } from './SchemaBanner'
@@ -15,7 +17,7 @@ import { HistoryScreen } from './screens/HistoryScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { InterviewScreen } from './screens/InterviewScreen'
 import { OutcomeScreen } from './screens/OutcomeScreen'
-import { TellerProvider, useTeller } from './teller'
+import { TellerProvider, useTeller, type RecordedDecision } from './teller'
 import { controlStyle, secondaryStyle } from './theme/controls'
 import { type ColorChoice } from './theme/scheme'
 import { ThemeProvider, useColorScheme } from './theme/ThemeProvider'
@@ -93,6 +95,16 @@ function SchemeMenu() {
   )
 }
 
+function ConnectionBadge() {
+  const [link, setLink] = useState<ConnectionState>(connectionState)
+  useEffect(() => subscribeConnection(setLink), [])
+  return (
+    <p data-testid="connection-status" data-kind={link.kind} className="tc-connection">
+      {connectionLabel(link.kind)}
+    </p>
+  )
+}
+
 function routeLabel(route: (typeof APP_ROUTES)[number], session: SessionState | null): string | null {
   if (route.path.includes(':id')) {
     if (!session) {
@@ -124,6 +136,9 @@ export function AppShell({
   onAnswer,
   onUndo,
   onSubmitOutcome,
+  onStartNew,
+  closed = false,
+  recorded = null,
   handoff = null,
   httpStatus = null,
   error = null,
@@ -144,6 +159,9 @@ export function AppShell({
   onAnswer?: (answer: AnswerPost) => void
   onUndo?: () => void
   onSubmitOutcome?: (body: { outcome: OutcomeId; actor: string }) => void
+  onStartNew?: () => void
+  closed?: boolean
+  recorded?: RecordedDecision | null
   handoff?: HandoffProjection | null
   httpStatus?: number | null
   error?: ErrorResponse | null
@@ -200,6 +218,7 @@ export function AppShell({
           <ThemeWordmark />
           <h1 className="tc-header-title">Teller Copilot</h1>
           <LiveBadge mode={session?.mode ?? null} simulationTitle={simulationTitle} />
+          <ConnectionBadge />
           <nav
             aria-label="Screens"
             data-testid="app-nav"
@@ -239,24 +258,6 @@ export function AppShell({
           <button
             type="button"
             className="tc-btn"
-            data-variant={presenter.on ? 'primary' : 'secondary'}
-            data-testid="presenter-toggle"
-            aria-pressed={presenter.on}
-            title="Presenter mode"
-            style={{
-              ...tap,
-              flex: '0 0 auto',
-              ...(presenter.on
-                ? { backgroundColor: 'var(--tc-button)', color: 'var(--tc-button-text)', borderColor: 'transparent' }
-                : secondaryStyle),
-            }}
-            onClick={() => presenter.setOn(!presenter.on)}
-          >
-            Presenter
-          </button>
-          <button
-            type="button"
-            className="tc-btn"
             data-variant="secondary"
             data-testid="shortcut-help-button"
             aria-label="Keyboard shortcuts"
@@ -271,18 +272,35 @@ export function AppShell({
           {announcement}
         </p>
         {import.meta.env.DEV ? <SchemaBanner issues={issues} /> : null}
-        {httpStatus != null && httpStatus !== 200 ? (
-          <p>
-            Status <span data-testid="http-status">{httpStatus}</span>
-          </p>
-        ) : null}
-        {error ? (
-          <p data-testid="api-error">
-            {error.error.code} {error.error.message}
-          </p>
+        {(() => {
+          const notice = friendlyApiError(error ?? null, httpStatus ?? null)
+          const closedNotice = closed && error?.error.code === 'session_closed'
+          if (!notice || closedNotice) {
+            return null
+          }
+          return (
+            <p data-testid="api-error" role="alert">
+              {notice}
+            </p>
+          )
+        })()}
+        {session && closed && !location.pathname.endsWith('/outcome') ? (
+          <div className="tc-closed" data-testid="session-closed" role="status">
+            <p style={{ margin: 0 }}>This visit is closed.</p>
+            <button
+              type="button"
+              className="tc-btn"
+              data-variant="primary"
+              data-testid="start-new-customer"
+              style={{ ...tap, flex: '0 0 auto' }}
+              onClick={() => onStartNew?.()}
+            >
+              Start new customer
+            </button>
+          </div>
         ) : null}
         <main id="main">
-          {session && !workstation ? (
+          {session && !workstation && !closed ? (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
               <button
                 type="button"
@@ -307,6 +325,7 @@ export function AppShell({
                   postedChipIds={postedChipIds}
                   activity={activity}
                   demo={demo}
+                  closed={closed}
                   onUndo={onUndo}
                 />
               }
@@ -338,7 +357,15 @@ export function AppShell({
             />
             <Route
               path="/sessions/:id/outcome"
-              element={<OutcomeScreen session={session} onSubmit={onSubmitOutcome} />}
+              element={
+                <OutcomeScreen
+                  session={session}
+                  closed={closed}
+                  recorded={recorded}
+                  onSubmit={onSubmitOutcome}
+                  onStartNew={onStartNew}
+                />
+              }
             />
             <Route
               path="/sessions/:id/handoff"
@@ -436,7 +463,10 @@ function ConnectedShell() {
   }, [location.pathname, sessionId, loadHandoff])
 
   const runCurrent = useCallback(async () => {
-    if (lock.current) {
+    if (lock.current || tellerRef.current.closed) {
+      if (tellerRef.current.closed) {
+        setPlaying(false)
+      }
       return
     }
     const customer = customerById(customerRef.current)
@@ -453,6 +483,10 @@ function ConnectedShell() {
       }
       if (event.chips.length > 0) {
         await tellerRef.current.postContext(event.chips, 'observed')
+      }
+      if (tellerRef.current.closed) {
+        setPlaying(false)
+        return
       }
       setIndex((value) => value + 1)
     } finally {
@@ -534,6 +568,7 @@ function ConnectedShell() {
       return
     }
     if (current.kind === 'escalate') {
+      setPlaying(false)
       setPending(true)
       void (async () => {
         try {
@@ -572,7 +607,7 @@ function ConnectedShell() {
         return
       }
       const key = event.key.toLowerCase()
-      if (presenterRef.current && key !== 'p' && key !== 'n') {
+      if (presenterRef.current && key !== 'p' && key !== 'n' && key !== '?') {
         return
       }
       if (key === '?') {
@@ -689,6 +724,11 @@ function ConnectedShell() {
       activity={teller.activity?.rows ?? null}
       httpStatus={teller.httpStatus}
       error={teller.error}
+      closed={teller.closed}
+      recorded={teller.recorded}
+      onStartNew={() => {
+        void resetSession()
+      }}
       demo={demo}
       helpOpen={helpOpen}
       confirm={confirm}
@@ -706,6 +746,7 @@ function ConnectedShell() {
       }}
       handoff={teller.handoff}
       onSubmitOutcome={(body) => {
+        setPlaying(false)
         void teller.postOutcome(body.outcome, body.actor)
       }}
     />
