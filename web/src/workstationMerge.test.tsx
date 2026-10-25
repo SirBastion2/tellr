@@ -147,6 +147,9 @@ describe('merged workstation signals', () => {
       fireEvent.click(screen.getByRole('button', { name: firstChip?.label ?? firstChipId }))
       expect(onAnswer).not.toHaveBeenCalled()
       const purpose = library.purposes[0]
+      if (!purpose) {
+        throw new Error('missing purpose')
+      }
       fireEvent.click(screen.getByRole('button', { name: purpose.label }))
       fireEvent.click(screen.getByRole('button', { name: firstChip?.label ?? firstChipId }))
       expect(onAnswer).toHaveBeenCalledWith({

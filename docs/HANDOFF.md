@@ -1932,3 +1932,28 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/98. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots.
 
+---
+
+### [B] Merge main #95 + #99 into merged-signal workstation — Agent B1 — 2026-10-25 04:24
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 144 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  42 passed (42)
+      Tests  144 passed (144)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merged `origin/main` (#95 answer panel, #99 `T` theme cycle) into `cursor/merge-activity-signals-9f1e`; `ARCHITECTURE.md`; `docs/UI_REFERENCE.md`; `web/src/workstationMerge.test.tsx`; `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Kept both sides: answer panel stays under suggested action on the copilot card (`POST /sessions/{id}/answers`); signals stay on the merged Why this level list; `T` still cycles `THEME_IDS` through the #97 shortcut handler.
+  - `web/` still does not compute risk, level, reasons, or the next question (architecture §9, §12).
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/98. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots.
+
