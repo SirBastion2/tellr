@@ -9,6 +9,7 @@ import './index.css'
 import type { CSSProperties } from 'react'
 import { themeForScheme } from './theme/palette'
 import { THEME_IDS, THEMES } from './theme/registry'
+import { TYPE_WEIGHT } from './theme/typeScale'
 import { themeVars } from './theme/vars'
 import type { Library, SessionState } from './types'
 import { CopilotStrip } from './workstation/CopilotStrip'
@@ -150,6 +151,59 @@ describe('copilot panel scroll', () => {
         const actionCard = screen.getByText('Suggested action').parentElement
         const signals = screen.getByRole('list', { name: 'Signals' })
         expect(actionCard?.nextElementSibling, `${themeId} ${scheme}`).toBe(signals)
+        unmount()
+      }
+    }
+  })
+
+  it('pins a centered bold Copilot heading above the level badge', () => {
+    const source = css()
+    const headingRule = rule(source, '.tc-strip-heading')
+    expect(source.match(/\.tc-strip-heading/g)).toHaveLength(1)
+    expect(headingRule).toMatch(/text-align:\s*center/)
+    expect(headingRule).toMatch(/font-weight:\s*var\(--tc-strong-weight\)/)
+    expect(headingRule).toMatch(/font-size:\s*var\(--tc-type-title\)/)
+    expect(headingRule).toMatch(/line-height:\s*var\(--tc-type-line-heading\)/)
+    expect(headingRule).toMatch(/margin:\s*0/)
+    expect(headingRule).toMatch(/flex:\s*0 0 auto/)
+    expect(headingRule).not.toMatch(/tellr|pnc|mtb|fnb|font-size:\s*[\d.]+(?:px|rem|em)/)
+    expect(TYPE_WEIGHT.strong).toBe('700')
+
+    for (const themeId of THEME_IDS) {
+      for (const scheme of ['dark', 'light'] as const) {
+        const theme = THEMES[themeId]
+        const vars = themeVars(themeForScheme(theme!, scheme))
+        expect(vars['--tc-strong-weight'], `${themeId} ${scheme}`).toBe(TYPE_WEIGHT.strong)
+        expect(vars['--tc-type-title'], `${themeId} ${scheme}`).toBe(vars['--tc-text-xl'])
+        const { unmount } = render(
+          <div data-testid="theme-pad" style={themeVars(themeForScheme(theme!, scheme)) as CSSProperties}>
+            <CopilotStrip
+              library={library}
+              session={phoneVisit}
+              postedChipIds={['chip.on_phone']}
+              confirmed={[]}
+              pending={false}
+              onConfirm={() => undefined}
+              onDismiss={() => undefined}
+              onEscalate={() => undefined}
+              onUndo={() => undefined}
+            />
+          </div>,
+        )
+        const panel = screen.getByTestId('copilot-strip')
+        expect(panel.getAttribute('aria-label'), `${themeId} ${scheme}`).toBe('Copilot')
+        const heading = screen.getByRole('heading', { name: 'Copilot' })
+        expect(heading.tagName, `${themeId} ${scheme}`).toBe('H2')
+        expect(heading.textContent, `${themeId} ${scheme}`).toBe('Copilot')
+        expect(heading.className, `${themeId} ${scheme}`).toContain('tc-strip-heading')
+        const level = screen.getByTestId('copilot-level')
+        const body = panel.querySelector('.tc-strip-body')
+        const signals = screen.getByRole('list', { name: 'Signals' })
+        expect(body?.firstElementChild, `${themeId} ${scheme}`).toBe(heading)
+        expect(heading.compareDocumentPosition(level) & Node.DOCUMENT_POSITION_FOLLOWING, `${themeId} ${scheme}`).toBeTruthy()
+        expect(signals.parentElement, `${themeId} ${scheme}`).toBe(body)
+        expect(signals.contains(heading), `${themeId} ${scheme}`).toBe(false)
+        expect(signals.contains(level), `${themeId} ${scheme}`).toBe(false)
         unmount()
       }
     }
