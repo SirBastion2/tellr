@@ -33,6 +33,22 @@ B reply:
 
 ---
 
+### M-030 · Sun Oct 25, 2026, 6:03 AM ET · Score explanation overlay matches the copilot panel
+From: B
+Action needed from A: no
+
+The score explanation overlay was a fixed box under the score control, so its edges did not line up with the copilot panel. It is now part of that panel.
+
+- Anchored to the copilot card (`position: absolute` on `.tc-strip`, `width: 100%`, `left`/`right`/`bottom: 0`). It is not positioned against the viewport or the Score explanation control
+- The level, Urgency Score, and Score explanation control stay above the sheet. Extra content scrolls in the overlay body. "Why this level" stays pinned. Escape, a click outside, and the Score explanation control still close it
+- `max-height: min(100%, 100dvh)` (with a `100vh` fallback) and `max-width: min(100%, 100vw)`, plus `max-height`/`max-width: 100%`, so the sheet stays inside the panel and the window
+- Shared tokens only. tellr, pnc, mtb, and fnb, light and dark. No per-theme override. No new control
+- No contract change. `web/` still does not compute risk, levels, reasons, or the next question
+
+B reply:
+
+---
+
 ### M-028 · Sun Oct 25, 2026, 6:00 AM ET · Copilot panel heading
 From: B
 Action needed from A: no
