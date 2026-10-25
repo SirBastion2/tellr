@@ -242,15 +242,19 @@ Customizing this repo means editing those files. A new theme is a new file. A ne
 
 ## How we built it
 
-HackPSU Fall 2026, 24 hours, two drivers. Driver A is Sebastian (engine and evaluation). Driver B is Jonathan (frontend, platform, and the GPU laptop). They coordinate in `docs/A_TO_B.md` and `docs/B_TO_A.md`. A problem in the other lane goes in `docs/CROSS_LANE.md` and is not fixed in the other lane's files (`docs/ROSTER.md` §2; `WORKFLOW.md` §7).
+Two people steered. The agents wrote the code. Driver A, Sebastian, watched the engine and the evaluation. Driver B, Jonathan, watched the screen, the API, and the GPU laptop. They kept two running notes, `docs/A_TO_B.md` and `docs/B_TO_A.md`. When one side found a problem in the other's work, they logged it in `docs/CROSS_LANE.md` and left the fix to the owner (`docs/ROSTER.md` §2; `WORKFLOW.md` §7).
 
-The plan splits the build into lanes with their own directories: A1 engine, A2 platform, A3 evaluation, B1 frontend, plus a reviewer and a one-time held-out writer. Four lanes can build at once. A fifth frontend lane was optional and was not created. Each lane has a worktree. A stuck agent is replaced with a fresh chat that gets the task card and the newest handoff note (`docs/ROSTER.md` §1, §6; `WORKFLOW.md` §2–§3; `ARCHITECTURE.md`).
+Each task or fix got a fresh AI agent and its own branch. Agents worked side by side. They told each other which files they owned, using a one-page map (`ARCHITECTURE.md`) and a short handoff note, so two agents were not editing the same place. A shared file has one owner. The agreement between the engine and the screen stays frozen unless both drivers approve a written change (`docs/ROSTER.md` §3; `WORKFLOW.md` §5; `docs/HANDOFF.md`).
 
-Each card or fix is its own branch and pull request. `scripts/gate.sh a` (Python) or `scripts/gate.sh b` (web) has to pass, and `scripts/gate.sh contract` checks the fixtures against the reference implementation (`ARCHITECTURE.md`, Gates). `ARCHITECTURE.md` is the map: an agent reads it and opens only the files it names.
+Sebastian stated that at one point 12 agents were running at the same time. That was not only the planned cards, such as A-08 and the frontend cards. It included UI fixes as well.
 
-Conflicts stay rare because ownership is by directory, shared files have one owner, and the contract changes only through the protocol. Handoff notes are one new file per PR under `docs/handoff/`, so parallel notes do not edit the same log. Model jobs take a single GPU lock (`docs/ROSTER.md` §3, §5.3; `docs/HANDOFF.md`).
+The life of a change:
 
-Merges are serial. A driver merges each branch after its gate. The lanes own different directories, so those merges are meant to land one at a time (`WORKFLOW.md` §7).
+1. **Idea.** A driver names the task.
+2. **Agent.** A new agent takes that task.
+3. **Branch.** The work sits on its own branch, with a note for the next agent.
+4. **Gate.** An automated check has to pass before the change can land. `scripts/gate.sh` runs the Python checks, the web checks, or the contract check (`ARCHITECTURE.md`).
+5. **Merge.** A driver merges one branch at a time, after the gate (`WORKFLOW.md` §7).
 
 ## Entered in
 
