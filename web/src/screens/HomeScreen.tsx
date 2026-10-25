@@ -7,6 +7,8 @@ import { SimulationToolbar } from '../workstation/Toolbar'
 import { TransactionPanel } from '../workstation/TransactionPanel'
 import type { ActivityRow, AnswerPost, Library, SessionState } from '../types'
 
+const EMPTY_IDS: readonly string[] = []
+
 function useHeldValue<T>(value: T, hold: boolean): T {
   const [held, setHeld] = useState(value)
   if (!hold && !Object.is(held, value)) {
@@ -18,7 +20,7 @@ function useHeldValue<T>(value: T, hold: boolean): T {
 export function HomeScreen({
   library,
   session,
-  postedChipIds = [],
+  postedChipIds = EMPTY_IDS,
   dismissed = [],
   activity = null,
   demo = null,
