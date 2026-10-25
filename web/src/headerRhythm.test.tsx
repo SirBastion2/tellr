@@ -154,7 +154,7 @@ describe('header labels and spacing rhythm', () => {
     expect(headerCss).toMatch(/padding-block:\s*var\(--tc-space-2/)
     expect(headerCss).toMatch(/gap:\s*var\(--tc-space-4/)
     expect(source).toMatch(/\.tc-header-tools\s*\{\s*gap:\s*var\(--tc-help-gap/)
-    expect(source).toMatch(/\.tc-header \.tc-scheme-full\s*\{[^}]*padding:\s*var\(--tc-scheme-inset/)
+    expect(source).toMatch(/\.tc-header \.tc-scheme-full\s*\{[^}]*padding:\s*var\(--tc-space-1/)
     expect(source).toMatch(/\.tc-header-nav a[\s\S]*padding-inline:\s*var\(--tc-nav-pad-inline/)
     expect(headerRule(source, '.tc-header-help')).toMatch(/width:\s*var\(--tc-help-size/)
     expect(source).toMatch(/\[data-scheme-compact='true'\] \.tc-scheme-full/)

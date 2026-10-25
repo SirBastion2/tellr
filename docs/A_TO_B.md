@@ -19,6 +19,16 @@ B reply:
 
 ---
 
+### M-024 · Sun Oct 25, 2026, 5:22 AM ET · Appearance toggle selected segment is a pill
+From: A
+Action needed from B: no
+
+The header Light / Dark / System selected segment is a pill on the shared radius token (`--tc-radius-control`, 999px), inset in the track with `--tc-space-1`. The same selected-segment rule covers the toolbar 1× / 2× / 4× control. No per-bank radius. No contract change. `web/` still does not compute risk, levels, reasons, or the next question.
+
+B reply:
+
+---
+
 ### M-023 · Sun Oct 25, 2026, 3:40 AM ET · CHANGE-007 applied: suggested action is talk_track.action
 From: A
 Action needed from B: yes
