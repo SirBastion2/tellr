@@ -1358,3 +1358,15 @@ GATE PASS (a)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/66. X-005. Re-record command is in M-016. Did not touch `web/`, `contract/`, `reference_impl.py`, goldens, or `ARCHITECTURE.md` (no files added/removed/moved). No new dependency.
 
+---
+
+### [fix] Practice options blocked by missing CORS — Agent A2 — 2026-10-25 00:15
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` pending this commit
+- **Changed:** `api/main.py` (CORSMiddleware); `tests/api/test_cors.py` (new); `ARCHITECTURE.md` (map); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Root cause is A-lane: `create_app` in `api/main.py` had no CORS. Vite on `:5173` with `VITE_API_URL=http://127.0.0.1:8000` cannot read `GET /library` or `POST /sessions`, so Practice never starts and the opener has no purpose chips (`InterviewScreen` `waitingForPurpose`). Mock (no `VITE_API_URL`) already works; two-tap opener is by design.
+  - Allow any origin, no credentials: B is a separate Vite origin on a changing port; `fetch` does not send cookies. Starlette CORS is already a FastAPI dependency.
+- **Questions logged:** none
+- **The next agent needs to know:** Lane A owns the fix. Did not edit `web/`. No new dependency. Restart uvicorn after pull so the browser path works.
+

@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from api.errors import rejected_response
@@ -179,6 +180,16 @@ def create_app(
         yield
 
     app = FastAPI(title="Teller Copilot", version="1.0.0", lifespan=lifespan)
+    # Vite (B) is a different origin than uvicorn; without this, the browser
+    # blocks GET /library and POST /sessions, so Practice never starts and the
+    # opener has no purpose chips (InterviewScreen waitingForPurpose).
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     app.state.db = conn
     app.state.library = library
     app.state.recommender = rec
