@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from fastapi.testclient import TestClient
-
 from tests.api.conftest import assert_session_state
 
 VITE_ORIGIN = "http://127.0.0.1:5173"

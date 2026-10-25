@@ -1362,7 +1362,25 @@ GATE PASS (a)
 
 ### [fix] Practice options blocked by missing CORS — Agent A2 — 2026-10-25 00:15
 - **Status:** done
-- **Gate:** `scripts/gate.sh a` pending this commit
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+167 passed, 1 warning in 22.88s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
 - **Changed:** `api/main.py` (CORSMiddleware); `tests/api/test_cors.py` (new); `ARCHITECTURE.md` (map); `docs/HANDOFF.md` (this entry)
 - **Decisions I made, and the section that justified each:**
   - Root cause is A-lane: `create_app` in `api/main.py` had no CORS. Vite on `:5173` with `VITE_API_URL=http://127.0.0.1:8000` cannot read `GET /library` or `POST /sessions`, so Practice never starts and the opener has no purpose chips (`InterviewScreen` `waitingForPurpose`). Mock (no `VITE_API_URL`) already works; two-tap opener is by design.
