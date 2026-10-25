@@ -2424,20 +2424,27 @@ body {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
   overscroll-behavior: contain;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  column-gap: calc(24 * var(--u, 1px));
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  column-gap: calc(16 * var(--u, 1px));
   align-items: start;
-  padding: calc(20 * var(--u, 1px)) calc(40 * var(--u, 1px)) calc(28 * var(--u, 1px));
+  padding: calc(14 * var(--u, 1px)) calc(32 * var(--u, 1px)) calc(16 * var(--u, 1px));
+}
+
+.tc-handoff-body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .tc-handoff-facts {
   width: 100%;
   min-width: 0;
   align-content: start;
-  column-gap: calc(28 * var(--u, 1px));
-  row-gap: calc(20 * var(--u, 1px));
+  column-gap: calc(12 * var(--u, 1px));
+  row-gap: calc(6 * var(--u, 1px));
 }
 
 .tc-handoff .tc-fact-term {
@@ -2445,7 +2452,7 @@ body {
   font-weight: var(--tc-strong-weight);
   letter-spacing: var(--tc-kicker-tracking);
   text-transform: var(--tc-kicker-transform);
-  line-height: var(--tc-text-xs-lh);
+  line-height: 1.15;
   color: var(--tc-text);
   white-space: nowrap;
 }
@@ -2453,8 +2460,11 @@ body {
 .tc-handoff .tc-fact-value {
   font-size: var(--tc-text-sm);
   font-weight: var(--tc-font-weight);
-  line-height: var(--tc-text-sm-lh);
+  line-height: 1.15;
   color: var(--tc-text);
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
 }
 
 .tc-handoff-level {
@@ -2487,7 +2497,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: calc(12 * var(--u, 1px));
+  gap: calc(8 * var(--u, 1px));
   width: 100%;
   min-width: 0;
 }
@@ -2496,7 +2506,7 @@ body {
   margin: 0;
   font-size: var(--tc-text-sm);
   font-weight: var(--tc-weight-medium);
-  line-height: var(--tc-text-sm-lh);
+  line-height: 1.15;
   color: var(--tc-text);
   text-transform: none;
   letter-spacing: normal;
@@ -2506,7 +2516,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: calc(8 * var(--u, 1px));
+  gap: calc(6 * var(--u, 1px));
   width: 100%;
   min-width: 0;
   margin: 0;
@@ -2516,13 +2526,15 @@ body {
 
 .tc-handoff-chip {
   display: flex;
+  flex: 1 1 calc(50% - 6 * var(--u, 1px));
   flex-direction: column;
   align-items: flex-start;
-  gap: calc(4 * var(--u, 1px));
+  gap: calc(2 * var(--u, 1px));
   max-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
   margin: 0;
-  padding: calc(8 * var(--u, 1px)) calc(14 * var(--u, 1px));
+  padding: calc(4 * var(--u, 1px)) calc(8 * var(--u, 1px));
   border-radius: var(--tc-radius-control, 999px);
   background: color-mix(in srgb, var(--tc-accent) 32%, transparent);
   border: 1px solid color-mix(in srgb, var(--tc-accent) 48%, var(--tc-glass-border));
@@ -2530,14 +2542,20 @@ body {
 }
 
 .tc-handoff-signal {
-  font-size: var(--tc-text-sm);
+  font-size: var(--tc-text-xs);
   font-weight: var(--tc-font-weight);
-  line-height: var(--tc-text-sm-lh);
-  overflow-wrap: anywhere;
+  line-height: 1.15;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
 }
 
 .tc-handoff-chip .tc-badge {
   align-self: flex-start;
+  min-height: 0;
+  padding: 0 calc(4 * var(--u, 1px));
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 .tc-handoff-note {
@@ -2545,7 +2563,7 @@ body {
   max-width: 100%;
   font-size: var(--tc-text-sm);
   font-weight: var(--tc-font-weight);
-  line-height: var(--tc-text-sm-lh);
+  line-height: 1.15;
   color: color-mix(in srgb, var(--tc-text) var(--tc-fg-body-pct), transparent);
 }
 
