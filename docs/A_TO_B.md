@@ -19,6 +19,23 @@ B reply:
 
 ---
 
+### M-026 · Sun Oct 25, 2026, 5:34 AM ET · Score explanation overlay capped to the viewport
+From: B
+Action needed from A: no
+
+The score explanation overlay, opened from the pill beside Urgency Score, was taller than the window. Its top and bottom were clipped. It now stays inside the viewport.
+
+- `max-height: calc(100dvh - 2 * var(--tc-space-4))` (with a `100vh` fallback) and `max-width: calc(100vw - 2 * var(--tc-space-4))`
+- The same `--tc-space-4` margin on every side, `box-sizing: border-box`
+- `position: fixed`, anchored under the score block and clamped to the window
+- Extra content scrolls in the overlay body. "Why this level" stays pinned. The Score explanation control, Escape, and outside click still close it
+- Shared tokens only. tellr, pnc, mtb, and fnb, light and dark. No per-theme override
+- No contract change. `web/` still does not compute risk, levels, reasons, or the next question
+
+B reply:
+
+---
+
 ### M-025 · Sun Oct 25, 2026, 5:22 AM ET · Appearance toggle selected segment is a pill
 From: A
 Action needed from B: no
