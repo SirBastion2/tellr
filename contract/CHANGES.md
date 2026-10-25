@@ -1,6 +1,6 @@
 # Contract changes
 
-**CONTRACT_VERSION: 1.0.0**
+**CONTRACT_VERSION: 2.0.0** (`contract-v2`; tag on merge)
 
 Protocol: WORKFLOW.md §5. Fixtures are regenerated, never hand-edited. After applying a change, run
 `python3 scripts/check_contract.py --rehash`.
@@ -57,14 +57,14 @@ stay deferred. SessionState still omits `outcome` and `actor` (Q-005 / Q-010 /
 Q-011).
 Approved: Driver A ☑ · Driver B ☑ · Rejected ☐
 
-### CHANGE-005 · Explanation, context source, activity feed · proposed
+### CHANGE-005 · Explanation, context source, activity feed · applied in 2.0.0
 Bundles the three optional, additive B-025 asks into **one** change. WORKFLOW.md
 §5 allows at most two changes after hour 4; CHANGE-004 already used one slot, so
 this is the remaining change. Both agents rebase once. All three parts are
 optional and backward compatible: existing T1–T7 fixtures and golden tests stay
 valid (`explanation` absent or null; `source` defaults to `"teller"` when
-absent; the new GET is unused by fixtures). Q-013. None of the schemas,
-fixtures, or `CONTRACT_VERSION` are edited in this request PR.
+absent; the new GET is unused by fixtures). Q-013. Applied as `CONTRACT_VERSION`
+2.0.0 (`contract-v2`).
 
 **Reason:** B-025's workstation UI can already render level, score, reasons,
 pattern, talk track, and debug from today's SessionState + `GET /library` +
@@ -123,16 +123,17 @@ context chips and other stored events. No free text. Unknown session → `404`.
 Known session with nothing to project → `200` and `rows: []`. **Not** fed to
 the model or the scorer (prompt allowlist and fold stay unchanged).
 
-**On apply, R must:** bump `CONTRACT_VERSION`; regenerate fixtures with
-`python scripts/gen_fixtures.py` (they should hash-match today's T1–T7 because
-the new fields are optional and `reference_impl.py` does not emit them); run
-`scripts/gate.sh contract`; tag the commit. A-lane implementation (API/engine
-fields, `GET /activity`, tests) follows in a **separate PR after apply**. Do
-not implement in the request PR. Do not edit goldens or `reference_impl.py`.
+**Applied.** `CONTRACT_VERSION` is 2.0.0 (`contract-v2`; tag on merge). Fixtures
+regenerated with `python scripts/gen_fixtures.py` (T1–T7 byte-identical except
+the version field; `reference_impl.py` does not emit the new optional fields).
+`scripts/gate.sh contract` and `scripts/gate.sh a` both PASS. A-lane
+implementation (API/engine fields, `GET /activity`, tests) follows in a
+**separate PR after apply**. Do not edit goldens or `reference_impl.py`.
 
-Status: proposed; Driver A approved 2026-10-24 8:45 PM ET; Driver B approval pending
+Status: applied in 2.0.0 (`contract-v2`). Driver A approved 2026-10-24 8:45 PM ET;
+Driver B approved B-026 (PR #76, ~8:58 PM ET)
 
-Approved: Driver A ☑ · Driver B ☐ · Rejected ☐
+Approved: Driver A ☑ · Driver B ☑ (B-026) · Rejected ☐
 
 ### Approval of contract-v1
 Driver A ☑ · Driver B ☑

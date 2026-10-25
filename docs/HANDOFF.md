@@ -1413,3 +1413,45 @@ GATE PASS (a)
 - **Questions logged:** Q-013
 - **The next agent needs to know:** Driver B must tick CHANGE-005 in `contract/CHANGES.md` (or reply in `docs/B_TO_A.md`). Implementation is blocked until then. After both approve, R applies on main (bump `CONTRACT_VERSION`, `python scripts/gen_fixtures.py`, `scripts/gate.sh contract`, tag). A-lane API/engine fields and tests are a **separate PR after apply**. `web/` must keep working when the fields are absent (mock mode). No new dependency. `ARCHITECTURE.md` unchanged (no files added, removed, or moved).
 
+---
+
+### [CHANGE-005] Apply explanation / source / activity — Agent R — 2026-10-25 01:20
+- **Status:** done (apply only; A-lane implementation is a later PR)
+- **Gate:** `scripts/gate.sh contract` → PASS; `scripts/gate.sh a` → PASS
+
+```
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (contract)
+```
+
+```
+── ruff
+All checks passed!
+
+── pytest
+167 passed, 1 warning in 22.80s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+- **Changed:** `contract/session_state.schema.json` (optional `explanation`, optional `context_chips`); `contract/events.md` (`ContextAdded.source`); `contract/api.md` (`GET /sessions/{id}/activity`, context `source`); `contract/activity.schema.json` (new); `contract/CHANGES.md` (CHANGE-005 applied in 2.0.0); `contract/fixtures/T1.json`–`T7.json` (`contract_version` only); `scripts/gen_fixtures.py` (`CONTRACT_VERSION`); `contract/oracle.sha256`; `ARCHITECTURE.md` (new schema file); `docs/A_TO_B.md` (M-020); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - WORKFLOW.md §5 step 4. Applied CHANGE-005 (a)(b)(c) exactly. Both drivers approved: Driver A 2026-10-24 8:45 PM ET; Driver B B-026 (PR #76, ~8:58 PM ET).
+  - `CONTRACT_VERSION` 1.0.0 → **2.0.0**. Tag to create on merge: **`contract-v2`** (R cannot push tags).
+  - `python scripts/gen_fixtures.py`: T1–T7 byte-identical except `contract_version`. `library.json` unchanged. Did not edit `reference_impl.py`, goldens, `web/`, `api/`, or `engine/`.
+  - `scripts/check_contract.py` does not validate handoff/error response bodies, so it was not extended for activity (no activity fixtures). `activity.schema.json` is the typed contract for A's later `GET /activity`.
+- **Questions logged:** none (Q-013 already logged)
+- **The next agent needs to know:**
+  - New version is **2.0.0**. Tag **`contract-v2`** on merge.
+  - A implements `explanation`, `context_chips` / `ContextAdded.source`, and `GET /sessions/{id}/activity` in a **separate PR** after this merges. Validate activity responses against `contract/activity.schema.json`.
+  - B rebases after this merge and wires UI after A's implementation PR merges. Keep working when the new fields are absent.
+  - API stays UI-agnostic (Figma-based UI). No new dependency.
+

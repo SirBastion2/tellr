@@ -1,18 +1,20 @@
 # API contract
 
-**CONTRACT_VERSION 1.0.0.** Source: architecture §11.1. Every response that returns a session
-returns a full `SessionState` (`session_state.schema.json`).
+**CONTRACT_VERSION 2.0.0.** Tag `contract-v2` on merge. Source: architecture §11.1.
+Every response that returns a session returns a full `SessionState`
+(`session_state.schema.json`).
 
 | Method | Path | Request | Response |
 |---|---|---|---|
 | `GET` | `/library` | — | `Library` (`library.schema.json`) |
 | `POST` | `/sessions` | `{mode, amount_band}`; rejects `scenario_id` when `mode = "live"` | `SessionState` (answers 0, opener next) |
-| `POST` | `/sessions/{id}/context` | `{chips: [chip.*]}`, **additive**; removal only through undo | `SessionState` |
+| `POST` | `/sessions/{id}/context` | `{chips: [chip.*], source?}`, **additive**; `source` is `"observed"` or `"teller"` (default `"teller"`); removal only through undo | `SessionState` |
 | `POST` | `/sessions/{id}/answers` | `{question_id, chip, purpose?, note?}`; `purpose` required on the opener, rejected elsewhere | `SessionState` |
 | `POST` | `/sessions/{id}/undo` | — (undoes the most recent answer or chip) | `SessionState` |
 | `GET` | `/sessions/{id}` | — | `SessionState` |
 | `POST` | `/sessions/{id}/outcome` | `{outcome, actor, note?}` | `SessionState` |
 | `GET` | `/sessions/{id}/handoff` | — | Manager summary projection (`handoff.schema.json`, CHANGE-004 applied) |
+| `GET` | `/sessions/{id}/activity` | — | `{ session_id, rows: [{ ts, channel, amount_band, type }] }` (`activity.schema.json`, CHANGE-005 applied) |
 | `GET` | `/sessions` | filters; excludes `practice` by default | list |
 | `GET` | `/health` | — | recommender, model ID, last p95, fallback rate, agreement rate (read-only; set at boot) |
 
@@ -51,6 +53,19 @@ returns a full `SessionState` (`session_state.schema.json`).
 - **Handoff projection (CHANGE-004, applied).** `GET /sessions/{id}/handoff` is
   typed as `handoff.schema.json`. `outcome` and `actor` are null until
   `POST /outcome`. Resolves the handoff part of Q-006 only.
+- **Explanation, context source, activity (CHANGE-005, applied; contract-v2).**
+  SessionState may include optional nullable `explanation` and optional
+  `context_chips: [{id, source}]` (`source` is `"observed"` or `"teller"`).
+  Both are absent or null/empty on T1–T7 fixtures. `POST /sessions/{id}/context`
+  may send optional `source` (one value for that additive batch; default
+  `"teller"`). `GET /sessions/{id}/activity` is a read-only projection
+  (`activity.schema.json`): `{ session_id, rows: [{ ts, channel, amount_band,
+  type }] }`. Rows come only from that session's stored events (`amount_band`
+  from `SessionOpened`; `channel` and `type` from context chips and other
+  stored events). No free text. Unknown session → `404`. Known session with
+  nothing to project → `200` and `rows: []`. Activity is not fed to the model
+  or the scorer. A Figma-based UI does not change this: the API stays
+  UI-agnostic.
 - **Outcome and handoff appends (CHANGE-003 / Q-009, Q-011).** A valid
   `POST /sessions/{id}/outcome` appends `OutcomeRecorded` then `SessionClosed`.
   `GET /sessions/{id}/handoff` appends `ManagerRequested` and returns the manager

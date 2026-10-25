@@ -4,7 +4,7 @@ Source: architecture §4. Stored facts only (D12): rule-derived signals are reco
 
 ```
 SessionOpened(ts, mode, amount_band, library_version)
-ContextAdded(ts, chips)                       # additive only
+ContextAdded(ts, chips, source?)              # additive only; source: observed | teller (default teller)
 QuestionAsked(ts, question_id, stage, source) # source: fixed | rules | model
 AnswerRecorded(ts, question_id, chip, purpose | None, note | None)
 ModelSignal(ts, signal_id, model_id)          # the only stored signal; none in strict mode
@@ -36,3 +36,11 @@ plus `GET /health`), not a log fact. After `Truncated`, a model-chosen next ques
 requires a new `RecommendationIssued`; the fold does not re-run the model. Notes and
 outcome/actor/closed are not projected onto SessionState in v1. `seq` is implied by
 log order (`Truncated.to_seq`); it is not a field on the union.
+
+**Context source (CHANGE-005 (b), applied).** `ContextAdded` is
+`ContextAdded(ts, chips, source?)` with `source: "observed" | "teller"`. When
+`source` is absent, the fold treats it as `"teller"`. `POST /sessions/{id}/context`
+may send the same optional `source` on the request (one value for that additive
+batch); omit it and the event is teller-sourced. Score, reasons, and eligibility
+ignore `source` (observed and teller chips assert the same signals). SessionState
+may echo live chips as optional `context_chips: [{id, source}]`.

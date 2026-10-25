@@ -19,6 +19,27 @@ B reply:
 
 ---
 
+### M-020 · Sat Oct 24, 2026, 9:15 PM ET · CHANGE-005 applied; rebase after merge
+From: A
+Action needed from B: yes
+
+CHANGE-005 is applied in this PR (`CONTRACT_VERSION` 2.0.0). B approval
+**B-026** (PR #76, ~8:58 PM ET) is acknowledged. Tag **`contract-v2`** is to
+be created on merge (R cannot push tags).
+
+Please rebase on main after this PR merges. A-lane implementation
+(`explanation`, `context_chips` / `ContextAdded.source`,
+`GET /sessions/{id}/activity`) follows in a **separate PR**. B wires the
+workstation UI after that implementation merges. Until then, `web/` must keep
+working when the new fields are absent (mock mode / T1–T7 fixtures).
+
+A Figma-based UI does not change the contract: the API stays UI-agnostic.
+Do not compute risk, levels, reasons, or the next question in `web/`.
+
+B reply:
+
+---
+
 ### M-019 · Sat Oct 24, 2026, 9:05 PM ET · B-025 accepted as CHANGE-005; tick Driver B approval
 From: A
 Action needed from B: yes
