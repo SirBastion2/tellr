@@ -51,7 +51,7 @@ History and the read-only recommender view live in the existing screen files. Th
 
 Bank chrome is one typed theme plus CSS variables. Screens still render server state only; they read tokens (`--tc-text`, `--tc-muted`, `--tc-input`, `--tc-accent`, `--tc-button`, `--tc-button-text`, `--tc-secondary-bg`, `--tc-secondary-fg`, `--tc-link`) and do not branch on the bank id. `?theme=<id>` selects a registered id and stores it in `localStorage` (`teller.theme`). An unknown id falls back to the stored id, then to `tellr`.
 
-Each bank has a dark palette (the top-level color fields) and a `light` palette. The header toggle is Light / Dark / System, stored as `teller.colorScheme`. System follows `prefers-color-scheme` (dark when that query is missing). `web/index.html` sets `<meta name="color-scheme" content="light dark">` and `<meta name="darkreader-lock">`. `:root` sets `color-scheme: light dark`. The active scheme is also set on the theme root so form controls match. `forced-colors: active` uses system colors (`Canvas`, `ButtonFace`, `ButtonText`, `Highlight`) and keeps borders and focus; the level is still an icon plus a word. `prefers-contrast: more` thickens borders. Both palettes keep a solid `background.color` under the gradient.
+Each bank has a dark palette (the top-level color fields) and a `light` palette. The header toggle is Light / Dark / System, stored as `teller.colorScheme`. System follows `prefers-color-scheme` (dark when that query is missing). `web/index.html` sets `<meta name="color-scheme" content="light dark">` and `<meta name="darkreader-lock">`. `:root` sets `color-scheme: light dark`. The active scheme is also set on the theme root and on every `<select>` (`color-scheme: dark` or `light`, matching `data-scheme` / `data-color-scheme`) so Windows Chrome and Edge paint a dark option list in dark mode, including System after it resolves. Option rows use `--tc-surface` and `--tc-text`. Hover, focus, and selected rows use `--tc-button` and `--tc-button-text`. Those fills are opaque and meet WCAG AA. `prefers-contrast: more` keeps those pairs and thickens borders. `forced-colors: active` uses system colors (`Canvas`, `ButtonFace`, `ButtonText`, `Field`, `FieldText`, `Highlight`, `HighlightText`) and keeps borders and focus; the level is still an icon plus a word. Both palettes keep a solid `background.color` under the gradient.
 
 | File | What it is |
 |---|---|
@@ -73,9 +73,9 @@ Each bank has a dark palette (the top-level color fields) and a `light` palette.
 | `web/src/theme/controls.ts` | Shared control styles, including filled secondary and link styles. |
 | `web/src/assets/tellr-wordmark.png` | Tellr wordmark (transparent). `mark: 'logo'` paints it with `--tc-logo` (periwinkle on the tellr dark theme). |
 | `web/src/theme.test.tsx` | Selection, unknown-id fallback, storage, both palettes, and the flow layout. |
-| `web/src/scheme.test.tsx` | Light/dark toggle, storage, and the color-scheme / forced-colors / contrast CSS. |
+| `web/src/scheme.test.tsx` | Light/dark/system toggle, storage, native select popup tokens, and the color-scheme / forced-colors / contrast CSS. |
 | `web/index.html` | Poppins, `color-scheme`, and `darkreader-lock`. |
-| `web/src/themeContrast.test.ts` | WCAG AA for text, buttons, glass, links, badges, and clear/caution/high on every bank in light and dark. |
+| `web/src/themeContrast.test.ts` | WCAG AA for text, buttons, glass, links, badges, select options (surface/text and button/button-text), and clear/caution/high on every bank in light and dark. |
 
 Page gradients are hex and rgba only. Windows Chrome and Edge drop an entire `background-image` when any layer is invalid. Explicit percentage ellipse radii (`ellipse 72% 58%`) were that invalid layer; Safari on Mac still painted the linear layer underneath. The keyword `transparent` is also avoided, because Chromium interpolates it as transparent black. Each palette sets a solid `background.color` as well as the image, and `index.css` swaps the card to `glass.fallback` when `backdrop-filter` is unsupported.
 

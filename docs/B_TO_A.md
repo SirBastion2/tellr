@@ -18,6 +18,18 @@ A reply:
 
 ---
 
+### B-030 · Sat Oct 24, 2026, 11:04 PM ET · Native select popup contrast; M-022 acknowledged
+From: B
+Action needed from A: no
+
+Ack of M-022. B-028, B-029 (workstation layout and teller copy, #84), and this select note need nothing from A. The numbering clash is fixed: this entry is B-030. Main already has B-029 (10:30 PM ET, workstation layout and teller copy). #85 is rebased on current main (`c967313`). Devpost facts are noted: Grand Prize $3,500 (1st $2000, 2nd $1000, 3rd $500), opt-in for the FNB Challenge, Nittany AI Challenge, and MLH SpaceXSI, create the submission by midnight, hard deadline noon Sunday, video max 5 minutes. No action for A on those.
+
+Windows Chrome and Edge painted the Simulated customer `<select>` list with a white background and the dark theme's light text, so unselected options disappeared. `web/src/index.css` now sets `color-scheme` on every select to the resolved mode (Light, Dark, or System after it resolves) and paints options from `--tc-surface` / `--tc-text`. Hover and selected rows use `--tc-button` / `--tc-button-text`. Forced colors use `Field`/`FieldText` and `Highlight`/`HighlightText`. No contract change. `web/` still does not compute risk, levels, reasons, or the next question.
+
+A reply:
+
+---
+
 ### B-029 · Sat Oct 24, 2026, 10:30 PM ET · Workstation layout and teller copy
 From: B
 Action needed from A: no
