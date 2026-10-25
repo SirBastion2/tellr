@@ -3,6 +3,11 @@ import { DARK_CONTROLS, DARK_RISK, SOLID_CONTROLS } from '../chrome'
 import type { BankTheme } from '../types'
 import { FOOTER_TEXT } from '../tokens'
 
+/** Quote the weave URL so a data: or quoted path cannot drop the gradient stack. */
+function cssUrl(value: string): string {
+  return `url(${JSON.stringify(value)})`
+}
+
 /** M&T Bank. Green field, weave texture, serif wordmark, round controls. */
 const riskLight = {
   clearBg: '#F4FBF6',
@@ -42,7 +47,7 @@ export const theme: BankTheme = {
   space: { gap: '11px', cardPadding: '15px' },
   background: {
     color: '#0E3B2E',
-    image: `url("${weaveUrl}"), radial-gradient(ellipse at 18% 0%, rgba(214, 240, 220, 0.22) 0%, rgba(214, 240, 220, 0) 48%), linear-gradient(165deg, #0c3329 0%, #124d3b 46%, #1a6b4c 100%)`,
+    image: `${cssUrl(weaveUrl)}, radial-gradient(ellipse at 18% 0%, rgba(214, 240, 220, 0.22) 0%, rgba(214, 240, 220, 0) 48%), linear-gradient(165deg, #0c3329 0%, #124d3b 46%, #1a6b4c 100%)`,
     repeat: 'repeat, no-repeat, no-repeat',
     size: '140px 140px, cover, cover',
   },
@@ -71,7 +76,7 @@ export const theme: BankTheme = {
     wordmarkColor: '#0E3B2E',
     background: {
       color: '#E7F6EC',
-      image: `url("${weaveUrl}"), radial-gradient(ellipse at 18% 0%, rgba(14, 59, 46, 0.08) 0%, rgba(14, 59, 46, 0) 48%), linear-gradient(165deg, #f7fff9 0%, #e7f6ec 46%, #d1fae5 100%)`,
+      image: `${cssUrl(weaveUrl)}, radial-gradient(ellipse at 18% 0%, rgba(14, 59, 46, 0.08) 0%, rgba(14, 59, 46, 0) 48%), linear-gradient(165deg, #f7fff9 0%, #e7f6ec 46%, #d1fae5 100%)`,
       repeat: 'repeat, no-repeat, no-repeat',
       size: '140px 140px, cover, cover',
     },

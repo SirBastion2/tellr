@@ -1817,7 +1817,60 @@ GATE PASS (b)
   - Ignore typing in input / textarea / select / contenteditable, and Ctrl/Cmd/Alt. Escape still closes help and confirms, including while a field is focused. Restart confirm stays available from any page.
   - Help text states they work on every screen. `web/` still does not compute risk, level, reasons, or the next question (architecture §12).
 - **Questions logged:** none
-- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/97. Do not merge. Concurrent header / signal-list / handoff work should conflict little: `App.tsx` only replaced the inline `keydown` effect in `ConnectedShell`. No contract / api / engine edits. No new npm dependency. No screenshots.
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/97. Merged to main. Concurrent header / signal-list / handoff work should conflict little: `App.tsx` only replaced the inline `keydown` effect in `ConnectedShell`. No contract / api / engine edits. No new npm dependency. No screenshots.
+
+---
+
+### [B] Bank theme toggle — Agent B1 — 2026-10-25 04:18
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 129 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  38 passed (38)
+      Tests  129 passed (129)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/theme/registry.ts`, `web/src/theme/resolve.ts`, `web/src/theme/ThemeProvider.tsx`, `web/src/theme/Wordmark.tsx`, `web/src/theme/themes/mtb.ts`, `web/src/App.tsx`, `web/src/ui/ShortcutHelp.tsx`, `web/src/themeCycle.test.tsx`, `web/src/theme.test.tsx`, `web/src/themeContrast.test.ts`, `web/src/demoPolish.test.tsx`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - After #97 merged, `T` is one more key on the app-level map (`web/src/ui/shortcuts.ts` + `useDemoShortcuts`). It is not a second listener in `ConnectedShell`. Inputs / textareas / selects / contenteditable and Ctrl / Cmd / Alt still ignore the key.
+  - `THEME_IDS` / `THEME_LIST` are `tellr`, `pnc`, `mtb`, `fnb` so `cycleThemeId` matches the requested wrap. Default id stays `tellr` in `tokens.ts`.
+  - First load without `?theme=` is `tellr` even if `teller.theme` is leftover, so the demo is not surprised. Valid `?theme=` and `T` still write storage; an unknown query still falls back to the stored id (`resolve.ts`).
+  - Theme name stays on the existing wordmark. No new header chrome.
+  - Visual fixes in this PR: M&T weave uses `url(${JSON.stringify(...)})` so a quoted data URL cannot drop the gradient stack (Windows Chrome/Edge); text wordmarks are `nowrap` so M&T / F.N.B. / PNC do not wrap in the header.
+  - No new npm dependency. No contract / api / engine / library / golden edits.
+- **Questions logged:** none
+- **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. `T` does not reload or reset the session. PR #99. Do not merge from this card.
+
+---
+
+### [B] Bank theme toggle remount on #97 handler — Agent B1 — 2026-10-25 04:21
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 133 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  40 passed (40)
+      Tests  133 passed (133)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merged `origin/main` (#96, #97); `web/src/ui/shortcuts.ts`, `web/src/ui/DemoShortcuts.tsx`, `web/src/ui/shortcuts.test.ts`, `web/src/App.tsx`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - `T` is `theme` on the #97 key map. `useDemoShortcuts({ onTheme: cycleTheme })` is the only window listener for demo keys. The old `ConnectedShell` `keydown` effect is gone.
+- **Questions logged:** none
+- **The next agent needs to know:** PR #99. Do not merge.
 
 ---
 
