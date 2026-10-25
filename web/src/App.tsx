@@ -270,7 +270,7 @@ export function AppShell({
               alignItems: 'center',
               justifyContent: 'center',
               overflow: 'visible',
-              minWidth: 0,
+              minWidth: 'min-content',
               flex: '1 1 auto',
               marginInline: 'auto',
               minHeight: 'var(--tc-header-control-h, 48px)',

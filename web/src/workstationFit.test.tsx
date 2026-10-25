@@ -79,7 +79,7 @@ describe('workstation laptop fit', () => {
     expect(badgeRule).toMatch(/overflow:\s*hidden/)
     expect(badgeRule).toMatch(/font-size:\s*var\(--tc-text-sm/)
     expect(badgeRule).toMatch(/display:\s*inline-flex/)
-    expect(badgeRule).toMatch(/flex:\s*0 1 auto/)
+    expect(badgeRule).toMatch(/flex:\s*0 0 auto/)
     expect(badgeRule).toMatch(/width:\s*max-content/)
     expect(badgeRule).not.toMatch(/min-width:/)
     expect(badgeRule).not.toMatch(/max-width:\s*14rem/)

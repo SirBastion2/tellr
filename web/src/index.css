@@ -422,7 +422,7 @@ button[data-loading='true'],
   box-sizing: border-box;
   margin: 0;
   white-space: nowrap;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   width: max-content;
   max-width: 100%;
   overflow: hidden;
@@ -480,7 +480,7 @@ button[data-loading='true'],
   box-sizing: border-box;
   margin: 0;
   white-space: nowrap;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   width: max-content;
   max-width: var(--tc-sim-pill-max, 100%);
   overflow: hidden;
@@ -537,7 +537,7 @@ button[data-loading='true'],
   gap: var(--tc-space-header, 8px);
   overflow: visible;
   min-height: var(--tc-header-control-h, 48px);
-  min-width: 0;
+  min-width: min-content;
   flex: 1 1 auto;
   margin-inline: auto;
 }
@@ -687,6 +687,8 @@ button[data-loading='true'],
   }
 
   .tc-live-badge {
+    flex: 0 1 auto;
+    min-width: 0;
     max-width: 12em;
   }
 }
