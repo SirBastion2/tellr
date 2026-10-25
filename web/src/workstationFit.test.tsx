@@ -73,7 +73,7 @@ describe('workstation laptop fit', () => {
     expect(headerCss).toMatch(/flex-wrap:\s*nowrap/)
     expect(headerCss).toMatch(/overflow:\s*visible/)
     expect(headerCss).toMatch(/box-sizing:\s*border-box/)
-    expect(headerCss).toMatch(/padding-inline:\s*var\(--tc-space-2/)
+    expect(headerCss).toMatch(/padding-inline:\s*var\(--tc-space-4/)
     expect(headerCss).toMatch(/padding-block:\s*var\(--tc-space-2/)
     expect(titleRule).toMatch(/flex:\s*0 0 auto/)
     expect(titleRule).toMatch(/flex-shrink:\s*0/)

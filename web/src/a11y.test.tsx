@@ -128,8 +128,14 @@ describe('counter polish', () => {
       expect(controls.length, path).toBeGreaterThan(0)
       for (const control of controls) {
         const size = tapSize(control)
-        expect(size.minHeight, `${path} ${control.textContent}`).toBeGreaterThanOrEqual(48)
-        expect(size.minWidth, `${path} ${control.textContent}`).toBeGreaterThanOrEqual(48)
+        const help = control.getAttribute('data-testid') === 'shortcut-help-button'
+        const min = help ? 34 : 48
+        expect(size.minHeight, `${path} ${control.textContent}`).toBeGreaterThanOrEqual(min)
+        expect(size.minWidth, `${path} ${control.textContent}`).toBeGreaterThanOrEqual(min)
+        if (help) {
+          expect(size.minHeight, path).toBe(34)
+          expect(size.minWidth, path).toBe(34)
+        }
       }
       unmount()
     }

@@ -481,13 +481,13 @@ button[data-loading='true'],
   flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--tc-space-header, 8px);
+  gap: var(--tc-space-4, 16px);
   min-height: var(--tc-header-h, 48px);
   min-width: 0;
   max-width: 100%;
   overflow: visible;
   padding-block: var(--tc-space-2);
-  padding-inline: var(--tc-space-2);
+  padding-inline: var(--tc-space-4, 16px);
 }
 
 .tc-header-brand,
@@ -503,6 +503,10 @@ button[data-loading='true'],
 .tc-header-status {
   flex: 0 1 auto;
   min-width: 0;
+}
+
+.tc-header-tools {
+  gap: var(--tc-help-gap, 10px);
 }
 
 .tc-header .tc-segment,
@@ -556,8 +560,8 @@ button[data-loading='true'],
   color: var(--tc-text, #1c1917);
   background-color: var(--tc-glass-fallback, transparent);
   border-radius: var(--tc-radius-control, 999px);
-  padding-block: 0;
-  padding-inline: var(--tc-control-pad-inline, 0.85em);
+  padding-block: var(--tc-space-2, 8px);
+  padding-inline: var(--tc-sim-pad-inline, 18px);
   height: var(--tc-header-control-h, 48px);
   min-height: var(--tc-header-control-h, 48px);
   line-height: var(--tc-type-line-ui);
@@ -577,7 +581,7 @@ button[data-loading='true'],
   flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
-  gap: var(--tc-space-header, 8px);
+  gap: var(--tc-nav-tab-gap, 26px);
   overflow: visible;
   min-height: var(--tc-header-control-h, 48px);
   min-width: min-content;
@@ -600,8 +604,8 @@ button[data-loading='true'],
   font-size: var(--tc-text-sm);
   line-height: var(--tc-text-sm-lh);
   font-weight: var(--tc-text-sm-weight);
-  padding-block: 0;
-  padding-inline: var(--tc-control-pad-inline, 0.85em);
+  padding-block: var(--tc-space-2, 8px);
+  padding-inline: var(--tc-nav-pad-inline, 14px);
   height: var(--tc-header-control-h, 48px);
   border-radius: var(--tc-header-radius, 999px);
 }
@@ -697,6 +701,20 @@ button[data-loading='true'],
   overflow: hidden;
 }
 
+.tc-header .tc-scheme-full {
+  box-sizing: border-box;
+  padding: var(--tc-scheme-inset, 2px);
+}
+
+.tc-header-help {
+  box-sizing: border-box;
+  width: var(--tc-help-size, 34px);
+  height: var(--tc-help-size, 34px);
+  min-width: var(--tc-help-size, 34px);
+  min-height: var(--tc-help-size, 34px);
+  padding: 0;
+}
+
 /* Inactive scheme control stays in the tree so its width can be measured. */
 .tc-header[data-scheme-compact='true'] .tc-scheme-full,
 .tc-header:not([data-scheme-compact='true']) .tc-scheme-menu {
@@ -708,12 +726,16 @@ button[data-loading='true'],
 }
 
 @media (max-width: 1180px) {
-  .tc-header,
   .tc-header-brand,
-  .tc-header-status,
-  .tc-header-nav,
-  .tc-header-tools {
+  .tc-header-status {
     gap: var(--tc-space-1, 4px);
+  }
+}
+
+/* Group gap can tighten below the pill's padding floor. Ends stay 16px. */
+@media (max-width: 840px) {
+  .tc-header {
+    gap: var(--tc-space-2, 8px);
   }
 }
 
@@ -985,6 +1007,14 @@ html[data-color-scheme='light'] select option:checked,
   --tc-space-body-control: 12px;
   --tc-space-control-pad-y: 8px;
   --tc-space-control-pad-x: 12px;
+  --tc-sim-pad-inline: 18px;
+  --tc-nav-pad-inline: 14px;
+  --tc-nav-tab-gap: 26px;
+  --tc-scheme-pad-block: 7px;
+  --tc-scheme-pad-inline: 14px;
+  --tc-scheme-inset: 2px;
+  --tc-help-size: 34px;
+  --tc-help-gap: 10px;
   --tc-wordmark-h: 40px;
   --tc-wordmark-aspect: 155 / 61;
 }

@@ -11,7 +11,10 @@ export type HeaderFitMeasure = {
   nav: number
   schemeFull: number
   help: number
+  /** Minimum gap between the four header groups. */
   gap: number
+  /** Gap between the scheme control and help. Defaults to `gap` when omitted. */
+  toolsGap?: number
 }
 
 function contentWidth(el: Element | null): number {
@@ -40,12 +43,23 @@ function groupMinWidth(el: Element | null, gap: number): number {
   return widths + gap * Math.max(0, kids.length - 1)
 }
 
+function usedGap(el: Element | null, fallback: number): number {
+  if (!el || !(el instanceof HTMLElement)) {
+    return fallback
+  }
+  const style = getComputedStyle(el)
+  const column = parseFloat(style.columnGap)
+  const parsed = Number.isFinite(column) ? column : parseFloat(style.gap)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
 /** True when brand + hugged status + nav + full scheme + help + gaps will not fit. */
 export function schemeNeedsCompact(measure: HeaderFitMeasure): boolean {
   if (measure.available <= 0) {
     return false
   }
-  const tools = measure.schemeFull + measure.help + measure.gap
+  const toolsGap = measure.toolsGap ?? measure.gap
+  const tools = measure.schemeFull + measure.help + toolsGap
   const needed = measure.brand + measure.status + measure.nav + tools + 3 * measure.gap
   return needed > measure.available
 }
@@ -55,14 +69,19 @@ export function measureHeaderFit(header: HTMLElement): HeaderFitMeasure {
   const padL = parseFloat(style.paddingLeft) || 0
   const padR = parseFloat(style.paddingRight) || 0
   const gap = parseFloat(style.columnGap || style.gap) || 0
+  const brandEl = header.querySelector('[data-testid="header-brand"]')
+  const statusEl = header.querySelector('[data-testid="header-status"]')
+  const navEl = header.querySelector('[data-testid="app-nav"]')
+  const toolsEl = header.querySelector('[data-testid="header-tools"]')
   return {
     available: Math.max(0, header.clientWidth - padL - padR),
-    brand: groupMinWidth(header.querySelector('[data-testid="header-brand"]'), gap),
-    status: groupMinWidth(header.querySelector('[data-testid="header-status"]'), gap),
-    nav: groupMinWidth(header.querySelector('[data-testid="app-nav"]'), gap),
+    brand: groupMinWidth(brandEl, usedGap(brandEl, gap)),
+    status: groupMinWidth(statusEl, usedGap(statusEl, gap)),
+    nav: groupMinWidth(navEl, usedGap(navEl, gap)),
     schemeFull: contentWidth(header.querySelector('[data-testid="color-scheme"]')),
     help: contentWidth(header.querySelector('[data-testid="shortcut-help-button"]')),
     gap,
+    toolsGap: usedGap(toolsEl, gap),
   }
 }
 
