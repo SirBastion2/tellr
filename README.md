@@ -2,7 +2,7 @@
 
 # Tellr
 
-Tellr is a copilot for a teller at the counter: the local model sees visit ids and library labels, and never the customer's name, age, words, memo, or account details, so the prompt does not carry a person's identity.
+Tellr is a counter-side copilot that helps a bank teller spot a coached elder-fraud victim during a cash withdrawal: the model gets only anonymous ids and library labels, never a name, age, account details, memo, dollar amount, or the customer's own words, and that is safe for a bank because identity never reaches the model, the model runs locally, it only picks the next question and cannot set the score, the level, or the action, and the teller decides.
 
 Built by Team KotR for HackPSU Fall 2026: Sebastian Villalba and Jonathan Zheng.
 
@@ -10,11 +10,15 @@ Built by Team KotR for HackPSU Fall 2026: Sebastian Villalba and Jonathan Zheng.
 
 ## What goes in, and why it's safe for a bank
 
-**Model sees** (`engine/prompt.py`): context-chip ids, the purpose id, each answer as a question id plus a chip id, evidence ids, the pattern id, the candidate question ids with their library lines, and the library's chip and purpose labels. **Model never sees** the name, age band, tenure, typical withdrawal, channels, account activity, memo, transaction type, dollar amount, amount band, or the customer's own words.
+| Model sees | Model never sees |
+|---|---|
+| Anonymous ids for the noted signals, the stated purpose, each answer, the reasons already on the score, the matched pattern, and the next questions.<br>Library labels for the signals and purposes, and the short library reason for each next question. | Name, age, tenure, typical withdrawal, channels, account activity, memo, dollar amount, the withdrawal's size bracket, and the customer's own words. |
 
-**Rules** (`engine/reduce.py`) score the chip ids and the answer chips. The purpose id chooses questions and is not passed into the score. The fields the model never sees stay out of the rules too. **Stored** (`store/sqlite.py`, `api/main.py`): mode, time, library version, the amount band, the chip ids, and each answer's question id and chip. A note is stored only if a client sends one; this demo does not. `account_ref` is written null. The Outcome screen stores the typed teller name and does not send it to the model (`web/src/screens/OutcomeScreen.tsx`). The case file shows tenure, typical withdrawal, and channels. With it open, Home renders no name, age band, or gendered pronoun (`web/src/workstation/TransactionPanel.tsx`, `web/src/privacy.test.tsx`). Account activity stays in the demo file and is neither shown nor sent. The memo and the on-screen dollar amount are not posted.
-
-The model returns one question id. It does not set the score, the level, or the action (`recommenders/validate.py`, `engine/rules.py`). The API defaults to the rules. The 8B posts to `llama-server` at `127.0.0.1:8080`, and a hosted call runs only if `HOSTED_LLM_URL` is set (`api/main.py`). If that call is slow or the server is down, the rules pick the question (`recommenders/select.py`). The teller decides.
+- The local model posts to `127.0.0.1:8080`. A hosted call runs only when the recommender is hosted and `HOSTED_LLM_URL` is set. The API starts on the rules (`api/main.py`).
+- It returns one question id and cannot set the score, the level, or the action. The rules score the signals those ids map to. The stated purpose picks questions and is not part of the score, and the fields the model never sees stay out of the score. The teller decides. That table is everything the prompt may include (`engine/prompt.py`, `engine/reduce.py`, `engine/rules.py`).
+- If the call is slow, the server is down, or the reply is not an allowed question, the rules pick the question (`recommenders/select.py`).
+- The log stores mode, time, library version, the size bracket (amount band), the noted ids, and each answer's question id and answer id. A note is stored only if a client sends one; this demo does not. The account reference is written null. The typed teller name from the Outcome screen is stored with the decision and is not sent to the model (`store/sqlite.py`, `api/main.py`, `web/src/teller.tsx`, `web/src/screens/OutcomeScreen.tsx`).
+- On screen, the case file shows tenure, typical withdrawal, and channels. With it open, Home shows no name, age band, or gendered pronoun. Account activity stays in the demo file and is neither shown nor sent. The memo, the transaction type, and the dollar amount stay on screen and are not posted (`web/src/workstation/TransactionPanel.tsx`, `web/src/privacy.test.tsx`).
 
 ## The problem
 
@@ -57,7 +61,7 @@ Demo video: link to be added
 
 ## How we built it with Cursor
 
-Sebastian ran the engine and the evaluation. Jonathan ran the screen, the API, and the GPU laptop. Agents wrote the code. We ran up to 12 agents in parallel, adding an agent when the work split into its own card or fix and scaling back when it did not. Each agent took one card or one fix, on its own branch and pull request. `scripts/gate.sh` had to pass before we merged. The engine and the screen share a frozen contract, and it changes only when both of us approve a written change (`WORKFLOW.md` §3, §5; `ARCHITECTURE.md`). That path covered roster cards, including the A-08 held-out run (`docs/A08_HELDOUT_RUN.md`) and the B screen cards, and UI fixes such as dropping the Observed badge (`docs/handoff/20261025-0828-signal-rows-no-observed.md`).
+Sebastian ran the engine and the evaluation. Jonathan ran the screen, the API, and the GPU laptop. Agents wrote the code. We ran up to 12 agents in parallel, adding an agent when the work split into its own card or fix and scaling back when it did not. Each agent took one card or one fix, on its own branch and pull request. `scripts/gate.sh` had to pass before we merged. The engine and the screen share a frozen contract, and it changes only when both of us approve a written change (`WORKFLOW.md` §3, §5; `ARCHITECTURE.md`). That path covered roster cards, including the A-08 held-out run (`docs/A08_HELDOUT_RUN.md`) and the B screen cards, and UI fixes such as the Observed badge on the Handoff screen (`docs/handoff/20261025-0935-handoff-observed-badge.md`).
 
 ## The demo vs real use
 
@@ -117,7 +121,7 @@ Open items: training recipe for the 8B is not in the repo; no real bank pilot; n
 
 ## Specs and tech stack
 
-Sebastian states an RTX 5070 was used to train the Llama 8B. The engine is Python >= 3.12, FastAPI, and Pydantic >= 2, and `reference_impl.py` is the scoring oracle. The screen is React 19.3.1, Vite 8.3.5, TypeScript 6.0.3, and Tailwind CSS 4.3.3. Theme ids `tellr`, `pnc`, `mtb`, `fnb` share one layout. The store is SQLite, and events reject updates. `CONTRACT_VERSION` is 2.0.0. Every session response is a `SessionState`.
+We trained the Llama 8B on an RTX 5070 laptop GPU (the training recipe is not in the repo; see Open items). The engine is Python >= 3.12, FastAPI, and Pydantic >= 2, and `reference_impl.py` is the scoring oracle. The screen is React 19.3.1, Vite 8.3.5, TypeScript 6.0.3, and Tailwind CSS 4.3.3. Theme ids `tellr`, `pnc`, `mtb`, `fnb` share one layout. The store is SQLite, and events reject updates. `CONTRACT_VERSION` is 2.0.0. Every session response is a `SessionState`.
 
 ## Sources
 
