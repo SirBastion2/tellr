@@ -17,7 +17,7 @@ export function LiveBadge({ mode, simulationTitle = null }: { mode: Mode | null;
   }
   return (
     <p data-testid="live-badge" className="tc-live-badge" title={label}>
-      {label}
+      <span className="tc-live-badge-label">{label}</span>
     </p>
   )
 }

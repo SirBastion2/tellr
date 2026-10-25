@@ -2061,3 +2061,55 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/94. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots.
 
+---
+
+### [B] Restore teller controls, single level, hide demo identity — Agent B1 — 2026-10-25 05:22
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 167 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  46 passed (46)
+      Tests  167 passed (167)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/workstation/CopilotStrip.tsx`, `web/src/workstation/ExplanationPanel.tsx`, `web/src/workstation/TransactionPanel.tsx`, `web/src/screens/HomeScreen.tsx`, `web/src/screens/CustomerFileScreen.tsx`, `web/src/App.tsx`, `web/src/ui/privacy.ts`, `web/src/privacy.test.tsx`, `web/src/workstation.test.tsx`, `web/src/workstationMerge.test.tsx`, `web/src/copilotCard.test.tsx`, `web/src/change005.test.tsx`, `web/src/home.test.tsx`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Removed the Home “How did they answer?” chip panel (#95). Suggested action still shows `question.text`; two-tap answers stay on Session (`QuestionCard`). §12: web does not choose the next question.
+  - Why this level is read-only model analysis again (reasons, origin pill, noted time, What would lower it). Teller confirm/deny/restore is back on the copilot signal chips (pre-#98). Kept #94 `chipOrder`, Handoff dismissed/confirmed marks (no buttons), Home-only Undo, and the shortcut grid. Urgency Score stays. One Level row unless `raw_level` differs. §9 / §12: no client risk math.
+  - Demo UI never renders name, age band, or gendered pronouns. Banner is `Practice data.` Display maps to Customer. Payloads in `customers.ts` / API are unchanged.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/102. Do not merge. Branched from `27903ed` (#94). No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
+
+---
+
+### [B] Stable header simulation pill across Play — Agent B1 — 2026-10-25 05:24
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 171 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  47 passed (47)
+      Tests  171 passed (171)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/index.css`, `web/src/theme/tokens.ts`, `web/src/theme/vars.ts`, `web/src/LiveBadge.tsx`, `web/src/workstation/Toolbar.tsx`, `web/src/headerSimPill.test.tsx`, `web/src/workstationFit.test.tsx`, `ARCHITECTURE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Cause: after #100/#101 the nav fills leftover space (`flex: 1 1 auto` / tab `flex: 1 1 0`). The pill was `flex: 0 1 auto` + `min-width: 0`, so Play (hints → links) resized it and shifted tabs/scheme. Label stays `Simulation: <title>` (architecture §12 live badge; no running-label variant).
+  - Fix: shared `--tc-header-control-h` / `--tc-type-pill`, stable `--tc-sim-pill-min`/`max` with `flex: 0 0 auto`. Ellipsis only if a label still cannot fit; current titles stay complete at 1024/1180/1280. Play/Pause and Show/Hide use a grid for the longer word. Timer is `tabular-nums` + `--tc-timer-min`. `#93` wrap and shared tokens stay. `web/` computes nothing (§9, §12).
+  - Merged `origin/main` `6d291d5` (#102). Kept #102 copilot/privacy file-table rows and the LiveBadge/toolbar width notes.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/103. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
+

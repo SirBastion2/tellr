@@ -94,6 +94,20 @@ export const DENSITY = {
   spaceGap: '12px',
   /** Simulation and connection pills share this size. */
   typePill: '0.875rem',
+  /**
+   * Longest `Simulation: <title>` / LIVE label, including 8×12 padding.
+   * Fixed so tab flex after Play cannot shrink or grow the pill.
+   */
+  simPillMinWidth: '22rem',
+  simPillMaxWidth: '22rem',
+  /** Longest connection label (`Checking connection` / `Live API connected`). */
+  connPillMinWidth: '14rem',
+  /** Wide enough for the Pause label plus icon so Play does not jump. */
+  playMinWidth: '7.5rem',
+  /** `m:ss` with room for `10:00`. */
+  timerMinWidth: '5ch',
+  speedMinWidth: '2.75rem',
+  caseLinkMinWidth: '9.5rem',
   /** Room for a 2px outline + 2px offset + 3px ring outside the clip edge. */
   focusClip: '8px',
 } as const
