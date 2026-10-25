@@ -199,12 +199,19 @@ describe('demo polish', () => {
       const atStep = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
 
       fireEvent.click(screen.getByTestId('demo-speed-2'))
-      fireEvent.click(screen.getByRole('link', { name: 'Customer file' }))
-      expect(screen.getByTestId('customer-screen')).toBeTruthy()
+      await act(async () => {
+        window.history.pushState({}, '', '/customer')
+        window.dispatchEvent(new PopStateEvent('popstate'))
+      })
+      expect(screen.getByTestId('not-found-screen')).toBeTruthy()
+      expect(screen.queryByTestId('customer-screen')).toBeNull()
       await act(async () => {
         await vi.advanceTimersByTimeAsync(2_000)
       })
-      fireEvent.click(screen.getByRole('link', { name: 'Home' }))
+      await act(async () => {
+        window.history.pushState({}, '', '/')
+        window.dispatchEvent(new PopStateEvent('popstate'))
+      })
       const during = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
       expect(during).toBeGreaterThan(atStep)
 
@@ -237,7 +244,7 @@ describe('demo polish', () => {
     expect(screen.getByTestId('nav-hint-outcome').textContent).toBe('Outcome')
     expect(screen.getByTestId('nav-hint-handoff').textContent).toBe('Handoff')
     expect(screen.getByRole('link', { name: 'Home' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Customer file' })).toBeTruthy()
+    expect(screen.queryByRole('link', { name: 'Customer file' })).toBeNull()
     expect(screen.queryByRole('link', { name: 'Outcome' })).toBeNull()
 
     fireEvent.click(screen.getByTestId('shortcut-help-button'))

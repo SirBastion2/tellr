@@ -250,7 +250,7 @@ describe('simulation pill stays the same size before and during play', () => {
           expect(headerRule(css(), '.tc-header-nav')).toMatch(/flex:\s*0 0 auto/)
           expect(screen.queryByTestId('local-clock')).toBeNull()
           expect(screen.queryByTestId('connection-status')).toBeNull()
-          for (const tabLabel of ['Home', 'Customer file', 'Outcome', 'Handoff']) {
+          for (const tabLabel of ['Home', 'Outcome', 'Handoff']) {
             expect(screen.getByText(tabLabel).textContent, `${tabLabel} ${state} @ ${width}`).toBe(tabLabel)
           }
           unmount()

@@ -1,12 +1,9 @@
 import libraryJson from '../../contract/library.json'
 import t1 from '../../contract/fixtures/T1.json'
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
-import { AppShell } from './App'
 import { CUSTOMERS } from './demo/customers'
 import type { DemoView } from './demo/types'
-import { CustomerFileScreen } from './screens/CustomerFileScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import type { ActivityRow, Library, SessionState } from './types'
 
@@ -187,46 +184,6 @@ describe('merged workstation signals', () => {
     fireEvent.click(dismiss)
     expect(onConfirm).toHaveBeenCalledWith('chip.cash_only')
     expect(onDismiss).toHaveBeenCalledWith('chip.cash_only')
-  })
-
-  it('does not repeat transaction facts or the noted list on the customer file', () => {
-    render(
-      <MemoryRouter>
-        <AppShell
-          library={library}
-          session={liveVisit}
-          issues={[]}
-          postedChipIds={['chip.on_phone']}
-          activity={activityRows}
-          demo={demo()}
-        />
-      </MemoryRouter>,
-    )
-    fireEvent.click(screen.getByRole('link', { name: 'Customer file' }))
-    const file = screen.getByTestId('customer-screen')
-    expect(within(file).getByTestId('profile-name').textContent).toBe('Customer')
-    expect(within(file).queryByTestId('profile-age')).toBeNull()
-    expect(file.textContent).not.toMatch(/Marcus/)
-    expect(within(file).queryByRole('heading', { name: 'Recent activity' })).toBeNull()
-    expect(within(file).queryByRole('heading', { name: 'This withdrawal' })).toBeNull()
-    expect(within(file).queryByRole('heading', { name: 'What was noted' })).toBeNull()
-    expect(file.querySelector('dl')?.className).toContain('tc-kv')
-    expect(within(file).queryByTestId('file-transaction')).toBeNull()
-    expect(within(file).queryByTestId('file-signal')).toBeNull()
-    expect(within(file).queryByTestId('session-activity')).toBeNull()
-    expect(within(file).queryByTestId('activity-row')).toBeNull()
-    expect(file.textContent).not.toMatch(/\$6,500/)
-    expect(file.textContent).not.toMatch(/Noted at the window/)
-  })
-
-  it('still shows the synthetic profile when no visit activity is loaded', () => {
-    render(<CustomerFileScreen demo={demo({ customerId: 'contractor-cash', index: 0 })} />)
-    expect(screen.getByTestId('profile-name').textContent).toBe('Customer')
-    expect(screen.queryByTestId('profile-age')).toBeNull()
-    expect(screen.queryByText('Helen Ruiz')).toBeNull()
-    expect(screen.queryByTestId('activity-row')).toBeNull()
-    expect(screen.queryByTestId('file-signal')).toBeNull()
-    expect(screen.queryByRole('heading', { name: 'Recent activity' })).toBeNull()
   })
 
   it('shows one local noted time when activity rows exist', () => {

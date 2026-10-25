@@ -12,7 +12,7 @@ function http(status: number, body: unknown) {
 }
 
 describe('presenter mode', () => {
-  it('enlarges type, hides dev tabs, and keeps the four demo tabs labeled', async () => {
+  it('enlarges type, hides dev tabs, and keeps the demo tabs labeled', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -38,11 +38,11 @@ describe('presenter mode', () => {
     expect(screen.queryByRole('link', { name: 'History' })).toBeNull()
     expect(screen.queryByRole('link', { name: 'Health' })).toBeNull()
     expect(screen.getByRole('link', { name: 'Home' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Customer file' })).toBeTruthy()
+    expect(screen.queryByRole('link', { name: 'Customer file' })).toBeNull()
     expect(screen.getByTestId('nav-hint-outcome').textContent).toBe('Outcome')
     expect(screen.getByTestId('nav-hint-handoff').textContent).toBe('Handoff')
     expect(screen.getByTestId('elapsed-timer').textContent).toBe('0:00')
-    expect(screen.getByTestId('event-caption').textContent).toMatch(/Press play/)
+    expect(screen.getByTestId('event-caption').textContent).toBe('Customer File')
     expect(window.localStorage.getItem(PRESENTER_STORAGE_KEY)).toBe('0')
     expect(window.location.search).toContain('present=0')
 

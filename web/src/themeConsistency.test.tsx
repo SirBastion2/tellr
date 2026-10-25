@@ -255,7 +255,7 @@ describe('shared theme leftovers', () => {
     }
   })
 
-  it('sizes four content tabs and spreads header groups across the pill', () => {
+  it('sizes content tabs and spreads header groups across the pill', () => {
     const source = css()
     expect(source).toMatch(/\.tc-header\s*\{[^}]*justify-content:\s*space-between/)
     expect(source).toMatch(/\.tc-header\s*\{[^}]*padding-inline:\s*var\(--tc-space-2/)
@@ -286,8 +286,8 @@ describe('shared theme leftovers', () => {
       expect(nav.style.gap, id).toBe('var(--tc-space-header, 8px)')
       expect(screen.queryByTestId('local-clock'), id).toBeNull()
       expect(screen.queryByTestId('connection-status'), id).toBeNull()
-      const tabs = ['Home', 'Customer file', 'Outcome', 'Handoff'].map((label) => screen.getByText(label))
-      expect(tabs, id).toHaveLength(4)
+      const tabs = ['Home', 'Outcome', 'Handoff'].map((label) => screen.getByText(label))
+      expect(tabs, id).toHaveLength(3)
       for (const tab of tabs) {
         expect(tab.className, `${id} ${tab.textContent}`).toContain('tc-nav-tab')
         expect(tab.style.flex, `${id} ${tab.textContent}`).toMatch(/^0 0 auto$/)
@@ -302,10 +302,17 @@ describe('shared theme leftovers', () => {
       for (const width of LAPTOP_WIDTHS) {
         Object.defineProperty(window, 'innerWidth', { configurable: true, value: width })
         window.dispatchEvent(new Event('resize'))
+        expect(header.style.justifyContent, `${id} @ ${width}`).toBe('space-between')
+        expect(header.style.paddingInline, `${id} @ ${width}`).toBe('var(--tc-space-2)')
+        expect(header.style.flexWrap, `${id} @ ${width}`).toBe('nowrap')
+        expect(nav.style.flex, `${id} @ ${width}`).toBe('0 0 auto')
+        expect(nav.style.justifyContent, `${id} @ ${width}`).toBe('center')
         expect(nav.style.flexWrap, `${id} @ ${width}`).toBe('nowrap')
         expect(nav.style.overflow, `${id} @ ${width}`).toBe('visible')
         for (const tab of tabs) {
           expect(tab.style.flex, `${id} ${tab.textContent} @ ${width}`).toMatch(/^0 0 auto$/)
+          expect(tab.style.whiteSpace, `${id} ${tab.textContent} @ ${width}`).toBe('nowrap')
+          expect(tab.style.overflow, `${id} ${tab.textContent} @ ${width}`).toBe('visible')
           expect(tab.textContent, `${id} @ ${width}`).not.toMatch(/…|\.\.\./)
         }
       }
