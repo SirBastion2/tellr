@@ -81,7 +81,9 @@ export function StepCard({
   const names = personalNamesFrom(customer.profile.name)
   const direction = useStepDirection(fired, customer.id)
   const elapsed = current ? timelineElapsedMs(customer.events, fired) : 0
-  const label = current ? `Step ${fired} · ${formatElapsed(elapsed)} · ${eventSpeaker(current, names)}` : ''
+  const label = current
+    ? `Step ${fired} · ${formatElapsed(elapsed)} · ${eventSpeaker(current, names)}`
+    : 'Customer File'
   const text = current ? redactPersonalCopy(current.text, names) : ''
   return (
     <div className="tc-step-card" data-testid={current ? 'demo-event' : undefined} data-kind={current?.kind} hidden={!current}>
@@ -90,7 +92,8 @@ export function StepCard({
         direction={direction}
         title={label}
         subtitle={text}
-        titleTestId={current ? 'event-marker' : undefined}
+        titleTestId="event-caption"
+        markerTestId={current ? 'event-marker' : undefined}
         titleClassName="tc-kicker"
         subtitleClassName="tc-prose tc-step-copy"
         testId="step-viewport"

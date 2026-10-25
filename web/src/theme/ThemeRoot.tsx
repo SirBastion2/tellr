@@ -69,7 +69,8 @@ export function ThemeRoot({ children, footer = null }: { children: ReactNode; fo
           boxSizing: 'border-box',
           maxWidth: '100%',
           minWidth: 0,
-          overflow: 'hidden',
+          overflowX: 'clip',
+          overflowY: 'hidden',
           overflowClipMargin: DENSITY.focusClip,
           padding: 0,
         }}

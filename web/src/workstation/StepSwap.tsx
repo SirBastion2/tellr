@@ -29,6 +29,7 @@ export function StepSwap({
   title,
   subtitle = '',
   titleTestId,
+  markerTestId,
   titleClassName,
   subtitleClassName = 'tc-prose tc-step-subtitle',
   testId,
@@ -38,6 +39,7 @@ export function StepSwap({
   title: string
   subtitle?: string
   titleTestId?: string
+  markerTestId?: string
   titleClassName: string
   subtitleClassName?: string
   testId?: string
@@ -64,6 +66,7 @@ export function StepSwap({
           title={frame.title}
           subtitle={frame.subtitle}
           titleTestId={titleTestId}
+          markerTestId={markerTestId}
           titleClassName={titleClassName}
           subtitleClassName={subtitleClassName}
         />
@@ -76,19 +79,27 @@ function Slide({
   title,
   subtitle,
   titleTestId,
+  markerTestId,
   titleClassName,
   subtitleClassName,
 }: {
   title: string
   subtitle: string
   titleTestId?: string
+  markerTestId?: string
   titleClassName: string
   subtitleClassName: string
 }): ReactNode {
   return (
     <>
       <p data-testid={titleTestId} className={titleClassName}>
-        <Emphasis text={title} />
+        {markerTestId ? (
+          <span data-testid={markerTestId}>
+            <Emphasis text={title} />
+          </span>
+        ) : (
+          <Emphasis text={title} />
+        )}
       </p>
       {subtitle ? (
         <p className={subtitleClassName}>
