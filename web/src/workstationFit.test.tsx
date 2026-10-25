@@ -10,7 +10,8 @@ import type { DemoView } from './demo/types'
 import { liveBadgeText } from './LiveBadge'
 import './index.css'
 import { THEMES } from './theme/registry'
-import { DEMO_ROOT_FONT, DENSITY, HEADER_SCHEME_COLLAPSE_PX } from './theme/tokens'
+import { schemeNeedsCompact } from './theme/scheme'
+import { DEMO_ROOT_FONT, DENSITY } from './theme/tokens'
 
 const css = () => readFileSync('src/index.css', 'utf8')
 
@@ -65,12 +66,15 @@ describe('workstation laptop fit', () => {
     const titleRule = headerRule(source, '.tc-header-title')
     const badgeRule = headerRule(source, '.tc-live-badge')
     const headerCss = headerRule(source, '.tc-header')
-    expect(HEADER_SCHEME_COLLAPSE_PX).toBe(1280)
-    expect(source).not.toMatch(/1120px/)
-    expect(source).toMatch(new RegExp(`@container header \\(max-width:\\s*${HEADER_SCHEME_COLLAPSE_PX}px\\)`))
-    expect(source).toMatch(new RegExp(`@media \\(max-width:\\s*${HEADER_SCHEME_COLLAPSE_PX}px\\)`))
+    expect(source).not.toMatch(/HEADER_SCHEME_COLLAPSE/)
+    expect(source).not.toMatch(/@container header \(max-width:\s*1280px\)/)
+    expect(source).not.toMatch(/@media \(max-width:\s*1280px\)[\s\S]{0,220}\.tc-scheme-full/)
+    expect(source).toMatch(/\[data-scheme-compact='true'\] \.tc-scheme-full/)
     expect(headerCss).toMatch(/flex-wrap:\s*nowrap/)
     expect(headerCss).toMatch(/overflow:\s*visible/)
+    expect(headerCss).toMatch(/box-sizing:\s*border-box/)
+    expect(headerCss).toMatch(/padding-inline:\s*var\(--tc-space-2/)
+    expect(headerCss).toMatch(/padding-block:\s*var\(--tc-space-2/)
     expect(titleRule).toMatch(/flex:\s*0 0 auto/)
     expect(titleRule).toMatch(/flex-shrink:\s*0/)
     expect(titleRule).not.toMatch(/overflow:\s*hidden/)
@@ -79,15 +83,38 @@ describe('workstation laptop fit', () => {
     expect(badgeRule).toMatch(/overflow:\s*hidden/)
     expect(badgeRule).toMatch(/font-size:\s*var\(--tc-text-sm/)
     expect(badgeRule).toMatch(/display:\s*inline-flex/)
-    expect(badgeRule).toMatch(/flex:\s*0 0 auto/)
+    expect(badgeRule).toMatch(/flex:\s*0 1 auto/)
+    expect(badgeRule).toMatch(/min-width:\s*0/)
     expect(badgeRule).toMatch(/width:\s*max-content/)
-    expect(badgeRule).not.toMatch(/min-width:/)
     expect(badgeRule).not.toMatch(/max-width:\s*14rem/)
-    expect(headerRule(source, '.tc-connection')).toMatch(/text-overflow:\s*ellipsis/)
+    expect(source).not.toMatch(/\.tc-connection\s*\{/)
+    expect(source).not.toMatch(/\.tc-local-clock/)
     expect(headerRule(source, '.tc-header-nav')).toMatch(/flex-wrap:\s*nowrap/)
     expect(headerRule(source, '.tc-header-nav')).toMatch(/overflow:\s*visible/)
     expect(headerRule(source, '.tc-header-nav')).not.toMatch(/overflow-x:\s*auto/)
     expect(HEADER_FIT_CSS_PX).toEqual([1280, 1440, 1512, 1024, 1152, 960])
+    expect(
+      schemeNeedsCompact({
+        available: 1100,
+        brand: 260,
+        status: 280,
+        nav: 420,
+        schemeFull: 220,
+        help: 48,
+        gap: 8,
+      }),
+    ).toBe(true)
+    expect(
+      schemeNeedsCompact({
+        available: 1600,
+        brand: 260,
+        status: 280,
+        nav: 420,
+        schemeFull: 220,
+        help: 48,
+        gap: 8,
+      }),
+    ).toBe(false)
 
     window.localStorage.clear()
     render(<App />)
@@ -100,12 +127,13 @@ describe('workstation laptop fit', () => {
     expect(badge.className).toContain('tc-live-badge')
     expect(badge.textContent).toBe('Simulation: Contractor cash, coached')
     expect(badge.getAttribute('title')).toBe('Simulation: Contractor cash, coached')
-    expect(screen.getByTestId('connection-status').className).toContain('tc-connection')
+    expect(screen.queryByTestId('connection-status')).toBeNull()
+    expect(screen.queryByTestId('local-clock')).toBeNull()
     expect(getComputedStyle(screen.getByTestId('app-header')).flexWrap).toBe('nowrap')
     expect(getComputedStyle(screen.getByTestId('app-header')).overflow).toBe('visible')
     expect(getComputedStyle(screen.getByTestId('app-nav')).flexWrap).toBe('nowrap')
     expect(getComputedStyle(screen.getByTestId('app-nav')).overflow).toBe('visible')
-    expect(screen.getByTestId('local-clock')).toBeTruthy()
+    expect(screen.getByTestId('app-header').getAttribute('data-scheme-compact')).toBe('false')
     for (const label of ['Home', 'Customer file', 'Outcome', 'Handoff']) {
       const tab = screen.getByText(label)
       expect(tab.textContent).toBe(label)
@@ -114,7 +142,7 @@ describe('workstation laptop fit', () => {
       expect(tab.getAttribute('style') ?? '').toMatch(/text-align:\s*center/)
     }
     expect(screen.getByTestId('color-scheme')).toBeTruthy()
-    expect(screen.queryByTestId('scheme-menu')).toBeNull()
+    expect(screen.getByTestId('scheme-menu')).toBeTruthy()
     expect(screen.getByTestId('theme-root').style.getPropertyValue('--tc-root-font')).toBe(DEMO_ROOT_FONT)
     expect(screen.getByTestId('theme-root').style.fontSize).toBe('var(--tc-root-live)')
     expect(screen.getByTestId('theme-card').style.width).toBe('100%')

@@ -49,10 +49,10 @@ export function ConfirmDialog({
           gap: 12,
         }}
       >
-        <h2 id="confirm-title" className="tc-text-xl" style={{ margin: 0 }}>
+        <h2 id="confirm-title" className="tc-title" style={{ margin: 0 }}>
           {title}
         </h2>
-        <p id="confirm-body" style={{ margin: 0 }}>
+        <p id="confirm-body" className="tc-prose" style={{ margin: 0 }}>
           {body}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>

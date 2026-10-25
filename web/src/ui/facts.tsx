@@ -9,9 +9,17 @@ const valueStyle: CSSProperties = {
   minWidth: 0,
 }
 
-export function FactGrid({ children, label }: { children: ReactNode; label?: string }) {
+export function FactGrid({
+  children,
+  label,
+  className = 'tc-facts',
+}: {
+  children: ReactNode
+  label?: string
+  className?: string
+}) {
   return (
-    <dl className="tc-facts" aria-label={label}>
+    <dl className={className} aria-label={label}>
       {children}
     </dl>
   )

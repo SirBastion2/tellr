@@ -45,8 +45,26 @@ export const TYPE_STEP_WEIGHT: Record<TypeStep, string> = {
 
 export const TYPE_WEIGHT = {
   body: '400',
+  medium: '500',
   heading: '600',
   strong: '700',
+} as const
+
+/**
+ * Foreground tints mixed with `currentColor` / `--tc-text`.
+ * Soft started at 0.68; that missed WCAG AA on mtb light page (4.45:1).
+ * 0.69 is the lowest value that clears 4.5:1 on every bank surface.
+ */
+export const TYPE_FG = {
+  soft: 0.69,
+  body: 0.85,
+  line: 0.18,
+} as const
+
+export const TYPE_FG_PCT = {
+  soft: `${Math.round(TYPE_FG.soft * 100)}%`,
+  body: `${Math.round(TYPE_FG.body * 100)}%`,
+  line: `${Math.round(TYPE_FG.line * 100)}%`,
 } as const
 
 export const TYPE_LINE_ROLE = {
@@ -87,10 +105,12 @@ export const TYPE_ROLE = {
   pill: 'sm',
   nav: 'sm',
   kv: 'sm',
+  label: 'sm',
   pattern: 'sm',
   chip: 'sm',
   body: 'base',
   section: 'base',
+  tag: 'xs',
   caption: 'base',
   header: 'lg',
   level: 'lg',
@@ -144,8 +164,12 @@ export const TYPE_VARS: Record<string, string> = {
   '--tc-type-line-heading': TYPE_LINE_ROLE.heading,
   '--tc-type-line-ui': TYPE_LINE_ROLE.ui,
   '--tc-font-weight': TYPE_WEIGHT.body,
+  '--tc-weight-medium': TYPE_WEIGHT.medium,
   '--tc-heading-weight': TYPE_WEIGHT.heading,
   '--tc-strong-weight': TYPE_WEIGHT.strong,
+  '--tc-fg-soft-pct': TYPE_FG_PCT.soft,
+  '--tc-fg-body-pct': TYPE_FG_PCT.body,
+  '--tc-fg-line-pct': TYPE_FG_PCT.line,
   '--tc-wordmark-weight': TYPE_WEIGHT.heading,
   '--tc-wordmark-tracking': TYPE_TRACKING.wordmark,
   '--tc-kicker-tracking': TYPE_TRACKING.kicker,

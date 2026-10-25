@@ -28,9 +28,6 @@ export const PROGRESS_DOTS = 5
 /** Demo layout root size. Applied on `html` so rem tokens scale once. */
 export const DEMO_ROOT_FONT = TYPE_ROOT.demo
 
-/** Header Light/Dark/System segment collapses at this container and viewport width. */
-export const HEADER_SCHEME_COLLAPSE_PX = 1280
-
 /**
  * Shared workstation density. `index.css` and `vars.ts` read these so type,
  * gaps, and cards scale in one place instead of per component.
@@ -67,6 +64,7 @@ export const DENSITY = {
   shadowCard: '0 16px 40px rgba(0, 0, 0, 0.28)',
   glassBlur: '20px',
   fontWeight: TYPE_WEIGHT.body,
+  mediumWeight: TYPE_WEIGHT.medium,
   headingWeight: TYPE_WEIGHT.heading,
   strongWeight: TYPE_WEIGHT.strong,
   wordmarkWeight: TYPE_WEIGHT.heading,
@@ -112,8 +110,6 @@ export const DENSITY = {
   playMinWidth: '7.5rem',
   /** `m:ss` with room for `10:00`. */
   timerMinWidth: '5ch',
-  /** Longest `h:mm AM` / `12:00 PM` slot; tabular-nums, not the whole pill. */
-  clockMinWidth: '8ch',
   speedMinWidth: '2.75rem',
   caseLinkMinWidth: '9.5rem',
   /** Room for a 2px outline + 2px offset + 3px ring outside the clip edge. */

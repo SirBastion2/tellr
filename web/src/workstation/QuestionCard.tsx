@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
-import { controlStyle, inputFill, mutedColor, textColor } from '../theme/controls'
+import { controlStyle, inputFill, textColor } from '../theme/controls'
 import type { AnswerChipId, AnswerPost, Library, QuestionView } from '../types'
 
 const QUIET_OPACITY = 0.7
@@ -123,7 +123,7 @@ export function QuestionCard({
           ),
         )}
       </div>
-      <p data-testid="question-why" style={{ margin: 0, color: mutedColor }}>
+      <p data-testid="question-why" className="tc-prose" style={{ margin: 0 }}>
         {question.why}
       </p>
     </article>

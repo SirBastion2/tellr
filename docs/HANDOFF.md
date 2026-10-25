@@ -2344,6 +2344,109 @@ GATE PASS (b)
 
 ---
 
+### [B] Header fit after #107: drop clock and Live API pill — Agent B1 — 2026-10-25 06:08
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 186 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  51 passed (51)
+      Tests  186 passed (186)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/App.tsx`, `web/src/index.css`, `web/src/theme/scheme.ts`, `web/src/theme/tokens.ts`, `web/src/theme/vars.ts`, `web/src/ui/LocalClock.tsx` (removed), `web/src/ui/localTime.test.tsx`, header/fit/theme tests, `web/scripts/measure-fit.mjs`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - #107 only measured ≤1280, where the hardcoded collapse hid Light/Dark/System. Above that the full segment plus clock plus Live API pill overflowed the header pill (architecture header / UI_REFERENCE).
+  - Removed the header clock and the Live API / connection pill. No replacement indicator. `web/src/ui/localTime.ts` and `web/src/connection.ts` stay for API timestamps and health probe.
+  - Scheme collapse is measured (`schemeNeedsCompact`): brand + hugged sim + nav min-content + full segment + help + gaps vs header content box. Not a 1280px breakpoint. Sim pill may ellipsize (`min-width: 0`) before overflow. Equal `--tc-space-2` padding on both ends.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/113. Do not merge. Merged `origin/main` including #107 and #110. Playwright header table is scratch (gate cannot run a committed Playwright header test). No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+
+---
+
+### [B] Shared type hierarchy for fact rows and subheads — Agent B1 — 2026-10-25 06:09
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 190 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  53 passed (53)
+      Tests  190 passed (190)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/theme/typeScale.ts`, `web/src/theme/tokens.ts`, `web/src/theme/vars.ts`, `web/src/index.css`, `web/src/ui/facts.tsx`, `web/src/ui/ShortcutHelp.tsx`, `web/src/ui/ConfirmDialog.tsx`, `web/src/workstation/TransactionPanel.tsx`, `web/src/workstation/CopilotStrip.tsx`, `web/src/workstation/ExplanationPanel.tsx`, `web/src/workstation/QuestionCard.tsx`, `web/src/screens/HomeScreen.tsx`, `web/src/screens/CustomerFileScreen.tsx`, `web/src/screens/OutcomeScreen.tsx`, `web/src/screens/HandoffScreen.tsx`, `web/src/screens/ContextScreen.tsx`, `web/src/screens/InterviewScreen.tsx`, `web/src/screens/HealthScreen.tsx`, `web/src/screens/HistoryScreen.tsx`, `web/src/typeHierarchy.test.tsx`, `web/src/themeContrast.test.ts`, other web tests, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - One shared system: fact rows (`tc-kv` / `tc-facts` / `tc-fact-term` / `tc-fact-value`), uppercase tags (`tc-kicker` / `tc-section-heading`), body (`tc-prose`), block rules (`tc-block`). No per-screen type CSS. `web/` still does not compute risk, level, reasons, or the next question (architecture §9, §12).
+  - Labels are `--tc-text-sm` / weight 500 / `--tc-fg-soft-pct`. Values are bold 700 at full strength. Amount stays `--tc-text-2xl`. Body is `--tc-text-base` (closest step to 15px) at 85%. Tags match Read-aloud script. `STEP n` stays `tc-kicker` with no divider.
+  - Soft tint started at 68% and failed AA on mtb light page (4.45:1). Raised to **69%**, the lowest value that clears 4.5:1 on every bank surface. Header / nav / buttons / pills untouched.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/112. Do not merge. Merged `origin/main` including #111 cutoff rows; those rows now use `tc-prose`. No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+
+---
+
+### [B] Merge #113 header into the type-hierarchy branch — Agent B1 — 2026-10-25 06:32
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 191 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  53 passed (53)
+      Tests  191 passed (191)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merge of `origin/main` (`2ea2ec8`, #113) into `cursor/type-hierarchy-2ec2`. Conflicts: `ARCHITECTURE.md`, `docs/HANDOFF.md`.
+- **Decisions I made, and the section that justified each:**
+  - Kept #112 label/value typography on every screen (`--tc-text-sm` / weight 500 / `--tc-fg-soft-pct` labels, bold values, shared tags and prose). Header, nav, buttons, and pills stay as #113 left them (architecture header / UI_REFERENCE).
+  - Header has no clock and no Live API pill. Scheme collapse stays measured (`schemeNeedsCompact`). Equal `--tc-space-2` padding on both ends. `web/src/ui/LocalClock.tsx` stays removed.
+  - `ARCHITECTURE.md` scheme row is #113; type-scale row keeps the #112 tints. Toolbar row no longer says the clock sits in the header, because that file was removed.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/112. Do not open a new PR. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos.
+
+---
+
+### [B] Center signal confirm and dismiss icons — Agent B1 — 2026-10-25 06:51
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 192 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  53 passed (53)
+      Tests  192 passed (192)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/workstation/CopilotStrip.tsx`, `web/src/ui/icons.tsx`, `web/src/workstation.test.tsx`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Confirm (✓) and dismiss (✕) stay the 48px circles on the copilot signal rows (`CopilotStrip`, architecture workstation). Both use grid `place-items: center`, `line-height: 1`, and padding 0 so the inline SVG sits in the middle of the circle. Size, fill, border, and radius are unchanged. The same styles apply in tellr, pnc, mtb, and fnb because those banks share the control.
+  - The check stroke was half a unit right of the 24 viewBox center. Shifted that path left by 0.5 so the ink is centered. The X path was already centered.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/114. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos. ARCHITECTURE.md unchanged (no files moved).
+
+---
+
 ### [B] Copilot level icon sits in the pill — Cloud agent — 2026-10-25 06:52
 - **Status:** done
 - **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 187 tests, contract OK)
@@ -2366,5 +2469,31 @@ GATE PASS (b)
   - The icon now sits inside `.tc-level-badge`, which is already `inline-flex` and `align-items: center` (same placement as Handoff). `.tc-level-badge svg` is `display: block; flex: 0 0 auto; align-self: center` so Clear, Caution, and High share one 20×20 box. Pill padding, type, colors, and min-height are unchanged.
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/115. Do not merge. No contract / engine / library / golden edits. No new dependency. No screenshots or videos. ARCHITECTURE.md unchanged (no files moved).
+
+---
+
+### [B] Merge main into the copilot level-icon branch — Cloud agent — 2026-10-25 06:56
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 193 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  53 passed (53)
+      Tests  193 passed (193)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merge of `origin/main` (`d9e0b4e`, #114) into `cursor/copilot-level-icon-align-8049`. Conflict: `docs/HANDOFF.md`. `web/src/workstation/CopilotStrip.tsx` and `web/src/index.css` auto-merged.
+- **Decisions I made, and the section that justified each:**
+  - Kept #115: the level icon stays inside `.tc-level-badge` (`inline-flex`, svg `display: block; flex: 0 0 auto; align-self: center`). ARCHITECTURE workstation: the level is an icon plus a word.
+  - Kept #114: confirm (✓) and dismiss (✕) stay the 48px circles with grid `place-items: center` and the check path `M4.5 12l5 5L19.5 7`.
+  - Kept main's header (no clock, no Live API pill), shared type hierarchy, and fact grid. No new UI. `ARCHITECTURE.md` already matched main; this branch moved no files.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/115. Do not open a new PR. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos.
 
 

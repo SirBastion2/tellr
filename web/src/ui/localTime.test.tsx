@@ -1,27 +1,18 @@
-import { act, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { LocalClock } from './LocalClock'
+import { describe, expect, it } from 'vitest'
 import {
   formatLocalDateTime,
   formatOffsetIso,
   formatTimeOfDay,
+  msUntilNextMinute,
   parseTimestamp,
 } from './localTime'
 import { activityTime } from './plain'
 
 describe('local time of day', () => {
-  afterEach(() => {
-    vi.useRealTimers()
-  })
-
   it("UTC 05:17 on a UTC-4 client renders 1:17", () => {
     const utc = new Date('2026-10-25T05:17:00.000Z')
     expect(formatTimeOfDay(utc, 'America/New_York')).toBe('1:17 AM')
     expect(formatTimeOfDay(utc, 'America/New_York')).not.toMatch(/5:17/)
-
-    render(<LocalClock now={utc} timeZone="America/New_York" />)
-    expect(screen.getByTestId('local-clock').textContent).toBe('1:17 AM')
-    expect(screen.getByTestId('local-clock').textContent).not.toMatch(/5:17/)
     expect(activityTime('2026-10-25T05:17:00Z', 'America/New_York')).toMatch(/1:17/)
     expect(activityTime('2026-10-25T05:17:00Z', 'America/New_York')).not.toMatch(/UTC/)
   })
@@ -43,14 +34,8 @@ describe('local time of day', () => {
     expect(parseTimestamp(iso).getTime()).toBe(utc.getTime())
   })
 
-  it('ticks the live clock on the next minute', () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-10-25T05:17:30.000Z'))
-    render(<LocalClock timeZone="America/New_York" />)
-    expect(screen.getByTestId('local-clock').textContent).toBe('1:17 AM')
-    act(() => {
-      vi.advanceTimersByTime(30_000)
-    })
-    expect(screen.getByTestId('local-clock').textContent).toBe('1:18 AM')
+  it('reports milliseconds until the next minute for request pacing', () => {
+    expect(msUntilNextMinute(new Date('2026-10-25T05:17:30.000Z').getTime())).toBe(30_000)
+    expect(msUntilNextMinute(new Date('2026-10-25T05:17:00.000Z').getTime())).toBe(60_000)
   })
 })

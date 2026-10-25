@@ -52,7 +52,7 @@ export function HomeScreen({
       <div className="tc-stack-heading">
         <h2 className="tc-title">Workstation</h2>
         {library ? (
-          <p className="tc-prose" style={{ margin: 0, maxWidth: '70ch', fontSize: 'var(--tc-text-sm)' }}>
+          <p className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
             Library <span data-testid="library-version">{library.library_version}</span>
             {' · '}
             Copy status <span data-testid="copy-status">{library.copy_status}</span>
