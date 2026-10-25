@@ -362,6 +362,39 @@ button[data-loading='true'],
   align-content: start;
 }
 
+.tc-score-line {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: var(--tc-space-2, 8px);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.tc-explain-anchor {
+  position: relative;
+  z-index: 2;
+  height: 0;
+}
+
+.tc-explain-overlay {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: calc(-1 * var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)));
+  right: calc(-1 * var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)));
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background: var(--tc-surface, #1e1b4b);
+  color: var(--tc-text, #ffffff);
+  border: 1px solid var(--tc-glass-border, #1c1917);
+  border-radius: var(--tc-radius-card, 16px);
+  padding: var(--tc-space-card-fluid, clamp(10px, 1vw, 16px));
+}
+
 .tc-factor-list {
   list-style: none;
   margin: 0;
