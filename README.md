@@ -1,20 +1,21 @@
 # tellr
 
-## Summary
+tellr is an interview aid for a teller at a fast counter; the teller always decides.
 
-- tellr is an interview aid for a teller at a fast counter. It suggests a level, a next step, and words to say. The teller still decides. [How a teller uses it](#how-a-teller-uses-it)
-- The demo is five scripted synthetic customers on a timer. A real visit is a live session with no scenario, scored by the engine from the teller's taps. [The demo and a real visit](#the-demo-and-a-real-visit)
-- The question picker is Meta-Llama-3.1-8B-Instruct (Q4_K_M). Sebastian states an RTX 5070 was used to train it. That training run is not written down here. The model returns a question ID only. [The Llama 8B](#the-llama-8b)
-- Headline bench: 8B total p50 463.6 ms (typical reply) and p95 482.7 ms (slow end), both under the 1.5 second pause budget. On 30 dev scenarios the live 8B caught 14/15 coached visits (Caution or High) and false-flagged 0/15 genuine visits (none marked High), mean 3.10 questions, matching the rules. [Latency bench (A-03)](#latency-bench-a-03) · [Development set (30 scenarios)](#development-set-30-scenarios)
-- Stack: Python 3.12 engine, React screen, SQLite log. Measured inference ran on an RTX 5070 Laptop. Training hardware is Sebastian's RTX 5070 statement. [Specs and tech stack](#specs-and-tech-stack)
-- Four bank themes (tellr, pnc, mtb, fnb) share one layout. Color, font, and the brand mark change. At the counter the teller opens a live session, taps chips, and records the outcome. [How it's built](#how-its-built) · [How it would actually be used](#how-it-would-actually-be-used)
-- A person makes the final call. The copilot suggests and does not approve or deny. The demo is scripted, the model has not beaten the rules, and no compliance sign-off is in the repo. [Responsible use](#responsible-use) · [Safety and bank concerns](#safety-and-bank-concerns) · [Limitations / what's scripted](#limitations--whats-scripted)
-- Two people steered and agents wrote the code. We ran up to 12 agents in parallel, scaling up or down with the task, for roster cards and UI fixes alike. [How we built it](#how-we-built-it)
-- Entered in the HackPSU Grand Prize, the FNB Challenge, the Nittany AI Challenge, and MLH SpaceXSI. [Entered in](#entered-in)
+## At a glance
 
-Teller Copilot (tellr) is a teller-facing interview aid. It keeps an append-only log of what the teller records, folds that log into a score and a level, and may ask a local model for the next question ID. The teller still chooses what happens to the transaction. It was built at HackPSU Fall 2026 by two people and a set of Cursor agents, against a frozen contract between the engine and the screen (`ARCHITECTURE.md`; `docs/architecture.md` §0–§3).
+| Topic | In one line |
+|---|---|
+| What it is | Interview aid; the teller always decides. |
+| Demo | 5 scripted synthetic customers, real engine behind it. |
+| Real use | Live session, scored by the engine. |
+| Model | Llama 3.1 8B picks the next question, benchmarks below. |
+| Speed | p50 463.6 ms, p95 482.7 ms, under the 1.5 s budget. |
+| Accuracy | 14/15 coached caught, 0/15 false flags on the 30-scenario dev set. |
+| Built with | 4 bank themes, Cursor agents, up to 12 in parallel. |
+| Entered in | HackPSU Grand Prize, FNB, Nittany AI, MLH SpaceXSI. |
 
-The hard moment is the counter. A customer is standing there, the low-risk path is meant to finish in under 60 seconds, and a multi-second blank screen is dead air the teller has to fill. The screen is built against a 1.5 second budget on slow taps. That budget is a p95: the 95th percentile of the wait from a chip tap to the next question, so in a measured sample about 95% of waits are that fast or faster. The product suggests. It does not approve or deny (`docs/architecture.md` §1, §9).
+**Jump to:** [How a teller uses it](#how-a-teller-uses-it) · [Demo vs real](#the-demo-and-a-real-visit) · [Llama 8B and benchmarks](#the-llama-8b) · [Specs](#specs-and-tech-stack) · [Safety](#safety-and-bank-concerns) · [Limitations](#limitations--whats-scripted) · [How we built it](#how-we-built-it)
 
 ## How a teller uses it
 
@@ -25,7 +26,6 @@ The copilot shows:
 - **Level.** An icon plus a word: Clear, Caution, or High. Colour is not the only cue (`docs/architecture.md` §12; `ARCHITECTURE.md`).
 - **Urgency Score.** The server score over the contract maximum, shown as `<score>/<max>`. The score is clamped at +100 (`ARCHITECTURE.md`; `docs/architecture.md` §6.2). Clear is below 25, Caution starts at 25, and High concern starts at 60 (`docs/architecture.md` §6.3).
 - **Suggested action.** `talk_track.action` when the server sends one: a short imperative, not a question (`contract/api.md`, CHANGE-007; `ARCHITECTURE.md`).
-- **Read-aloud script.** The label plus `talk_track.lines`. That is the wording the teller can say (`ARCHITECTURE.md`).
 - **Signals.** Chips the teller can confirm, dismiss, or restore. A teller-sourced chip can read "Teller confirmed." The copilot row hides an "Observed" badge (`docs/handoff/20261025-0828-signal-rows-no-observed.md`).
 - **Why this level.** The score explanation: what raised it, what would lower it, a strength word, and collapsed technical details. The panel places server fields. It does not rescore them (`ARCHITECTURE.md`).
 - **Timeline.** Step, elapsed time, and speaker. Amounts and phrases such as "on the phone" and "cash" are bold. Speaker is "Customer" (`ARCHITECTURE.md`).
@@ -37,7 +37,7 @@ Risk, level, reasons, and the next question are computed by the engine. The web 
 
 ## Responsible use
 
-The teller makes the final call. The outcome is a human event, and it requires an actor. No endpoint approves or denies the withdrawal. The copilot suggests a level, a next action, and words to say. Why this level is the score explanation: what raised it, what would lower it, and a strength word taken from the weights in that response. The panel shows those server fields. It does not compute a new score (`docs/architecture.md` §1, §9; `ARCHITECTURE.md`; `contract/api.md`).
+The teller makes the final call. The outcome is a human event, and it requires an actor. No endpoint approves or denies the withdrawal. The copilot suggests a level and a next action. Why this level is the score explanation: what raised it, what would lower it, and a strength word taken from the weights in that response. The panel shows those server fields. It does not compute a new score (`docs/architecture.md` §1, §9; `ARCHITECTURE.md`; `contract/api.md`).
 
 ## The demo and a real visit
 
@@ -69,7 +69,7 @@ This is the deployment the spec describes. It is separate from the scripted demo
 1. The teller opens a **live** session and records an amount band. The API refuses a scenario on that session. A feed that pulls the transaction from a bank's core system is **not built yet** (`contract/api.md`; `docs/architecture.md` §14.1).
 2. The teller taps what they see and how the customer answered. Those chips are the inputs (`docs/architecture.md` §4, §5.6–§5.7).
 3. The engine folds that log into an urgency score, a level, reasons, and a pattern. The screen displays that result (`docs/architecture.md` §6, §12).
-4. The copilot shows the suggested action and the read-aloud lines from the library talk track. When another question is needed, the rules choose it, or the local model returns one allowed question ID (`docs/architecture.md` §7.4; `library/talk_tracks.yaml`).
+4. The copilot shows the suggested action. When another question is needed, the rules choose it, or the local model returns one allowed question ID (`docs/architecture.md` §7.4; `library/talk_tracks.yaml`).
 5. The teller chooses proceed, slow down, escalate, or report. That choice is stored with a human actor, and the visit closes (`docs/architecture.md` §4, §9).
 
 If the model is slower than 1.5 seconds, or the GPU is down, that turn uses the rule engine. The rules-only path was walked end to end (`docs/architecture.md` §14.2; `docs/DECISIONS.md`, Hour 8).
@@ -252,12 +252,12 @@ The engine does the thinking that can be checked. The screen shows it. The 8B on
 
 The words on screen, and the bank chrome, are files. The model does not write them. There is no settings screen for editing them. A settings endpoint was rejected (`docs/DECISIONS.md`, Hour 2; `contract/api.md`).
 
-- **Read-aloud scripts.** `library/talk_tracks.yaml` holds a short action, the lines the teller can say, and an avoid list of phrases not to use. The engine uses the track for the suggested outcome, and adds a pattern's lines only while that pattern is displayed (`engine/rules.py`; `docs/architecture.md` §7).
+- **Suggested action.** `library/talk_tracks.yaml` holds the short action the copilot shows, and an avoid list of phrases not to use. The engine uses the track for the suggested outcome (`engine/rules.py`; `docs/architecture.md` §7).
 - **Factor reasons.** Every signal in `library/signals.yaml` has a rationale. The library refuses to boot if that text is blank. The rationale is the only explanation text the product shows (`engine/library.py`; `docs/architecture.md` §5.5).
 - **Questions.** The question text and its one-line why live in the library. The model returns an ID. The screen looks the words up (`docs/architecture.md` §7.4).
 - **Bank themes.** Each bank is one file in `web/src/theme/themes/`. It sets color, font, and the brand mark. Layout and scoring stay the same (`ARCHITECTURE.md`).
 
-Customizing this repo means editing those files. A new theme is a new file. A new reason is a rationale. A new script is a talk track. Score weights are a different matter: they are frozen at `weights-frozen`, and the golden tests keep using `tests/golden/reference_weights.yaml` (`docs/handoff/000-archive.md`, [A-07]; `WORKFLOW.md` §4). An editor inside the app is **not built yet**.
+Customizing this repo means editing those files. A new theme is a new file. A new reason is a rationale. Score weights are a different matter: they are frozen at `weights-frozen`, and the golden tests keep using `tests/golden/reference_weights.yaml` (`docs/handoff/000-archive.md`, [A-07]; `WORKFLOW.md` §4). An editor inside the app is **not built yet**.
 
 ## Safety and bank concerns
 
@@ -276,7 +276,7 @@ Two people steered. The agents wrote the code. Driver A, Sebastian, watched the 
 
 Each task or fix got a fresh AI agent and its own branch. Agents worked side by side. They told each other which files they owned, using a one-page map (`ARCHITECTURE.md`) and a short handoff note, so two agents were not editing the same place. A shared file has one owner. The agreement between the engine and the screen stays frozen unless both drivers approve a written change (`docs/ROSTER.md` §3; `WORKFLOW.md` §5; `docs/HANDOFF.md`).
 
-We ran up to 12 agents in parallel. The number moved with the task: more agents when there was more to do, fewer when there was not, for roster cards and UI fixes alike.
+We ran up to 12 agents in parallel.
 
 The life of a change:
 
