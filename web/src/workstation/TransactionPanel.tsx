@@ -10,7 +10,7 @@ function eventSpeaker(event: CustomerEvent, names: readonly string[]): string {
   return displaySpeaker(event.kind, event.speaker, names)
 }
 
-/** The card always labels the step on screen as Step 1. Older beats sit to its right on the timeline. */
+/** The card labels the step on screen with its real step number, counting up as the demo plays. */
 function stepStamp(customer: CustomerFile, fired: number): { stamp: string; text: string } {
   const names = personalNamesFrom(customer.profile.name)
   const current = customer.events[fired - 1]
@@ -19,7 +19,7 @@ function stepStamp(customer: CustomerFile, fired: number): { stamp: string; text
   }
   const elapsed = timelineElapsedMs(customer.events, fired)
   return {
-    stamp: `Step 1 · ${formatElapsed(elapsed)} · ${eventSpeaker(current, names)}`,
+    stamp: `Step ${fired} · ${formatElapsed(elapsed)} · ${eventSpeaker(current, names)}`,
     text: redactPersonalCopy(current.text, names),
   }
 }

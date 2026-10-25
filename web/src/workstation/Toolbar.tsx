@@ -194,7 +194,6 @@ export function PlaybackBar({ demo }: { demo: DemoView }) {
       return null
     }
     const state = step < demo.index ? 'past' : step === demo.index ? 'current' : 'future'
-    const outward = step === demo.index ? 1 : step < demo.index ? demo.index - step + 1 : step - demo.index + 1
     return (
       <button
         key={event.id}
@@ -204,7 +203,7 @@ export function PlaybackBar({ demo }: { demo: DemoView }) {
         data-step={step}
         data-state={state}
         aria-current={state === 'current' ? 'step' : undefined}
-        aria-label={`Step ${outward}`}
+        aria-label={`Step ${step}`}
         onClick={() => demo.onSeek?.(step)}
       />
     )

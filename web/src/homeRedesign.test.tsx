@@ -68,7 +68,7 @@ describe('Home redesign', () => {
     fireEvent.click(screen.getByTestId('demo-step'))
     await waitFor(() => expect(screen.getByTestId('event-marker').textContent).toMatch(/Step 1 · 0:04/))
     fireEvent.click(screen.getByTestId('demo-step'))
-    await waitFor(() => expect(screen.getByTestId('event-marker').textContent).toMatch(/Step 1 · 0:18/))
+    await waitFor(() => expect(screen.getByTestId('event-marker').textContent).toMatch(/Step 2 · 0:18/))
     expect(screen.getAllByTestId('demo-event')).toHaveLength(1)
     const dotsAtTwo = screen.getAllByTestId('step-dot')
     expect(dotsAtTwo[0]?.getAttribute('data-step')).toBe('2')
@@ -89,7 +89,7 @@ describe('Home redesign', () => {
     const third = screen.getAllByTestId('step-dot').find((dot) => dot.getAttribute('data-step') === '3')
     expect(third).toBeTruthy()
     fireEvent.click(third!)
-    await waitFor(() => expect(screen.getByTestId('event-marker').textContent).toMatch(/Step 1 · 0:32/))
+    await waitFor(() => expect(screen.getByTestId('event-marker').textContent).toMatch(/Step 3 · 0:32/))
     expect(screen.getByTestId('step-viewport').getAttribute('data-motion')).toBe('forward')
     const shown = screen.getAllByTestId('step-dot')
     expect(shown[0]?.getAttribute('data-step')).toBe('3')
@@ -177,12 +177,12 @@ describe('Home redesign', () => {
 
       view.rerender(<StepCard customer={customer} fired={2} playing />)
       expect(screen.getByTestId('demo-event').getAttribute('data-revealed')).toBe('pulse')
-      expect(screen.getByTestId('event-caption').textContent).toMatch(/Step 1 · 0:18/)
+      expect(screen.getByTestId('event-caption').textContent).toMatch(/Step 2 · 0:18/)
       act(() => {
         vi.advanceTimersByTime(2500)
       })
       expect(screen.getByTestId('demo-event').getAttribute('data-revealed')).toBe('idle')
-      expect(screen.getByTestId('event-caption').textContent).toMatch(/Step 1 · 0:18/)
+      expect(screen.getByTestId('event-caption').textContent).toMatch(/Step 2 · 0:18/)
     } finally {
       vi.useRealTimers()
     }

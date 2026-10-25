@@ -2456,32 +2456,48 @@ body {
   position: relative;
   left: auto;
   width: auto;
-  max-width: 100%;
+  max-width: none;
   top: auto;
   transform: none;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: calc(8 * var(--u));
-  flex: 0 1 auto;
+  gap: calc(62 * var(--u));
+  flex: 0 0 auto;
   min-width: 0;
   pointer-events: auto;
   opacity: 1;
   visibility: visible;
 }
 
-.tc-stage .tc-dots::before,
+/* The track line is drawn as short segments behind the following dots only,
+   so it never runs through the current-step ring or the playback arrows. */
+.tc-stage .tc-dots::before {
+  display: none;
+}
+
+.tc-stage .tc-dots .tc-step-dot:not(:first-child)::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: calc(62 * var(--u));
+  height: calc(2 * var(--u));
+  background: color-mix(in srgb, var(--tc-text) 35%, transparent);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.tc-stage .tc-dots .tc-mini-transport + .tc-step-dot::before {
+  display: none;
+}
+
 .tc-stage .tc-dots .tc-step-dot {
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
 }
 
-.tc-stage:has(.tc-step-zone:hover) .tc-dots::before,
-.tc-stage:has(.tc-step-zone:focus-within) .tc-dots::before,
-.tc-stage:has(.tc-step-block:hover) .tc-dots::before,
-.tc-stage:has(.tc-step-block:focus-within) .tc-dots::before,
-.tc-stage:has(.tc-timeline-row:hover) .tc-dots::before,
 .tc-stage:has(.tc-step-zone:hover) .tc-dots .tc-step-dot,
 .tc-stage:has(.tc-step-zone:focus-within) .tc-dots .tc-step-dot,
 .tc-stage:has(.tc-step-block:hover) .tc-dots .tc-step-dot,
@@ -2500,6 +2516,8 @@ body {
 }
 
 .tc-stage .tc-playback .tc-mini-transport {
+  margin-left: calc(-30 * var(--u));
+  margin-right: calc(-6 * var(--u));
   position: relative;
   left: auto;
   top: auto;
@@ -3014,6 +3032,7 @@ body {
   line-height: var(--tc-text-sm-lh);
 }
 
+
 /*
   Handoff card on the 1024×576 stage. 1u is one design pixel at 1024.
   The box is x 193–818, y 114–515, radius 45. The header rule sits at y 211.
@@ -3334,3 +3353,121 @@ body {
   }
 }
 /* handoff-design:end */
+
+/* Copilot: urgency, suggested action and reason stay fixed. Only the signal rows scroll. */
+.tc-stage .tc-home .tc-strip .tc-strip-body {
+  overflow: hidden;
+}
+
+.tc-stage .tc-home .tc-strip .tc-strip-body > ul[aria-label='Signals'] {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, currentColor 40%, transparent) transparent;
+}
+
+/* Credit line removed from the stage so the timeline and arrows have the whole footer. */
+.tc-stage .tc-footer {
+  display: none !important;
+}
+
+/* Keep the Teller's Decision field and its focus ring from being clipped by the scrolling body. */
+.tc-stage .tc-outcome-body {
+  padding: max(6px, calc(6 * var(--u)));
+}
+
+/* Urgency explanation overlay: same translucent glass as the Copilot panel, same text colors. */
+.tc-stage .tc-home .tc-strip:has(.tc-explain-overlay:not([hidden])) > :not(.tc-explain-overlay) {
+  visibility: hidden;
+}
+
+.tc-stage .tc-home .tc-strip .tc-explain-overlay {
+  background: transparent;
+  color: var(--tc-text);
+  border: 0;
+  border-radius: calc(45 * var(--u));
+}
+
+.tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-title {
+  background: transparent;
+  color: var(--tc-text);
+  font-size: calc(18 * var(--u));
+}
+
+.tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-fact-term {
+  color: color-mix(in srgb, var(--tc-text) 65%, transparent);
+}
+
+.tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-fact-value,
+.tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-factor-head,
+.tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-factor-strength,
+.tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-factor-why,
+.tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-prose {
+  color: var(--tc-text);
+  font-size: calc(13 * var(--u));
+  line-height: 1.35;
+}
+
+.tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-factor-head > * {
+  font-size: calc(13 * var(--u));
+}
+
+.tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-explain-close {
+  background: color-mix(in srgb, var(--tc-text) 16%, transparent);
+  color: var(--tc-text);
+  border: 1px solid color-mix(in srgb, var(--tc-text) 35%, transparent);
+}
+
+.tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-meter {
+  background: color-mix(in srgb, var(--tc-text) 20%, transparent);
+}
+
+/* Case file: heading on its own line, labels and values share one aligned two-column grid. */
+.tc-stage .tc-case-half .tc-facts {
+  grid-template-columns: calc(109 * var(--u)) minmax(0, 1fr);
+  column-gap: calc(10 * var(--u));
+}
+
+.tc-stage .tc-case-half .tc-fact-term,
+.tc-stage .tc-case-half .tc-facts dt {
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+}
+
+.tc-stage .tc-case-file {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.tc-stage .tc-case-file .tc-section-heading {
+  grid-row: auto;
+}
+
+.tc-stage .tc-case-file .tc-kv {
+  grid-column: 1;
+}
+
+/* Customer picker: wide enough that the scenario name fits inside the pill. */
+.tc-stage .tc-home-column .tc-toolbar-customer,
+.tc-stage .tc-home-column .tc-toolbar-customer select {
+  width: calc(250 * var(--u));
+  max-width: calc(270 * var(--u));
+}
+
+.tc-stage .tc-home-column .tc-toolbar-customer select {
+  font-size: calc(12 * var(--u));
+  padding-right: calc(24 * var(--u));
+  text-overflow: ellipsis;
+}
+
+/* Left card: give the case file the larger share so its last row is never clipped. */
+.tc-stage .tc-case-half {
+  flex-grow: 1.4;
+}
+
+.tc-stage .tc-case-half .tc-facts {
+  grid-template-columns: calc(120 * var(--u)) minmax(0, 1fr);
+}
