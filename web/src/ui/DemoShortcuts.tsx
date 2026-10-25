@@ -33,7 +33,9 @@ const DISPATCH: Readonly<Record<DemoShortcut, keyof DemoShortcutHandlers>> = {
  */
 export function useDemoShortcuts(handlers: DemoShortcutHandlers): void {
   const ref = useRef(handlers)
-  ref.current = handlers
+  useEffect(() => {
+    ref.current = handlers
+  }, [handlers])
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
