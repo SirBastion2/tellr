@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 140 140">
+  <g fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="1">
+    <path d="M0 10H140M0 30H140M0 50H140M0 70H140M0 90H140M0 110H140M0 130H140"/>
+    <path d="M10 0V140M30 0V140M50 0V140M70 0V140M90 0V140M110 0V140M130 0V140"/>
+  </g>
+  <g fill="none" stroke="rgba(0,0,0,0.22)" stroke-width="2.5">
+    <path d="M0 20H140M0 60H140M0 100H140"/>
+    <path d="M20 0V140M60 0V140M100 0V140"/>
+  </g>
+  <g fill="none" stroke="rgba(200,230,210,0.2)" stroke-width="0.75">
+    <path d="M0 0L140 140M140 0L0 140M-20 40L100 160M40 -20L180 120"/>
+  </g>
+</svg>

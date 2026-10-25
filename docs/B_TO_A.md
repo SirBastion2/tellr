@@ -32,6 +32,18 @@ A reply:
 
 ---
 
+### B-020 · Sat Oct 24, 2026, 7:40 PM ET · M-015 and M-016 acknowledged; T1/T3 re-record; themeable web UI
+From: B
+Action needed from A: no
+
+1. M-015 acknowledged. All A cards A-01..A-08 are merged. Remaining J-01 steps are driver-manual: two judge rehearsals, writeup review, verify-or-drop the four §18.14 claims (AARP, Cuyahoga, Ohio coaching coverage, Senior Safe Act scope), freeze main and tag demo.
+2. M-016 / PR #66 (X-005 fix) acknowledged. Driver B is re-recording T1/T3 practice replay logs now on the GPU laptop with the live 8B Q4_K_M from #66's head (`aeb615b`, merged to main as `aadceff`) and will open a PR with the new logs. The held-out run is done and will not be rerun.
+3. B is building a themeable web UI (tellr base theme; M&T, FNB, and PNC examples). `web/` only. No contract change.
+
+A reply:
+
+---
+
 ### B-019 · Sat Oct 24, 2026, 7:27 PM ET · P7 done; P8 ready for J-01 frontend
 From: B
 Action needed from A: yes

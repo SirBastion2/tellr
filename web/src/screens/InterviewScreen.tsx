@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
+import { controlStyle, inputFill, mutedColor, textColor } from '../theme/controls'
 import type { AnswerChipId, AnswerPost, Level, Library, QuestionView, SessionState } from '../types'
 
 const LEVELS: readonly { id: Level; label: string; colour: string }[] = [
@@ -9,16 +10,11 @@ const LEVELS: readonly { id: Level; label: string; colour: string }[] = [
 ]
 
 const RECOMMENDED_STOP = 'You have enough to decide, or ask one more'
-const INK = '#1c1917'
 const QUIET_OPACITY = 0.7
 
 const tap: CSSProperties = {
-  minHeight: '48px',
-  minWidth: '48px',
-  boxSizing: 'border-box',
-  color: INK,
-  border: `1px solid ${INK}`,
-  backgroundColor: 'transparent',
+  ...controlStyle,
+  padding: '4px',
 }
 
 function chipLabel(library: Library | null, id: string): string {
@@ -118,7 +114,7 @@ function QuestionCard({
         display: 'grid',
         gap: '8px',
         alignContent: 'start',
-        color: INK,
+        color: textColor,
       }}
     >
       <p data-testid="question-text" style={{ margin: 0, fontSize: '18px', lineHeight: 1.3 }}>
@@ -148,7 +144,7 @@ function QuestionCard({
                 style={{
                   ...tap,
                   flex: '0 0 auto',
-                  backgroundColor: selected ? '#e7e5e4' : 'transparent',
+                  backgroundColor: selected ? inputFill : 'transparent',
                 }}
                 onClick={() => setPurposeId(purpose.id)}
               >
@@ -185,7 +181,7 @@ function QuestionCard({
           ),
         )}
       </div>
-      <p data-testid="question-why" style={{ margin: 0 }}>
+      <p data-testid="question-why" style={{ margin: 0, color: mutedColor }}>
         {question.why}
       </p>
     </article>
@@ -216,7 +212,17 @@ export function InterviewScreen({
               alignItems: 'start',
             }}
           >
-            <div style={{ display: 'grid', gap: '8px', alignContent: 'start' }}>
+            <div
+              style={{
+                display: 'grid',
+                gap: '8px',
+                alignContent: 'start',
+                backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                color: '#1c1917',
+                borderRadius: '16px',
+                padding: '12px',
+              }}
+            >
               <p
                 data-testid="risk-level"
                 data-level={level.id}

@@ -11,9 +11,14 @@ export function LiveBadge({ mode }: { mode: Mode | null }) {
         margin: 0,
         whiteSpace: 'nowrap',
         flex: '0 0 auto',
-        border: '1px solid #1c1917',
-        color: '#1c1917',
-        padding: '0 8px',
+        border: '1px solid var(--tc-accent, #1c1917)',
+        color: 'var(--tc-text, #1c1917)',
+        backgroundColor: 'var(--tc-input, transparent)',
+        borderRadius: '999px',
+        padding: '0 12px',
+        minHeight: '48px',
+        display: 'inline-flex',
+        alignItems: 'center',
         fontWeight: 600,
       }}
     >

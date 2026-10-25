@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import type { CSSProperties } from 'react'
 import { Link, BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { listCases } from '../mock/replay'
 import { LiveBadge } from './LiveBadge'
@@ -12,21 +13,25 @@ import { HomeScreen } from './screens/HomeScreen'
 import { InterviewScreen } from './screens/InterviewScreen'
 import { OutcomeScreen } from './screens/OutcomeScreen'
 import { TellerProvider, useTeller } from './teller'
+import { buttonFill, buttonText, controlStyle } from './theme/controls'
+import { ThemeProvider } from './theme/ThemeProvider'
+import { ThemeRoot } from './theme/ThemeRoot'
 import type { AnswerPost, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import type { SchemaIssue } from './validate'
 
-const tap = {
-  minHeight: '48px',
-  minWidth: '48px',
-  boxSizing: 'border-box' as const,
+const tap: CSSProperties = {
+  ...controlStyle,
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: '0 12px',
   flex: '0 0 auto',
-  color: '#1c1917',
-  backgroundColor: 'transparent',
-  border: '1px solid #1c1917',
+}
+
+const actionTap: CSSProperties = {
+  ...tap,
+  backgroundColor: buttonFill,
+  color: buttonText,
+  borderColor: 'transparent',
 }
 
 export function AppShell({
@@ -62,15 +67,8 @@ export function AppShell({
 }) {
   const location = useLocation()
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: '#fafaf9',
-        color: '#1c1917',
-        padding: '8px 12px',
-        boxSizing: 'border-box',
-      }}
-    >
+    <ThemeRoot answers={session?.answers ?? null}>
+      <div style={{ boxSizing: 'border-box', color: 'var(--tc-text, #1c1917)' }}>
       <header
         data-testid="app-header"
         style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: '8px', minHeight: '48px' }}
@@ -100,7 +98,7 @@ export function AppShell({
                   key={route.id}
                   to={path}
                   aria-current={location.pathname === path ? 'page' : undefined}
-                  style={{ ...tap, textDecoration: 'underline' }}
+                  style={{ ...tap, textDecoration: 'none' }}
                 >
                   {path}
                 </Link>
@@ -111,7 +109,7 @@ export function AppShell({
                 key={route.id}
                 to={route.path}
                 aria-current={location.pathname === route.path ? 'page' : undefined}
-                style={{ ...tap, textDecoration: 'underline' }}
+                style={{ ...tap, textDecoration: 'none' }}
               >
                 {route.path}
               </Link>
@@ -119,7 +117,7 @@ export function AppShell({
           })}
         </nav>
         {session ? (
-          <button type="button" data-testid="undo" style={tap} onClick={() => onUndo?.()}>
+          <button type="button" data-testid="undo" style={actionTap} onClick={() => onUndo?.()}>
             Undo
           </button>
         ) : null}
@@ -172,7 +170,8 @@ export function AppShell({
         <Route path="/settings" element={<Navigate to="/health" replace />} />
       </Routes>
       </main>
-    </div>
+      </div>
+    </ThemeRoot>
   )
 }
 
@@ -231,9 +230,11 @@ function ConnectedShell() {
 export function App() {
   return (
     <BrowserRouter>
-      <TellerProvider>
-        <ConnectedShell />
-      </TellerProvider>
+      <ThemeProvider>
+        <TellerProvider>
+          <ConnectedShell />
+        </TellerProvider>
+      </ThemeProvider>
     </BrowserRouter>
   )
 }
