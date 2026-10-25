@@ -286,4 +286,29 @@ Agents append; drivers answer. An open question blocks only the work that depend
   touching frozen fixtures.
 - **Status:** answered: applied as CHANGE-006
 
+### Q-016 · Suggested action card is `question.text` (spoken next question)
+- **Raised by:** suggested-action copy task · **Sections:** architecture §7.1,
+  §11.2, §12; `library/questions.yaml`; `engine/rules.py` `question_view` /
+  `talk_track_for`; `contract/session_state.schema.json`; WORKFLOW.md §5.
+  Full note: `docs/handoff/20261025-0724-suggested-action-copy.md`.
+- **Detail:** The copilot "Suggested action" card renders `SessionState.question.text`
+  (`web/src/workstation/CopilotStrip.tsx` `suggestedAction`). That string is the
+  next question the engine selected. The opener, and every context-chip state in
+  `web/mock/live_levels.json`, is "What's the money for today?"
+  (`q.purpose.open` in `library/questions.yaml`). The read-aloud card is already
+  `talk_track.lines`. Demo scripts (`web/src/demo/customers.ts`) and the four
+  bank themes do not carry a separate action sentence. `question.why` is a
+  rationale. Putting an imperative in `web/` would choose the teller's move on
+  the client (§12). No library, contract, fixture, golden, weight, or
+  `reference_impl.py` edit in this request.
+- **Smallest change-protocol request:** CHANGE-007, extra slot after CHANGE-004,
+  CHANGE-005, and additive CHANGE-006. Optional string `talk_track.action` on
+  SessionState and on each library talk track (not in `required`, so T1–T7 stay
+  byte-identical if `scripts/gen_fixtures.py` omits the key). `talk_track_for`
+  copies it. `lines` / `avoid` / `question.text` stay. Drivers write the
+  imperative copy (drafts are in the handoff note). After apply, re-record the
+  live mock and point `suggestedAction()` at `talk_track.action`. Both drivers
+  approve before R edits `contract/CHANGES.md`.
+- **Status:** open — no code until drivers answer
+
 ---
