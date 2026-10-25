@@ -1,0 +1,12 @@
+### README readable data — 2026-10-25 09:47
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` not run. It checks ruff, pytest, import-linter, and the contract on the Python packages. It does not read `README.md`, so it does not apply to this README-only change.
+- **Changed:** `README.md`, this file. Did not edit `docs/HANDOFF.md`, code, `contract/`, `reference_impl.py`, or golden weights.
+- **Decisions I made, and the section that justified each:**
+  - First sentence now says what Tellr is, what the model gets, and why that is safe for a bank, in plain words. No chip-id jargon in that sentence.
+  - The safety section is a two-column table plus five bullets. Claims were re-checked against `engine/prompt.py` (allowlist: noted signal ids, stated purpose, answer pairs, evidence ids, pattern id, candidate ids with each question's `why`, chip and purpose labels), `engine/reduce.py` and `engine/score.py` (score is evidence only; purpose selects questions; amount band is not folded), `engine/rules.py` (talk-track action), `api/main.py` (rules by default, `127.0.0.1:8080`, hosted only if the recommender is hosted and `HOSTED_LLM_URL` is set, note stored only when sent), `recommenders/select.py` (timeout, server error, or a disallowed id falls back to the rules), `store/sqlite.py` (`account_ref` inserted null), `web/src/teller.tsx` (demo posts no note, memo, dollar amount, or transaction type), `web/src/screens/OutcomeScreen.tsx` (typed teller name), `web/src/workstation/TransactionPanel.tsx` and `web/src/privacy.test.tsx` (case file and the name / age band / gendered-pronoun check with the file open).
+  - Dropped "the model never sees the transaction type." The on-screen type for an above-threshold file is the library label of `chip.above_threshold`, and that label is in the prompt vocabulary. The type field itself is not posted. The bullet says it stays on screen and is not posted.
+  - Replaced the stale "dropping the Observed badge" example. The Handoff screen shows an Observed badge again (`web/src/feed.ts` `handoffReasonBadge`, `docs/handoff/20261025-0935-handoff-observed-badge.md`).
+  - Specs now say we trained the Llama 8B on an RTX 5070 laptop GPU. The training recipe stays an Open item. Body is 125 lines excluding Sources. Sources [1]–[9] are unchanged.
+- **Questions logged:** none
+- **The next agent needs to know:** Do not put the transaction-type string back under "Model never sees" unless the chip vocabulary no longer contains that label. `scripts/gate.sh a` still does not cover README edits.
