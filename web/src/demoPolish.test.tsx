@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mockRequest, resetMock } from '../mock/replay'
 import { App } from './App'
@@ -11,6 +11,14 @@ function http(status: number, body: unknown) {
     status,
     text: () => Promise.resolve(body === undefined ? '' : JSON.stringify(body)),
   })
+}
+
+function elapsedSeconds(text: string | null): number {
+  const match = /^(\d+):(\d{2})$/.exec(text ?? '')
+  if (!match) {
+    throw new Error(`bad elapsed display: ${text}`)
+  }
+  return Number(match[1]) * 60 + Number(match[2])
 }
 
 function installFetch() {
@@ -64,6 +72,76 @@ describe('demo polish', () => {
     expect(screen.getByTestId('elapsed-timer').textContent).toBe('1:00')
     const last = screen.getAllByTestId('event-marker').at(-1)
     expect(last?.textContent).toMatch(/1:00/)
+  })
+
+  it('keeps the displayed elapsed time increasing while a step advances', async () => {
+    vi.useFakeTimers()
+    const release: Array<() => void> = []
+    let holdSessionOpen = false
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input)
+        const method = init?.method ?? 'GET'
+        const body = typeof init?.body === 'string' ? init.body : undefined
+        const path = url.replace(/^https?:\/\/[^/]+/, '')
+        const result = mockRequest(method, path, body ? (JSON.parse(body) as unknown) : undefined)
+        if (holdSessionOpen && method === 'POST' && path === '/sessions') {
+          const payload = {
+            status: result.status,
+            text: () => Promise.resolve(result.body === undefined ? '' : JSON.stringify(result.body)),
+          }
+          return new Promise<typeof payload>((resolve) => {
+            release.push(() => resolve(payload))
+          })
+        }
+        return http(result.status, result.body)
+      }),
+    )
+    try {
+      render(<App />)
+      await act(async () => {
+        await Promise.resolve()
+      })
+      holdSessionOpen = true
+      fireEvent.click(screen.getByTestId('demo-play'))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5_000)
+      })
+      expect(release.length).toBeGreaterThan(0)
+      const atStep = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
+
+      fireEvent.click(screen.getByTestId('demo-speed-2'))
+      fireEvent.click(screen.getByRole('link', { name: 'Customer file' }))
+      expect(screen.getByTestId('customer-screen')).toBeTruthy()
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2_000)
+      })
+      fireEvent.click(screen.getByRole('link', { name: 'Home' }))
+      const during = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
+      expect(during).toBeGreaterThan(atStep)
+
+      await act(async () => {
+        for (const done of release) {
+          done()
+        }
+        await Promise.resolve()
+        await Promise.resolve()
+        await vi.advanceTimersByTimeAsync(250)
+      })
+      const afterStep = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
+      expect(afterStep).toBeGreaterThanOrEqual(during)
+
+      fireEvent.click(screen.getByTestId('demo-play'))
+      const pausedAt = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3_000)
+      })
+      expect(elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)).toBe(pausedAt)
+    } finally {
+      cleanup()
+      vi.useRealTimers()
+    }
   })
 
   it('lists working shortcuts and names the restart confirm Restart', async () => {
