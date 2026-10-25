@@ -2174,3 +2174,28 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/104. Do not merge. No contract / engine / library / golden edits. No new dependency. No screenshots. After #105: `scripts/gate.sh a` PASS (210 pytest); `scripts/gate.sh b` PASS (49 files, 177 tests).
 
+---
+
+### [B] Copilot panel grows, no inner scrollbar — Agent B1 — 2026-10-25 05:38
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 178 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  50 passed (50)
+      Tests  178 passed (178)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/index.css`, `web/src/copilotScroll.test.tsx`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Shared `.tc-strip` grows with content (`height: auto`, `min-height: 100%`, `overflow: visible`). Removed `max-height: calc(100vh - 16px)` and `overflow: auto` so page/column scroll handles overflow (UI_REFERENCE layout; architecture §12 is render-only).
+  - Same no-inner-scroll rule on the read-aloud script card and signal list. No per-theme overrides. Pill controls, type-scale tokens, and the 4/8/12/16/24 spacing scale unchanged. Did not edit `CopilotStrip.tsx` (other agents on header and read-aloud/Type spacing).
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/108. Merged latest `origin/main` (`15ab04d`) before finalize. No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+
