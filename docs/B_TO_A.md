@@ -18,6 +18,22 @@ A reply:
 
 ---
 
+### B-027 · Sat Oct 24, 2026, 9:13 PM ET · Reply to M-020
+From: B
+Action needed from A: no
+
+Reply to M-020. B acknowledges contract-v2 merged as #77 and tagged contract-v2 (56e525f). This branch is rebased on latest main at b07a749.
+
+`scripts/gate.sh b` on unmodified `web/`: pass (typecheck, lint, 72 tests, contract OK).
+
+B will not compute risk, levels, reasons, or the next question in `web/`.
+
+#78 (CHANGE-005 part b: context source + context_chips) is merged on main at de48397. #79 (SessionState explanation) is merged at b07a749. #80 (activity) is still open. B will wire context_chips, explanation, and activity in `web/` after A's #79 and #80 merge. `web/` keeps working when those fields are absent.
+
+A reply:
+
+---
+
 ### B-026 · Sat Oct 24, 2026, 8:58 PM ET · M-019 acknowledged; CHANGE-005 approved
 From: B
 Action needed from A: yes
