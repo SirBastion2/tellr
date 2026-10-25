@@ -41,7 +41,7 @@ function TalkTrack({ library, session }: { library: Library | null; session: Ses
   const avoid = stage?.avoid ?? session.talk_track.avoid
 
   return (
-    <section data-testid="talk-track" className="space-y-2" style={{ maxWidth: '70ch' }}>
+    <section data-testid="talk-track" className="tc-prose space-y-2" style={{ maxWidth: '70ch' }}>
       <ul data-testid="talk-stage-lines">
         {stageLines.map((line, index) => (
           <li key={`stage-${index}`} data-testid="talk-stage-line">
@@ -141,23 +141,23 @@ export function InterviewScreen({
                   )
                 })}
               </ol>
-              <p data-testid="pattern-label" className="tc-text-sm" style={{ margin: 0 }}>
-                {session.risk.pattern_label}
-              </p>
               <FactGrid>
+                <Fact term="Pattern" testId="pattern-label">
+                  {session.risk.pattern_label}
+                </Fact>
                 <Fact term={URGENCY_SCORE_TERM} testId="risk-score">
                   {formatUrgencyScore(session.risk.score)}
                 </Fact>
               </FactGrid>
               {session.stated_purpose ? (
-                <p data-testid="stated-purpose" style={{ margin: 0 }}>
+                <p data-testid="stated-purpose" className="tc-prose" style={{ margin: 0 }}>
                   {purposeLabel(library, session.stated_purpose)}
                 </p>
               ) : null}
               {session.risk.reasons.length > 0 ? (
                 <>
                 <SectionHeading>Why it was flagged</SectionHeading>
-                <ul data-testid="reason-list" style={{ margin: 0, paddingLeft: '1.25rem' }}>
+                <ul data-testid="reason-list" className="tc-prose" style={{ margin: 0, paddingLeft: '1.25rem' }}>
                   {session.risk.reasons.map((reason) => (
                     <li key={reason.id} data-testid="reason">
                       <strong>{reason.label}</strong>
@@ -167,19 +167,19 @@ export function InterviewScreen({
                 </>
               ) : null}
               {session.risk.counterpoint ? (
-                <p data-testid="counterpoint" style={{ margin: 0 }}>
+                <p data-testid="counterpoint" className="tc-prose" style={{ margin: 0 }}>
                   {counterpointPrefix(session.risk.level)} {session.risk.counterpoint.label}
                 </p>
               ) : null}
             </div>
             <div style={{ display: 'grid', gap: '8px', alignContent: 'start' }}>
               {session.stop?.kind === 'recommended' ? (
-                <p data-testid="recommended-stop" data-reason={session.stop.reason} style={{ margin: 0 }}>
+                <p data-testid="recommended-stop" data-reason={session.stop.reason} className="tc-prose" style={{ margin: 0 }}>
                   {RECOMMENDED_STOP}
                 </p>
               ) : null}
               {session.stop?.kind === 'hard' ? (
-                <p data-testid="hard-stop" data-reason={session.stop.reason} style={{ margin: 0 }}>
+                <p data-testid="hard-stop" data-reason={session.stop.reason} className="tc-prose" style={{ margin: 0 }}>
                   {session.stop.reason}
                 </p>
               ) : null}

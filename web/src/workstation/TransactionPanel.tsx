@@ -1,29 +1,11 @@
-import type { CSSProperties, ReactNode } from 'react'
 import { formatElapsed, timelineElapsedMs } from '../demo/clock'
 import type { CustomerEvent, CustomerFile } from '../demo/customers'
 import { Emphasis } from '../ui/emphasis'
-import { SectionHeading } from '../ui/facts'
+import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { displaySpeaker, personalNamesFrom, redactPersonalCopy } from '../ui/privacy'
-
-const label: CSSProperties = {
-  margin: 0,
-}
-
-const value: CSSProperties = { margin: 0 }
 
 function eventSpeaker(event: CustomerEvent, names: readonly string[]): string {
   return displaySpeaker(event.kind, event.speaker, names)
-}
-
-function Row({ term, children }: { term: string; children: ReactNode }) {
-  return (
-    <>
-      <dt className="tc-fact-term" style={label}>
-        {term}
-      </dt>
-      <dd style={value}>{children}</dd>
-    </>
-  )
 }
 
 export function TransactionPanel({
@@ -62,21 +44,21 @@ export function TransactionPanel({
       >
         <Emphasis text={current ? redactPersonalCopy(current.text, names) : 'Press play to start the simulation.'} />
       </p>
-      <dl className="tc-kv">
-        <Row term="Type">
+      <FactGrid className="tc-kv" label="Transaction">
+        <Fact term="Type">
           <span data-testid="txn-type">{customer.transaction.type}</span>
-        </Row>
-        <Row term="Amount">
+        </Fact>
+        <Fact term="Amount">
           <span data-testid="txn-amount" className="tc-amount">
             {customer.transaction.amount}
           </span>
-        </Row>
-        <Row term="Memo">
+        </Fact>
+        <Fact term="Memo">
           <span className="tc-prose" style={{ display: 'block', maxWidth: '70ch' }}>
             <Emphasis text={customer.transaction.memo} />
           </span>
-        </Row>
-      </dl>
+        </Fact>
+      </FactGrid>
       <SectionHeading>Timeline</SectionHeading>
       <ol data-testid="demo-timeline" className="tc-timeline" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid' }}>
         {visible.map((event, index) => {
@@ -126,10 +108,7 @@ export function TransactionPanel({
                 <p className="tc-kicker" data-testid="event-marker" style={{ margin: 0 }}>
                   Step {index + 1} · {formatElapsed(elapsed)} · {eventSpeaker(event, names)}
                 </p>
-                <p
-                  className="tc-prose"
-                  style={{ margin: '4px 0 0', fontWeight: isCurrent ? 'var(--tc-heading-weight)' : 'var(--tc-font-weight)' }}
-                >
+                <p className="tc-prose" style={{ margin: '4px 0 0' }}>
                   <Emphasis text={redactPersonalCopy(event.text, names)} />
                 </p>
               </div>
@@ -140,15 +119,15 @@ export function TransactionPanel({
       {showCase ? (
         <section data-testid="case-file" aria-label="Synthetic case file" className="tc-stack-heading">
           <SectionHeading>Case file</SectionHeading>
-          <dl className="tc-kv">
-            <Row term="Tenure">{customer.profile.tenure}</Row>
-            <Row term="Typical withdrawal">{customer.profile.typicalWithdrawal}</Row>
-            <Row term="Channels">{customer.profile.channels}</Row>
-          </dl>
+          <FactGrid className="tc-kv" label="Case file">
+            <Fact term="Tenure">{customer.profile.tenure}</Fact>
+            <Fact term="Typical withdrawal">{customer.profile.typicalWithdrawal}</Fact>
+            <Fact term="Channels">{customer.profile.channels}</Fact>
+          </FactGrid>
         </section>
       ) : null}
-      <div>
-        <p className="tc-text-base" style={{ margin: 0, fontWeight: 'var(--tc-strong-weight)' }}>
+      <div className="tc-block">
+        <p className="tc-kicker" style={{ margin: 0 }}>
           Event {shown} of {total}
         </p>
         <div

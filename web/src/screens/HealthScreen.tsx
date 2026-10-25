@@ -139,9 +139,19 @@ export function HealthScreen() {
   return (
     <section data-testid="health-screen" className="tc-card">
       <PageTitle>Health</PageTitle>
-      <p data-testid="health-config-note">The decision engine follows the setup from startup. This screen does not change it.</p>
-      {load.kind === 'unavailable' ? <p data-testid="health-unavailable">Health is unavailable.</p> : null}
-      {load.kind === 'invalid' ? <p data-testid="health-invalid">Health response could not be read.</p> : null}
+      <p data-testid="health-config-note" className="tc-prose">
+        The decision engine follows the setup from startup. This screen does not change it.
+      </p>
+      {load.kind === 'unavailable' ? (
+        <p data-testid="health-unavailable" className="tc-prose">
+          Health is unavailable.
+        </p>
+      ) : null}
+      {load.kind === 'invalid' ? (
+        <p data-testid="health-invalid" className="tc-prose">
+          Health response could not be read.
+        </p>
+      ) : null}
       {report ? (
         <FactGrid label="Service health">
           <Fact term="Decision engine" testId="health-recommender" data={{ recommender: report.recommender }}>

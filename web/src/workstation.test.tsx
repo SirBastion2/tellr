@@ -7,6 +7,7 @@ import { CUSTOMERS } from './demo/customers'
 import type { DemoView } from './demo/types'
 import { HomeScreen } from './screens/HomeScreen'
 import type { Library, SessionState } from './types'
+import { DENSITY } from './theme/tokens'
 import { formatUrgencyScore } from './ui/urgencyScore'
 import { suggestedAction } from './workstation/CopilotStrip'
 
@@ -132,5 +133,48 @@ describe('workstation answers', () => {
     fireEvent.click(screen.getByTestId('signal-dismiss'))
     expect(onConfirm).toHaveBeenCalledWith('chip.on_phone')
     expect(onDismiss).toHaveBeenCalledWith('chip.on_phone')
+  })
+
+  it('centers confirm and dismiss icons in the round signal buttons', () => {
+    const visit: SessionState = {
+      ...opener,
+      context_chips: [{ id: 'chip.on_phone', source: 'observed' }],
+    }
+    render(
+      <HomeScreen
+        library={library}
+        session={visit}
+        postedChipIds={['chip.on_phone']}
+        demo={demo({ onConfirmSignal: () => undefined, onDismissSignal: () => undefined })}
+      />,
+    )
+    const confirm = screen.getByTestId('signal-confirm')
+    const dismiss = screen.getByTestId('signal-dismiss')
+    for (const button of [confirm, dismiss]) {
+      expect(button.style.display).toBe('grid')
+      expect(button.style.placeItems).toBe('center')
+      expect(button.style.justifyContent).toBe('center')
+      expect(button.style.alignContent).toBe('center')
+      expect(button.style.lineHeight).toBe('1')
+      expect(button.style.padding).toBe('0px')
+      expect(button.style.width).toBe(DENSITY.controlHeight)
+      expect(button.style.height).toBe(DENSITY.controlHeight)
+      expect(button.style.minWidth).toBe(DENSITY.controlHeight)
+      expect(button.style.minHeight).toBe(DENSITY.controlHeight)
+      expect(button.style.borderRadius).toBe('var(--tc-radius-control, 999px)')
+      expect(button.style.boxSizing).toBe('border-box')
+      const svg = button.querySelector('svg')
+      expect(svg?.getAttribute('width')).toBe('18')
+      expect(svg?.getAttribute('height')).toBe('18')
+      expect(button.childElementCount).toBe(1)
+    }
+    expect(confirm.style.backgroundColor).toBe('var(--tc-button, transparent)')
+    expect(confirm.style.color).toBe('var(--tc-button-text, #1c1917)')
+    expect(confirm.style.borderColor).toBe('transparent')
+    expect(dismiss.style.backgroundColor).toBe('var(--tc-secondary-bg, #f8fafc)')
+    expect(dismiss.style.color).toBe('var(--tc-secondary-fg, #1c1917)')
+    expect(dismiss.style.borderColor).toBe('var(--tc-secondary-border, #1c1917)')
+    expect(confirm.querySelector('path')?.getAttribute('d')).toBe('M4.5 12l5 5L19.5 7')
+    expect(dismiss.querySelector('path')?.getAttribute('d')).toBe('M7 7l10 10M17 7L7 17')
   })
 })

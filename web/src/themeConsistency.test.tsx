@@ -11,7 +11,8 @@ import { THEME_IDS, THEMES } from './theme/registry'
 import { readSchemeCompact } from './theme/scheme'
 import { ThemeProvider } from './theme/ThemeProvider'
 import { ThemeRoot } from './theme/ThemeRoot'
-import { COLOR_STORAGE_KEY, DENSITY, HEADER_SCHEME_COLLAPSE_PX, THEME_STORAGE_KEY } from './theme/tokens'
+import { schemeNeedsCompact } from './theme/scheme'
+import { COLOR_STORAGE_KEY, DENSITY, THEME_STORAGE_KEY } from './theme/tokens'
 import { SHARED_STRUCTURE_VARS, themeVars } from './theme/vars'
 import type { ColorChoice } from './theme/scheme'
 import type { SessionState } from './types'
@@ -29,11 +30,9 @@ function hexRgb(hex: string): string {
   return `rgb(${parseInt(full.slice(0, 2), 16)}, ${parseInt(full.slice(2, 4), 16)}, ${parseInt(full.slice(4, 6), 16)})`
 }
 
-function mockMatchMedia(collapsed: boolean) {
+function mockMatchMedia(dark: boolean) {
   window.matchMedia = (query: string) => {
-    const matches = query.includes(`max-width: ${HEADER_SCHEME_COLLAPSE_PX}px`)
-      ? collapsed
-      : query.includes('prefers-color-scheme: dark')
+    const matches = query.includes('prefers-color-scheme: dark') ? dark : false
     return {
       matches,
       media: query,
@@ -95,18 +94,19 @@ describe('shared theme leftovers', () => {
     }
   })
 
-  it('sizes the connection and simulation pills from one token on every bank', () => {
+  it('sizes the simulation pill from one token on every bank', () => {
     expect(DENSITY.typePill).toBe('0.875rem')
     const source = css()
     expect(source).toContain(`--tc-text-sm: ${DENSITY.typePill}`)
     expect(source).toContain('--tc-type-pill: var(--tc-text-sm)')
-    expect(source).toMatch(/\.tc-connection[\s\S]*font-size:\s*var\(--tc-text-sm/)
+    expect(source).not.toMatch(/\.tc-connection\s*\{/)
     expect(source).toMatch(/\.tc-live-badge[\s\S]*font-size:\s*var\(--tc-text-sm/)
     for (const id of BANKS) {
       const { unmount } = renderThemed(id)
       const root = screen.getByTestId('theme-root')
       expect(root.style.getPropertyValue('--tc-type-pill'), id).toBe(DENSITY.typePill)
-      expect(screen.getByTestId('connection-status').className, id).toContain('tc-connection')
+      expect(screen.queryByTestId('connection-status'), id).toBeNull()
+      expect(screen.queryByTestId('local-clock'), id).toBeNull()
       expect(screen.getByTestId('live-badge').className, id).toContain('tc-live-badge')
       unmount()
     }
@@ -135,40 +135,35 @@ describe('shared theme leftovers', () => {
     }
   })
 
-  it('mounts only the active scheme control and keeps T and keyboard access', () => {
+  it('keeps both scheme controls mounted and T / keyboard access', () => {
     expect(readSchemeCompact(null)).toBe(false)
-    mockMatchMedia(false)
-    expect(readSchemeCompact(null)).toBe(false)
+    expect(
+      schemeNeedsCompact({
+        available: 900,
+        brand: 240,
+        status: 260,
+        nav: 400,
+        schemeFull: 220,
+        help: 48,
+        gap: 8,
+      }),
+    ).toBe(true)
+    mockMatchMedia(true)
 
     for (const id of BANKS) {
       const { unmount } = renderThemed(id)
       expect(screen.getByTestId('color-scheme'), `${id} segment`).toBeTruthy()
-      expect(screen.queryByTestId('scheme-menu'), `${id} segment`).toBeNull()
+      expect(screen.getByTestId('scheme-menu'), `${id} menu`).toBeTruthy()
+      expect(screen.getByTestId('app-header').getAttribute('data-scheme-compact'), id).toBe('false')
       const light = screen.getByTestId('scheme-light')
       light.focus()
       expect(document.activeElement, id).toBe(light)
       fireEvent.click(light)
       expect(screen.getByTestId('theme-root').getAttribute('data-scheme'), id).toBe('light')
       fireEvent.keyDown(window, { key: 't' })
-      unmount()
-    }
-
-    mockMatchMedia(true)
-    expect(readSchemeCompact(null)).toBe(true)
-    for (const id of BANKS) {
-      const { unmount } = renderThemed(id)
       const menu = screen.getByTestId('scheme-menu') as HTMLSelectElement
-      expect(menu, `${id} menu`).toBeTruthy()
-      expect(screen.queryByTestId('color-scheme'), `${id} menu`).toBeNull()
-      menu.focus()
-      expect(document.activeElement, id).toBe(menu)
-      fireEvent.change(menu, { target: { value: 'light' } })
-      expect(screen.getByTestId('theme-root').getAttribute('data-scheme'), id).toBe('light')
-      const before = screen.getByTestId('theme-root').getAttribute('data-theme')
-      fireEvent.keyDown(window, { key: 't' })
-      expect(screen.getByTestId('theme-root').getAttribute('data-theme'), id).not.toBe(before)
-      expect(screen.getByTestId('scheme-menu'), `${id} after T`).toBeTruthy()
-      expect(screen.queryByTestId('color-scheme'), `${id} after T`).toBeNull()
+      fireEvent.change(menu, { target: { value: 'dark' } })
+      expect(screen.getByTestId('theme-root').getAttribute('data-scheme'), id).toBe('dark')
       unmount()
     }
   })
@@ -260,10 +255,14 @@ describe('shared theme leftovers', () => {
     }
   })
 
-  it('sizes four content tabs and puts leftover space between header groups', () => {
+  it('sizes four content tabs and spreads header groups across the pill', () => {
     const source = css()
-    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*flex:\s*1 1 auto/)
-    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*margin-inline:\s*auto/)
+    expect(source).toMatch(/\.tc-header\s*\{[^}]*justify-content:\s*space-between/)
+    expect(source).toMatch(/\.tc-header\s*\{[^}]*padding-inline:\s*var\(--tc-space-2/)
+    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*flex:\s*0 0 auto/)
+    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*justify-content:\s*center/)
+    expect(source).not.toMatch(/\.tc-header-nav\s*\{[^}]*flex:\s*1 1 auto/)
+    expect(source).not.toMatch(/\.tc-header-nav\s*\{[^}]*margin-inline:\s*auto/)
     expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*flex-wrap:\s*nowrap/)
     expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*overflow:\s*visible/)
     expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*gap:\s*var\(--tc-space-header/)
@@ -276,11 +275,17 @@ describe('shared theme leftovers', () => {
     for (const id of BANKS) {
       const { unmount } = renderThemed(id)
       const nav = screen.getByTestId('app-nav')
-      expect(nav.style.flex, id).toBe('1 1 auto')
+      expect(nav.style.flex, id).toBe('0 0 auto')
+      expect(nav.style.justifyContent, id).toBe('center')
+      expect(nav.style.marginInline, id).not.toBe('auto')
+      const header = screen.getByTestId('app-header')
+      expect(header.style.justifyContent, id).toBe('space-between')
+      expect(header.style.paddingInline, id).toBe('var(--tc-space-2)')
       expect(nav.style.flexWrap, id).toBe('nowrap')
       expect(nav.style.overflow, id).toBe('visible')
       expect(nav.style.gap, id).toBe('var(--tc-space-header, 8px)')
-      expect(screen.getByTestId('local-clock'), id).toBeTruthy()
+      expect(screen.queryByTestId('local-clock'), id).toBeNull()
+      expect(screen.queryByTestId('connection-status'), id).toBeNull()
       const tabs = ['Home', 'Customer file', 'Outcome', 'Handoff'].map((label) => screen.getByText(label))
       expect(tabs, id).toHaveLength(4)
       for (const tab of tabs) {
