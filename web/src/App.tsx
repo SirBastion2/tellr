@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Link, BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { advanceSimulatedMs, simulatedCapMs, timelineElapsedMs } from './demo/clock'
 import { CUSTOMERS, customerById } from './demo/customers'
 import type { ConfirmKind, DemoSpeed, DemoView } from './demo/types'
 import { connectionLabel, connectionState, subscribeConnection, type ConnectionState } from './connection'
@@ -109,16 +110,6 @@ function ConnectionBadge() {
       {connectionLabel(link.kind)}
     </p>
   )
-}
-
-function routeLabel(route: (typeof APP_ROUTES)[number], session: SessionState | null): string | null {
-  if (route.path.includes(':id')) {
-    if (!session) {
-      return null
-    }
-    return route.label
-  }
-  return route.label
 }
 
 function routePath(route: (typeof APP_ROUTES)[number], session: SessionState | null): string | null {
@@ -238,9 +229,29 @@ export function AppShell({
           >
             {routes.map((route) => {
               const path = routePath(route, session)
-              const label = routeLabel(route, session)
-              if (!path || !label) {
-                return null
+              const label = route.label
+              if (!path) {
+                return (
+                  <span
+                    key={route.id}
+                    data-testid={`nav-hint-${route.id}`}
+                    className="tc-nav-hint"
+                    aria-disabled="true"
+                    title="Available after a visit starts"
+                    style={{
+                      ...tap,
+                      flex: '0 0 auto',
+                      color: 'var(--tc-muted)',
+                      borderColor: 'transparent',
+                      borderBottom: '3px solid transparent',
+                      fontWeight: 500,
+                      whiteSpace: 'nowrap',
+                      cursor: 'default',
+                    }}
+                  >
+                    {label}
+                  </span>
+                )
               }
               const current = location.pathname === path
               return (
@@ -391,7 +402,7 @@ export function AppShell({
             <Route path="/settings" element={<Navigate to="/health" replace />} />
           </Routes>
         </main>
-        {helpOpen ? <ShortcutHelp presenter={presenter.on} onClose={() => onHelp?.(false)} /> : null}
+        {helpOpen ? <ShortcutHelp onClose={() => onHelp?.(false)} /> : null}
         {confirm ? (
           <ConfirmDialog
             title={
@@ -406,7 +417,9 @@ export function AppShell({
                 ? 'This records an escalate outcome for the teller and opens the handoff.'
                 : 'This resets the live session and the simulated timeline.'
             }
-            confirmLabel={confirm.kind === 'escalate' ? 'Escalate' : 'Reset session'}
+            confirmLabel={
+              confirm.kind === 'escalate' ? 'Escalate' : confirm.kind === 'restart' ? 'Restart' : 'Reset session'
+            }
             pending={demo?.pending ?? false}
             onCancel={() => onConfirmCancel?.()}
             onConfirm={() => onConfirmAccept?.()}
@@ -464,7 +477,10 @@ function ConnectedShell() {
     let last = performance.now()
     const timer = window.setInterval(() => {
       const now = performance.now()
-      elapsedRef.current += now - last
+      const customer = customerById(customerRef.current)
+      const events = customer?.events ?? []
+      const cap = simulatedCapMs(events, indexRef.current)
+      elapsedRef.current = advanceSimulatedMs(elapsedRef.current, now - last, speedRef.current, cap)
       last = now
       setElapsedMs(elapsedRef.current)
     }, 250)
@@ -504,7 +520,10 @@ function ConnectedShell() {
         setPlaying(false)
         return
       }
-      setIndex((value) => value + 1)
+      const next = indexRef.current + 1
+      elapsedRef.current = timelineElapsedMs(customer.events, next)
+      setElapsedMs(elapsedRef.current)
+      setIndex(next)
     } finally {
       lock.current = false
       setPending(false)
@@ -625,9 +644,6 @@ function ConnectedShell() {
         return
       }
       const key = event.key.toLowerCase()
-      if (presenterRef.current && key !== 'p' && key !== 'n' && key !== '?') {
-        return
-      }
       if (key === '?') {
         event.preventDefault()
         setHelpOpen((open) => !open)
