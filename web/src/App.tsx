@@ -367,7 +367,7 @@ export function AppShell({
           </div>
         ) : null}
         <main id="main">
-          {session && !workstation && !closed && !location.pathname.endsWith('/outcome') && !location.pathname.endsWith('/handoff') ? (
+          {session && !workstation && !closed && !location.pathname.endsWith('/outcome') && !location.pathname.endsWith('/handoff') && location.pathname !== '/customer' ? (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 'var(--tc-space-2)' }}>
               <button
                 type="button"
