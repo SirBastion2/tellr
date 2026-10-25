@@ -46,9 +46,14 @@ describe('Handoff screen', () => {
     expect(screen.getByTestId('handoff-score').textContent).toBe(formatUrgencyScore(projection.risk.score))
     expect(screen.getByText(URGENCY_SCORE_TERM)).toBeTruthy()
     expect(screen.getByTestId('handoff-pattern').textContent).toBe(patternValue(projection.risk.pattern_label))
-    expect(screen.getAllByTestId('handoff-reason').map((item) => item.textContent)).toEqual(
+    const reasonRows = screen.getAllByTestId('handoff-reason')
+    expect(reasonRows.map((item) => item.querySelector('strong')?.textContent)).toEqual(
       projection.risk.reasons.map((reason) => reason.label),
     )
+    for (const row of reasonRows) {
+      expect(row.getAttribute('data-status')).toBe('Observed')
+      expect(row.querySelector('.tc-badge')?.textContent).toBe('Observed')
+    }
     expect(screen.getByTestId('handoff-suggested').textContent).toBe('Slow down')
     expect(screen.getByTestId('handoff-suggested').getAttribute('data-outcome')).toBe(projection.suggested_outcome)
     const purpose = library.purposes.find((item) => item.id === projection.stated_purpose)

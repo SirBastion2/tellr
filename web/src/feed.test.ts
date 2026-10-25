@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { flaggedSignals, listedChipIds, mergeSignalRows, rememberChipOrder } from './feed'
+import { factorOrigin, flaggedSignals, handoffReasonBadge, listedChipIds, mergeSignalRows, rememberChipOrder } from './feed'
 import type { HandoffProjection, Library, SessionState } from './types'
 
 const chips = [
@@ -129,5 +129,44 @@ describe('handoff flagged list', () => {
     ]
     const projection = { risk: { reasons } } as HandoffProjection
     expect(flaggedSignals(null, projection, library).map((item) => item.label)).toEqual(['Alpha', 'Beta'])
+  })
+})
+
+describe('handoff reason badge', () => {
+  it('leaves factorOrigin null when no chip matches, and badges that handoff row Observed', () => {
+    const answers = [
+      { id: 'sig.scripted_secrecy', label: 'Told not to discuss with the bank', rationale: '' },
+      { id: 'sig.relayed', label: 'Answer relayed by caller', rationale: '' },
+      { id: 'sig.missing', label: 'Missing details', rationale: '' },
+    ]
+    for (const reason of answers) {
+      expect(factorOrigin(library, reason.id, reason.label, [], [])).toBeNull()
+    }
+    expect(factorOrigin(library, 'sig.rushed', 'rushed', ['chip.rushed'], chips)).toBe('Teller confirmed')
+    expect(factorOrigin(library, 'sig.on_phone', 'on phone', ['chip.on_phone'], chips)).toBe('Observed')
+
+    expect(handoffReasonBadge(null)).toBe('Observed')
+    expect(handoffReasonBadge('Observed')).toBe('Observed')
+    expect(handoffReasonBadge('Teller confirmed')).toBe('Teller confirmed')
+    expect(handoffReasonBadge('Dismissed')).toBe('Dismissed')
+
+    const reasons = [...answers, { id: 'sig.rushed', label: 'rushed', rationale: '' }]
+    const session = sessionWith([{ id: 'chip.rushed', source: 'teller' }], reasons)
+    const found = flaggedSignals(
+      session,
+      { risk: session.risk } as HandoffProjection,
+      library,
+      [],
+      ['chip.rushed'],
+      ['chip.rushed'],
+    )
+    for (const reason of answers) {
+      const row = found.find((item) => item.label === reason.label)
+      expect(row?.status).toBeNull()
+      expect(handoffReasonBadge(row?.status ?? null)).toBe('Observed')
+    }
+    const rushed = found.find((item) => item.id === 'chip.rushed')
+    expect(rushed?.status).toBe('Teller confirmed')
+    expect(handoffReasonBadge(rushed?.status ?? null)).toBe('Teller confirmed')
   })
 })
