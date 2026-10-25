@@ -133,18 +133,6 @@ describe('bank theme cycle', () => {
     expect(window.location.pathname).toBe('/')
   })
 
-  it('cycles T on the Customer file route', () => {
-    renderApp('/customer')
-    expect(screen.getByTestId('customer-screen')).toBeTruthy()
-    const root = screen.getByTestId('theme-root')
-    expect(root.getAttribute('data-theme')).toBe('tellr')
-
-    fireEvent.keyDown(window, { key: 't' })
-    expect(root.getAttribute('data-theme')).toBe('pnc')
-    expect(screen.getByTestId('customer-screen')).toBeTruthy()
-    expect(window.location.pathname).toBe('/customer')
-  })
-
   it('ignores T while typing in an input or textarea', () => {
     renderApp('/')
     const root = screen.getByTestId('theme-root')
