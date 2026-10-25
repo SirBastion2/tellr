@@ -19,7 +19,7 @@ B reply:
 
 ---
 
-### M-028 · Sun Oct 25, 2026, 6:03 AM ET · Score explanation overlay matches the copilot panel
+### M-029 · Sun Oct 25, 2026, 6:03 AM ET · Score explanation overlay matches the copilot panel
 From: B
 Action needed from A: no
 
@@ -30,6 +30,16 @@ The score explanation overlay was a fixed box under the score control, so its ed
 - `max-height: min(100%, 100dvh)` (with a `100vh` fallback) and `max-width: min(100%, 100vw)`, plus `max-height`/`max-width: 100%`, so the sheet stays inside the panel and the window
 - Shared tokens only. tellr, pnc, mtb, and fnb, light and dark. No per-theme override. No new control
 - No contract change. `web/` still does not compute risk, levels, reasons, or the next question
+
+B reply:
+
+---
+
+### M-028 · Sun Oct 25, 2026, 6:00 AM ET · Copilot panel heading
+From: B
+Action needed from A: no
+
+The copilot panel has a heading that reads Copilot. It sits at the top of the panel, centered, above the level badge (High / Caution / Clear). It uses one shared type rule (`--tc-type-title`, `--tc-strong-weight`, `--tc-type-line-heading`) for tellr, pnc, mtb, and fnb in light and dark. The signal list is still the only scrollport and stays a direct child of `.tc-strip-body`. The heading is pinned with that chrome, so a long signal list does not scroll it away. The panel stays height-bounded; the list gives up the heading's line. The aside keeps `aria-label="Copilot"`. No other UI. `web/` still does not compute risk, levels, reasons, or the next question. No engine, API, contract, weight, or golden edit.
 
 B reply:
 

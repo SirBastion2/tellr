@@ -33,6 +33,10 @@ function roundIconButton(fill: CSSProperties): CSSProperties {
 const confirmIconButton = roundIconButton(primaryStyle)
 const dismissIconButton = roundIconButton(secondaryStyle)
 
+function CopilotHeading() {
+  return <h2 className="tc-strip-heading">Copilot</h2>
+}
+
 function chipLabel(library: Library | null, id: string): string {
   return library?.context_chips.find((chip) => chip.id === id)?.label ?? id
 }
@@ -169,6 +173,7 @@ export function CopilotStrip({
   if (idle) {
     return (
       <aside aria-label="Copilot" data-testid="copilot-strip" className="tc-strip" data-idle="true">
+        <CopilotHeading />
         <p data-testid="copilot-idle" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
           Press play to start the simulation.
         </p>
@@ -185,6 +190,7 @@ export function CopilotStrip({
         aria-busy={pending}
         data-updating={pending ? 'true' : undefined}
       >
+        <CopilotHeading />
         <p data-testid="copilot-updating" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
           Updating copilot…
         </p>
@@ -217,6 +223,7 @@ export function CopilotStrip({
         </p>
       ) : null}
       <div className="tc-strip-body" data-dimmed={pending ? 'true' : 'false'}>
+      <CopilotHeading />
       <div className="tc-copilot-pin" ref={pinRef}>
         <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0 }}>
           <LevelIcon level={level} />{LEVEL_WORD[level]}
