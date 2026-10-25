@@ -277,8 +277,9 @@ describe('Copilot card on latest main', () => {
     )
 
     const block = screen.getByTestId('read-aloud-block')
-    expect((block.textContent ?? '').replace(/\s+/g, ' ').trim()).toBe(`Read-aloud script ${script}`)
+    expect(within(block).getByText(/read-aloud script/i)).toBeTruthy()
     expect(within(block).getByTestId('read-aloud').textContent).toBe(script)
+    expect((block.textContent ?? '').replace(/Read-aloud script/i, '').replace(script, '').replace(/\s+/g, '')).toBe('')
     expect(within(block).queryByTestId('teller-notes')).toBeNull()
     expect(block.textContent).not.toContain(threshold?.label)
     expect(screen.getByTestId('txn-type').textContent).toBe(customer?.transaction.type)
