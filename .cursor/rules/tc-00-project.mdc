@@ -28,7 +28,7 @@ role comes from your worktree: `tc-a1` is A1, `tc-a2` is A2, `tc-a3` is A3, `tc-
   target; `web/package.json` stays with B1. Agent R reviews and merges; it does not write feature
   code.
 - Never edit another agent's directories. Read them freely.
-- `docs/HANDOFF.md` and `docs/QUESTIONS.md` are append-only. `docs/DECISIONS.md` belongs to humans.
+- `docs/HANDOFF.md` is a pointer. Do not edit it. Each PR adds `docs/handoff/<yyyymmdd-hhmm>-<short-branch-slug>.md`. `docs/QUESTIONS.md` is append-only. `docs/DECISIONS.md` belongs to humans.
 - Model-dependent jobs run through `scripts/with-gpu`.
 - Driver B does not read `eval/scenarios/dev/` or `library/signals.yaml`.
 
@@ -39,7 +39,7 @@ role comes from your worktree: `tc-a1` is A1, `tc-a2` is A2, `tc-a3` is A3, `tc-
 4. Implement to green.
 5. Run `scripts/gate.sh a` or `scripts/gate.sh b`. It must pass. Never weaken it.
 6. Review your diff with the language reviewer agent.
-7. Append to `docs/HANDOFF.md` using its template, commit (conventional commits), push.
+7. Write `docs/handoff/<yyyymmdd-hhmm>-<short-branch-slug>.md` using the template in `docs/HANDOFF.md`. Do not edit `docs/HANDOFF.md`. Commit (conventional commits), push.
 8. If the card ends in a checkpoint, stop.
 
 ## Stop and ask: log to docs/QUESTIONS.md instead of improvising when
@@ -66,4 +66,4 @@ fixture step, not coverage numbers.
 
 ## Style
 Python 3.12, FastAPI, Pydantic v2, pytest, ruff. TypeScript strict, React, Vite, Tailwind, vitest.
-Small commits. No new dependency without a line in HANDOFF.md saying why.
+Small commits. No new dependency without a line in that `docs/handoff/` file saying why.

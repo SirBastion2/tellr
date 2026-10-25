@@ -25,11 +25,11 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `web/src/screens/history/` `…/settings/` `web/e2e/` | B2 | Leaf screens + e2e if added at hour 8. Not created. B-06 filled history and health in `web/src/screens/` | — |
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json` (incl. `activity.schema.json`, CHANGE-005), `fixtures/T1–T7.json`, `CHANGES.md` (CHANGE-006: optional `level_bands` on untyped `GET /health`) |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |
-| `docs/` | mixed | Spec and logs (see below) | `architecture.md`, `ROSTER.md`, `HANDOFF.md`, `CP3_GPU_RUN.md`, `A08_HELDOUT_RUN.md`, `WRITEUP_NUMBERS.md` |
+| `docs/` | mixed | Spec and logs (see below) | `architecture.md`, `ROSTER.md`, `HANDOFF.md` (pointer), `handoff/` (one file per PR; newest first), `CP3_GPU_RUN.md`, `A08_HELDOUT_RUN.md`, `WRITEUP_NUMBERS.md` |
 | `scripts/` | A2* | Gates; A2 owns `bench_*` + `with-gpu` | `gate.sh`, `with-gpu`, `bench_llm.py`, `check_contract.py` |
 | `reference_impl.py` | — | Executable spec of §6–§8 | never edit |
 | `WORKFLOW.md` | — | How the build is run | §3 loop, §5 contract, §8 gates |
-| `ARCHITECTURE.md` | all | This map | update in the same PR that moves files |
+| `ARCHITECTURE.md` | all | This map | edit only when files are added, removed, or moved, and only those lines |
 | root config | A2 | Python project + import rules | `pyproject.toml`, `Makefile`, `.importlinter`, `tests/conftest.py` |
 
 ### `web/` after B-06
@@ -234,7 +234,7 @@ Or put `VITE_API_URL=http://127.0.0.1:9000` in `web/.env.api.local`. The probe u
 | Spec ambiguity (do not improvise) | `docs/QUESTIONS.md` |
 | Problem in the other lane (log, don't fix) | `docs/CROSS_LANE.md` |
 | A↔B status | `docs/A_TO_B.md` / `docs/B_TO_A.md` (newest first) |
-| What the last card shipped | `docs/HANDOFF.md` (append-only) |
+| What the last card shipped | `docs/HANDOFF.md` (pointer; do not edit). Read `docs/handoff/` newest first |
 | GPU arm-C / CP3 run (Driver B laptop) | `docs/CP3_GPU_RUN.md` |
 | A-08 held-out run (Driver B GPU laptop, once) | `docs/A08_HELDOUT_RUN.md` |
 | Writeup counts (J-01 steps 3–4) | `docs/WRITEUP_NUMBERS.md` |
@@ -256,4 +256,4 @@ Without the protocol in `WORKFLOW.md` §5 / `docs/ROSTER.md` §3: `docs/architec
 
 ## Keeping this map current
 
-Any PR that adds, removes, or moves a file or directory must update `ARCHITECTURE.md` in the same PR. Agents read this file first and open only the files it points to.
+Edit `ARCHITECTURE.md` only when a PR adds, removes, or moves a file or directory, and change only the lines for those paths. Do that in the same PR. Agents read this file first and open only the files it points to.

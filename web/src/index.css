@@ -450,6 +450,12 @@ button[data-loading='true'],
   width: fit-content;
 }
 
+.tc-level-badge svg {
+  display: block;
+  flex: 0 0 auto;
+  align-self: center;
+}
+
 .tc-shell {
   display: flex;
   flex-direction: column;
@@ -474,6 +480,7 @@ button[data-loading='true'],
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
+  justify-content: space-between;
   gap: var(--tc-space-header, 8px);
   min-height: var(--tc-header-h, 48px);
   min-width: 0;
@@ -574,8 +581,7 @@ button[data-loading='true'],
   overflow: visible;
   min-height: var(--tc-header-control-h, 48px);
   min-width: min-content;
-  flex: 1 1 auto;
-  margin-inline: auto;
+  flex: 0 0 auto;
 }
 
 .tc-header-nav a,
@@ -1095,6 +1101,11 @@ body {
   line-height: var(--tc-line-fact);
   font-weight: var(--tc-strong-weight);
   overflow-wrap: break-word;
+}
+
+/* Prose inside a fact value keeps body size, color, and line-height, but the value weight. */
+.tc-fact-value > .tc-prose {
+  font-weight: inherit;
 }
 
 @media (prefers-contrast: more) {

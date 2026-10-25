@@ -52,7 +52,7 @@ export function RestartIcon({ size }: IconProps) {
 export function CheckIcon({ size }: IconProps) {
   return (
     <Svg size={size}>
-      <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4.5 12l5 5L19.5 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }

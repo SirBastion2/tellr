@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Link, BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import { advanceSimulatedMs, simulatedCapMs, timelineElapsedMs } from './demo/clock'
+import { advanceSimulatedMs, timelineElapsedMs } from './demo/clock'
 import { CUSTOMERS, customerById } from './demo/customers'
 import type { ConfirmKind, DemoSpeed, DemoView } from './demo/types'
 import { friendlyApiError } from './errors'
@@ -229,6 +229,7 @@ export function AppShell({
             flexWrap: 'nowrap',
             alignItems: 'center',
             boxSizing: 'border-box',
+            justifyContent: 'space-between',
             gap: 'var(--tc-space-header, 8px)',
             minHeight: DENSITY.headerMinHeight,
             overflow: 'visible',
@@ -260,8 +261,7 @@ export function AppShell({
               justifyContent: 'center',
               overflow: 'visible',
               minWidth: 'min-content',
-              flex: '1 1 auto',
-              marginInline: 'auto',
+              flex: '0 0 auto',
               minHeight: 'var(--tc-header-control-h, 48px)',
               gap: 'var(--tc-space-header, 8px)',
             }}
@@ -513,16 +513,27 @@ function ConnectedShell() {
   const [helpOpen, setHelpOpen] = useState(false)
   const [confirm, setConfirm] = useState<ConfirmKind>(null)
   const [elapsedMs, setElapsedMs] = useState(0)
+  const [clockOn, setClockOn] = useState(false)
   const indexRef = useRef(0)
   const customerRef = useRef(customerId)
   const speedRef = useRef(speed)
   const playingRef = useRef(playing)
   const presenterRef = useRef(presenter.on)
   const elapsedRef = useRef(0)
+  const autoPlayRef = useRef(false)
+  const clockOnRef = useRef(false)
   const lock = useRef(false)
   const tellerRef = useRef(teller)
   const actionsRef = useRef<SignalAction[]>([])
   const dismissedSource = useRef(new Map<string, ChipSource>())
+
+  const engageClock = useCallback((on: boolean) => {
+    if (clockOnRef.current === on) {
+      return
+    }
+    clockOnRef.current = on
+    setClockOn(on)
+  }, [])
 
   useEffect(() => {
     indexRef.current = index
@@ -535,21 +546,32 @@ function ConnectedShell() {
   }, [actions, customerId, index, playing, presenter.on, speed, teller])
 
   useEffect(() => {
-    if (!playing) {
+    if (!clockOn) {
       return
     }
+    // Started only when the clock is running, and not tied to index or route.
+    // Clearing this on each step froze the file timer while the step posted.
+    // The cap is the full script, not the beat currently in flight.
     let last = performance.now()
     const timer = window.setInterval(() => {
       const now = performance.now()
+      const delta = now - last
+      last = now
+      if (delta <= 0) {
+        return
+      }
       const customer = customerById(customerRef.current)
       const events = customer?.events ?? []
-      const cap = simulatedCapMs(events, indexRef.current)
-      elapsedRef.current = advanceSimulatedMs(elapsedRef.current, now - last, speedRef.current, cap)
-      last = now
-      setElapsedMs(elapsedRef.current)
+      const cap = timelineElapsedMs(events, events.length)
+      const next = advanceSimulatedMs(elapsedRef.current, delta, speedRef.current, cap)
+      if (next === elapsedRef.current) {
+        return
+      }
+      elapsedRef.current = next
+      setElapsedMs(next)
     }, 250)
     return () => window.clearInterval(timer)
-  }, [playing])
+  }, [clockOn])
 
   useEffect(() => {
     if (!sessionId || !location.pathname.endsWith('/handoff')) {
@@ -561,6 +583,9 @@ function ConnectedShell() {
   const runCurrent = useCallback(async () => {
     if (lock.current || tellerRef.current.closed) {
       if (tellerRef.current.closed) {
+        autoPlayRef.current = false
+        playingRef.current = false
+        engageClock(false)
         setPlaying(false)
       }
       return
@@ -568,6 +593,9 @@ function ConnectedShell() {
     const customer = customerById(customerRef.current)
     const event = customer?.events[indexRef.current]
     if (!customer || !event) {
+      autoPlayRef.current = false
+      playingRef.current = false
+      engageClock(false)
       setPlaying(false)
       return
     }
@@ -581,18 +609,28 @@ function ConnectedShell() {
         await tellerRef.current.postContext(event.chips, 'observed')
       }
       if (tellerRef.current.closed) {
+        autoPlayRef.current = false
+        playingRef.current = false
+        engageClock(false)
         setPlaying(false)
         return
       }
       const next = indexRef.current + 1
-      elapsedRef.current = timelineElapsedMs(customer.events, next)
-      setElapsedMs(elapsedRef.current)
+      const boundary = timelineElapsedMs(customer.events, next)
+      if (elapsedRef.current < boundary) {
+        elapsedRef.current = boundary
+        setElapsedMs(elapsedRef.current)
+      }
+      indexRef.current = next
       setIndex(next)
+      if (!autoPlayRef.current) {
+        engageClock(false)
+      }
     } finally {
       lock.current = false
       setPending(false)
     }
-  }, [])
+  }, [engageClock])
 
   useEffect(() => {
     if (!playing) {
@@ -601,6 +639,9 @@ function ConnectedShell() {
     const customer = customerById(customerRef.current)
     const event = customer?.events[indexRef.current]
     if (!event) {
+      autoPlayRef.current = false
+      playingRef.current = false
+      engageClock(false)
       setPlaying(false)
       return
     }
@@ -615,14 +656,18 @@ function ConnectedShell() {
       void runCurrent()
     }, delay)
     return () => window.clearTimeout(timer)
-  }, [playing, index, runCurrent])
+  }, [playing, index, runCurrent, engageClock])
 
   const resetSession = useCallback(
     async (nextCustomerId?: string) => {
       if (nextCustomerId) {
         setCustomerId(nextCustomerId)
       }
+      autoPlayRef.current = false
+      playingRef.current = false
+      engageClock(false)
       setPlaying(false)
+      indexRef.current = 0
       setIndex(0)
       setConfirmed([])
       setDismissed([])
@@ -640,7 +685,7 @@ function ConnectedShell() {
         setPending(false)
       }
     },
-    [navigate],
+    [navigate, engageClock],
   )
 
   const requestSwitch = useCallback(
@@ -653,6 +698,8 @@ function ConnectedShell() {
         return
       }
       if (indexRef.current > 0 || tellerRef.current.session) {
+        autoPlayRef.current = false
+        playingRef.current = false
         setPlaying(false)
         setConfirm({ kind: 'switch', id })
         return
@@ -669,6 +716,9 @@ function ConnectedShell() {
       return
     }
     if (current.kind === 'escalate') {
+      autoPlayRef.current = false
+      playingRef.current = false
+      engageClock(false)
       setPlaying(false)
       setPending(true)
       void (async () => {
@@ -690,7 +740,7 @@ function ConnectedShell() {
       return
     }
     void resetSession(current.id)
-  }, [confirm, navigate, resetSession])
+  }, [confirm, navigate, resetSession, engageClock])
 
   useDemoShortcuts({
     onEscape: () => {
@@ -701,13 +751,22 @@ function ConnectedShell() {
       setHelpOpen((open) => !open)
     },
     onPlay: () => {
-      setPlaying((value) => !value)
+      const next = !autoPlayRef.current
+      autoPlayRef.current = next
+      playingRef.current = next
+      engageClock(next)
+      setPlaying(next)
     },
     onStep: () => {
+      autoPlayRef.current = false
+      playingRef.current = false
+      engageClock(true)
       setPlaying(false)
       void runCurrent()
     },
     onRestart: () => {
+      autoPlayRef.current = false
+      playingRef.current = false
       setPlaying(false)
       setConfirm({ kind: 'restart' })
     },
@@ -774,13 +833,28 @@ function ConnectedShell() {
     presenter: presenter.on,
     elapsedMs,
     onSelectCustomer: requestSwitch,
-    onPlay: () => setPlaying(true),
-    onPause: () => setPlaying(false),
+    onPlay: () => {
+      autoPlayRef.current = true
+      playingRef.current = true
+      engageClock(true)
+      setPlaying(true)
+    },
+    onPause: () => {
+      autoPlayRef.current = false
+      playingRef.current = false
+      engageClock(false)
+      setPlaying(false)
+    },
     onStep: () => {
+      autoPlayRef.current = false
+      playingRef.current = false
+      engageClock(true)
       setPlaying(false)
       void runCurrent()
     },
     onRestart: () => {
+      autoPlayRef.current = false
+      playingRef.current = false
       setPlaying(false)
       setConfirm({ kind: 'restart' })
     },
@@ -867,6 +941,9 @@ function ConnectedShell() {
       }}
       handoff={teller.handoff}
       onSubmitOutcome={(body) => {
+        autoPlayRef.current = false
+        playingRef.current = false
+        engageClock(false)
         setPlaying(false)
         void teller.postOutcome(body.outcome, body.actor)
       }}

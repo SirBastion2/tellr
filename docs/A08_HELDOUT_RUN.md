@@ -51,11 +51,11 @@ Stdout should end with: `wrote eval/results/heldout/results.json and report.md (
 
 1. Confirm this was the only run. Do not rerun. Do not edit outputs.
 2. `git add -f eval/results/heldout/results.json eval/results/heldout/report.md`
-3. Append `docs/HANDOFF.md` using the checklist below (SHA + tag). Do not change results in that same edit pass beyond recording them.
+3. Write `docs/handoff/<yyyymmdd-hhmm>-<short-branch-slug>.md` using the template in `docs/HANDOFF.md` and the checklist below (SHA + tag). Do not edit `docs/HANDOFF.md`. Do not change results in that same edit pass beyond recording them.
 4. `git commit -m "eval: held-out results (A-08, once)"`
 5. Push. Stop.
 
-## Checklist to record in docs/HANDOFF.md
+## Checklist to record in that handoff file
 
 - [ ] Exact `git rev-parse HEAD` of the tree that was run (full SHA)
 - [ ] Tag `weights-frozen` = `82b788d` (`82b788d1009fe775c3fc5edb20cb5413ee25068e`)

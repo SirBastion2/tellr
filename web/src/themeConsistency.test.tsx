@@ -255,10 +255,14 @@ describe('shared theme leftovers', () => {
     }
   })
 
-  it('sizes four content tabs and puts leftover space between header groups', () => {
+  it('sizes four content tabs and spreads header groups across the pill', () => {
     const source = css()
-    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*flex:\s*1 1 auto/)
-    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*margin-inline:\s*auto/)
+    expect(source).toMatch(/\.tc-header\s*\{[^}]*justify-content:\s*space-between/)
+    expect(source).toMatch(/\.tc-header\s*\{[^}]*padding-inline:\s*var\(--tc-space-2/)
+    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*flex:\s*0 0 auto/)
+    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*justify-content:\s*center/)
+    expect(source).not.toMatch(/\.tc-header-nav\s*\{[^}]*flex:\s*1 1 auto/)
+    expect(source).not.toMatch(/\.tc-header-nav\s*\{[^}]*margin-inline:\s*auto/)
     expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*flex-wrap:\s*nowrap/)
     expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*overflow:\s*visible/)
     expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*gap:\s*var\(--tc-space-header/)
@@ -271,7 +275,12 @@ describe('shared theme leftovers', () => {
     for (const id of BANKS) {
       const { unmount } = renderThemed(id)
       const nav = screen.getByTestId('app-nav')
-      expect(nav.style.flex, id).toBe('1 1 auto')
+      expect(nav.style.flex, id).toBe('0 0 auto')
+      expect(nav.style.justifyContent, id).toBe('center')
+      expect(nav.style.marginInline, id).not.toBe('auto')
+      const header = screen.getByTestId('app-header')
+      expect(header.style.justifyContent, id).toBe('space-between')
+      expect(header.style.paddingInline, id).toBe('var(--tc-space-2)')
       expect(nav.style.flexWrap, id).toBe('nowrap')
       expect(nav.style.overflow, id).toBe('visible')
       expect(nav.style.gap, id).toBe('var(--tc-space-header, 8px)')
