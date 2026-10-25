@@ -76,7 +76,7 @@ describe('demo shortcuts on other routes', () => {
     await waitFor(() => {
       expect(screen.getByRole('link', { name: 'Outcome' })).toBeTruthy()
     })
-    press('n', file)
+    press('n', screen.getByTestId('customer-screen'))
     fireEvent.click(screen.getByRole('link', { name: 'Home' }))
     await waitFor(() => {
       expect(screen.getByTestId('signal-row')).toBeTruthy()

@@ -268,10 +268,16 @@ button[data-loading='true'],
 
 .tc-facts {
   display: grid;
-  grid-template-columns: minmax(7rem, 10rem) minmax(0, 1fr);
-  gap: var(--tc-space-facts, clamp(5px, 0.5vw, 8px) clamp(10px, 1vw, 16px));
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--tc-space-3, 12px);
+  row-gap: var(--tc-space-2, 8px);
   margin: 0;
   align-items: baseline;
+}
+
+.tc-facts dt,
+.tc-facts dd {
+  min-width: 0;
 }
 
 .tc-explain {
@@ -646,8 +652,9 @@ button[data-loading='true'],
 
 .tc-kv {
   display: grid;
-  grid-template-columns: 8rem minmax(0, 1fr);
-  gap: var(--tc-space-2, 8px) var(--tc-space-3, 12px);
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--tc-space-3, 12px);
+  row-gap: var(--tc-space-2, 8px);
   margin: 0;
   align-items: baseline;
 }
@@ -656,14 +663,15 @@ button[data-loading='true'],
   margin: 0;
   font-size: var(--tc-text-sm);
   font-weight: var(--tc-strong-weight);
-  line-height: var(--tc-text-sm-lh);
+  line-height: var(--tc-line-fact);
 }
 
 .tc-kv dd {
   margin: 0;
+  min-width: 0;
   font-size: var(--tc-text-base);
   font-weight: var(--tc-font-weight);
-  line-height: var(--tc-text-base-lh);
+  line-height: var(--tc-line-fact);
 }
 
 .tc-timeline {
@@ -856,6 +864,7 @@ html[data-color-scheme='light'] select option:checked,
   --tc-type-level: var(--tc-text-lg);
   --tc-type-action: var(--tc-text-xl);
   --tc-type-pill: var(--tc-text-sm);
+  --tc-line-fact: var(--tc-text-base);
   --tc-sim-pill-min: 22rem;
   --tc-sim-pill-max: 22rem;
   --tc-conn-pill-min: 14rem;
@@ -988,7 +997,7 @@ body {
 
 .tc-amount {
   font-size: var(--tc-text-2xl);
-  line-height: var(--tc-text-2xl-lh);
+  line-height: var(--tc-line-fact);
   font-weight: var(--tc-text-2xl-weight);
 }
 
@@ -1001,14 +1010,14 @@ body {
 .tc-facts dt,
 .tc-fact-term {
   font-size: var(--tc-text-base);
-  line-height: var(--tc-text-base-lh);
+  line-height: var(--tc-line-fact);
   font-weight: var(--tc-strong-weight);
 }
 
 .tc-facts dd,
 .tc-fact-value {
   font-size: var(--tc-text-base);
-  line-height: var(--tc-text-base-lh);
+  line-height: var(--tc-line-fact);
   font-weight: var(--tc-font-weight);
 }
 

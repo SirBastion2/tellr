@@ -2199,3 +2199,29 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/108. Merged latest `origin/main` (`15ab04d`) before finalize. No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
 
+---
+
+### [B] Read-aloud script only; even fact-grid gaps — Agent B1 — 2026-10-25 05:43
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 181 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  50 passed (50)
+      Tests  181 passed (181)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/workstation/CopilotStrip.tsx`, `web/src/workstation/TransactionPanel.tsx`, `web/src/screens/CustomerFileScreen.tsx`, `web/src/ui/facts.tsx`, `web/src/index.css`, `web/src/theme/tokens.ts`, `web/src/theme/vars.ts`, `web/src/theme/typeScale.ts`, `web/src/copilotCard.test.tsx`, `web/src/workstationMerge.test.tsx`, `web/src/headerRhythm.test.tsx`, `web/src/shortcutsCustomer.test.tsx`, `ARCHITECTURE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Extra line in the read-aloud card was `notesOnlyLabels()` for `chip.above_threshold` (`Cash withdrawal above the branch threshold`). Removed it. The card is the label plus `talk_track.lines` (architecture §12 render-only).
+  - Type stays `customer.transaction.type` (`Cash withdrawal`). The fuller string is the chip label, a different field. Mapping it onto Type would be web-side logic. It is not appended on Outcome, Handoff, or the Session question card.
+  - Shared `tc-kv` / `tc-facts` grid: `max-content 1fr`, `--tc-space-3` column-gap, `--tc-space-2` row-gap, baseline, `--tc-line-fact` = `--tc-text-base` so Amount (`--tc-text-2xl`) does not add extra row gap. Type-scale / spacing tokens only.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/106. Do not merge. Merged `origin/main` including #108 (`44b77a3`). No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+

@@ -15,14 +15,6 @@ const card: CSSProperties = {
   gap: 'var(--tc-space-3)',
 }
 
-const kv: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: '9.5rem minmax(0, 1fr)',
-  gap: 'var(--tc-space-2) var(--tc-space-4)',
-  margin: 0,
-  alignItems: 'baseline',
-}
-
 const term: CSSProperties = {
   margin: 0,
 }
@@ -67,31 +59,17 @@ export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) 
           </p>
           <section style={card} aria-labelledby="profile-heading">
             <SectionHeading id="profile-heading">Profile</SectionHeading>
-            <dl style={kv}>
-              <dt className="tc-fact-term" style={term}>
-                Customer
-              </dt>
-              <dd className="tc-fact-value" data-testid="profile-name" style={{ margin: 0 }}>
+            <dl className="tc-kv">
+              <dt className="tc-fact-term">Customer</dt>
+              <dd className="tc-fact-value" data-testid="profile-name">
                 {displayCustomerLabel()}
               </dd>
-              <dt className="tc-fact-term" style={term}>
-                Tenure
-              </dt>
-              <dd className="tc-fact-value" style={{ margin: 0 }}>
-                {customer.profile.tenure}
-              </dd>
-              <dt className="tc-fact-term" style={term}>
-                Typical withdrawal
-              </dt>
-              <dd className="tc-fact-value" style={{ margin: 0 }}>
-                {customer.profile.typicalWithdrawal}
-              </dd>
-              <dt className="tc-fact-term" style={term}>
-                Channels
-              </dt>
-              <dd className="tc-fact-value" style={{ margin: 0 }}>
-                {customer.profile.channels}
-              </dd>
+              <dt className="tc-fact-term">Tenure</dt>
+              <dd className="tc-fact-value">{customer.profile.tenure}</dd>
+              <dt className="tc-fact-term">Typical withdrawal</dt>
+              <dd className="tc-fact-value">{customer.profile.typicalWithdrawal}</dd>
+              <dt className="tc-fact-term">Channels</dt>
+              <dd className="tc-fact-value">{customer.profile.channels}</dd>
             </dl>
           </section>
         </>

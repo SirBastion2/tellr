@@ -44,6 +44,8 @@ export const DENSITY = {
   typeAmount: TYPE_SIZE['2xl'],
   typeLevel: TYPE_SIZE.lg,
   typeAction: TYPE_SIZE.xl,
+  /** Fact-row line box. Type-scale length so Amount cannot add extra gap. */
+  lineFact: TYPE_SIZE.base,
   spaceWorkstation: 'clamp(10px, 1.3vw, 20px)',
   spaceCard: 'clamp(10px, 1vw, 16px)',
   spaceStrip: 'clamp(10px, 1vw, 13px)',

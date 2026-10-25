@@ -162,6 +162,8 @@ export const TYPE_VARS: Record<string, string> = {
   '--tc-type-level': TYPE_SIZE.lg,
   '--tc-type-action': TYPE_SIZE.xl,
   '--tc-type-pill': TYPE_SIZE.sm,
+  /** Length line-height for Type / Amount / Memo and other fact rows. */
+  '--tc-line-fact': TYPE_SIZE.base,
 }
 
 export const TYPE_TOKEN_KEYS = Object.keys(TYPE_VARS)

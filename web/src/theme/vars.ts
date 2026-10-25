@@ -48,6 +48,7 @@ export function themeVars(theme: BankTheme): Record<string, string> {
     '--tc-type-amount': DENSITY.typeAmount,
     '--tc-type-level': DENSITY.typeLevel,
     '--tc-type-action': DENSITY.typeAction,
+    '--tc-line-fact': DENSITY.lineFact,
     '--tc-type-pill': DENSITY.typePill,
     '--tc-sim-pill-min': DENSITY.simPillMinWidth,
     '--tc-sim-pill-max': DENSITY.simPillMaxWidth,
