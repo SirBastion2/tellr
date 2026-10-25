@@ -52,13 +52,13 @@ The page card fills the padded page (`width: 100%`) and starts at the top of the
 | 1280px and up | `3fr` / `2fr`. Copilot stays sticky and scrolls inside the column |
 | Header container or viewport under 1280px | Light/Dark/System segment hides. A single scheme menu replaces it |
 
-Type and padding use `clamp()` from `DENSITY` in `web/src/theme/tokens.ts` (about 15–20% tighter than the first workstation pass). Prose is at most `70ch`. Toolbar controls share a 40px height. Play keeps the icon and the word on one line. The customer select matches that height. Show case file and the elapsed timer sit on that row.
+Type and padding use `clamp()` from `DENSITY` in `web/src/theme/tokens.ts` (about 15–20% tighter than the first workstation pass). Vertical rhythm is the 4 / 8 / 12 / 16 / 24 scale in that file and `web/src/index.css`. Header-to-content is 16px. Heading-to-body is 8px. Body-to-control is 12px. Pills and buttons pad 8×12 so text does not sit on an edge. Prose is at most `70ch`. Toolbar controls share a 40px height. Play keeps the icon and the word on one line. The customer select matches that height. Show case file and the elapsed timer sit on that row.
 
 Target playback at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. The toolbar clock and the timeline stamps use that same simulated customer time at every speed. Speed only changes how long the wall clock takes.
 
 ## Header and toolbar
 
-One row, `flex-wrap: nowrap`, nav scrolls, no second line. Title, simulation pill, and connection pill may ellipsize. Nothing in the row may overflow the viewport width at 1024, 1280, or 1440.
+The header wraps when the first row is tight (`flex-wrap: wrap`, #93). One 8px gap token between items. Title stays complete. Tabs wrap or shrink with `clamp()` and never clip (`Handoff` stays `Handoff`). Simulation and connection pills may ellipsize with a title tooltip. Nothing may overflow the viewport width at 1024, 1180, 1280, or 1440. The tellr logo is centered in its rounded pill.
 
 1. Bank mark
 2. Title "Teller Copilot"
@@ -123,7 +123,7 @@ Signal source is Observed or Teller confirmed. That badge is a compact pill on t
 - `forced-colors: active` uses `Canvas`, `ButtonFace`, `ButtonText`, `Field`, `FieldText`, `Highlight`, and `HighlightText`. Borders and focus stay. The level is still an icon plus a word. Select options use Field/FieldText, and the highlighted option uses Highlight/HighlightText
 - `prefers-reduced-motion: reduce` cuts animation, transitions, the press offset, and simulation waits
 - Do not use color alone for the level or for Observed versus Teller confirmed
-- 200% zoom: the header stays one row and the nav scrolls. Columns stack below 900px. Do not set a fixed page width that clips the decision buttons
+- 200% zoom: the header wraps. Tab labels stay complete. Columns stack below 900px. Do not set a fixed page width that clips the decision buttons
 
 ## Dark mode, light mode, and forced colors
 

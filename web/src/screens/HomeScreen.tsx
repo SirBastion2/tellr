@@ -47,8 +47,8 @@ export function HomeScreen({
   const shownActivity = useHeldValue(activity, pending)
 
   return (
-    <section data-testid="home-screen" style={{ display: 'grid', gap: 'var(--tc-space-gap, 13px)' }}>
-      <div style={{ display: 'grid', gap: 4 }}>
+    <section data-testid="home-screen" className="tc-screen">
+      <div className="tc-stack-heading">
         <h2 className="tc-title">Workstation</h2>
         {library ? (
           <p className="tc-prose" style={{ margin: 0, maxWidth: '70ch', fontSize: '0.875rem' }}>

@@ -8,6 +8,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { AppShell } from './App'
+import './index.css'
 import { InterviewScreen } from './screens/InterviewScreen'
 import type { Library, SessionState } from './types'
 
@@ -142,8 +143,8 @@ describe('counter polish', () => {
     expect(purposeHeight).toBeLessThanOrEqual(48)
     expect(chipHeight).toBe(72)
     expect(headerHeight).toBeGreaterThanOrEqual(48)
-    expect(getComputedStyle(screen.getByTestId('app-nav')).flexWrap).toBe('nowrap')
-    expect(getComputedStyle(screen.getByTestId('app-nav')).overflowX).toBe('auto')
+    expect(getComputedStyle(screen.getByTestId('app-nav')).flexWrap).toBe('wrap')
+    expect(getComputedStyle(screen.getByTestId('app-nav')).overflow).toBe('visible')
 
     const chrome = 8 + headerHeight + 8
     const foldHeight = 32 + 56 + 8 + purposeHeight + 8 + chipHeight

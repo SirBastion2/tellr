@@ -196,7 +196,7 @@ export function AppShell({
 
   return (
     <ThemeRoot>
-      <div style={{ boxSizing: 'border-box', color: 'var(--tc-text, #1c1917)' }}>
+      <div className="tc-shell" data-testid="app-shell" style={{ boxSizing: 'border-box', color: 'var(--tc-text, #1c1917)' }}>
         <a href="#main" className="tc-sr" style={{ minHeight: '48px', minWidth: '48px' }}>
           Skip to content
         </a>
@@ -207,14 +207,14 @@ export function AppShell({
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
-            gap: '8px',
+            gap: 'var(--tc-space-header, 8px)',
             minHeight: '48px',
             overflow: 'visible',
             minWidth: 0,
             maxWidth: '100%',
             background: 'var(--tc-glass-fallback)',
             borderRadius: 'var(--tc-radius-card)',
-            padding: '8px',
+            padding: 'var(--tc-space-2)',
           }}
         >
           <ThemeWordmark />
@@ -227,7 +227,7 @@ export function AppShell({
             aria-label="Screens"
             data-testid="app-nav"
             className="tc-header-nav"
-            style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', minWidth: 0, flex: '1 1 20rem', minHeight: 48, gap: 8 }}
+            style={{ display: 'flex', flexWrap: 'wrap', overflow: 'visible', minWidth: 0, flex: '1 1 auto', minHeight: 48, gap: 'var(--tc-space-header, 8px)' }}
           >
             {routes.map((route) => {
               const path = routePath(route, session)
@@ -243,6 +243,7 @@ export function AppShell({
                     style={{
                       ...tap,
                       flex: '0 0 auto',
+                      overflow: 'visible',
                       color: 'var(--tc-muted)',
                       borderColor: 'transparent',
                       borderBottom: '3px solid transparent',
@@ -264,6 +265,7 @@ export function AppShell({
                   style={{
                     ...tap,
                     flex: '0 0 auto',
+                    overflow: 'visible',
                     textDecoration: 'none',
                     backgroundColor: current ? 'var(--tc-input)' : 'transparent',
                     borderColor: 'transparent',

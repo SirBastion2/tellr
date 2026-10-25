@@ -46,11 +46,13 @@ export function TransactionPanel({
   const pct = total === 0 ? 0 : Math.round((shown / total) * 100)
 
   return (
-    <section aria-label="Core banking" data-testid="transaction-panel" className="tc-transaction" style={{ display: 'grid', gap: 'var(--tc-space-strip, 12px)', alignContent: 'start' }}>
-      <h2 className="tc-title">Transaction</h2>
-      <p data-testid="synthetic-banner" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-        Practice data. The name and age band stay on this screen. They are not sent to the copilot.
-      </p>
+    <section aria-label="Core banking" data-testid="transaction-panel" className="tc-transaction tc-screen" style={{ alignContent: 'start' }}>
+      <div className="tc-stack-heading">
+        <h2 className="tc-title">Transaction</h2>
+        <p data-testid="synthetic-banner" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
+          Practice data. The name and age band stay on this screen. They are not sent to the copilot.
+        </p>
+      </div>
       <p
         data-testid="event-caption"
         className="tc-prose"
@@ -95,8 +97,8 @@ export function TransactionPanel({
               style={{
                 display: 'grid',
                 gridTemplateColumns: '16px minmax(0, 1fr)',
-                columnGap: 12,
-                paddingBottom: last ? 0 : 16,
+                columnGap: 'var(--tc-space-3)',
+                paddingBottom: last ? 0 : 'var(--tc-space-4)',
               }}
             >
               <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -120,7 +122,7 @@ export function TransactionPanel({
                 style={{
                   margin: 0,
                   maxWidth: '70ch',
-                  padding: '4px 8px',
+                  padding: 'var(--tc-space-1) var(--tc-space-2)',
                   borderRadius: 8,
                   background: isCurrent ? 'var(--tc-input)' : 'transparent',
                 }}
@@ -137,9 +139,9 @@ export function TransactionPanel({
         })}
       </ol>
       {showCase ? (
-        <section data-testid="case-file" aria-label="Synthetic case file" style={{ display: 'grid', gap: 8 }}>
+        <section data-testid="case-file" aria-label="Synthetic case file" className="tc-stack-heading">
           <SectionHeading>Case file</SectionHeading>
-          <dl className="tc-kv" style={{ display: 'grid', gridTemplateColumns: '9.5rem minmax(0, 1fr)', gap: '8px 16px', margin: 0 }}>
+          <dl className="tc-kv" style={{ display: 'grid', gridTemplateColumns: '9.5rem minmax(0, 1fr)', gap: 'var(--tc-space-2) var(--tc-space-4)', margin: 0 }}>
             <Row term="Name">{customer.profile.name}</Row>
             <Row term="Age band">{customer.profile.ageBand}</Row>
             <Row term="Tenure">{customer.profile.tenure}</Row>
