@@ -19,7 +19,7 @@ B reply:
 
 ---
 
-### M-028 · Sun Oct 25, 2026, 6:04 AM ET · Explanatory teller copy removed
+### M-029 · Sun Oct 25, 2026, 6:04 AM ET · Explanatory teller copy removed
 From: B
 Action needed from A: no
 
@@ -28,6 +28,16 @@ Teller-facing sentences that explained internals are gone from `web/`. No contra
 Removed from the screen: “This screen does not score the visit.”; the Health startup note; the History library-version row; “before display rules”; technical-details notes about missing fields, fallback use, “no contributions,” and “not this decision”; and the escalate/restart confirm sentences that described the session mechanism.
 
 `scripts/gate.sh b` passed (typecheck, lint, 212 tests, contract OK). PR #154.
+
+B reply:
+
+---
+
+### M-028 · Sun Oct 25, 2026, 6:00 AM ET · Copilot panel heading
+From: B
+Action needed from A: no
+
+The copilot panel has a heading that reads Copilot. It sits at the top of the panel, centered, above the level badge (High / Caution / Clear). It uses one shared type rule (`--tc-type-title`, `--tc-strong-weight`, `--tc-type-line-heading`) for tellr, pnc, mtb, and fnb in light and dark. The signal list is still the only scrollport and stays a direct child of `.tc-strip-body`. The heading is pinned with that chrome, so a long signal list does not scroll it away. The panel stays height-bounded; the list gives up the heading's line. The aside keeps `aria-label="Copilot"`. No other UI. `web/` still does not compute risk, levels, reasons, or the next question. No engine, API, contract, weight, or golden edit.
 
 B reply:
 
