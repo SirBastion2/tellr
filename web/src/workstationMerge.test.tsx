@@ -123,14 +123,21 @@ describe('merged workstation signals', () => {
     expect(screen.getByTestId('explain-panel').textContent).not.toMatch(/\$5,000–\$9,999/)
   })
 
-  it('puts the branch threshold in teller notes instead of a signal row', () => {
+  it('does not put the branch threshold in the read-aloud card or a signal row', () => {
     render(workstation())
-    const notes = screen.getByTestId('teller-notes')
-    expect(notes.textContent).toContain(thresholdChip.label)
+    const block = screen.getByTestId('read-aloud-block')
+    const script = liveVisit.talk_track.lines.join(' ')
+    expect((block.textContent ?? '').replace(/\s+/g, ' ').trim()).toBe(`Read-aloud script ${script}`)
+    expect(within(block).queryByTestId('teller-notes')).toBeNull()
+    expect(block.textContent).not.toContain(thresholdChip.label)
+    expect(screen.queryByTestId('teller-notes')).toBeNull()
     expect(signalTexts().join('\n')).not.toContain(thresholdChip.label)
     expect(screen.getByTestId('copilot-strip').querySelector('[data-testid="signal-row"]')).toBeNull()
-    expect(screen.getByTestId('answer-panel')).toBeTruthy()
+    expect(screen.getByTestId('answer-panel').textContent).not.toContain(thresholdChip.label)
     expect(screen.getByTestId('copilot-action').textContent).toBe(liveVisit.question?.text)
+    expect(screen.getByTestId('txn-type').textContent).toBe(
+      CUSTOMERS.find((customer) => customer.id === 'romance-crypto')?.transaction.type,
+    )
   })
 
   it('keeps the copilot answer panel working beside the merged signal list', () => {
@@ -223,6 +230,7 @@ describe('merged workstation signals', () => {
     expect(within(file).queryByRole('heading', { name: 'Recent activity' })).toBeNull()
     expect(within(file).queryByRole('heading', { name: 'This withdrawal' })).toBeNull()
     expect(within(file).queryByRole('heading', { name: 'What was noted' })).toBeNull()
+    expect(file.querySelector('dl')?.className).toContain('tc-kv')
     expect(within(file).queryByTestId('file-transaction')).toBeNull()
     expect(within(file).queryByTestId('file-signal')).toBeNull()
     expect(within(file).queryByTestId('session-activity')).toBeNull()

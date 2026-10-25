@@ -253,6 +253,61 @@ describe('Copilot card on latest main', () => {
     expect(screen.getByTestId('read-aloud').textContent).toBe(emptyVisit.talk_track.lines.join(' '))
   })
 
+  it('keeps the read-aloud card to the label and talk-track script only', () => {
+    const threshold = library.context_chips.find((chip) => chip.id === 'chip.above_threshold')
+    expect(threshold?.label).toBe('Cash withdrawal above the branch threshold')
+    const customer = CUSTOMERS[0]
+    expect(customer).toBeTruthy()
+    const script = phoneVisit.talk_track.lines.join(' ')
+    render(
+      <HomeScreen
+        library={library}
+        session={{
+          ...phoneVisit,
+          context_chips: [
+            { id: 'chip.on_phone', source: 'observed' },
+            { id: 'chip.above_threshold', source: 'observed' },
+          ],
+        }}
+        postedChipIds={['chip.on_phone', 'chip.above_threshold']}
+        demo={demo({ index: 2, customerId: customer?.id })}
+      />,
+    )
+
+    const block = screen.getByTestId('read-aloud-block')
+    expect((block.textContent ?? '').replace(/\s+/g, ' ').trim()).toBe(`Read-aloud script ${script}`)
+    expect(within(block).getByTestId('read-aloud').textContent).toBe(script)
+    expect(within(block).queryByTestId('teller-notes')).toBeNull()
+    expect(block.textContent).not.toContain(threshold?.label)
+    expect(screen.getByTestId('txn-type').textContent).toBe(customer?.transaction.type)
+    expect(screen.getByTestId('txn-type').closest('dl')?.className).toContain('tc-kv')
+    expect(screen.getByTestId('txn-amount').className).toContain('tc-amount')
+    expect(screen.getByTestId('answer-panel').textContent).not.toContain(threshold?.label)
+    expect(screen.getByTestId('question-card').textContent).not.toContain(threshold?.label)
+  })
+
+  it('does not append the threshold chip label on Outcome or Handoff', () => {
+    const threshold = 'Cash withdrawal above the branch threshold'
+    const { unmount } = render(
+      <MemoryRouter initialEntries={[`/sessions/${phoneVisit.session_id}/outcome`]}>
+        <AppShell library={library} session={phoneVisit} issues={[]} postedChipIds={['chip.above_threshold']} />
+      </MemoryRouter>,
+    )
+    expect(screen.getByTestId('outcome-screen').textContent).not.toContain(threshold)
+    expect(screen.queryByTestId('read-aloud-block')).toBeNull()
+    expect(screen.queryByTestId('teller-notes')).toBeNull()
+    unmount()
+
+    render(
+      <MemoryRouter initialEntries={[`/sessions/${phoneVisit.session_id}/handoff`]}>
+        <AppShell library={library} session={phoneVisit} issues={[]} postedChipIds={['chip.above_threshold']} />
+      </MemoryRouter>,
+    )
+    expect(screen.getByTestId('handoff-screen').textContent).not.toContain(threshold)
+    expect(screen.queryByTestId('read-aloud-block')).toBeNull()
+    expect(screen.queryByTestId('teller-notes')).toBeNull()
+  })
+
   it('shows an idle placeholder before play and after a new visit that has not started', () => {
     render(<HomeScreen library={library} session={emptyVisit} demo={demo()} />)
     expect(screen.getByTestId('copilot-idle').textContent).toMatch(/Press play to start the simulation/)

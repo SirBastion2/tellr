@@ -14,17 +14,8 @@ const card: CSSProperties = {
   gap: 'var(--tc-space-3)',
 }
 
-const kv: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: '9.5rem minmax(0, 1fr)',
-  gap: 'var(--tc-space-2) var(--tc-space-4)',
-  margin: 0,
-  alignItems: 'baseline',
-}
-
 const term: CSSProperties = {
   margin: 0,
-  fontSize: '1rem',
   fontWeight: 700,
 }
 
@@ -66,21 +57,17 @@ export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) 
           </p>
           <section style={card} aria-labelledby="profile-heading">
             <SectionHeading id="profile-heading">Profile</SectionHeading>
-            <dl style={kv}>
-              <dt style={term}>Name</dt>
-              <dd data-testid="profile-name" style={{ margin: 0 }}>
-                {customer.profile.name}
-              </dd>
-              <dt style={term}>Age band</dt>
-              <dd data-testid="profile-age" style={{ margin: 0 }}>
-                {customer.profile.ageBand}
-              </dd>
-              <dt style={term}>Tenure</dt>
-              <dd style={{ margin: 0 }}>{customer.profile.tenure}</dd>
-              <dt style={term}>Typical withdrawal</dt>
-              <dd style={{ margin: 0 }}>{customer.profile.typicalWithdrawal}</dd>
-              <dt style={term}>Channels</dt>
-              <dd style={{ margin: 0 }}>{customer.profile.channels}</dd>
+            <dl className="tc-kv">
+              <dt>Name</dt>
+              <dd data-testid="profile-name">{customer.profile.name}</dd>
+              <dt>Age band</dt>
+              <dd data-testid="profile-age">{customer.profile.ageBand}</dd>
+              <dt>Tenure</dt>
+              <dd>{customer.profile.tenure}</dd>
+              <dt>Typical withdrawal</dt>
+              <dd>{customer.profile.typicalWithdrawal}</dd>
+              <dt>Channels</dt>
+              <dd>{customer.profile.channels}</dd>
             </dl>
           </section>
         </>

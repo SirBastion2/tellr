@@ -229,10 +229,24 @@ button[data-loading='true'],
 
 .tc-facts {
   display: grid;
-  grid-template-columns: minmax(7rem, 10rem) minmax(0, 1fr);
-  gap: var(--tc-space-facts, clamp(5px, 0.5vw, 8px) clamp(10px, 1vw, 16px));
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--tc-space-3, 12px);
+  row-gap: var(--tc-space-2, 8px);
   margin: 0;
   align-items: baseline;
+}
+
+.tc-facts dt {
+  margin: 0;
+  font-size: var(--tc-type-header, clamp(0.88rem, 0.45vw + 0.72rem, 1.05rem));
+  font-weight: 700;
+  line-height: var(--tc-line-fact, 16px);
+}
+
+.tc-facts dd {
+  margin: 0;
+  min-width: 0;
+  line-height: var(--tc-line-fact, 16px);
 }
 
 .tc-explain {
@@ -567,20 +581,24 @@ button[data-loading='true'],
 
 .tc-kv {
   display: grid;
-  grid-template-columns: 8rem minmax(0, 1fr);
-  gap: var(--tc-space-2, 8px) var(--tc-space-3, 12px);
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--tc-space-3, 12px);
+  row-gap: var(--tc-space-2, 8px);
   margin: 0;
   align-items: baseline;
 }
 
 .tc-kv dt {
   margin: 0;
-  font-size: 0.88rem;
+  font-size: var(--tc-type-header, clamp(0.88rem, 0.45vw + 0.72rem, 1.05rem));
   font-weight: 700;
+  line-height: var(--tc-line-fact, 16px);
 }
 
 .tc-kv dd {
   margin: 0;
+  min-width: 0;
+  line-height: var(--tc-line-fact, 16px);
 }
 
 .tc-timeline {
@@ -751,6 +769,7 @@ html[data-color-scheme='light'] select option:checked,
   --tc-type-amount: clamp(1.22rem, 1.3vw, 1.5rem);
   --tc-type-level: clamp(0.95rem, 0.48vw + 0.82rem, 1.15rem);
   --tc-type-action: clamp(1.1rem, 1.1vw, 1.5rem);
+  --tc-line-fact: 16px;
   --tc-space-workstation: clamp(10px, 1.3vw, 20px);
   --tc-space-card-fluid: clamp(10px, 1vw, 16px);
   --tc-space-strip: clamp(10px, 1vw, 13px);
@@ -790,6 +809,7 @@ body {
 
 .tc-amount {
   font-size: var(--tc-type-amount, clamp(1.22rem, 1.3vw, 1.5rem));
+  line-height: var(--tc-line-fact, 16px);
 }
 
 .tc-action-copy {

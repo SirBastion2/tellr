@@ -3,13 +3,11 @@ import type { CSSProperties, ReactNode } from 'react'
 const termStyle: CSSProperties = {
   margin: 0,
   fontWeight: 700,
-  lineHeight: 1.35,
 }
 
 const valueStyle: CSSProperties = {
   margin: 0,
   fontWeight: 400,
-  lineHeight: 1.4,
   minWidth: 0,
 }
 

@@ -7,7 +7,6 @@ import { SectionHeading } from '../ui/facts'
 const label: CSSProperties = {
   margin: 0,
   fontWeight: 700,
-  fontSize: '1rem',
 }
 
 const value: CSSProperties = { margin: 0 }
@@ -71,7 +70,7 @@ export function TransactionPanel({
           <span data-testid="txn-type">{customer.transaction.type}</span>
         </Row>
         <Row term="Amount">
-          <span data-testid="txn-amount" className="tc-amount" style={{ fontWeight: 700, lineHeight: 1.2 }}>
+          <span data-testid="txn-amount" className="tc-amount" style={{ fontWeight: 700 }}>
             {customer.transaction.amount}
           </span>
         </Row>
@@ -141,7 +140,7 @@ export function TransactionPanel({
       {showCase ? (
         <section data-testid="case-file" aria-label="Synthetic case file" className="tc-stack-heading">
           <SectionHeading>Case file</SectionHeading>
-          <dl className="tc-kv" style={{ display: 'grid', gridTemplateColumns: '9.5rem minmax(0, 1fr)', gap: 'var(--tc-space-2) var(--tc-space-4)', margin: 0 }}>
+          <dl className="tc-kv">
             <Row term="Name">{customer.profile.name}</Row>
             <Row term="Age band">{customer.profile.ageBand}</Row>
             <Row term="Tenure">{customer.profile.tenure}</Row>

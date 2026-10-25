@@ -39,6 +39,7 @@ export function themeVars(theme: BankTheme): Record<string, string> {
     '--tc-type-amount': DENSITY.typeAmount,
     '--tc-type-level': DENSITY.typeLevel,
     '--tc-type-action': DENSITY.typeAction,
+    '--tc-line-fact': DENSITY.lineFact,
     '--tc-space-workstation': DENSITY.spaceWorkstation,
     '--tc-space-strip': DENSITY.spaceStrip,
     '--tc-space-1': DENSITY.space1,

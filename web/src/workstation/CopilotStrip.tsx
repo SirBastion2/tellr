@@ -1,4 +1,3 @@
-import { notesOnlyLabels } from '../feed'
 import { controlStyle, secondaryStyle } from '../theme/controls'
 import { LEVEL_WORD, LevelIcon } from '../ui/LevelIcon'
 import type { AnswerPost, Library, SessionState } from '../types'
@@ -19,7 +18,6 @@ export function readAloud(session: SessionState): string {
 export function CopilotStrip({
   library,
   session,
-  postedChipIds,
   pending,
   idle = false,
   onEscalate,
@@ -72,9 +70,6 @@ export function CopilotStrip({
   const reason = session.risk.reasons[0]?.label ?? session.risk.counterpoint?.label ?? 'No concern flagged'
   const action = suggestedAction(session)
   const script = readAloud(session)
-  const extraNotes = notesOnlyLabels(library, postedChipIds, session.context_chips).filter(
-    (label) => !script.includes(label),
-  )
 
   return (
     <aside
@@ -154,11 +149,6 @@ export function CopilotStrip({
         <blockquote data-testid="read-aloud" className="tc-prose" style={{ margin: '8px 0 0', maxWidth: '70ch' }}>
           {script}
         </blockquote>
-        {extraNotes.length > 0 ? (
-          <p data-testid="teller-notes" className="tc-prose" style={{ margin: '8px 0 0', maxWidth: '70ch' }}>
-            {extraNotes.join(' ')}
-          </p>
-        ) : null}
       </details>
       {closed ? (
         <p className="tc-prose" style={{ margin: 0 }}>

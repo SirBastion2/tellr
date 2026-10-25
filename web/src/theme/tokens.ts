@@ -42,6 +42,8 @@ export const DENSITY = {
   typeAmount: 'clamp(1.22rem, 1.3vw, 1.5rem)',
   typeLevel: 'clamp(0.95rem, 0.48vw + 0.82rem, 1.15rem)',
   typeAction: 'clamp(1.1rem, 1.1vw, 1.5rem)',
+  /** Shared fact-row line box. Same length as space4 so Amount cannot add extra gap. */
+  lineFact: '16px',
   spaceWorkstation: 'clamp(10px, 1.3vw, 20px)',
   spaceCard: 'clamp(10px, 1vw, 16px)',
   spaceStrip: 'clamp(10px, 1vw, 13px)',

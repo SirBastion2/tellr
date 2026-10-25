@@ -71,6 +71,28 @@ describe('header labels and spacing rhythm', () => {
     expect(source).toMatch(/\.tc-connection[\s\S]*padding:\s*var\(--tc-space-2/)
   })
 
+  it('uses the same two-column fact grid and line-height token on kv lists', () => {
+    const source = css()
+    expect(DENSITY.lineFact).toBe(DENSITY.space4)
+    expect(source).toContain(`--tc-line-fact: ${DENSITY.lineFact}`)
+
+    for (const selector of ['.tc-kv', '.tc-facts'] as const) {
+      const rule = headerRule(source, selector)
+      expect(rule, selector).toMatch(/display:\s*grid/)
+      expect(rule, selector).toMatch(/grid-template-columns:\s*max-content\s+minmax\(0,\s*1fr\)/)
+      expect(rule, selector).toMatch(/column-gap:\s*var\(--tc-space-3/)
+      expect(rule, selector).toMatch(/row-gap:\s*var\(--tc-space-2/)
+      expect(rule, selector).toMatch(/align-items:\s*baseline/)
+    }
+
+    expect(headerRule(source, '.tc-kv dt')).toMatch(/line-height:\s*var\(--tc-line-fact/)
+    expect(headerRule(source, '.tc-kv dd')).toMatch(/line-height:\s*var\(--tc-line-fact/)
+    expect(headerRule(source, '.tc-facts dt')).toMatch(/line-height:\s*var\(--tc-line-fact/)
+    expect(headerRule(source, '.tc-facts dd')).toMatch(/line-height:\s*var\(--tc-line-fact/)
+    expect(headerRule(source, '.tc-amount')).toMatch(/line-height:\s*var\(--tc-line-fact/)
+    expect(headerRule(source, '.tc-amount')).toMatch(/font-size:\s*var\(--tc-type-amount/)
+  })
+
   it('wraps nav tabs instead of clipping them and keeps the #93 header wrap', () => {
     const source = css()
     const headerCss = headerRule(source, '.tc-header')
