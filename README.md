@@ -264,7 +264,7 @@ Two people steered. The agents wrote the code. Driver A, Sebastian, watched the 
 
 Each task or fix got a fresh AI agent and its own branch. Agents worked side by side. They told each other which files they owned, using a one-page map (`ARCHITECTURE.md`) and a short handoff note, so two agents were not editing the same place. A shared file has one owner. The agreement between the engine and the screen stays frozen unless both drivers approve a written change (`docs/ROSTER.md` §3; `WORKFLOW.md` §5; `docs/HANDOFF.md`).
 
-Sebastian stated that at one point 12 agents were running at the same time. That was not only the planned cards, such as A-08 and the frontend cards. It included UI fixes as well.
+We ran up to 12 agents in parallel. The number moved with the task: more agents when there was more to do, fewer when there was not, for roster cards and UI fixes alike.
 
 The life of a change:
 
