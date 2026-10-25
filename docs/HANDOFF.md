@@ -2306,4 +2306,40 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/110. Do not merge. Merged latest `origin/main` including #109 and #107. No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
 
+---
+
+### [B] Urgency Score level cutoffs in Technical details — Cloud agent — 2026-10-25 06:03
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS (ruff, 211 pytest, import-linter, contract). `scripts/gate.sh b` → PASS (typecheck, lint, 186 tests, contract).
+
+```
+── ruff
+All checks passed!
+── pytest
+211 passed, 1 warning
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (a)
+
+── typecheck
+── lint
+── test
+ Test Files  52 passed (52)
+      Tests  186 passed (186)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (b)
+```
+
+- **Changed:** `engine/score.py`, `api/main.py`, `tests/engine/test_properties.py`, `tests/recommenders/test_health.py`, `contract/CHANGES.md`, `contract/api.md`, `docs/QUESTIONS.md` (Q-015), `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`, `ARCHITECTURE.md`, `web/src/screens/HealthScreen.tsx`, `web/src/workstation/ExplanationPanel.tsx`, `web/mock/replay.ts`, `web/src/mockReplay.test.ts`, `web/src/levelCutoffs.test.tsx`
+- **Decisions I made, and the section that justified each:**
+  - SessionState / `GET /library` do not carry §6.3 cutoffs. Least-invasive expose: optional `level_bands` on untyped `GET /health` (CHANGE-006 / Q-015). No schema, no fixture regen, no `CONTRACT_VERSION` bump, no golden / `reference_impl.py` / weights-frozen edit.
+  - Bands come from new `engine.score.level_bands()`, which uses the same `CAUTION` / `HIGH` / +100 clamp as `level()`. Display names are engine names (`Clear`, `Caution`, `High concern`).
+  - `web/` only prints `{label}: {min}–{max}` from that payload (same `<p>` rows as other Technical details). Health screen does not show the field. No extra labels, chips, icons, or tooltips.
+  - Sample-data mock echoes the live bands. The UI test feeds non-25/60 numbers so the panel cannot be hardcoding the ranges.
+- **Questions logged:** Q-015 (answered: CHANGE-006)
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/111. Do not merge. Cutoffs shown: `Clear: 0–24`, `Caution: 25–59`, `High concern: 60–100`. No new dependency. No screenshots or videos.
+
 

@@ -418,6 +418,12 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
         fallback_rate: 0,
         rejection_count: 0,
         agreement_rate: null,
+        // Echo of engine.score.level_bands(); UI must not invent these numbers.
+        level_bands: [
+          { level: 'clear', label: 'Clear', min: 0, max: 24 },
+          { level: 'caution', label: 'Caution', min: 25, max: 59 },
+          { level: 'high', label: 'High concern', min: 60, max: 100 },
+        ],
       },
       warnings: [],
     }

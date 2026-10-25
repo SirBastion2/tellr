@@ -185,6 +185,11 @@ export function ExplanationPanel({
               ? `Across recent visits, agreement with the rules is ${health.agreement_rate ?? 'not included'} and the fallback rate is ${health.fallback_rate}. That is the whole service, not this decision.`
               : 'Service-wide rates are not loaded.'}
           </p>
+          {health?.level_bands?.map((band) => (
+            <p key={band.level} data-testid="explain-level-cutoff" style={{ margin: 0 }}>
+              {band.label}: {band.min}–{band.max}
+            </p>
+          ))}
           {grouped.explanation ? (
             <>
               <p data-testid="explain-confidence" className="tc-prose" style={{ margin: 0 }}>

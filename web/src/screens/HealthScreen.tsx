@@ -3,6 +3,13 @@ import { apiSend } from '../api'
 import { Fact, FactGrid, PageTitle } from '../ui/facts'
 import { recommenderTitle } from '../ui/plain'
 
+export type LevelBand = {
+  level: string
+  label: string
+  min: number
+  max: number
+}
+
 export type HealthReport = {
   recommender: string
   model_id: string | null
@@ -12,6 +19,7 @@ export type HealthReport = {
   fallback_rate: number
   rejection_count: number
   agreement_rate: number | null
+  level_bands?: readonly LevelBand[]
 }
 
 type HealthLoad =
@@ -34,6 +42,29 @@ function numberOrNull(value: unknown): number | null | undefined {
   return undefined
 }
 
+function readLevelBands(value: unknown): readonly LevelBand[] | undefined {
+  if (value == null || !Array.isArray(value)) {
+    return undefined
+  }
+  const bands: LevelBand[] = []
+  for (const item of value) {
+    if (!isRecord(item)) {
+      return undefined
+    }
+    if (typeof item.level !== 'string' || typeof item.label !== 'string') {
+      return undefined
+    }
+    if (typeof item.min !== 'number' || !Number.isFinite(item.min)) {
+      return undefined
+    }
+    if (typeof item.max !== 'number' || !Number.isFinite(item.max)) {
+      return undefined
+    }
+    bands.push({ level: item.level, label: item.label, min: item.min, max: item.max })
+  }
+  return bands
+}
+
 export function readHealth(body: unknown): HealthReport | null {
   if (!isRecord(body) || typeof body.recommender !== 'string') {
     return null
@@ -54,6 +85,7 @@ export function readHealth(body: unknown): HealthReport | null {
   if (typeof body.rejection_count !== 'number' || !Number.isFinite(body.rejection_count)) {
     return null
   }
+  const levelBands = readLevelBands(body.level_bands)
   return {
     recommender: body.recommender,
     model_id: body.model_id,
@@ -63,6 +95,7 @@ export function readHealth(body: unknown): HealthReport | null {
     fallback_rate: body.fallback_rate,
     rejection_count: body.rejection_count,
     agreement_rate: agreement,
+    ...(levelBands ? { level_bands: levelBands } : {}),
   }
 }
 
