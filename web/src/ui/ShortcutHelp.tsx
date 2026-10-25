@@ -57,6 +57,10 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
             </li>
           ))}
         </ul>
+        <p data-testid="shortcut-scope" style={{ margin: 0, fontSize: 14 }}>
+          These keys work on every screen, including Customer file, Outcome, and Handoff.
+          They do nothing while you type in a field, or while Ctrl, Alt, or Cmd is held.
+        </p>
         <button
           ref={closeRef}
           type="button"
