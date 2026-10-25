@@ -204,11 +204,11 @@ export function AppShell({
           data-testid="app-header"
           style={{
             display: 'flex',
-            flexWrap: 'nowrap',
+            flexWrap: 'wrap',
             alignItems: 'center',
             gap: '8px',
             minHeight: '48px',
-            overflow: 'hidden',
+            overflow: 'visible',
             minWidth: 0,
             maxWidth: '100%',
             background: 'var(--tc-glass-fallback)',
@@ -226,7 +226,7 @@ export function AppShell({
             aria-label="Screens"
             data-testid="app-nav"
             className="tc-header-nav"
-            style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', minWidth: 0, flex: '1 1 auto', minHeight: 48, gap: 8 }}
+            style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', minWidth: 0, flex: '1 1 20rem', minHeight: 48, gap: 8 }}
           >
             {routes.map((route) => {
               const path = routePath(route, session)

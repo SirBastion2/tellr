@@ -2,13 +2,53 @@
 // @ts-expect-error node:fs is provided by the test runner
 import { readFileSync } from 'node:fs'
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
-import { App } from './App'
+import { App, AppShell } from './App'
+import { CUSTOMERS } from './demo/customers'
+import type { DemoView } from './demo/types'
+import { liveBadgeText } from './LiveBadge'
 import './index.css'
 import { THEMES } from './theme/registry'
 import { DEMO_ROOT_FONT, DENSITY, FOOTER_FONT_SIZE, HEADER_SCHEME_COLLAPSE_PX } from './theme/tokens'
 
 const css = () => readFileSync('src/index.css', 'utf8')
+
+/** CSS pixels for the laptop widths and zooms the header must survive. */
+const HEADER_FIT_CSS_PX = [1280, 1440, 1512, 1024, 1152, 960] as const
+
+function demoView(customerId: string): DemoView {
+  return {
+    customers: CUSTOMERS,
+    customerId,
+    index: 0,
+    playing: false,
+    speed: 1,
+    pending: false,
+    showCase: false,
+    confirmed: [],
+    presenter: false,
+    elapsedMs: 0,
+    onSelectCustomer: () => undefined,
+    onPlay: () => undefined,
+    onPause: () => undefined,
+    onStep: () => undefined,
+    onRestart: () => undefined,
+    onSpeed: () => undefined,
+    onToggleCase: () => undefined,
+    onConfirmSignal: () => undefined,
+    onDismissSignal: () => undefined,
+    onEscalate: () => undefined,
+  }
+}
+
+function headerRule(source: string, selector: string): string {
+  const match = source.match(new RegExp(`${selector.replace('.', '\\.')}\\s*\\{([^}]*)\\}`))
+  if (!match?.[1]) {
+    throw new Error(`missing ${selector} rule`)
+  }
+  return match[1]
+}
 
 describe('workstation laptop fit', () => {
   it('keeps 3fr/2fr from 1280px and stacks below 900px', () => {
@@ -20,26 +60,51 @@ describe('workstation laptop fit', () => {
     expect(source).toMatch(/@media \(min-width:\s*1024px\)/)
   })
 
-  it('collapses the theme segment at 1280px and never clips header copy', () => {
+  it('wraps the header instead of clipping title or tabs at laptop zoom', () => {
     const source = css()
+    const titleRule = headerRule(source, '.tc-header-title')
+    const badgeRule = headerRule(source, '.tc-live-badge')
+    const headerCss = headerRule(source, '.tc-header')
     expect(HEADER_SCHEME_COLLAPSE_PX).toBe(1280)
     expect(source).not.toMatch(/1120px/)
     expect(source).toMatch(new RegExp(`@container header \\(max-width:\\s*${HEADER_SCHEME_COLLAPSE_PX}px\\)`))
     expect(source).toMatch(new RegExp(`@media \\(max-width:\\s*${HEADER_SCHEME_COLLAPSE_PX}px\\)`))
-    expect(source).toMatch(/\.tc-header-title[\s\S]*overflow:\s*hidden/)
-    expect(source).toMatch(/\.tc-header-title[\s\S]*text-overflow:\s*ellipsis/)
-    expect(source).toMatch(/\.tc-live-badge[\s\S]*text-overflow:\s*ellipsis/)
-    expect(source).toMatch(/\.tc-connection[\s\S]*text-overflow:\s*ellipsis/)
-    expect(source).toMatch(/\.tc-header-nav[\s\S]*overflow-x:\s*auto/)
+    expect(headerCss).toMatch(/flex-wrap:\s*wrap/)
+    expect(headerCss).toMatch(/overflow:\s*visible/)
+    expect(titleRule).toMatch(/flex:\s*0 0 auto/)
+    expect(titleRule).toMatch(/flex-shrink:\s*0/)
+    expect(titleRule).not.toMatch(/overflow:\s*hidden/)
+    expect(titleRule).not.toMatch(/text-overflow:\s*ellipsis/)
+    expect(badgeRule).toMatch(/text-overflow:\s*ellipsis/)
+    expect(badgeRule).toMatch(/overflow:\s*hidden/)
+    expect(badgeRule).toMatch(/font-size:\s*0\.875rem/)
+    expect(badgeRule).not.toMatch(/max-width:\s*14rem/)
+    expect(badgeRule).not.toMatch(/display:\s*inline-flex/)
+    expect(headerRule(source, '.tc-connection')).toMatch(/text-overflow:\s*ellipsis/)
+    expect(headerRule(source, '.tc-header-nav')).toMatch(/overflow-x:\s*auto/)
+    expect(HEADER_FIT_CSS_PX).toEqual([1280, 1440, 1512, 1024, 1152, 960])
 
     window.localStorage.clear()
     render(<App />)
     const title = screen.getByRole('heading', { name: 'Teller Copilot' })
     expect(title.className).toContain('tc-header-title')
-    expect(screen.getByTestId('live-badge').className).toContain('tc-live-badge')
+    expect(title.textContent).toBe('Teller Copilot')
+    expect(getComputedStyle(title).overflow).toBe('visible')
+    expect(getComputedStyle(title).textOverflow).not.toBe('ellipsis')
+    const badge = screen.getByTestId('live-badge')
+    expect(badge.className).toContain('tc-live-badge')
+    expect(badge.textContent).toBe('Simulation: Contractor cash, coached')
+    expect(badge.getAttribute('title')).toBe('Simulation: Contractor cash, coached')
     expect(screen.getByTestId('connection-status').className).toContain('tc-connection')
-    expect(getComputedStyle(screen.getByTestId('app-header')).flexWrap).toBe('nowrap')
+    expect(getComputedStyle(screen.getByTestId('app-header')).flexWrap).toBe('wrap')
+    expect(getComputedStyle(screen.getByTestId('app-header')).overflow).toBe('visible')
     expect(getComputedStyle(screen.getByTestId('app-nav')).overflowX).toBe('auto')
+    for (const label of ['Home', 'Customer file', 'Outcome', 'Handoff']) {
+      const tab = screen.getByText(label)
+      expect(tab.textContent).toBe(label)
+      expect(tab.getAttribute('style') ?? '').toMatch(/flex:\s*0 0 auto/)
+      expect(tab.getAttribute('style') ?? '').toMatch(/white-space:\s*nowrap/)
+    }
     expect(screen.getByTestId('scheme-menu')).toBeTruthy()
     expect(screen.getByTestId('color-scheme')).toBeTruthy()
     expect(screen.getByTestId('theme-root').style.fontSize).toBe(DEMO_ROOT_FONT)
@@ -49,6 +114,22 @@ describe('workstation laptop fit', () => {
     expect(source).toMatch(/\.tc-page-card[\s\S]*width:\s*100%/)
     expect(source).toMatch(/\.tc-footer[\s\S]*font-size:\s*13px/)
     expect(source).not.toMatch(/min\(1440px/)
+  })
+
+  it('keeps every simulation label complete and exposes it on the pill title', () => {
+    for (const customer of CUSTOMERS) {
+      const label = liveBadgeText('live', customer.title)
+      expect(label).toBe(`Simulation: ${customer.title}`)
+      const { unmount } = render(
+        <MemoryRouter>
+          <AppShell library={null} session={null} issues={[]} demo={demoView(customer.id)} />
+        </MemoryRouter>,
+      )
+      const badge = screen.getByTestId('live-badge')
+      expect(badge.textContent, customer.id).toBe(label)
+      expect(badge.getAttribute('title'), customer.id).toBe(label)
+      unmount()
+    }
   })
 
   it('scales type and spacing from the shared density tokens', () => {
