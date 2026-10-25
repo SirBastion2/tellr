@@ -65,13 +65,14 @@ describe('demo polish', () => {
     fireEvent.click(screen.getByTestId('demo-speed-4'))
     for (let i = 1; i < contractor.events.length; i += 1) {
       fireEvent.click(screen.getByTestId('demo-step'))
+      const stamp = formatElapsed(timelineElapsedMs(contractor.events, i + 1))
       await waitFor(() => {
-        expect(screen.getAllByTestId('demo-event')).toHaveLength(i + 1)
+        expect(screen.getByTestId('event-marker').textContent).toContain(stamp)
       })
     }
     expect(screen.getByTestId('elapsed-timer').textContent).toBe('1:00')
-    const last = screen.getAllByTestId('event-marker').at(-1)
-    expect(last?.textContent).toMatch(/1:00/)
+    expect(screen.getAllByTestId('demo-event')).toHaveLength(1)
+    expect(screen.getByTestId('event-marker').textContent).toMatch(/1:00/)
   })
 
   it('fires each scripted event when elapsed time reaches it', async () => {
@@ -98,6 +99,7 @@ describe('demo polish', () => {
         await vi.advanceTimersByTimeAsync(1)
       })
       expect(screen.getAllByTestId('demo-event')).toHaveLength(1)
+      expect(screen.getByTestId('event-marker').textContent).toMatch(/Step 1 ·/)
       expect(screen.getByTestId('event-marker').textContent).toMatch(/0:04/)
       const afterFirst = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
       expect(afterFirst).toBeGreaterThanOrEqual(4)
@@ -111,15 +113,16 @@ describe('demo polish', () => {
       await act(async () => {
         await vi.advanceTimersByTimeAsync(wallToSecond - 1)
       })
-      expect(screen.getAllByTestId('demo-event')).toHaveLength(1)
+      expect(screen.getByTestId('event-marker').textContent).toMatch(/0:04/)
+      expect(screen.getByTestId('event-marker').textContent).not.toMatch(/0:18/)
       const beforeSecond = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
       expect(beforeSecond).toBeGreaterThanOrEqual(onHome)
 
       await act(async () => {
         await vi.advanceTimersByTimeAsync(1)
       })
-      expect(screen.getAllByTestId('demo-event')).toHaveLength(2)
-      expect(screen.getAllByTestId('event-marker').at(-1)?.textContent).toMatch(/0:18/)
+      expect(screen.getAllByTestId('demo-event')).toHaveLength(1)
+      expect(screen.getByTestId('event-marker').textContent).toMatch(/0:18/)
       const afterSecond = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
       expect(afterSecond).toBeGreaterThanOrEqual(beforeSecond)
       expect(afterSecond).toBeGreaterThanOrEqual(18)
@@ -128,15 +131,16 @@ describe('demo polish', () => {
       await act(async () => {
         await vi.advanceTimersByTimeAsync(wallToThird - 1)
       })
-      expect(screen.getAllByTestId('demo-event')).toHaveLength(2)
+      expect(screen.getByTestId('event-marker').textContent).toMatch(/0:18/)
+      expect(screen.getByTestId('event-marker').textContent).not.toMatch(/0:32/)
       const beforeThird = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
       expect(beforeThird).toBeGreaterThanOrEqual(afterSecond)
 
       await act(async () => {
         await vi.advanceTimersByTimeAsync(1)
       })
-      expect(screen.getAllByTestId('demo-event')).toHaveLength(3)
-      expect(screen.getAllByTestId('event-marker').at(-1)?.textContent).toMatch(/0:32/)
+      expect(screen.getAllByTestId('demo-event')).toHaveLength(1)
+      expect(screen.getByTestId('event-marker').textContent).toMatch(/0:32/)
       const afterThird = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
       expect(afterThird).toBeGreaterThanOrEqual(beforeThird)
       expect(afterThird).toBeGreaterThanOrEqual(32)

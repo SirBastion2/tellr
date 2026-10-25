@@ -517,7 +517,7 @@ function ConnectedShell() {
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState<DemoSpeed>(1)
   const [pending, setPending] = useState(false)
-  const [showCase, setShowCase] = useState(true)
+  const [showCase, setShowCase] = useState(false)
   const [confirmed, setConfirmed] = useState<string[]>([])
   const [dismissed, setDismissed] = useState<string[]>([])
   const [actions, setActions] = useState<SignalAction[]>([])

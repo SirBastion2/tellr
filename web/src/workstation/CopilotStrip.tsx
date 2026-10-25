@@ -174,9 +174,11 @@ export function CopilotStrip({
     return (
       <aside aria-label="Copilot" data-testid="copilot-strip" className="tc-strip" data-idle="true">
         <CopilotHeading />
-        <p data-testid="copilot-idle" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-          Press play to start the simulation.
-        </p>
+        <div className="tc-strip-body">
+          <p data-testid="copilot-idle" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
+            Press play to start the simulation.
+          </p>
+        </div>
       </aside>
     )
   }
@@ -191,9 +193,11 @@ export function CopilotStrip({
         data-updating={pending ? 'true' : undefined}
       >
         <CopilotHeading />
-        <p data-testid="copilot-updating" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-          Updating copilot…
-        </p>
+        <div className="tc-strip-body">
+          <p data-testid="copilot-updating" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
+            Updating copilot…
+          </p>
+        </div>
       </aside>
     )
   }
@@ -216,14 +220,14 @@ export function CopilotStrip({
       aria-busy={pending}
       data-updating={pending ? 'true' : undefined}
     >
+      <CopilotHeading />
+      <div className="tc-strip-body" data-dimmed={pending ? 'true' : 'false'}>
       {pending ? (
         <p data-testid="copilot-updating" className="tc-strip-updating">
           <span className="tc-inline-spinner" aria-hidden="true" />
           Updating copilot…
         </p>
       ) : null}
-      <div className="tc-strip-body" data-dimmed={pending ? 'true' : 'false'}>
-      <CopilotHeading />
       <div className="tc-copilot-pin" ref={pinRef}>
         <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0 }}>
           <LevelIcon level={level} />{LEVEL_WORD[level]}
@@ -385,7 +389,9 @@ export function CopilotStrip({
         <p className="tc-prose" style={{ margin: 0 }}>
           This visit is closed.
         </p>
-      ) : (
+      ) : null}
+      </div>
+      {closed ? null : (
         <div className="tc-copilot-actions" style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--tc-space-2, 8px)' }}>
           {onUndo ? (
             <button
@@ -431,6 +437,18 @@ export function CopilotStrip({
         hidden={!open}
         ref={overlayRef}
       >
+        <div className="tc-explain-overlay-bar">
+          <button
+            type="button"
+            className="tc-btn"
+            data-variant="secondary"
+            data-testid="score-explanation-close"
+            aria-label="Close score explanation"
+            onClick={() => setOpen(false)}
+          >
+            Close
+          </button>
+        </div>
         <div className="tc-explain-overlay-body">
           <ExplanationPanel
             library={library}
@@ -439,7 +457,6 @@ export function CopilotStrip({
             activity={activity}
           />
         </div>
-      </div>
       </div>
     </aside>
   )

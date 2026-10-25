@@ -3,7 +3,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 // @ts-expect-error node:path is provided by the test runner
 import { join, relative } from 'node:path'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { App } from './App'
 import { TYPE_FG, TYPE_FG_PCT, TYPE_ROLE, TYPE_WEIGHT } from './theme/typeScale'
@@ -111,6 +111,7 @@ describe('shared type hierarchy', () => {
     window.localStorage.setItem(THEME_STORAGE_KEY, 'tellr')
     window.localStorage.setItem(COLOR_STORAGE_KEY, 'dark')
     render(<App />)
+    fireEvent.click(screen.getByTestId('case-file-toggle'))
     const type = screen.getByTestId('txn-type')
     const grid = type.closest('dl')
     expect(grid?.className).toContain('tc-kv')
@@ -121,11 +122,9 @@ describe('shared type hierarchy', () => {
     const memoProse = memo.closest('.tc-prose')
     expect(memoProse?.parentElement?.className).toContain('tc-fact-value')
     expect(memoProse?.parentElement?.closest('dl')).toBe(grid)
-    expect(screen.getByRole('heading', { name: 'Transaction' }).className).toContain('tc-title')
-    expect(screen.getByRole('heading', { name: 'Timeline' }).className).toContain('tc-section-heading')
-    const eventCaption = screen.getByText(/Event 0 of/)
-    expect(eventCaption.className).toContain('tc-kicker')
-    expect(eventCaption.closest('.tc-block')).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Case file' }).className).toContain('tc-section-heading')
+    expect(screen.queryByRole('heading', { name: 'Timeline' })).toBeNull()
+    expect(screen.queryByText(/Event 0 of/)).toBeNull()
   })
 
   it('keeps label and heading font-size/weight out of screen files', () => {

@@ -2,11 +2,9 @@ import type { CSSProperties } from 'react'
 import { formatElapsed } from '../demo/clock'
 import { customerById } from '../demo/customers'
 import type { DemoSpeed, DemoView } from '../demo/types'
-import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
+import { controlStyle, secondaryStyle } from '../theme/controls'
 import { DENSITY } from '../theme/tokens'
 import { BackIcon, PauseIcon, PlayIcon, RestartIcon, StepIcon } from '../ui/icons'
-import { personalNamesFrom, redactPersonalCopy } from '../ui/privacy'
-import { StepSwap, useStepDirection } from './StepSwap'
 
 const controlHeight = `var(--tc-control-h, ${DENSITY.controlHeight})`
 
@@ -21,6 +19,21 @@ const control: CSSProperties = {
   boxSizing: 'border-box',
   gap: 'var(--tc-space-2, 8px)',
   padding: 'var(--tc-space-control-pad-y, 8px) var(--tc-space-control-pad-x, 12px)',
+}
+
+const compactLink: CSSProperties = {
+  ...controlStyle,
+  display: 'inline-flex',
+  alignItems: 'center',
+  height: 'auto',
+  minHeight: 0,
+  minWidth: 0,
+  padding: 0,
+  background: 'transparent',
+  color: 'var(--tc-link, var(--tc-text))',
+  borderColor: 'transparent',
+  textDecoration: 'underline',
+  textUnderlineOffset: '3px',
 }
 
 const iconButton: CSSProperties = {
@@ -47,16 +60,7 @@ export function CaseFileLink({
       data-variant="link"
       data-testid="case-file-toggle"
       aria-pressed={showCase}
-      style={{
-        ...control,
-        marginLeft: 'auto',
-        background: 'transparent',
-        color: 'var(--tc-link, var(--tc-text))',
-        borderColor: 'transparent',
-        textDecoration: 'underline',
-        textUnderlineOffset: '3px',
-        minWidth: 'var(--tc-case-link-min, 9.5rem)',
-      }}
+      style={compactLink}
       onClick={() => onToggleCase()}
     >
       <span className="tc-case-label">
@@ -75,12 +79,11 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
   return (
     <div className="tc-toolbar" role="toolbar" aria-label="Simulation" data-testid="demo-toolbar">
       <label htmlFor="customer-picker" className="tc-toolbar-customer">
-        <span className="tc-kicker">Simulated customer</span>
         <select
           id="customer-picker"
           data-testid="customer-picker"
+          aria-label="Simulated customer"
           value={demo.customerId}
-          style={{ ...control, minWidth: '12rem' }}
           onChange={(event) => demo.onSelectCustomer(event.target.value)}
         >
           {demo.customers.map((item) => (
@@ -94,103 +97,86 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
   )
 }
 
+export function MiniTransport({ demo }: { demo: DemoView }) {
+  return (
+    <div className="tc-mini-transport" role="group" aria-label="Playback">
+      <button
+        type="button"
+        className="tc-btn"
+        data-testid="demo-back"
+        aria-label="Back"
+        title="Previous step"
+        onClick={() => demo.onBack?.()}
+      >
+        <BackIcon />
+      </button>
+      <button
+        type="button"
+        className="tc-btn"
+        data-testid="demo-play"
+        title={demo.playing ? 'Pause (P)' : 'Play (P)'}
+        aria-label={demo.playing ? 'Pause' : 'Play'}
+        aria-pressed={demo.playing}
+        data-loading={demo.pending ? 'true' : 'false'}
+        aria-busy={demo.pending}
+        onClick={() => (demo.playing ? demo.onPause() : demo.onPlay())}
+      >
+        {demo.playing ? <PauseIcon /> : <PlayIcon />}
+        <span className="tc-play-label" aria-hidden="true">
+          <span data-show={demo.playing ? 'false' : 'true'}>Play</span>
+          <span data-show={demo.playing ? 'true' : 'false'}>Pause</span>
+        </span>
+      </button>
+      <button
+        type="button"
+        className="tc-btn"
+        data-testid="demo-step"
+        aria-label="Step"
+        title="Step (N)"
+        onClick={() => demo.onStep()}
+      >
+        <StepIcon />
+      </button>
+    </div>
+  )
+}
+
 export function PlaybackBar({ demo }: { demo: DemoView }) {
   const customer = customerById(demo.customerId)
   const events = customer?.events ?? []
-  const direction = useStepDirection(demo.index, demo.customerId)
-  const names = personalNamesFrom(customer?.profile.name ?? '')
-  const current = demo.index > 0 ? events[demo.index - 1] : null
-  const title = current ? redactPersonalCopy(current.text, names) : 'Customer File'
   return (
     <div className="tc-playback" data-testid="playback-bar">
-      <div className="tc-dot-track" data-testid="step-dots">
-        <StepSwap
-          stepKey={`${demo.customerId}:${demo.index}`}
-          direction={direction}
-          title={title}
-          titleClassName="tc-prose tc-footer-step-line"
-          testId="footer-step"
-        />
-        <div className="tc-dots" role="group" aria-label="Timeline steps">
-          {events.map((event, index) => {
-            const step = index + 1
-            const on = demo.index === step
-            return (
-              <button
-                key={event.id}
-                type="button"
-                className="tc-step-dot"
-                data-testid="step-dot"
-                data-step={step}
-                aria-current={on ? 'step' : undefined}
-                aria-label={`Step ${step}`}
-                onClick={() => demo.onSeek?.(step)}
-              />
-            )
-          })}
-        </div>
+      <div className="tc-dots" role="group" aria-label="Timeline steps" data-testid="step-dots">
+        {events.map((event, index) => {
+          const step = index + 1
+          const on = demo.index === step
+          return (
+            <button
+              key={event.id}
+              type="button"
+              className="tc-step-dot"
+              data-testid="step-dot"
+              data-step={step}
+              aria-current={on ? 'step' : undefined}
+              aria-label={`Step ${step}`}
+              onClick={() => demo.onSeek?.(step)}
+            />
+          )
+        })}
       </div>
-      <div className="tc-toolbar-controls">
-        <div className="tc-toolbar-group" role="group" aria-label="Playback">
-          <button
-            type="button"
-            className="tc-btn"
-            data-variant="secondary"
-            data-testid="demo-back"
-            aria-label="Back"
-            title="Previous step"
-            style={iconButton}
-            onClick={() => demo.onBack?.()}
-          >
-            <BackIcon />
-          </button>
-          <button
-            type="button"
-            className="tc-btn"
-            data-variant="primary"
-            data-testid="demo-play"
-            title={demo.playing ? 'Pause (P)' : 'Play (P)'}
-            aria-pressed={demo.playing}
-            data-loading={demo.pending ? 'true' : 'false'}
-            aria-busy={demo.pending}
-            style={{ ...control, ...primaryStyle, minWidth: 'var(--tc-play-min, 7.5rem)' }}
-            onClick={() => (demo.playing ? demo.onPause() : demo.onPlay())}
-          >
-            {demo.playing ? <PauseIcon /> : <PlayIcon />}
-            <span className="tc-play-label">
-              <span data-show={demo.playing ? 'false' : 'true'} aria-hidden={demo.playing}>
-                Play
-              </span>
-              <span data-show={demo.playing ? 'true' : 'false'} aria-hidden={!demo.playing}>
-                Pause
-              </span>
-            </span>
-          </button>
-          <button
-            type="button"
-            className="tc-btn"
-            data-variant="secondary"
-            data-testid="demo-step"
-            aria-label="Step"
-            title="Step (N)"
-            style={iconButton}
-            onClick={() => demo.onStep()}
-          >
-            <StepIcon />
-          </button>
-          <button
-            type="button"
-            className="tc-btn"
-            data-variant="secondary"
-            data-testid="demo-restart"
-            aria-label="Restart"
-            title="Restart (R)"
-            style={iconButton}
-            onClick={() => demo.onRestart()}
-          >
-            <RestartIcon />
-          </button>
-        </div>
+      <div className="tc-footer-utilities" aria-label="Playback extras">
+        <button
+          type="button"
+          className="tc-btn"
+          data-variant="secondary"
+          data-testid="demo-restart"
+          aria-label="Restart"
+          title="Restart (R)"
+          style={iconButton}
+          onClick={() => demo.onRestart()}
+        >
+          <RestartIcon />
+        </button>
         <div className="tc-segment tc-h40" role="group" aria-label="Playback speed" data-testid="speed-control">
           {speeds.map((speed) => {
             const selected = demo.speed === speed

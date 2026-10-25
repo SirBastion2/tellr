@@ -102,11 +102,11 @@ describe('merged workstation signals', () => {
     render(workstation({ demo: demo({ showCase: true }) }))
     const column = screen.getByTestId('transaction-panel')
     const amount = within(column).getByTestId('txn-amount')
-    const timeline = within(column).getByTestId('demo-timeline')
     const caseFile = within(column).getByTestId('case-file')
     expect(amount.textContent).toBe('$6,500')
-    expect(amount.compareDocumentPosition(timeline) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(timeline.compareDocumentPosition(caseFile) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.queryByTestId('demo-timeline')).toBeNull()
+    expect(screen.queryByTestId('event-progress')).toBeNull()
+    expect(amount.compareDocumentPosition(caseFile) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.queryByRole('heading', { name: 'Recent activity' })).toBeNull()
 
     const amountHits = (screen.getByTestId('home-screen').textContent ?? '').match(/\$6,500/g) ?? []
