@@ -122,6 +122,10 @@ export function ExplanationPanel({
   const noted = latestActivityTs(activity)
   const originFor = (item: LevelFactor) =>
     factorOrigin(library, item.id, item.label, postedChipIds, session.context_chips)
+  const raisedOrigin = (item: LevelFactor) => {
+    const origin = originFor(item)
+    return origin === 'Observed' ? null : origin
+  }
   const rawDiffers = session.risk.raw_level !== session.risk.level
 
   return (
@@ -154,7 +158,7 @@ export function ExplanationPanel({
         total={total}
         testId="explain-reason"
         empty="Nothing in this visit raised the level."
-        originFor={originFor}
+        originFor={raisedOrigin}
       />
 
       <SectionHeading>What would lower it</SectionHeading>

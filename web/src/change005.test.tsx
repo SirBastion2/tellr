@@ -77,10 +77,154 @@ describe('CHANGE-005 fields', () => {
     expect(technical.textContent).toMatch(/Weight 14/)
     expect(screen.queryByRole('heading', { name: 'What the teller and system noted' })).toBeNull()
     const raisedRow = screen.getAllByTestId('explain-reason').find((row) => row.textContent?.includes('On the phone'))
-    expect(raisedRow?.querySelector('[data-testid="signal-origin"]')?.textContent).toBe('Observed')
+    expect(raisedRow?.querySelector('.tc-factor-strength')?.textContent).toMatch(/Strong factor/)
+    expect(raisedRow?.querySelector('.tc-meter')).toBeTruthy()
+    expect(raisedRow?.querySelector('[data-testid="signal-origin"]')).toBeNull()
     expect(raisedRow?.textContent ?? '').not.toMatch(/sig\.|chip\./)
     const loweredRow = screen.getAllByTestId('explain-counter').find((row) => row.textContent?.includes('Known customer'))
     expect(loweredRow?.querySelector('[data-testid="signal-origin"]')).toBeNull()
+  })
+
+  it('renders the strength word and bar for a weighted factor and no Observed badge in What raised it', () => {
+    render(
+      <ExplanationPanel
+        library={library}
+        session={{
+          ...base,
+          explanation: {
+            confidence: null,
+            used_fallback: false,
+            contributions: [
+              {
+                signal_id: 'sig.third_party_call',
+                label: 'On the phone during the visit',
+                weight: 14,
+                direction: 'raises',
+              },
+              { signal_id: 'mit.known', label: 'Known customer', weight: 4, direction: 'lowers' },
+            ],
+          },
+          context_chips: [{ id: 'chip.on_phone', source: 'observed' }],
+        }}
+        postedChipIds={['chip.on_phone']}
+      />,
+    )
+    const raisedRow = screen.getAllByTestId('explain-reason').find((row) => row.textContent?.includes('On the phone'))
+    expect(raisedRow).toBeTruthy()
+    const word = raisedRow?.querySelector('.tc-factor-strength')
+    expect(word?.textContent?.replace(/\s+/g, ' ').trim()).toBe('↑ Strong factor')
+    const meter = raisedRow?.querySelector('.tc-meter')
+    expect(meter?.getAttribute('role')).toBe('meter')
+    expect(meter?.getAttribute('aria-label')).toBe('Strong factor')
+    expect(meter?.querySelector('span')?.getAttribute('style')).toMatch(/78%/)
+    const head = raisedRow?.querySelector('.tc-factor-head')
+    expect(head && meter && (head.compareDocumentPosition(meter) & Node.DOCUMENT_POSITION_FOLLOWING)).toBeTruthy()
+    expect(raisedRow?.querySelector('[data-testid="signal-origin"]')).toBeNull()
+    expect(raisedRow?.textContent).not.toMatch(/Observed/)
+    const raisedList = screen.getAllByTestId('explain-reason').map((row) => row.textContent ?? '').join('\n')
+    expect(raisedList).not.toMatch(/Observed/)
+  })
+
+  it('renders strength for every weighted contribution and omits Observed when the response has no weights', () => {
+    const labels = [
+      'Mentioned urgency or secrecy',
+      'Someone else directing them',
+      'On the phone during the visit',
+    ]
+    const reasons = [
+      {
+        id: 'sig.urgency_secrecy_mentioned',
+        label: labels[0] ?? '',
+        rationale: 'Being told to hurry or keep quiet is a hallmark of coaching.',
+      },
+      {
+        id: 'sig.someone_directing',
+        label: labels[1] ?? '',
+        rationale: 'Another person steering the transaction can mean the customer is not acting freely.',
+      },
+      {
+        id: 'sig.third_party_call',
+        label: labels[2] ?? '',
+        rationale: 'Scammers often stay on the line to coach the customer through the withdrawal.',
+      },
+    ]
+    const chips = [
+      { id: 'chip.urgency_secrecy', source: 'observed' as const },
+      { id: 'chip.someone_directing', source: 'observed' as const },
+      { id: 'chip.on_phone', source: 'observed' as const },
+      { id: 'chip.cash_only', source: 'teller' as const },
+      { id: 'chip.rushed', source: 'observed' as const },
+    ]
+    const posted = chips.map((chip) => chip.id)
+    const unweighted = {
+      ...base,
+      risk: {
+        ...base.risk,
+        level: 'caution' as const,
+        raw_level: 'caution' as const,
+        score: 45,
+        reasons,
+        counterpoint: null,
+      },
+      context_chips: chips,
+    }
+    const { rerender } = render(
+      <ExplanationPanel library={library} session={unweighted} postedChipIds={posted} />,
+    )
+    const plainRows = screen.getAllByTestId('explain-reason')
+    expect(plainRows.map((row) => row.querySelector('strong')?.textContent)).toEqual(labels)
+    for (const row of plainRows) {
+      expect(row.querySelector('.tc-factor-strength')).toBeNull()
+      expect(row.querySelector('.tc-meter')).toBeNull()
+      expect(row.querySelector('[data-testid="signal-origin"]')).toBeNull()
+      expect(row.textContent).not.toMatch(/Observed/)
+    }
+    expect(screen.getByTestId('explain-gap')).toBeTruthy()
+
+    rerender(
+      <ExplanationPanel
+        library={library}
+        session={{
+          ...unweighted,
+          explanation: {
+            confidence: null,
+            used_fallback: false,
+            contributions: [
+              { signal_id: 'sig.urgency_secrecy_mentioned', label: labels[0] ?? '', weight: 18, direction: 'raises' },
+              { signal_id: 'sig.someone_directing', label: labels[1] ?? '', weight: 16, direction: 'raises' },
+              { signal_id: 'sig.third_party_call', label: labels[2] ?? '', weight: 14, direction: 'raises' },
+              { signal_id: 'sig.cash_insistence', label: 'Insists on cash', weight: 12, direction: 'raises' },
+              { signal_id: 'sig.rushed', label: 'Seems rushed', weight: 6, direction: 'raises' },
+            ],
+          },
+        }}
+        postedChipIds={posted}
+      />,
+    )
+    expect(screen.queryByTestId('explain-gap')).toBeNull()
+    const weighted = screen.getAllByTestId('explain-reason')
+    expect(weighted).toHaveLength(5)
+    const words = weighted.map((row) =>
+      row.querySelector('.tc-factor-strength')?.textContent?.replace(/\s+/g, ' ').trim(),
+    )
+    expect(words).toEqual([
+      '↑ Moderate factor',
+      '↑ Moderate factor',
+      '↑ Moderate factor',
+      '↑ Moderate factor',
+      '↑ Minor factor',
+    ])
+    const widths = weighted.map((row) => row.querySelector('.tc-meter span')?.getAttribute('style'))
+    expect(widths).toEqual(['width: 27%;', 'width: 24%;', 'width: 21%;', 'width: 18%;', 'width: 9%;'])
+    const cash = weighted.find((row) => row.textContent?.includes('Insists on cash'))
+    expect(cash?.querySelector('[data-testid="signal-origin"]')?.textContent).toBe('Teller confirmed')
+    for (const row of weighted) {
+      if (row === cash) {
+        continue
+      }
+      expect(row.querySelector('[data-testid="signal-origin"]')).toBeNull()
+      expect(row.textContent).not.toMatch(/Observed/)
+    }
   })
 
   it('puts a raising counterpoint under what raised it when explanation is absent at Clear', () => {
@@ -144,7 +288,9 @@ describe('CHANGE-005 fields', () => {
         postedChipIds={['chip.on_phone']}
       />,
     )
-    expect(screen.getByTestId('signal-origin').textContent).toBe('Observed')
+    const observedRow = screen.getByTestId('explain-reason')
+    expect(observedRow.textContent).toMatch(/On the phone during the visit/)
+    expect(observedRow.querySelector('[data-testid="signal-origin"]')).toBeNull()
     rerender(
       <ExplanationPanel
         library={library}
