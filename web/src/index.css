@@ -431,6 +431,7 @@ button[data-loading='true'],
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
+  justify-content: space-between;
   gap: var(--tc-space-header, 8px);
   min-height: var(--tc-header-h, 48px);
   min-width: 0;
@@ -531,8 +532,7 @@ button[data-loading='true'],
   overflow: visible;
   min-height: var(--tc-header-control-h, 48px);
   min-width: min-content;
-  flex: 1 1 auto;
-  margin-inline: auto;
+  flex: 0 0 auto;
 }
 
 .tc-header-nav a,

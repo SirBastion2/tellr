@@ -229,6 +229,7 @@ export function AppShell({
             flexWrap: 'nowrap',
             alignItems: 'center',
             boxSizing: 'border-box',
+            justifyContent: 'space-between',
             gap: 'var(--tc-space-header, 8px)',
             minHeight: DENSITY.headerMinHeight,
             overflow: 'visible',
@@ -260,8 +261,7 @@ export function AppShell({
               justifyContent: 'center',
               overflow: 'visible',
               minWidth: 'min-content',
-              flex: '1 1 auto',
-              marginInline: 'auto',
+              flex: '0 0 auto',
               minHeight: 'var(--tc-header-control-h, 48px)',
               gap: 'var(--tc-space-header, 8px)',
             }}

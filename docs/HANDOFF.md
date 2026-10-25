@@ -1603,6 +1603,7 @@ GATE PASS (a)
 - **Questions logged:** none
 - **The next agent needs to know:** B should renumber PR #85's B-029 board entry to B-030 and rebase #85 on main. B-028, B-029 (#84), and the 10:55 PM ET contrast note need nothing from A. Devpost facts are FYI. No new dependency.
 
+
 ---
 
 ### [B] Live sessions, one fact list, demo layout — Agent B — 2026-10-24 23:05
@@ -1630,6 +1631,7 @@ GATE PASS (b)
   - Errors are one plain sentence. The page does not show an HTTP status or an error code.
 - **Questions logged:** none
 - **The next agent needs to know:** Follow `docs/UI_REFERENCE.md`, including the native select contrast rule from #85. No new dependency. Did not edit `contract/`, `api/`, `engine/`, goldens, or `docs/DECISIONS.md`. No new cross-lane item. `web/` still does not compute risk, levels, reasons, or the next question. Board id is B-031. B-030 is the select-contrast note on main (#85). Rebased on `7d6d2eb`.
+
 
 ---
 
@@ -1670,6 +1672,7 @@ Headless Chrome (`web/scripts/measure-fit.mjs`, live-API mode, F.N.B. theme, con
 - **Questions logged:** none
 - **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine edits. No new npm dependency. Do not attach screenshots. Re-run `node web/scripts/measure-fit.mjs http://127.0.0.1:5173` after `npm run dev:api` if the header grows again.
 
+
 ---
 
 ### [B] Copilot card reversible actions and idle state — Agent B (Sebastian / Driver A UI lane) — 2026-10-25 03:50
@@ -1698,6 +1701,7 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR is https://github.com/SirBastion2/tellr/pull/90. Do not merge. `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine / library edits. No new npm dependency. No screenshots.
 
+
 ---
 
 ### [B] Demo polish: timer units, shortcuts, footer, width — Agent B (Sebastian / Driver A UI lane) — 2026-10-25 03:50
@@ -1725,6 +1729,7 @@ GATE PASS (b)
   - Outcome and Handoff stay labeled as hint tabs until a visit exists. No new screens.
 - **Questions logged:** none
 - **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine edits. No new npm dependency. Do not merge. Do not attach screenshots.
+
 
 ---
 
@@ -1766,6 +1771,7 @@ GATE PASS (b)
 - **Questions logged:** Q-014
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/89. Drivers own Q-014. Smallest script CHANGE is §7.1 family-from-purpose + fixture regen + an extra post-hour-4 slot (004 and 005 already used) + B posting a purpose on the demo visits. Smallest *protocol* item for a higher observation-only government score is raising `observation_cap` (still Caution at 52) or raising it to ≥60 and dropping the High interview gate. A secrecy `confirmed` already yields High (62) with no protocol. `copy_status` stays DRAFT. `ARCHITECTURE.md` unchanged (no files added/removed/moved). No new dependency.
 
+
 ---
 
 ### [B] Urgency Score label + dismiss flicker — Agent B1 — 2026-10-25 04:12
@@ -1793,6 +1799,7 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. PR #96. Do not merge from this card.
 
+
 ---
 
 ### [B] Global demo shortcuts on Customer file — Agent B1 — 2026-10-25 04:15
@@ -1818,6 +1825,7 @@ GATE PASS (b)
   - Help text states they work on every screen. `web/` still does not compute risk, level, reasons, or the next question (architecture §12).
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/97. Merged to main. Concurrent header / signal-list / handoff work should conflict little: `App.tsx` only replaced the inline `keydown` effect in `ConnectedShell`. No contract / api / engine edits. No new npm dependency. No screenshots.
+
 
 ---
 
@@ -1847,6 +1855,7 @@ GATE PASS (b)
   - No new npm dependency. No contract / api / engine / library / golden edits.
 - **Questions logged:** none
 - **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. `T` does not reload or reset the session. PR #99. Do not merge from this card.
+
 
 ---
 
@@ -1905,6 +1914,7 @@ GATE PASS (b)
   - On the workstation, pick a purpose then an answer chip. For the High/62 beat use government impersonation, play the visit, then "Answer came from the caller" and "Yes" on the secrecy question.
   - No new dependency.
 
+
 ---
 
 ### [B] Merge Recent activity into Why this level — Agent B1 — 2026-10-25 04:20
@@ -1932,6 +1942,7 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/98. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots.
 
+
 ---
 
 ### [B] Merge main #95 + #99 into merged-signal workstation — Agent B1 — 2026-10-25 04:24
@@ -1956,6 +1967,7 @@ GATE PASS (b)
   - `web/` still does not compute risk, level, reasons, or the next question (architecture §9, §12).
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/98. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots.
+
 
 ---
 
@@ -1982,6 +1994,7 @@ GATE PASS (b)
   - One 4/8/12/16/24 scale for header gap (8), header-to-content (16), heading-to-body (8), body-to-control (12), pill/button pad 8×12. No copy changes. `web/` computes nothing (§9, §12).
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/100. Do not merge. Other theme notes: per-bank `space.gap` is still 13/11/8/13 (not on the 4–24 scale); connection pill is 0.75rem vs simulation 0.875rem; Outcome highlight is hardcoded `#fef3c7`; scheme segment + menu both stay in the DOM; theme-page `overflow-x: hidden` can clip focus rings. No new dependency.
+
 
 ---
 
@@ -2010,6 +2023,7 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/101. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
 
+
 ---
 
 ### [B] Merge main #95–#99 into UI stress-test fixes — Agent B1 — 2026-10-25 05:12
@@ -2036,6 +2050,7 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/94. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots.
 
+
 ---
 
 ### [B] Merge main #100 + #101 into UI stress-test fixes — Agent B1 — 2026-10-25 05:16
@@ -2060,6 +2075,7 @@ GATE PASS (b)
   - Kept only #94’s non-duplicate behavior: first-seen `chipOrder` into `mergeSignalRows`, Handoff merged rows with dismissed/confirmed marks, floating Undo off Customer file, shortcut help two-column grid including `T`. Display only; no risk math (§9, §12).
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/94. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots.
+
 
 ---
 
@@ -2087,6 +2103,7 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/102. Do not merge. Branched from `27903ed` (#94). No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
 
+
 ---
 
 ### [B] Stable header simulation pill across Play — Agent B1 — 2026-10-25 05:24
@@ -2112,6 +2129,7 @@ GATE PASS (b)
   - Merged `origin/main` `6d291d5` (#102). Kept #102 copilot/privacy file-table rows and the LiveBadge/toolbar width notes.
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/103. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
+
 
 ---
 
@@ -2174,6 +2192,7 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/104. Do not merge. No contract / engine / library / golden edits. No new dependency. No screenshots. After #105: `scripts/gate.sh a` PASS (210 pytest); `scripts/gate.sh b` PASS (49 files, 177 tests).
 
+
 ---
 
 ### [B] Copilot panel grows, no inner scrollbar — Agent B1 — 2026-10-25 05:38
@@ -2198,6 +2217,7 @@ GATE PASS (b)
   - Same no-inner-scroll rule on the read-aloud script card and signal list. No per-theme overrides. Pill controls, type-scale tokens, and the 4/8/12/16/24 spacing scale unchanged. Did not edit `CopilotStrip.tsx` (other agents on header and read-aloud/Type spacing).
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/108. Merged latest `origin/main` (`15ab04d`) before finalize. No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+
 
 ---
 
@@ -2224,6 +2244,7 @@ GATE PASS (b)
   - Shared `tc-kv` / `tc-facts` grid: `max-content 1fr`, `--tc-space-3` column-gap, `--tc-space-2` row-gap, baseline, `--tc-line-fact` = `--tc-text-base` so Amount (`--tc-text-2xl`) does not add extra row gap. Type-scale / spacing tokens only.
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/106. Merged to main. No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+
 
 ---
 
@@ -2253,6 +2274,7 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/107. Do not merge. Merged `origin/main` including #106 (`f9aa501`) and #108. Chromium measured 4 themes × 3 widths × idle/play with PNC longest sim label (`Simulation: Contractor cash, coached`) + `Live API connected`: headerH = oneRowH = 64, Δcy = 0, pill slack ≤ token pad (ellipsis only at 1024 on the sim pill). No new dependency. No screenshots or videos. Gate `b` only.
 
+
 ---
 
 ### [B] Transaction Type uses above-threshold chip wording — Agent B1 — 2026-10-25 05:48
@@ -2278,6 +2300,7 @@ GATE PASS (b)
   - Fact grid already used `max-content minmax(0, 1fr)`. Added `overflow-wrap: break-word` on values so the longer Type string wraps in the value column on all four themes.
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/109. Do not merge. No contract / engine / library / golden edits. `scripts/gate.sh contract` not run separately (gate `b` already checked it). No new dependency. No screenshots or videos.
+
 
 ---
 
@@ -2305,6 +2328,7 @@ GATE PASS (b)
   - Playwright at 1280 (live Home + fixture, long Type string): Amount center delta 0px; row gaps 8px / 8px; column gap 16px. No screenshots.
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/110. Do not merge. Merged latest `origin/main` including #109 and #107. No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+
 
 ---
 
@@ -2342,6 +2366,7 @@ GATE PASS (b)
 - **Questions logged:** Q-015 (answered: CHANGE-006)
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/111. Do not merge. Cutoffs shown: `Clear: 0–24`, `Caution: 25–59`, `High concern: 60–100`. No new dependency. No screenshots or videos.
 
+
 ---
 
 ### [B] Header fit after #107: drop clock and Live API pill — Agent B1 — 2026-10-25 06:08
@@ -2368,82 +2393,6 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/113. Do not merge. Merged `origin/main` including #107 and #110. Playwright header table is scratch (gate cannot run a committed Playwright header test). No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
 
----
-
-### [B] Shared type hierarchy for fact rows and subheads — Agent B1 — 2026-10-25 06:09
-- **Status:** done
-- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 190 tests, contract OK)
-
-```
-── typecheck
-── lint
-── test
- Test Files  53 passed (53)
-      Tests  190 passed (190)
-── contract
-contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
-
-GATE PASS (b)
-```
-
-- **Changed:** `web/src/theme/typeScale.ts`, `web/src/theme/tokens.ts`, `web/src/theme/vars.ts`, `web/src/index.css`, `web/src/ui/facts.tsx`, `web/src/ui/ShortcutHelp.tsx`, `web/src/ui/ConfirmDialog.tsx`, `web/src/workstation/TransactionPanel.tsx`, `web/src/workstation/CopilotStrip.tsx`, `web/src/workstation/ExplanationPanel.tsx`, `web/src/workstation/QuestionCard.tsx`, `web/src/screens/HomeScreen.tsx`, `web/src/screens/CustomerFileScreen.tsx`, `web/src/screens/OutcomeScreen.tsx`, `web/src/screens/HandoffScreen.tsx`, `web/src/screens/ContextScreen.tsx`, `web/src/screens/InterviewScreen.tsx`, `web/src/screens/HealthScreen.tsx`, `web/src/screens/HistoryScreen.tsx`, `web/src/typeHierarchy.test.tsx`, `web/src/themeContrast.test.ts`, other web tests, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
-- **Decisions I made, and the section that justified each:**
-  - One shared system: fact rows (`tc-kv` / `tc-facts` / `tc-fact-term` / `tc-fact-value`), uppercase tags (`tc-kicker` / `tc-section-heading`), body (`tc-prose`), block rules (`tc-block`). No per-screen type CSS. `web/` still does not compute risk, level, reasons, or the next question (architecture §9, §12).
-  - Labels are `--tc-text-sm` / weight 500 / `--tc-fg-soft-pct`. Values are bold 700 at full strength. Amount stays `--tc-text-2xl`. Body is `--tc-text-base` (closest step to 15px) at 85%. Tags match Read-aloud script. `STEP n` stays `tc-kicker` with no divider.
-  - Soft tint started at 68% and failed AA on mtb light page (4.45:1). Raised to **69%**, the lowest value that clears 4.5:1 on every bank surface. Header / nav / buttons / pills untouched.
-- **Questions logged:** none
-- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/112. Do not merge. Merged `origin/main` including #111 cutoff rows; those rows now use `tc-prose`. No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
-
----
-
-### [B] Merge #113 header into the type-hierarchy branch — Agent B1 — 2026-10-25 06:32
-- **Status:** done
-- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 191 tests, contract OK)
-
-```
-── typecheck
-── lint
-── test
- Test Files  53 passed (53)
-      Tests  191 passed (191)
-── contract
-contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
-
-GATE PASS (b)
-```
-
-- **Changed:** merge of `origin/main` (`2ea2ec8`, #113) into `cursor/type-hierarchy-2ec2`. Conflicts: `ARCHITECTURE.md`, `docs/HANDOFF.md`.
-- **Decisions I made, and the section that justified each:**
-  - Kept #112 label/value typography on every screen (`--tc-text-sm` / weight 500 / `--tc-fg-soft-pct` labels, bold values, shared tags and prose). Header, nav, buttons, and pills stay as #113 left them (architecture header / UI_REFERENCE).
-  - Header has no clock and no Live API pill. Scheme collapse stays measured (`schemeNeedsCompact`). Equal `--tc-space-2` padding on both ends. `web/src/ui/LocalClock.tsx` stays removed.
-  - `ARCHITECTURE.md` scheme row is #113; type-scale row keeps the #112 tints. Toolbar row no longer says the clock sits in the header, because that file was removed.
-- **Questions logged:** none
-- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/112. Do not open a new PR. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos.
-
----
-
-### [B] Center signal confirm and dismiss icons — Agent B1 — 2026-10-25 06:51
-- **Status:** done
-- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 192 tests, contract OK)
-
-```
-── typecheck
-── lint
-── test
- Test Files  53 passed (53)
-      Tests  192 passed (192)
-── contract
-contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
-
-GATE PASS (b)
-```
-
-- **Changed:** `web/src/workstation/CopilotStrip.tsx`, `web/src/ui/icons.tsx`, `web/src/workstation.test.tsx`, `docs/HANDOFF.md`
-- **Decisions I made, and the section that justified each:**
-  - Confirm (✓) and dismiss (✕) stay the 48px circles on the copilot signal rows (`CopilotStrip`, architecture workstation). Both use grid `place-items: center`, `line-height: 1`, and padding 0 so the inline SVG sits in the middle of the circle. Size, fill, border, and radius are unchanged. The same styles apply in tellr, pnc, mtb, and fnb because those banks share the control.
-  - The check stroke was half a unit right of the 24 viewBox center. Shifted that path left by 0.5 so the ink is centered. The X path was already centered.
-- **Questions logged:** none
-- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/114. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos. ARCHITECTURE.md unchanged (no files moved).
 
 ---
 
@@ -2470,6 +2419,31 @@ GATE PASS (b)
   - Kept main's header (no clock, no Live API pill), shared type hierarchy, and fact grid. No new UI. `ARCHITECTURE.md` already matched main; this branch moved no files.
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/115. Do not open a new PR. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos.
+
+---
+
+### [B] Spread header groups across the pill — Agent B1 — 2026-10-25 06:55
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 187 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  52 passed (52)
+      Tests  187 passed (187)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/App.tsx`, `web/src/index.css`, `web/src/headerRhythm.test.tsx`, `web/src/headerSimPill.test.tsx`, `web/src/themeConsistency.test.tsx`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - The nav was `flex: 1 1 auto` with `margin-inline: auto`, so leftover width sat around the tabs and the logo, simulation pill, and scheme controls stayed bunched. Header is now `justify-content: space-between` with the existing equal `padding-inline: var(--tc-space-2)`. The nav stays content-sized (`flex: 0 0 auto`) and its tabs stay centered. Brand, simulation pill, nav, and scheme + `?` share the free space as equal gaps.
+  - Did not force a geometrically centered nav with equal side columns. That kept the logo against the simulation pill whenever the left cluster was at max-content, and it overflowed tellr and mtb at 1024. Equal gaps keep one row inside the pill from 1024 to 1920 on tellr, pnc, mtb, and fnb. Scheme collapse from #113 is unchanged.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/117. Do not merge. No contract / engine / library / golden edits. `ARCHITECTURE.md` unchanged (no files moved). No new dependency. No screenshots or videos.
 
 ---
 
@@ -2507,5 +2481,82 @@ GATE PASS (b)
   - The icon now sits inside `.tc-level-badge`, which is already `inline-flex` and `align-items: center` (same placement as Handoff). `.tc-level-badge svg` is `display: block; flex: 0 0 auto; align-self: center` so Clear, Caution, and High share one 20×20 box. Pill padding, type, colors, and min-height are unchanged.
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/115. Do not merge. No contract / engine / library / golden edits. No new dependency. No screenshots or videos. ARCHITECTURE.md unchanged (no files moved).
+
+---
+
+### [B] Center signal confirm and dismiss icons — Agent B1 — 2026-10-25 06:51
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 192 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  53 passed (53)
+      Tests  192 passed (192)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/workstation/CopilotStrip.tsx`, `web/src/ui/icons.tsx`, `web/src/workstation.test.tsx`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Confirm (✓) and dismiss (✕) stay the 48px circles on the copilot signal rows (`CopilotStrip`, architecture workstation). Both use grid `place-items: center`, `line-height: 1`, and padding 0 so the inline SVG sits in the middle of the circle. Size, fill, border, and radius are unchanged. The same styles apply in tellr, pnc, mtb, and fnb because those banks share the control.
+  - The check stroke was half a unit right of the 24 viewBox center. Shifted that path left by 0.5 so the ink is centered. The X path was already centered.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/114. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos. ARCHITECTURE.md unchanged (no files moved).
+
+---
+
+### [B] Merge #113 header into the type-hierarchy branch — Agent B1 — 2026-10-25 06:32
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 191 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  53 passed (53)
+      Tests  191 passed (191)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merge of `origin/main` (`2ea2ec8`, #113) into `cursor/type-hierarchy-2ec2`. Conflicts: `ARCHITECTURE.md`, `docs/HANDOFF.md`.
+- **Decisions I made, and the section that justified each:**
+  - Kept #112 label/value typography on every screen (`--tc-text-sm` / weight 500 / `--tc-fg-soft-pct` labels, bold values, shared tags and prose). Header, nav, buttons, and pills stay as #113 left them (architecture header / UI_REFERENCE).
+  - Header has no clock and no Live API pill. Scheme collapse stays measured (`schemeNeedsCompact`). Equal `--tc-space-2` padding on both ends. `web/src/ui/LocalClock.tsx` stays removed.
+  - `ARCHITECTURE.md` scheme row is #113; type-scale row keeps the #112 tints. Toolbar row no longer says the clock sits in the header, because that file was removed.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/112. Do not open a new PR. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos.
+
+---
+
+### [B] Shared type hierarchy for fact rows and subheads — Agent B1 — 2026-10-25 06:09
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 190 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  53 passed (53)
+      Tests  190 passed (190)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/theme/typeScale.ts`, `web/src/theme/tokens.ts`, `web/src/theme/vars.ts`, `web/src/index.css`, `web/src/ui/facts.tsx`, `web/src/ui/ShortcutHelp.tsx`, `web/src/ui/ConfirmDialog.tsx`, `web/src/workstation/TransactionPanel.tsx`, `web/src/workstation/CopilotStrip.tsx`, `web/src/workstation/ExplanationPanel.tsx`, `web/src/workstation/QuestionCard.tsx`, `web/src/screens/HomeScreen.tsx`, `web/src/screens/CustomerFileScreen.tsx`, `web/src/screens/OutcomeScreen.tsx`, `web/src/screens/HandoffScreen.tsx`, `web/src/screens/ContextScreen.tsx`, `web/src/screens/InterviewScreen.tsx`, `web/src/screens/HealthScreen.tsx`, `web/src/screens/HistoryScreen.tsx`, `web/src/typeHierarchy.test.tsx`, `web/src/themeContrast.test.ts`, other web tests, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - One shared system: fact rows (`tc-kv` / `tc-facts` / `tc-fact-term` / `tc-fact-value`), uppercase tags (`tc-kicker` / `tc-section-heading`), body (`tc-prose`), block rules (`tc-block`). No per-screen type CSS. `web/` still does not compute risk, level, reasons, or the next question (architecture §9, §12).
+  - Labels are `--tc-text-sm` / weight 500 / `--tc-fg-soft-pct`. Values are bold 700 at full strength. Amount stays `--tc-text-2xl`. Body is `--tc-text-base` (closest step to 15px) at 85%. Tags match Read-aloud script. `STEP n` stays `tc-kicker` with no divider.
+  - Soft tint started at 68% and failed AA on mtb light page (4.45:1). Raised to **69%**, the lowest value that clears 4.5:1 on every bank surface. Header / nav / buttons / pills untouched.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/112. Do not merge. Merged `origin/main` including #111 cutoff rows; those rows now use `tc-prose`. No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
 
 
