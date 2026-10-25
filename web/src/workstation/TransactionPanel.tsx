@@ -42,7 +42,7 @@ export function TransactionPanel({
           maxWidth: '70ch',
         }}
       >
-        <Emphasis text={current ? redactPersonalCopy(current.text, names) : 'Press play to start the simulation.'} />
+        <Emphasis text={current ? redactPersonalCopy(current.text, names) : 'Customer File'} />
       </p>
       <FactGrid className="tc-kv" label="Transaction">
         <Fact term="Type">

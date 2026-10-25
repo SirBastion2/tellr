@@ -285,6 +285,55 @@ button[data-loading='true'],
   padding-top: 0;
 }
 
+/* Quote card: equal inset on every side. Beats `.tc-block` padding-top. */
+[data-testid='read-aloud-block'].tc-block {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--tc-space-2, 8px);
+  margin-bottom: 0;
+  padding: var(--tc-space-4, 16px);
+  height: auto;
+  overflow: visible;
+}
+
+[data-testid='read-aloud-block'] > summary {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  height: auto;
+  cursor: pointer;
+  list-style: none;
+}
+
+[data-testid='read-aloud-block'] > summary::-webkit-details-marker {
+  display: none;
+}
+
+[data-testid='read-aloud-block'] > summary::marker {
+  content: '';
+}
+
+[data-testid='read-aloud-block']::details-content {
+  display: block;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  height: auto;
+}
+
+[data-testid='read-aloud-block'] .tc-kicker,
+[data-testid='read-aloud'].tc-prose {
+  margin: 0;
+  padding: 0;
+  text-box-trim: trim-both;
+  text-box-edge: text;
+}
+
 .tc-facts {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
@@ -431,6 +480,7 @@ button[data-loading='true'],
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
+  justify-content: space-between;
   gap: var(--tc-space-header, 8px);
   min-height: var(--tc-header-h, 48px);
   min-width: 0;
@@ -531,8 +581,7 @@ button[data-loading='true'],
   overflow: visible;
   min-height: var(--tc-header-control-h, 48px);
   min-width: min-content;
-  flex: 1 1 auto;
-  margin-inline: auto;
+  flex: 0 0 auto;
 }
 
 .tc-header-nav a,

@@ -174,7 +174,12 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if yaml is None:
-        print("PyYAML is missing. Request pyyaml from A2 in docs/HANDOFF.md.", file=sys.stderr)
+        print(
+            "PyYAML is missing. Request pyyaml from A2 in a new "
+            "docs/handoff/<yyyymmdd-hhmm>-<short-branch-slug>.md file. "
+            "Do not edit docs/HANDOFF.md.",
+            file=sys.stderr,
+        )
         return 2
 
     library_path = Path(args.library)

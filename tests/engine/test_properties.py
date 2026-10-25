@@ -133,7 +133,7 @@ def test_properties_over_all_65536_evidence_sets(tables_fn: Callable[[], Tables]
     print(f"\nproperty test ({tables_fn.__name__}) over {subsets:,} sets in {elapsed:.2f}s")
     assert subsets == 2 ** len(tables.weights)
     assert all(count == 0 for count in bad.values()), bad
-    # Card A-02: report duration in HANDOFF if this exceeds 60s; do not drop subsets.
+    # Card A-02: report duration in a new docs/handoff file if this exceeds 60s; do not drop subsets.
     if elapsed >= 60:
         print(f"WARNING: property test took {elapsed:.2f}s (>= 60)")
 

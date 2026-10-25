@@ -6,7 +6,7 @@ contract or golden tests goes through `contract/CHANGES.md` instead. Spec ambigu
 in `docs/QUESTIONS.md`.
 
 An agent that finds a problem in the other lane's work must log it here (this file is the
-record) **and** call it out in its final report / `docs/HANDOFF.md` entry with the `X-id`, so
+record) **and** call it out in its final report / new `docs/handoff/<yyyymmdd-hhmm>-<short-branch-slug>.md` file with the `X-id`, so
 the driver hears about it. Do not report it only in chat.
 
 Append-only, newest at the bottom. One entry per finding.

@@ -12,7 +12,7 @@ const session = t2.steps[0]?.response as SessionState
 
 describe('routes', () => {
   it('mounts the screens', () => {
-    expect(APP_ROUTES).toHaveLength(8)
+    expect(APP_ROUTES).toHaveLength(7)
     for (const route of APP_ROUTES) {
       const path = route.path.replace(':id', 'fixture-T2')
       render(

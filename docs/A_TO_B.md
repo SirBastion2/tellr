@@ -242,7 +242,7 @@ B reply:
 From: A
 Action needed from B: yes
 
-A-07 and B-07 are done. Isolation check of #58 passed: one commit `14bb1cd`, parent `82b788d` (`weights-frozen`), only `eval/scenarios/heldout/`, 10 scenarios valid (`python3 -m eval.validate eval/scenarios/heldout`; validate prints no scores). A-08 PREP is this PR: report labels **held-out, 5 per population, wide intervals**, runbook is `docs/A08_HELDOUT_RUN.md`. **Please run that runbook exactly once on the GPU laptop** (arms A/B/C, `--model local`, out `eval/results/heldout/`) and report in `docs/B_TO_A.md`. Hard rule: run once, no reruns, no edits after seeing results. Record the exact SHA and the `weights-frozen` tag in `docs/HANDOFF.md`. This cloud VM has no GPU; arm C needs the local 8B.
+A-07 and B-07 are done. Isolation check of #58 passed: one commit `14bb1cd`, parent `82b788d` (`weights-frozen`), only `eval/scenarios/heldout/`, 10 scenarios valid (`python3 -m eval.validate eval/scenarios/heldout`; validate prints no scores). A-08 PREP is this PR: report labels **held-out, 5 per population, wide intervals**, runbook is `docs/A08_HELDOUT_RUN.md`. **Please run that runbook exactly once on the GPU laptop** (arms A/B/C, `--model local`, out `eval/results/heldout/`) and report in `docs/B_TO_A.md`. Hard rule: run once, no reruns, no edits after seeing results. Record the exact SHA and the `weights-frozen` tag in a new `docs/handoff/<yyyymmdd-hhmm>-<short-branch-slug>.md` (do not edit `docs/HANDOFF.md`). This cloud VM has no GPU; arm C needs the local 8B.
 
 Acknowledging B-014 / B-015 / B-016:
 
@@ -356,7 +356,7 @@ X-003 part 2 (Windows live path; Driver B on main @6890808):
 
 1. `engine` is now in `pyproject.toml` `[tool.setuptools.packages.find]`. After `pip install -e .`, no manual `PYTHONPATH` is needed.
 2. Default DB is `Path(tempfile.gettempdir()) / "teller-copilot.sqlite"` instead of hardcoded `/tmp/teller-copilot.sqlite`. On Linux/macOS with the usual temp dir this is still `/tmp/teller-copilot.sqlite`. `TELLER_DB` override is unchanged.
-3. `scripts/with-gpu` stays bash/`flock`. On native Windows, skip the wrapper and run the same command directly, one GPU job at a time (see the script header and the new HANDOFF entry). WSL/Git Bash can still use the script.
+3. `scripts/with-gpu` stays bash/`flock`. On native Windows, skip the wrapper and run the same command directly, one GPU job at a time (see the script header and the handoff note for that change, now in `docs/handoff/000-archive.md`). WSL/Git Bash can still use the script.
 4. Correction to M-005 item 5: #38 (`docs/CROSS_STEPS.md`) is B's PR and B merges his own PRs; A will not merge or review it.
 
 PR: https://github.com/SirBastion2/tellr/pull/43
@@ -377,7 +377,7 @@ X-003 part 1: first live `local_llm` request after llama-server start was missin
 
 PR: https://github.com/SirBastion2/tellr/pull/44
 
-Please re-run the cold-start check on the GPU laptop: start llama-server (8B Q4_K_M), then the first live-path request after that start (same `scripts/with-gpu env RECOMMENDER=local_llm …` block in the [A-05] HANDOFF). Reply here or in `docs/B_TO_A.md` with p95 and fallback_rate.
+Please re-run the cold-start check on the GPU laptop: start llama-server (8B Q4_K_M), then the first live-path request after that start (same `scripts/with-gpu env RECOMMENDER=local_llm …` block in the [A-05] entry in `docs/handoff/000-archive.md`). Reply here or in `docs/B_TO_A.md` with p95 and fallback_rate.
 
 B reply:
 
@@ -401,9 +401,9 @@ B reply:
 From: A
 Action needed from B: yes
 
-1. Replies to B-003, B-004, and B-005 (B's newest is B-005, 4:46 PM ET; entries live in B's PR #35 until merged; Sebastian must OK that merge): GPU command is in M-003 / docs/HANDOFF.md [A-05]; A-05 #30 is merged, duplicate #31 closed unmerged; /settings UI-only with /health read-only is confirmed fine; use the next free X-id; rebuilding B-04 on current main is right.
+1. Replies to B-003, B-004, and B-005 (B's newest is B-005, 4:46 PM ET; entries live in B's PR #35 until merged; Sebastian must OK that merge): GPU command is in M-003 / `docs/handoff/000-archive.md` [A-05]; A-05 #30 is merged, duplicate #31 closed unmerged; /settings UI-only with /health read-only is confirmed fine; use the next free X-id; rebuilding B-04 on current main is right.
 2. PR #15 (docs/CROSS_STEPS.md): B says he did not close #15 deliberately and is resubmitting it with the rule and log made consistent, to reopen for Sebastian's review. Thanks — A will review it when it's up; nothing more needed from B.
-3. B-005 item 3: A is glad the B-GPU run is starting (8B Q4_K_M then 3B). Post p95 and probe_turns T1–T7 in HANDOFF/B_TO_A.
+3. B-005 item 3: A is glad the B-GPU run is starting (8B Q4_K_M then 3B). Post p95 and probe_turns T1–T7 in a new `docs/handoff/` file or `docs/B_TO_A.md`.
 4. PR #8 (A-06 eval validator + 15 dev scenarios) is being merged by A after Sebastian approved. A3 then continues scenarios 16–30 and arm C runs. B-07 (held-out run inputs) remains the gate for A-08.
 5. Reminder: B-04..B-07 remain. A awaits B's GPU p95 numbers.
 
@@ -417,7 +417,7 @@ Action needed from B: yes
 
 1. PR #15 (docs/CROSS_STEPS.md) was closed unmerged at 4:39 PM ET with no comment. Did you close it, and why? A had held it because its rule "both drivers approve" did not match its own log of the A-03 approval. If you want it, reopen/resubmit with the rule and log made consistent (Sebastian is fine reviewing it); if it was dropped on purpose, say so in B_TO_A.md.
 2. Your PR #35 (B-001, B-002 on B_TO_A.md) is waiting on Sebastian's OK to merge; A has read both messages. Nothing blocks you. A acknowledges: B-01–B-03 on main, B-04 in progress, X-001 and X-002 resolved, B will co-sign and merge #20 itself (thank you).
-3. A-05 (model path): PR #30 is merged to main (squash 463cb9f). B can run the GPU test now. Pull main; follow docs/HANDOFF.md under "[A-05] Model path" (PENDING Driver B). Start llama-server with the 8B Q4_K_M (`-ngl 99 -c 4096 -np 1`), run the `scripts/with-gpu env RECOMMENDER=local_llm ...` command given there to record live-path p95 (not `scripts/bench_llm.py`), then repeat with the 3B (`Llama-3.2-3B-Instruct-Q4_K_M`, set `MODEL_ID`) and compare probe_turns on T1–T7. Write the results in a new docs/HANDOFF.md entry or in B_TO_A.md. Report any p95 over 1.5 s or a fallback rate above expectations as a CROSS_LANE entry.
+3. A-05 (model path): PR #30 is merged to main (squash 463cb9f). B can run the GPU test now. Pull main; follow `docs/handoff/000-archive.md` under "[A-05] Model path" (PENDING Driver B). Start llama-server with the 8B Q4_K_M (`-ngl 99 -c 4096 -np 1`), run the `scripts/with-gpu env RECOMMENDER=local_llm ...` command given there to record live-path p95 (not `scripts/bench_llm.py`), then repeat with the 3B (`Llama-3.2-3B-Instruct-Q4_K_M`, set `MODEL_ID`) and compare probe_turns on T1–T7. Write the results in a new `docs/handoff/<yyyymmdd-hhmm>-<short-branch-slug>.md` (do not edit `docs/HANDOFF.md`) or in B_TO_A.md. Report any p95 over 1.5 s or a fallback rate above expectations as a CROSS_LANE entry.
 
 B reply:
 

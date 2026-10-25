@@ -84,11 +84,13 @@ Ownership is by directory, never by feature. That is what keeps merges conflict-
 | `web/` | **B1** | read |
 | `web/src/screens/history/`, `web/src/screens/settings/`, `web/e2e/` | **B2**, if added at hour 8 | — |
 | `contract/`, `reference_impl.py`, `docs/architecture.md`, `tests/golden/reference_weights.yaml` | nobody; change process only | read |
-| `docs/HANDOFF.md`, `docs/QUESTIONS.md` | everyone, append only | — |
+| `docs/HANDOFF.md` | pointer; do not edit per PR | read |
+| `docs/handoff/` | everyone; one new file per PR | — |
+| `docs/QUESTIONS.md` | everyone, append only | — |
 
 **Shared files have exactly one owner.** `pyproject.toml`, the `Makefile`, and the root
 `tests/conftest.py` belong to A2. When A1 or A3 needs a dependency or a make target, they ask in
-`HANDOFF.md` and A2 adds it. `web/package.json` belongs to B1, even after B2 joins.
+a new `docs/handoff/` file and A2 adds it. `web/package.json` belongs to B1, even after B2 joins.
 
 ---
 
@@ -121,7 +123,7 @@ demo fallbacks. **A2 owns the GPU.**
 | 0–2 | P0: review `api.md` and decide the error shape with the drivers (CHANGE-002) | Decision logged |
 | 2–4 | `pyproject.toml`, `Makefile`, `.importlinter`, `conftest.py`; the database with the §10.1 tests (A-01, platform half) | Gate `a` runs; store tests pass |
 | 4–6 | The API against `FakeEngine`; command-handler error mapping; the contract-conformance test written (it fails until the engine arrives) | Endpoints respond with schema-valid states |
-| **6** | **Latency benchmark** (A-03), holding the GPU lock | p95 in HANDOFF; drivers pick the model (CP1) |
+| **6** | **Latency benchmark** (A-03), holding the GPU lock | p95 in that card's `docs/handoff/` file; drivers pick the model (CP1) |
 | 6–8 | Swap in the real engine; contract conformance goes green (A-04, API half) | **CP2:** works end to end with no model |
 | 8–12 | Model path: grammar, validator, timeout, prompt allowlist (A-05) | §9 recommender tests pass |
 | 12–15 | `/health` with agreement rate; `--replay` mode (§14.2); live-path p95 | Replay is pixel-identical to a live run |
@@ -266,7 +268,7 @@ batch-size-one determinism (§13.4) without any error message.
 | A1 → A3 | Hour 20 | Tag `weights-frozen`; the held-out run uses it |
 | H → A3 | Hour 21 | Held-out scenarios, after R checks the commit |
 
-Every handoff is an entry in `HANDOFF.md` naming the tag or commit.
+Every handoff is its own file in `docs/handoff/` naming the tag or commit. List that directory newest first. `docs/HANDOFF.md` is only the pointer.
 
 ---
 

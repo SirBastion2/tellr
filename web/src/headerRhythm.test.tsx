@@ -12,7 +12,7 @@ import { TYPE_SIZE } from './theme/typeScale'
 const css = () => readFileSync('src/index.css', 'utf8')
 
 const HEADER_WIDTHS = [1024, 1180, 1280] as const
-const NAV_LABELS = ['Home', 'Customer file', 'Outcome', 'Handoff'] as const
+const NAV_LABELS = ['Home', 'Outcome', 'Handoff'] as const
 
 function headerRule(source: string, selector: string): string {
   const match = source.match(new RegExp(`${selector.replace('.', '\\.')}\\s*\\{([^}]*)\\}`))
@@ -111,8 +111,10 @@ describe('header labels and spacing rhythm', () => {
     expect(headerCss).toMatch(/overflow:\s*visible/)
     expect(navCss).toMatch(/flex-wrap:\s*nowrap/)
     expect(navCss).toMatch(/overflow:\s*visible/)
-    expect(navCss).toMatch(/flex:\s*1 1 auto/)
-    expect(navCss).toMatch(/margin-inline:\s*auto/)
+    expect(headerCss).toMatch(/justify-content:\s*space-between/)
+    expect(headerCss).toMatch(/padding-inline:\s*var\(--tc-space-2/)
+    expect(navCss).toMatch(/flex:\s*0 0 auto/)
+    expect(navCss).not.toMatch(/margin-inline:\s*auto/)
     expect(navCss).toMatch(/justify-content:\s*center/)
     expect(navCss).toMatch(/gap:\s*var\(--tc-space-header/)
     expect(navCss).not.toMatch(/overflow-x:\s*auto/)
@@ -196,8 +198,10 @@ describe('header labels and spacing rhythm', () => {
     expect(getComputedStyle(nav).flexWrap).toBe('nowrap')
     expect(getComputedStyle(nav).overflow).toBe('visible')
     expect(getComputedStyle(nav).overflowX).not.toBe('auto')
-    expect(getComputedStyle(nav).flexGrow).toBe('1')
-    expect(getComputedStyle(nav).flexShrink).toBe('1')
+    expect(getComputedStyle(nav).flexGrow).toBe('0')
+    expect(getComputedStyle(nav).flexShrink).toBe('0')
+    expect(getComputedStyle(header).justifyContent).toBe('space-between')
+    expect(header.style.paddingInline).toBe('var(--tc-space-2)')
     expect(screen.getByTestId('header-brand')).toBeTruthy()
     expect(screen.getByTestId('header-status')).toBeTruthy()
     expect(screen.getByTestId('header-tools')).toBeTruthy()
@@ -210,6 +214,12 @@ describe('header labels and spacing rhythm', () => {
       setViewportWidth(width)
       for (const themeId of THEME_IDS) {
         expect(root.getAttribute('data-theme'), `${themeId} @ ${width}`).toBe(themeId)
+        expect(header.style.justifyContent, `${themeId} @ ${width}`).toBe('space-between')
+        expect(header.style.paddingInline, `${themeId} @ ${width}`).toBe('var(--tc-space-2)')
+        expect(header.style.flexWrap, `${themeId} @ ${width}`).toBe('nowrap')
+        expect(nav.style.flex, `${themeId} @ ${width}`).toBe('0 0 auto')
+        expect(nav.style.justifyContent, `${themeId} @ ${width}`).toBe('center')
+        expect(nav.querySelectorAll('.tc-nav-tab'), `${themeId} @ ${width}`).toHaveLength(NAV_LABELS.length)
         for (const label of NAV_LABELS) {
           const tab = within(nav).getByText(label)
           expect(tab.textContent, `${label} @ ${width} ${themeId}`).toBe(label)

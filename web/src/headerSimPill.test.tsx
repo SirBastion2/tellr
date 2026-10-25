@@ -162,8 +162,10 @@ describe('simulation pill stays the same size before and during play', () => {
     expect(headerRule(source, '.tc-play-label')).toMatch(/display:\s*grid/)
     expect(headerRule(source, '.tc-case-label')).toMatch(/display:\s*grid/)
     expect(headerRule(source, '.tc-header')).toMatch(/flex-wrap:\s*nowrap/)
-    expect(headerRule(source, '.tc-header-nav')).toMatch(/flex:\s*1 1 auto/)
-    expect(headerRule(source, '.tc-header-nav')).toMatch(/margin-inline:\s*auto/)
+    expect(headerRule(source, '.tc-header')).toMatch(/justify-content:\s*space-between/)
+    expect(headerRule(source, '.tc-header-nav')).toMatch(/flex:\s*0 0 auto/)
+    expect(headerRule(source, '.tc-header-nav')).toMatch(/justify-content:\s*center/)
+    expect(headerRule(source, '.tc-header-nav')).not.toMatch(/margin-inline:\s*auto/)
     for (const id of BANKS) {
       const vars = themeVars(THEMES[id]!)
       expect(vars['--tc-sim-pill-max'], id).toBe(DENSITY.simPillMaxWidth)
@@ -245,10 +247,10 @@ describe('simulation pill stays the same size before and during play', () => {
           expect(headerRule(css(), '.tc-live-badge')).toMatch(/flex:\s*0 1 auto/)
           expect(headerRule(css(), '.tc-live-badge')).toMatch(/width:\s*max-content/)
           expect(nav.className, `${customer.id} ${state} @ ${width}`).toBe('tc-header-nav')
-          expect(headerRule(css(), '.tc-header-nav')).toMatch(/flex:\s*1 1 auto/)
+          expect(headerRule(css(), '.tc-header-nav')).toMatch(/flex:\s*0 0 auto/)
           expect(screen.queryByTestId('local-clock')).toBeNull()
           expect(screen.queryByTestId('connection-status')).toBeNull()
-          for (const tabLabel of ['Home', 'Customer file', 'Outcome', 'Handoff']) {
+          for (const tabLabel of ['Home', 'Outcome', 'Handoff']) {
             expect(screen.getByText(tabLabel).textContent, `${tabLabel} ${state} @ ${width}`).toBe(tabLabel)
           }
           unmount()
