@@ -6,7 +6,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from engine.library import Library
+from engine.library import Library, Signal
 
 # Architecture §6.2. Caps and thresholds are part of the formula, not live weights.
 CAPS = {
@@ -131,3 +131,32 @@ def counterpoint(evidence: Sequence[str], lvl: str, tables: Tables) -> str | Non
     if not pool:
         return None
     return min(pool, key=lambda sid: (-abs(tables.weights[sid][0]), sid))
+
+
+def contributions(evidence: Sequence[str], lib: Library) -> list[dict[str, Any]]:
+    """CHANGE-005 (a): asserted signals that raise or lower the score.
+
+    Weights and labels come from `lib` (the live library the API loaded), not
+    `reference_impl.py` or `tests/golden/reference_weights.yaml`. Uses §6.2
+    `effective()` so refuted look-alike confirmations are omitted. Sorted by
+    absolute weight descending, then `signal_id`.
+    """
+    tables = tables_from_library(lib)
+    signals = {item.id: item for item in lib.signals}
+    rows: list[dict[str, Any]] = []
+    for signal_id in effective(evidence, tables):
+        item = signals.get(signal_id)
+        if item is None or item.weight == 0:
+            continue
+        rows.append(_contribution(item))
+    rows.sort(key=lambda row: (-abs(row["weight"]), row["signal_id"]))
+    return rows
+
+
+def _contribution(item: Signal) -> dict[str, Any]:
+    return {
+        "signal_id": item.id,
+        "label": item.name,
+        "weight": item.weight,
+        "direction": "raises" if item.weight > 0 else "lowers",
+    }
