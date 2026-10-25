@@ -6,7 +6,15 @@ Tellr is a counter-side copilot that helps a bank teller spot a coached elder-fr
 
 Built by Team KotR for HackPSU Fall 2026: Sebastian Villalba and Jonathan Zheng.
 
-**Jump to:** [What goes in](#what-goes-in-and-why-its-safe-for-a-bank) · [The problem](#the-problem) · [Why a teller](#why-a-teller) · [What we built](#what-we-built) · [Try it in two minutes](#try-it-in-two-minutes) · [How we built it with Cursor](#how-we-built-it-with-cursor) · [The demo vs real use](#the-demo-vs-real-use) · [The Llama 8B and benchmarks](#the-llama-8b-and-benchmarks) · [Templates](#templates) · [How a teller uses it](#how-a-teller-uses-it) · [Safety and limitations](#safety-and-limitations) · [Specs and tech stack](#specs-and-tech-stack) · [Sources](#sources)
+## In 30 seconds
+
+- We built it for a teller at the counter, on a cash withdrawal, when the customer may have been coached through elder fraud.
+- The teller taps signal chips and answers. They never type a prompt. Tellr never listens: no microphone permission, no audio dependency in the lockfile (`docs/architecture.md` P7 and the No audio row in §9), no call recording, and no transcript of what the customer said. Voice input is not built.
+- We added playback so a judge can watch a scripted visit in about 45 seconds at 1× (Government impersonation). A real teller would not see that playback. The controls are in [The demo vs real use](#the-demo-vs-real-use).
+- `tellr` is the default theme. PNC, M&T (`mtb`), and F.N.B. (`fnb`) are example theme templates of the same screen layout. They change the color, the font, and the brand mark. They are not affiliations or endorsements. Chips, questions, talk tracks, patterns, and the signal weights are YAML in `library/` that the engine loads, so those files are what you would edit. A feed from a bank's core system is not built.
+- What the model may see, and why that is safe for a bank, is the table in [What goes in](#what-goes-in-and-why-its-safe-for-a-bank).
+
+**Jump to:** [In 30 seconds](#in-30-seconds) · [What goes in](#what-goes-in-and-why-its-safe-for-a-bank) · [The problem](#the-problem) · [Why a teller](#why-a-teller) · [Try it in two minutes](#try-it-in-two-minutes) · [How we built it with Cursor](#how-we-built-it-with-cursor) · [The demo vs real use](#the-demo-vs-real-use) · [The Llama 8B and benchmarks](#the-llama-8b-and-benchmarks) · [Templates](#templates) · [How a teller uses it](#how-a-teller-uses-it) · [Safety and limitations](#safety-and-limitations) · [Specs and tech stack](#specs-and-tech-stack) · [Sources](#sources)
 
 ## What goes in, and why it's safe for a bank
 
@@ -14,10 +22,11 @@ Built by Team KotR for HackPSU Fall 2026: Sebastian Villalba and Jonathan Zheng.
 |---|---|
 | Anonymous ids for the noted signals, the stated purpose, each answer, the reasons already on the score, the matched pattern, and the next questions.<br>Library labels for the signals and purposes, and the short library reason for each next question. | Name, age, tenure, typical withdrawal, channels, account activity, memo, dollar amount, the withdrawal's size bracket, and the customer's own words. |
 
+- We build the model's prompt from that allowlist (`engine/prompt.py`, `docs/architecture.md` §8.1, §10.2). A typed note can be stored and is dropped before the prompt. This demo does not send one (`web/src/teller.tsx`).
 - The local model posts to `127.0.0.1:8080`. A hosted call runs only when the recommender is hosted and `HOSTED_LLM_URL` is set. The API starts on the rules (`api/main.py`).
 - It returns one question id and cannot set the score, the level, or the action. The rules score the signals those ids map to. The stated purpose picks questions and is not part of the score, and the fields the model never sees stay out of the score. The teller decides. That table is everything the prompt may include (`engine/prompt.py`, `engine/reduce.py`, `engine/rules.py`).
 - If the call is slow, the server is down, or the reply is not an allowed question, the rules pick the question (`recommenders/select.py`).
-- The log stores mode, time, library version, the size bracket (amount band), the noted ids, and each answer's question id and answer id. A note is stored only if a client sends one; this demo does not. The account reference is written null. The typed teller name from the Outcome screen is stored with the decision and is not sent to the model (`store/sqlite.py`, `api/main.py`, `web/src/teller.tsx`, `web/src/screens/OutcomeScreen.tsx`).
+- The log stores mode, time, library version, the size bracket (amount band), the noted ids, and each answer's question id and answer id. The account reference is written null. The typed teller name from the Outcome screen is stored with the decision and is not sent to the model (`store/sqlite.py`, `api/main.py`, `web/src/teller.tsx`, `web/src/screens/OutcomeScreen.tsx`).
 - On screen, the case file shows tenure, typical withdrawal, and channels. With it open, Home shows no name, age band, or gendered pronoun. Account activity stays in the demo file and is neither shown nor sent. The memo, the transaction type, and the dollar amount stay on screen and are not posted (`web/src/workstation/TransactionPanel.tsx`, `web/src/privacy.test.tsx`).
 
 ## The problem
@@ -32,22 +41,6 @@ In the CFPB's 2019 elder exploitation report, fewer than a third of the suspicio
 
 Staff at the counter have stopped losses in published bank programs. A 2019 AARP and Virginia Tech BankSafe pilot covered more than 1,800 employees from nearly 500 branches in 11 states over six months [[6]](#source-6). Trained staff stopped $900,915, compared with $54,384 (16 times) [[6]](#source-6). It was a pilot, not a controlled trial. BankSafe saved $137 million in 2024, a record up 53%, as reported by AARP itself [[7]](#source-7).
 
-## What we built
-
-We built a teller-side screen for the counter.
-
-### At a glance
-
-| Question | Answer |
-|---|---|
-| Who is it for? | A bank teller at the counter during a withdrawal. |
-| What problem? | Elder fraud at the window, while the customer is standing there. |
-| What does it do? | A level, a suggested action, signal chips, and one next question. |
-| What does the model see? | See [What goes in](#what-goes-in-and-why-its-safe-for-a-bank). |
-| How fast? | The latency bench below. |
-| How accurate on our dev set? | Catch and false-flag on the dev set, in the table below. |
-| What can you try now? | The counter screen. The steps are next. |
-
 ## Try it in two minutes
 
 ```bash
@@ -55,7 +48,7 @@ make dev-api
 make dev-web
 ```
 
-Open http://127.0.0.1:5173 (API on port 8000). Under Simulated customer, choose Government impersonation and press Play. Let the file finish (about 45 seconds at 1×). The level climbs to High (`web/src/demo/customers.ts`).
+Open http://127.0.0.1:5173 (API on port 8000). Under Simulated customer, choose Government impersonation and press Play. Let the file finish. The level climbs to High (`web/src/demo/customers.ts`).
 
 Demo video: link to be added
 
@@ -65,7 +58,11 @@ Sebastian ran the engine and the evaluation. Jonathan ran the screen, the API, a
 
 ## The demo vs real use
 
-The demo is scripted. Five synthetic customers play on a timer. The two benign files post no chips and no answers. With no API, the page shows recorded answers and does not score them. With the API up, the same taps and the same library version produce the same level, reasons, pattern, and question (`docs/architecture.md` §4). A live visit loads no scenario. The teller taps what they see, and the engine scores that log. The header reads `Simulation: <customer title>` for a synthetic file and `LIVE — no scenario loaded` for a live session. A feed from a bank's core system is not built (`docs/architecture.md` §14.1).
+The page you open always loads a simulated customer, so you see a Simulated customer picker, Play, Step, Restart, a 1× / 2× / 4× speed control, an elapsed timer, the script timeline, a header reading `Simulation: <customer title>`, and a Practice data note (`web/src/App.tsx`, `web/src/workstation/Toolbar.tsx`, `web/src/workstation/TransactionPanel.tsx`, `web/src/LiveBadge.tsx`).
+
+A file in `web/src/demo/customers.ts` plays on a timer and posts the signal chips a teller would tap. It does not post answers. That is why those chips show up on their own. There are five synthetic files. Car down payment and Routine Friday cash post no chips. With the API up, the posts go through a live session and the engine scores them as it would a teller's tap: the same events and the same library version produce the same level, reasons, pattern, and question (`docs/architecture.md` §4). With no API, the page shows a recorded engine response and does not score it (`web/mock/live_levels.json`, `web/mock/live_answers.json`). The copilot, the score, the suggested action, and Handoff read that same session.
+
+A live visit loads no scenario (`docs/architecture.md` §14.1). With no simulated customer, the header reads `LIVE — no scenario loaded`.
 
 ## The Llama 8B and benchmarks
 
@@ -121,7 +118,7 @@ Open items: training recipe for the 8B is not in the repo; no real bank pilot; n
 
 ## Specs and tech stack
 
-We trained the Llama 8B on an RTX 5070 laptop GPU (the training recipe is not in the repo; see Open items). The engine is Python >= 3.12, FastAPI, and Pydantic >= 2, and `reference_impl.py` is the scoring oracle. The screen is React 19.3.1, Vite 8.3.5, TypeScript 6.0.3, and Tailwind CSS 4.3.3. Theme ids `tellr`, `pnc`, `mtb`, `fnb` share one layout. The store is SQLite, and events reject updates. `CONTRACT_VERSION` is 2.0.0. Every session response is a `SessionState`.
+We trained the Llama 8B on an RTX 5070 laptop GPU (the training recipe is not in the repo; see Open items). The engine is Python >= 3.12, FastAPI, and Pydantic >= 2, and `reference_impl.py` is the scoring oracle. The screen is React 19.3.1, Vite 8.3.5, TypeScript 6.0.3, and Tailwind CSS 4.3.3. The store is SQLite, and events reject updates. `CONTRACT_VERSION` is 2.0.0. Every session response is a `SessionState`.
 
 ## Sources
 
