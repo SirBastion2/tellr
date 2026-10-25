@@ -22,4 +22,4 @@ GATE PASS (b)
   - `isEditableTarget` still ignores an input, textarea, select, and contenteditable. It stops at a `button`, link, summary, or button-type input, including an SVG icon inside the button, so those controls are not treated as typing. Enter and Space are not demo keys and are not cancelled, so a focused button still activates. `web/` does not compute risk, level, reasons, or the next question (architecture §9, §12).
   - Shortcut help is the key list only. Removed the sentence about every screen and Ctrl/Alt/Cmd. The guards stay in the handler. `docs/UI_REFERENCE.md` says the dialog lists the keys only.
 - **Questions logged:** none
-- **The next agent needs to know:** No contract, engine, library, golden, or weight edits. No new dependency. Enter and Space still belong to the focused button. Do not move the listener back to the bubble phase.
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/156. No contract, engine, library, golden, or weight edits. No new dependency. Enter and Space still belong to the focused button. Do not move the listener back to the bubble phase.
