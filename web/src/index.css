@@ -2282,3 +2282,306 @@ body {
   z-index: 7;
   max-width: calc((990 - 33) * var(--u));
 }
+
+/*
+  Handoff card on the 1024×576 stage. 1u is one design pixel at 1024.
+  The box is x 193–818, y 114–515, radius 45. The header rule sits at y 211.
+  y 515 stays above the shared footer band (y 520), so the centered credit
+  is clear of the card. This screen does not position or align that credit.
+  Only this screen overrides the shared non-home stage slot.
+*/
+/* handoff-design:start */
+.tc-handoff {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  min-height: 0;
+  color: var(--tc-text);
+  background: var(--tc-glass-fill);
+  border: 1px solid var(--tc-glass-border);
+  border-radius: calc(45 * var(--u, 1px));
+  backdrop-filter: blur(var(--tc-glass-blur));
+  -webkit-backdrop-filter: blur(var(--tc-glass-blur));
+}
+
+.tc-stage .tc-shell > main > .tc-handoff.tc-screen {
+  position: absolute;
+  left: calc(193 * var(--u));
+  top: calc(114 * var(--u));
+  width: calc((818 - 193) * var(--u));
+  height: calc((515 - 114) * var(--u));
+  overflow: hidden;
+  overscroll-behavior: contain;
+  min-height: 0;
+}
+
+.tc-handoff-head {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(12 * var(--u, 1px));
+  box-sizing: border-box;
+  height: calc((211 - 114) * var(--u, 1px));
+  min-height: calc((211 - 114) * var(--u, 1px));
+  padding: 0 calc(40 * var(--u, 1px));
+}
+
+.tc-handoff-head::after {
+  content: "";
+  position: absolute;
+  left: calc(40 * var(--u, 1px));
+  right: calc(40 * var(--u, 1px));
+  bottom: 0;
+  height: 1px;
+  background: color-mix(in srgb, var(--tc-text) 42%, transparent);
+}
+
+.tc-handoff-heading {
+  display: flex;
+  align-items: baseline;
+  gap: calc(14 * var(--u, 1px));
+  min-width: 0;
+}
+
+.tc-handoff .tc-title {
+  margin: 0;
+  font-size: var(--tc-text-2xl);
+  font-weight: var(--tc-font-weight);
+  line-height: var(--tc-text-2xl-lh);
+  color: var(--tc-text);
+  white-space: nowrap;
+}
+
+.tc-handoff-case {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--tc-text-xl);
+  font-weight: var(--tc-font-weight);
+  line-height: var(--tc-text-xl-lh);
+  color: color-mix(in srgb, var(--tc-text) var(--tc-fg-body-pct), transparent);
+}
+
+.tc-handoff-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: calc(10 * var(--u, 1px));
+}
+
+.tc-handoff-copy,
+.tc-handoff-save {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.tc-handoff-copy {
+  height: calc(34 * var(--u, 1px));
+  min-height: 0;
+  padding: 0 calc(16 * var(--u, 1px));
+  border: 0;
+  border-radius: var(--tc-radius-control, 999px);
+  background: var(--tc-highlight);
+  color: var(--tc-highlight-fg);
+  font-size: var(--tc-text-sm);
+  font-weight: var(--tc-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.tc-handoff-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(34 * var(--u, 1px));
+  height: calc(34 * var(--u, 1px));
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border-radius: var(--tc-radius-control, 999px);
+  background: var(--tc-glass-fill);
+  color: var(--tc-text);
+  border: 1px solid var(--tc-glass-border);
+  backdrop-filter: blur(var(--tc-glass-blur));
+  -webkit-backdrop-filter: blur(var(--tc-glass-blur));
+}
+
+.tc-handoff-save-icon {
+  display: block;
+  width: calc(16 * var(--u, 1px));
+  height: calc(16 * var(--u, 1px));
+}
+
+.tc-handoff-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: calc(24 * var(--u, 1px));
+  align-items: start;
+  padding: calc(20 * var(--u, 1px)) calc(40 * var(--u, 1px)) calc(28 * var(--u, 1px));
+}
+
+.tc-handoff-facts {
+  width: 100%;
+  min-width: 0;
+  align-content: start;
+  column-gap: calc(28 * var(--u, 1px));
+  row-gap: calc(20 * var(--u, 1px));
+}
+
+.tc-handoff .tc-fact-term {
+  font-size: var(--tc-text-xs);
+  font-weight: var(--tc-strong-weight);
+  letter-spacing: var(--tc-kicker-tracking);
+  text-transform: var(--tc-kicker-transform);
+  line-height: var(--tc-text-xs-lh);
+  color: var(--tc-text);
+  white-space: nowrap;
+}
+
+.tc-handoff .tc-fact-value {
+  font-size: var(--tc-text-sm);
+  font-weight: var(--tc-font-weight);
+  line-height: var(--tc-text-sm-lh);
+  color: var(--tc-text);
+}
+
+.tc-handoff-level {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(6 * var(--u, 1px));
+  font-weight: var(--tc-font-weight);
+  color: inherit;
+}
+
+.tc-handoff-level svg {
+  width: calc(16 * var(--u, 1px));
+  height: calc(16 * var(--u, 1px));
+  flex: 0 0 auto;
+}
+
+.tc-handoff-level[data-level='clear'] svg {
+  color: var(--tc-risk-clear-fg);
+}
+
+.tc-handoff-level[data-level='caution'] svg {
+  color: var(--tc-risk-caution-fg);
+}
+
+.tc-handoff-level[data-level='high'] svg {
+  color: var(--tc-risk-high-fg);
+}
+
+.tc-handoff-flags {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(12 * var(--u, 1px));
+  width: 100%;
+  min-width: 0;
+}
+
+.tc-handoff-why {
+  margin: 0;
+  font-size: var(--tc-text-sm);
+  font-weight: var(--tc-weight-medium);
+  line-height: var(--tc-text-sm-lh);
+  color: var(--tc-text);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.tc-handoff-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: calc(8 * var(--u, 1px));
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tc-handoff-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(4 * var(--u, 1px));
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: calc(8 * var(--u, 1px)) calc(14 * var(--u, 1px));
+  border-radius: var(--tc-radius-control, 999px);
+  background: color-mix(in srgb, var(--tc-accent) 32%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tc-accent) 48%, var(--tc-glass-border));
+  color: var(--tc-text);
+}
+
+.tc-handoff-signal {
+  font-size: var(--tc-text-sm);
+  font-weight: var(--tc-font-weight);
+  line-height: var(--tc-text-sm-lh);
+  overflow-wrap: anywhere;
+}
+
+.tc-handoff-chip .tc-badge {
+  align-self: flex-start;
+}
+
+.tc-handoff-note {
+  margin: 0;
+  max-width: 100%;
+  font-size: var(--tc-text-sm);
+  font-weight: var(--tc-font-weight);
+  line-height: var(--tc-text-sm-lh);
+  color: color-mix(in srgb, var(--tc-text) var(--tc-fg-body-pct), transparent);
+}
+
+.tc-handoff-note strong {
+  font-weight: var(--tc-weight-medium);
+  color: var(--tc-text);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .tc-handoff,
+  .tc-handoff-save {
+    background: var(--tc-glass-fallback);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .tc-handoff-chip,
+  .tc-handoff-save {
+    border-color: var(--tc-text);
+  }
+}
+
+@media (forced-colors: active) {
+  .tc-handoff-chip,
+  .tc-handoff-copy,
+  .tc-handoff-save {
+    background: ButtonFace !important;
+    color: ButtonText !important;
+    border: 1px solid ButtonText !important;
+    forced-color-adjust: none;
+  }
+
+  .tc-handoff-head::after {
+    background: CanvasText;
+  }
+}
+/* handoff-design:end */
