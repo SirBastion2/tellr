@@ -3545,3 +3545,24 @@ body {
 .tc-explain-overlay .tc-explain-scroll {
   padding-bottom: calc(20 * var(--u));
 }
+
+/* Handoff "Why it was flagged": rounded rectangles so wrapped text never touches a curved edge. */
+.tc-handoff-chips {
+  gap: calc(8 * var(--u, 1px));
+}
+
+.tc-handoff-chip {
+  flex: 0 1 auto;
+  max-width: 100%;
+  border-radius: calc(14 * var(--u, 1px));
+  padding: calc(6 * var(--u, 1px)) calc(12 * var(--u, 1px));
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: calc(6 * var(--u, 1px));
+}
+
+.tc-handoff-signal {
+  font-size: calc(11 * var(--u, 1px));
+  overflow-wrap: anywhere;
+}
