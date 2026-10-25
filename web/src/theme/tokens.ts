@@ -1,4 +1,15 @@
-import { FONT_SIZE_ADJUST, TYPE_LINE_ROLE, TYPE_ROOT, TYPE_SIZE, TYPE_TRACKING, TYPE_WEIGHT } from './typeScale'
+import {
+  FONT_SIZE_ADJUST,
+  TYPE_LINE_COMPACT,
+  TYPE_LINE_ROLE,
+  TYPE_LINE_ROLE_COMPACT,
+  TYPE_LINE_ROLE_SHORT,
+  TYPE_LINE_SHORT,
+  TYPE_ROOT,
+  TYPE_SIZE,
+  TYPE_TRACKING,
+  TYPE_WEIGHT,
+} from './typeScale'
 
 /** Shared copy and keys. Each bank theme stores these on its own object. */
 export const DEFAULT_THEME_ID = 'tellr'
@@ -127,4 +138,85 @@ export const DENSITY = {
   caseLinkMinWidth: '9.5rem',
   /** Room for a 2px outline + 2px offset + 3px ring outside the clip edge. */
   focusClip: '8px',
+} as const
+
+/**
+ * Shared Home density when the viewport is short. Every bank reads the same
+ * tokens. `space4` stays on `DENSITY` so the fact-grid column gap does not
+ * change. Control heights stay at or above 32px. Body size stays at or
+ * above 14px (`TYPE_ROOT.short` is 87.5%).
+ */
+export const VIEWPORT_FIT = {
+  compactMaxHeight: '860px',
+  shortMaxHeight: '760px',
+  compact: {
+    rootFont: TYPE_ROOT.compact,
+    space1: '2px',
+    space2: '4px',
+    space3: '6px',
+    space5: '8px',
+    spaceHeader: '4px',
+    spaceHeaderContent: '6px',
+    spaceHeadingBody: '2px',
+    spaceBodyControl: '6px',
+    spaceControlPadY: '2px',
+    spaceControlPadX: '8px',
+    spaceGap: '6px',
+    spaceWorkstation: '6px',
+    spaceStrip: '4px',
+    spaceCard: '6px',
+    pagePadY: '6px',
+    pagePadX: '10px',
+    pagePadBottom: '6px',
+    controlHeight: '36px',
+    headerControlHeight: '36px',
+    headerMinHeight: '36px',
+    wordmarkHeight: '28px',
+    helpSize: '32px',
+    timelineGap: '6px',
+    lineXs: TYPE_LINE_COMPACT.xs,
+    lineSm: TYPE_LINE_COMPACT.sm,
+    lineBase: TYPE_LINE_COMPACT.base,
+    lineLg: TYPE_LINE_COMPACT.lg,
+    lineXl: TYPE_LINE_COMPACT.xl,
+    line2xl: TYPE_LINE_COMPACT['2xl'],
+    lineBody: TYPE_LINE_ROLE_COMPACT.body,
+    lineHeading: TYPE_LINE_ROLE_COMPACT.heading,
+    lineUi: TYPE_LINE_ROLE_COMPACT.ui,
+  },
+  short: {
+    rootFont: TYPE_ROOT.short,
+    space1: '2px',
+    space2: '4px',
+    space3: '4px',
+    space5: '6px',
+    spaceHeader: '4px',
+    spaceHeaderContent: '4px',
+    spaceHeadingBody: '2px',
+    spaceBodyControl: '4px',
+    spaceControlPadY: '2px',
+    spaceControlPadX: '8px',
+    spaceGap: '4px',
+    spaceWorkstation: '4px',
+    spaceStrip: '4px',
+    spaceCard: '4px',
+    pagePadY: '4px',
+    pagePadX: '8px',
+    pagePadBottom: '4px',
+    controlHeight: '36px',
+    headerControlHeight: '36px',
+    headerMinHeight: '36px',
+    wordmarkHeight: '28px',
+    helpSize: '32px',
+    timelineGap: '4px',
+    lineXs: TYPE_LINE_SHORT.xs,
+    lineSm: TYPE_LINE_SHORT.sm,
+    lineBase: TYPE_LINE_SHORT.base,
+    lineLg: TYPE_LINE_SHORT.lg,
+    lineXl: TYPE_LINE_SHORT.xl,
+    line2xl: TYPE_LINE_SHORT['2xl'],
+    lineBody: TYPE_LINE_ROLE_SHORT.body,
+    lineHeading: TYPE_LINE_ROLE_SHORT.heading,
+    lineUi: TYPE_LINE_ROLE_SHORT.ui,
+  },
 } as const

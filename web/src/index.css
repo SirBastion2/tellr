@@ -63,30 +63,52 @@ button[data-loading='true'],
   gap: var(--tc-space-workstation, clamp(10px, 1.3vw, 20px));
   align-items: stretch;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.tc-workstation > * {
+  min-width: 0;
+  min-height: 0;
 }
 
 .tc-home-column {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--tc-space-body-control, 12px);
   align-content: start;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.tc-home-column > .tc-toolbar {
+  flex: 0 0 auto;
+}
+
+.tc-home-column > .tc-transaction {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
 }
 
 .tc-transaction {
-  min-height: 100%;
+  min-height: 0;
+  height: 100%;
 }
 
 .tc-strip {
-  position: sticky;
-  top: 8px;
-  height: auto;
-  min-height: 100%;
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
   overflow: visible;
   border-radius: var(--tc-radius-card, 16px);
   padding: var(--tc-space-card-fluid, clamp(10px, 1vw, 16px));
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--tc-space-strip, clamp(10px, 1vw, 13px));
-  align-content: start;
   min-width: 0;
   background: var(--tc-surface, #1e1b4b);
   color: var(--tc-text, #ffffff);
@@ -94,16 +116,47 @@ button[data-loading='true'],
 }
 
 .tc-strip-body {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   gap: inherit;
-  align-content: start;
   min-width: 0;
+  min-height: 0;
   overflow: visible;
 }
 
-.tc-signal-list,
+/* Level, score, suggested action, and Undo/Escalate stay outside this list. */
+.tc-strip-body > :not(ul) {
+  flex: 0 0 auto;
+}
+
+/*
+  Panel title. One shared rule for every bank and scheme. It stays with the
+  pinned chrome (not in the signal scrollport). Its block size is one title
+  line; the signal list shrinks by that line plus the strip gap.
+*/
+.tc-strip-heading {
+  margin: 0;
+  flex: 0 0 auto;
+  text-align: center;
+  font-size: var(--tc-type-title);
+  font-weight: var(--tc-strong-weight);
+  line-height: var(--tc-type-line-heading);
+}
+
+/*
+  Scrollport for signal rows. Keep this list a direct child of .tc-strip-body.
+  Row markup inside it can change; the list itself is what scrolls.
+*/
 .tc-strip ul[aria-label='Signals'] {
-  overflow: visible;
+  flex: 1 1 auto;
+  align-content: start;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, currentColor 40%, transparent) transparent;
 }
 
 .tc-strip-body[data-dimmed='true'] {
@@ -317,28 +370,67 @@ button[data-loading='true'],
   max-width: 100%;
 }
 
-.tc-explain-anchor {
+.tc-copilot-pin {
   position: relative;
-  z-index: 2;
-  height: 0;
+  z-index: 3;
+  min-width: 0;
 }
 
 .tc-explain-overlay {
   position: absolute;
   z-index: 2;
-  top: 0;
-  left: calc(-1 * var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)));
-  right: calc(-1 * var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)));
-  max-height: 100vh;
-  max-height: 100dvh;
-  overflow-x: hidden;
-  overflow-y: auto;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 0;
+  min-height: 0;
+  padding: 0;
+  top: var(--tc-explain-pin, 0px);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  max-width: min(100%, 100vw);
+  max-height: min(100%, 100vh);
+  max-height: min(100%, 100dvh);
   background: var(--tc-surface, #1e1b4b);
   color: var(--tc-text, #ffffff);
-  border: 1px solid var(--tc-glass-border, #1c1917);
-  border-radius: var(--tc-radius-card, 16px);
+  border: 0;
+  border-top: 1px solid var(--tc-glass-border, #1c1917);
+  border-bottom-right-radius: var(--tc-radius-card, 16px);
+  border-bottom-left-radius: var(--tc-radius-card, 16px);
+}
+
+.tc-explain-overlay[hidden] {
+  display: none !important;
+}
+
+.tc-explain-overlay-body {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0;
+}
+
+.tc-explain-overlay .tc-explain {
   padding: var(--tc-space-card-fluid, clamp(10px, 1vw, 16px));
+}
+
+.tc-explain-overlay .tc-title {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin-left: calc(-1 * var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)));
+  margin-right: calc(-1 * var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)));
+  padding: var(--tc-space-card-fluid, clamp(10px, 1vw, 16px))
+    var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)) var(--tc-space-2, 8px);
+  background: var(--tc-surface, #1e1b4b);
 }
 
 .tc-factor-list {
@@ -445,13 +537,77 @@ button[data-loading='true'],
 .tc-shell {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   gap: var(--tc-space-header-content, 16px);
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.tc-shell > main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .tc-screen {
   display: grid;
   gap: var(--tc-space-body-control, 12px);
+}
+
+.tc-transaction.tc-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tc-transaction.tc-screen > * {
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+/* Last resort: the event list scrolls inside the column. The progress bar stays put. */
+.tc-transaction.tc-screen > .tc-timeline {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, currentColor 40%, transparent) transparent;
+}
+
+.tc-transaction.tc-screen > .tc-timeline::-webkit-scrollbar,
+.tc-strip ul[aria-label='Signals']::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.tc-transaction.tc-screen > .tc-timeline::-webkit-scrollbar-track,
+.tc-strip ul[aria-label='Signals']::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tc-transaction.tc-screen > .tc-timeline::-webkit-scrollbar-thumb,
+.tc-strip ul[aria-label='Signals']::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, currentColor 40%, transparent);
+  border-radius: 999px;
+}
+
+/* Home fills the card. The workstation is the only row, so it takes the leftover height. */
+.tc-home {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  align-content: stretch;
+}
+
+.tc-home > * {
+  min-height: 0;
 }
 
 .tc-stack-heading {
@@ -666,16 +822,24 @@ button[data-loading='true'],
 .tc-page-card {
   width: 100%;
   max-width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .tc-theme-page {
   overflow-x: clip;
+  overflow-y: hidden;
   overflow-clip-margin: var(--tc-space-2, 8px);
   max-width: 100%;
   min-width: 0;
+  height: 100%;
+  min-height: 0;
 }
 
 .tc-footer {
+  flex: 0 0 auto;
   font-size: var(--tc-text-xs);
   line-height: var(--tc-text-xs-lh);
   font-weight: var(--tc-text-xs-weight);
@@ -688,14 +852,67 @@ button[data-loading='true'],
 
 .tc-segment {
   display: inline-flex;
+  align-items: stretch;
+  box-sizing: border-box;
   border: 1px solid var(--tc-secondary-border, #1c1917);
   border-radius: var(--tc-radius-control, 999px);
+  background: var(--tc-secondary-bg, #f8fafc);
+  padding: var(--tc-space-1, 4px);
   overflow: hidden;
 }
 
 .tc-header .tc-scheme-full {
   box-sizing: border-box;
-  padding: var(--tc-scheme-inset, 2px);
+  padding: var(--tc-space-1, 4px);
+  background: var(--tc-secondary-bg, #f8fafc);
+  overflow: visible;
+}
+
+/*
+  Segment buttons used to keep a square inline radius. Every painted layer of
+  the selected segment uses the same pill token: the button, its generated
+  boxes, and the focused and pressed states. The track fill is the existing
+  secondary surface, so the scheme control is one solid pill and the speed
+  bubble sits in an even inset instead of a square corner.
+*/
+.tc-segment > button,
+.tc-segment > button:hover,
+.tc-segment > button:focus,
+.tc-segment > button:focus-visible,
+.tc-segment > button:active,
+.tc-segment > button[aria-pressed='true'],
+.tc-segment > button[aria-pressed='false'] {
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: var(--tc-radius-control, 999px) !important;
+  background-clip: padding-box;
+  overflow: hidden;
+  align-self: stretch;
+  box-sizing: border-box;
+}
+
+.tc-segment > button::before,
+.tc-segment > button::after,
+.tc-segment > button:hover::before,
+.tc-segment > button:hover::after,
+.tc-segment > button:focus::before,
+.tc-segment > button:focus::after,
+.tc-segment > button:focus-visible::before,
+.tc-segment > button:focus-visible::after,
+.tc-segment > button:active::before,
+.tc-segment > button:active::after,
+.tc-segment > button[aria-pressed='true']::before,
+.tc-segment > button[aria-pressed='true']::after,
+.tc-segment > button[aria-pressed='false']::before,
+.tc-segment > button[aria-pressed='false']::after {
+  border-radius: var(--tc-radius-control, 999px) !important;
+}
+
+.tc-toolbar .tc-segment > button {
+  height: auto !important;
+  min-height: 0 !important;
+  padding-block: 0 !important;
 }
 
 .tc-header-help {
@@ -768,6 +985,7 @@ button[data-loading='true'],
   margin: 0;
   padding: 0;
   display: grid;
+  align-content: start;
 }
 
 /* Earlier steps only. Opacity keeps each bank's own ink, so tellr / pnc / mtb / fnb stay readable. */
@@ -1012,6 +1230,9 @@ html[data-color-scheme='light'] select option:checked,
   --tc-space-body-control: 12px;
   --tc-space-control-pad-y: 8px;
   --tc-space-control-pad-x: 12px;
+  --tc-page-pad-y: clamp(8px, 1.6vw, 20px);
+  --tc-page-pad-x: clamp(8px, 1.6vw, 24px);
+  --tc-page-pad-bottom: clamp(12px, 2vw, 28px);
   --tc-sim-pad-inline: 18px;
   --tc-nav-pad-inline: 14px;
   --tc-nav-tab-gap: 26px;
@@ -1047,14 +1268,22 @@ html {
 }
 
 html,
+body,
+#root {
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+}
+
+html,
 body {
   overflow-x: hidden;
+  overflow-y: hidden;
   max-width: 100%;
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
   font-family: var(--tc-font, 'Segoe UI', system-ui, sans-serif);
   font-size-adjust: var(--tc-font-size-adjust);
   background-color: var(--tc-bg-color, #0b1026);
@@ -1264,5 +1493,99 @@ body {
   button:active,
   .tc-btn:active {
     transform: none;
+  }
+}
+
+/*
+  Short demo windows. Tokens are shared (VIEWPORT_FIT). Overrides sit on the
+  theme root so they beat the inline custom properties. space-4 stays put.
+  Body text stays on the same steps; only the root size and leading change.
+*/
+@media (max-height: 860px) {
+  :root {
+    --tc-root-font: 87.5% !important;
+  }
+
+  [data-testid='theme-root'] {
+    --tc-space-1: 2px !important;
+    --tc-space-2: 4px !important;
+    --tc-space-3: 6px !important;
+    --tc-space-5: 8px !important;
+    --tc-space-header: 4px !important;
+    --tc-space-header-content: 6px !important;
+    --tc-space-heading-body: 2px !important;
+    --tc-space-body-control: 6px !important;
+    --tc-space-control-pad-y: 2px !important;
+    --tc-space-control-pad-x: 8px !important;
+    --tc-space-gap: 6px !important;
+    --tc-space-workstation: 6px !important;
+    --tc-space-strip: 4px !important;
+    --tc-space-card: 6px !important;
+    --tc-space-card-fluid: 6px !important;
+    --tc-page-pad-y: 6px !important;
+    --tc-page-pad-x: 10px !important;
+    --tc-page-pad-bottom: 6px !important;
+    --tc-control-h: 36px !important;
+    --tc-header-control-h: 36px !important;
+    --tc-header-h: 36px !important;
+    --tc-wordmark-h: 28px !important;
+    --tc-help-size: 32px !important;
+    --tc-timeline-gap: 6px !important;
+    --tc-text-xs-lh: 1.1 !important;
+    --tc-text-sm-lh: 1.1 !important;
+    --tc-text-base-lh: 1.25 !important;
+    --tc-text-lg-lh: 1.1 !important;
+    --tc-text-xl-lh: 1.1 !important;
+    --tc-text-2xl-lh: 1.05 !important;
+    --tc-type-line-body: 1.25 !important;
+    --tc-type-line-heading: 1.1 !important;
+    --tc-type-line-ui: 1.1 !important;
+  }
+
+  .tc-header {
+    min-height: var(--tc-header-h) !important;
+    padding-block: 0 !important;
+  }
+}
+
+@media (max-height: 760px) {
+  :root {
+    --tc-root-font: 87.5% !important;
+  }
+
+  [data-testid='theme-root'] {
+    --tc-space-1: 2px !important;
+    --tc-space-2: 4px !important;
+    --tc-space-3: 4px !important;
+    --tc-space-5: 6px !important;
+    --tc-space-header: 4px !important;
+    --tc-space-header-content: 4px !important;
+    --tc-space-heading-body: 2px !important;
+    --tc-space-body-control: 4px !important;
+    --tc-space-control-pad-y: 2px !important;
+    --tc-space-control-pad-x: 8px !important;
+    --tc-space-gap: 4px !important;
+    --tc-space-workstation: 4px !important;
+    --tc-space-strip: 4px !important;
+    --tc-space-card: 4px !important;
+    --tc-space-card-fluid: 4px !important;
+    --tc-page-pad-y: 4px !important;
+    --tc-page-pad-x: 8px !important;
+    --tc-page-pad-bottom: 4px !important;
+    --tc-control-h: 36px !important;
+    --tc-header-control-h: 36px !important;
+    --tc-header-h: 36px !important;
+    --tc-wordmark-h: 28px !important;
+    --tc-help-size: 32px !important;
+    --tc-timeline-gap: 4px !important;
+    --tc-text-xs-lh: 1.05 !important;
+    --tc-text-sm-lh: 1.05 !important;
+    --tc-text-base-lh: 1.2 !important;
+    --tc-text-lg-lh: 1.05 !important;
+    --tc-text-xl-lh: 1.05 !important;
+    --tc-text-2xl-lh: 1.05 !important;
+    --tc-type-line-body: 1.2 !important;
+    --tc-type-line-heading: 1.05 !important;
+    --tc-type-line-ui: 1.05 !important;
   }
 }

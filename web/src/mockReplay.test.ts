@@ -8,6 +8,7 @@ import t6 from '../../contract/fixtures/T6.json'
 import t7 from '../../contract/fixtures/T7.json'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockRequest, resetMock } from '../mock/replay'
+import { CUSTOMERS } from './demo/customers'
 import { validateActivity, validateError, validateHandoff, validateSessionState } from './validate'
 
 const fixtures = [t1, t2, t3, t4, t5, t6, t7]
@@ -280,7 +281,7 @@ describe('fixture replay', () => {
     expect(practice.status).toBe(200)
   })
 
-  it('scores a live government-impersonation answer path to High/62', () => {
+  it('scores a live government-impersonation answer path 45 → 52 → 62 → 75 → 93 → 100', () => {
     const opened = mockRequest('POST', '/sessions', { mode: 'live', amount_band: '5000_9999' })
     const sessionId = (opened.body as { session_id: string }).session_id
     const chips = [
@@ -333,6 +334,130 @@ describe('fixture replay', () => {
     expect(secrecy.body).toMatchObject({
       answers: 2,
       risk: { level: 'high', raw_level: 'high', score: 62 },
+      question: { id: 'q.alternative.cashiers_check' },
     })
+
+    const denied = mockRequest('POST', `/sessions/${sessionId}/answers`, {
+      question_id: 'q.alternative.cashiers_check',
+      chip: 'denied',
+    })
+    expect(denied.status).toBe(200)
+    expect(denied.warnings).toEqual([])
+    expect(validateSessionState(denied.body)).toEqual([])
+    expect(denied.body).toMatchObject({
+      answers: 3,
+      risk: { level: 'high', raw_level: 'high', score: 75 },
+    })
+
+    const gap = mockRequest('POST', `/sessions/${sessionId}/answers`, {
+      question_id: 'q.recipient.account_details',
+      chip: 'no_answer',
+    })
+    expect(gap.status).toBe(200)
+    expect(gap.warnings).toEqual([])
+    expect(validateSessionState(gap.body)).toEqual([])
+    expect(gap.body).toMatchObject({
+      answers: 4,
+      risk: { level: 'high', raw_level: 'high', score: 93 },
+    })
+
+    const changed = mockRequest('POST', `/sessions/${sessionId}/answers`, {
+      question_id: 'q.homerepair.contractor_name',
+      chip: 'changed',
+    })
+    expect(changed.status).toBe(200)
+    expect(changed.warnings).toEqual([])
+    expect(validateSessionState(changed.body)).toEqual([])
+    expect(changed.body).toMatchObject({
+      answers: 5,
+      risk: { level: 'high', raw_level: 'high', score: 100 },
+    })
+    const contributions = (
+      changed.body as {
+        explanation: { contributions: { signal_id: string; label: string }[] }
+      }
+    ).explanation.contributions
+    expect(contributions.map((row) => [row.signal_id, row.label])).toEqual(
+      expect.arrayContaining([
+        ['sig.secrecy_bank', 'Told not to discuss with the bank'],
+        ['sig.answer_relayed', 'Answer relayed by caller'],
+        ['sig.specificity_gap', 'Missing details'],
+        ['sig.cash_refusal_unexplained', 'Turned down a safer option'],
+        ['sig.story_drift', 'Story changed'],
+      ]),
+    )
+  })
+
+  it('plays each demo script to an engine-recorded score', () => {
+    const ladders: Record<string, { score: number; level: string }[]> = {
+      'contractor-cash': [
+        { score: 14, level: 'clear' },
+        { score: 22, level: 'clear' },
+        { score: 34, level: 'caution' },
+        { score: 45, level: 'caution' },
+        { score: 58, level: 'caution' },
+        { score: 76, level: 'high' },
+        { score: 86, level: 'high' },
+      ],
+      'romance-crypto': [
+        { score: 16, level: 'clear' },
+        { score: 28, level: 'caution' },
+        { score: 45, level: 'caution' },
+        { score: 45, level: 'caution' },
+        { score: 60, level: 'high' },
+        { score: 73, level: 'high' },
+      ],
+      'government-impersonation': [
+        { score: 14, level: 'clear' },
+        { score: 22, level: 'clear' },
+        { score: 40, level: 'caution' },
+        { score: 45, level: 'caution' },
+        { score: 52, level: 'caution' },
+        { score: 62, level: 'high' },
+        { score: 75, level: 'high' },
+        { score: 93, level: 'high' },
+        { score: 100, level: 'high' },
+      ],
+    }
+    for (const customer of CUSTOMERS) {
+      resetMock()
+      const opened = mockRequest('POST', '/sessions', { mode: 'live', amount_band: customer.transaction.amountBand })
+      expect(opened.status, customer.id).toBe(200)
+      const sessionId = (opened.body as { session_id: string }).session_id
+      expect(opened.body).toMatchObject({ risk: { level: 'clear', score: 0 } })
+      const posts = customer.events.filter((event) => event.chips.length > 0 || event.answer)
+      if (customer.id === 'benign-car' || customer.id === 'benign-routine') {
+        expect(posts, customer.id).toHaveLength(0)
+        continue
+      }
+      const seen: { score: number; level: string }[] = []
+      for (const event of posts) {
+        if (event.chips.length > 0) {
+          const posted = mockRequest('POST', `/sessions/${sessionId}/context`, {
+            chips: event.chips,
+            source: 'observed',
+          })
+          expect(posted.warnings, `${customer.id} ${event.id}`).toEqual([])
+          expect(validateSessionState(posted.body), `${customer.id} ${event.id}`).toEqual([])
+          const risk = (posted.body as { risk: { score: number; level: string } }).risk
+          seen.push({ score: risk.score, level: risk.level })
+        }
+        if (event.answer) {
+          const body: { question_id: string; chip: string; purpose?: string } = {
+            question_id: event.answer.question_id,
+            chip: event.answer.chip,
+          }
+          if (event.answer.purpose !== undefined) {
+            body.purpose = event.answer.purpose
+          }
+          const posted = mockRequest('POST', `/sessions/${sessionId}/answers`, body)
+          expect(posted.warnings, `${customer.id} ${event.id}`).toEqual([])
+          expect(validateSessionState(posted.body), `${customer.id} ${event.id}`).toEqual([])
+          const risk = (posted.body as { risk: { score: number; level: string } }).risk
+          seen.push({ score: risk.score, level: risk.level })
+        }
+      }
+      expect(seen, customer.id).toEqual(ladders[customer.id])
+    }
   })
 })

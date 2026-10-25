@@ -133,7 +133,8 @@ describe('workstation answers', () => {
     expect(screen.getByTestId('explain-level').textContent).toBe('Caution')
     expect(screen.getByTestId('explain-raw-level').textContent).toBe('High')
     fireEvent.click(screen.getByRole('button', { name: 'Score explanation' }))
-    expect(screen.getByText('Raw level (before display rules)')).toBeTruthy()
+    expect(screen.getByText('Raw level')).toBeTruthy()
+    expect(screen.queryByText(/before display rules/)).toBeNull()
   })
 
   it('keeps teller confirm and deny on the copilot chips, not on Why this level', () => {
@@ -186,10 +187,11 @@ describe('workstation answers', () => {
       expect(button.style.alignContent).toBe('center')
       expect(button.style.lineHeight).toBe('1')
       expect(button.style.padding).toBe('0px')
-      expect(button.style.width).toBe(DENSITY.controlHeight)
-      expect(button.style.height).toBe(DENSITY.controlHeight)
-      expect(button.style.minWidth).toBe(DENSITY.controlHeight)
-      expect(button.style.minHeight).toBe(DENSITY.controlHeight)
+      const controlHeight = `var(--tc-control-h, ${DENSITY.controlHeight})`
+      expect(button.style.width).toBe(controlHeight)
+      expect(button.style.height).toBe(controlHeight)
+      expect(button.style.minWidth).toBe(controlHeight)
+      expect(button.style.minHeight).toBe(controlHeight)
       expect(button.style.borderRadius).toBe('var(--tc-radius-control, 999px)')
       expect(button.style.boxSizing).toBe('border-box')
       const svg = button.querySelector('svg')

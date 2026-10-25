@@ -21,7 +21,9 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
       data-presenter={presenter.on ? 'true' : 'false'}
       style={{
         ...(themeVars(theme) as CSSProperties),
-        minHeight: '100vh',
+        height: '100dvh',
+        minHeight: 0,
+        maxHeight: '100dvh',
         position: 'relative',
         color: 'var(--tc-text)',
         fontFamily: 'var(--tc-font)',
@@ -41,7 +43,8 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
         data-testid="theme-page"
         className="tc-theme-page"
         style={{
-          minHeight: '100vh',
+          height: '100%',
+          minHeight: 0,
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
@@ -51,8 +54,8 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
           minWidth: 0,
           overflowX: 'clip',
           overflowClipMargin: DENSITY.focusClip,
-          padding: `${DENSITY.pagePadY} ${DENSITY.pagePadX} ${DENSITY.pagePadBottom}`,
-          gap: DENSITY.spaceWorkstation,
+          padding: 'var(--tc-page-pad-y) var(--tc-page-pad-x) var(--tc-page-pad-bottom)',
+          gap: 'var(--tc-space-workstation)',
         }}
       >
         <div
@@ -63,6 +66,10 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
             width: '100%',
             maxWidth: '100%',
             minWidth: 0,
+            minHeight: 0,
+            flex: '1 1 auto',
+            display: 'flex',
+            flexDirection: 'column',
             margin: '0 auto',
             borderRadius: 'var(--tc-radius-card)',
             background: 'var(--tc-glass-fill)',
@@ -70,7 +77,7 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
             backdropFilter: 'blur(var(--tc-glass-blur))',
             WebkitBackdropFilter: 'blur(var(--tc-glass-blur))',
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), var(--tc-shadow-card)',
-            padding: DENSITY.cardPad,
+            padding: 'var(--tc-space-card)',
             boxSizing: 'border-box',
           }}
         >

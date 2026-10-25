@@ -1,343 +1,133 @@
-# tellr
+<p align="center"><img src="docs/assets/tellr-logo.png" alt="Tellr" width="260"></p>
 
-## Summary
+# Tellr
 
-- tellr is an interview aid for a teller at a fast counter. It suggests a level, a next step, and words to say. The teller still decides. [How a teller uses it](#how-a-teller-uses-it)
-- The demo is five scripted synthetic customers on a timer. A real visit is a live session with no scenario, scored by the engine from the teller's taps. [The demo and a real visit](#the-demo-and-a-real-visit)
-- The question picker is Meta-Llama-3.1-8B-Instruct (Q4_K_M). Sebastian states an RTX 5070 was used to train it. That training run is not written down here. The model returns a question ID only. [The Llama 8B](#the-llama-8b)
-- Headline bench: 8B total p50 463.6 ms (typical reply) and p95 482.7 ms (slow end), both under the 1.5 second pause budget. On 30 dev scenarios the live 8B caught 14/15 coached visits (Caution or High) and false-flagged 0/15 genuine visits (none marked High), mean 3.10 questions, matching the rules. [Latency bench (A-03)](#latency-bench-a-03) · [Development set (30 scenarios)](#development-set-30-scenarios)
-- Stack: Python 3.12 engine, React screen, SQLite log. Measured inference ran on an RTX 5070 Laptop. Training hardware is Sebastian's RTX 5070 statement. [Specs and tech stack](#specs-and-tech-stack)
-- Four bank themes (tellr, pnc, mtb, fnb) share one layout. Color, font, and the brand mark change. At the counter the teller opens a live session, taps chips, and records the outcome. [How it's built](#how-its-built) · [How it would actually be used](#how-it-would-actually-be-used)
-- A person makes the final call. The copilot suggests and does not approve or deny. The demo is scripted, the model has not beaten the rules, and no compliance sign-off is in the repo. [Responsible use](#responsible-use) · [Safety and bank concerns](#safety-and-bank-concerns) · [Limitations / what's scripted](#limitations--whats-scripted)
-- Two people steered and agents wrote the code. We ran up to 12 agents in parallel, scaling up or down with the task, for roster cards and UI fixes alike. [How we built it](#how-we-built-it)
-- Entered in the HackPSU Grand Prize, the FNB Challenge, the Nittany AI Challenge, and MLH SpaceXSI. [Entered in](#entered-in)
+Tellr is a counter-side copilot that helps a bank teller spot a coached elder-fraud victim during a cash withdrawal: the model gets only anonymous ids and library labels, never a name, age, account details, memo, dollar amount, or the customer's own words, and that is safe for a bank because identity never reaches the model, the model runs locally, it only picks the next question and cannot set the score, the level, or the action, and the teller decides.
 
-Teller Copilot (tellr) is a teller-facing interview aid. It keeps an append-only log of what the teller records, folds that log into a score and a level, and may ask a local model for the next question ID. The teller still chooses what happens to the transaction. It was built at HackPSU Fall 2026 by two people and a set of Cursor agents, against a frozen contract between the engine and the screen (`ARCHITECTURE.md`; `docs/architecture.md` §0–§3).
+Built by Team KotR for HackPSU Fall 2026: Sebastian Villalba and Jonathan Zheng.
 
-The hard moment is the counter. A customer is standing there, the low-risk path is meant to finish in under 60 seconds, and a multi-second blank screen is dead air the teller has to fill. The screen is built against a 1.5 second budget on slow taps. That budget is a p95: the 95th percentile of the wait from a chip tap to the next question, so in a measured sample about 95% of waits are that fast or faster. The product suggests. It does not approve or deny (`docs/architecture.md` §1, §9).
+## In 30 seconds
 
-## How a teller uses it
+- We built it for a teller at the counter, on a cash withdrawal, when the customer may have been coached through elder fraud.
+- The teller taps signal chips and answers. They never type a prompt. Tellr never listens: no microphone permission, no audio dependency in the lockfile (`docs/architecture.md` P7 and the No audio row in §9), no call recording, and no transcript of what the customer said. Voice input is not built.
+- We added playback so a judge can watch a scripted visit in about 45 seconds at 1× (Government impersonation). A real teller would not see that playback. The controls are in [The demo vs real use](#the-demo-vs-real-use).
+- `tellr` is the default theme. PNC, M&T (`mtb`), and F.N.B. (`fnb`) are example theme templates of the same screen layout. They change the color, the font, and the brand mark. They are not affiliations or endorsements. Chips, questions, talk tracks, patterns, and the signal weights are YAML in `library/` that the engine loads, so those files are what you would edit. A feed from a bank's core system is not built.
+- What the model may see, and why that is safe for a bank, is the table in [What goes in](#what-goes-in-and-why-its-safe-for-a-bank).
 
-Home is a workstation: the transaction on one side, a copilot card on the other. The card renders one server snapshot. While a save is in flight it keeps that snapshot on screen (`ARCHITECTURE.md`, workstation section).
+**Jump to:** [In 30 seconds](#in-30-seconds) · [The problem](#the-problem) · [Why a teller](#why-a-teller) · [What goes in](#what-goes-in-and-why-its-safe-for-a-bank) · [Try it in two minutes](#try-it-in-two-minutes) · [How we built it with Cursor](#how-we-built-it-with-cursor) · [The demo vs real use](#the-demo-vs-real-use) · [The Llama 8B and benchmarks](#the-llama-8b-and-benchmarks) · [Templates](#templates) · [How a teller uses it](#how-a-teller-uses-it) · [Safety and limitations](#safety-and-limitations) · [Specs and tech stack](#specs-and-tech-stack) · [Sources](#sources)
 
-The copilot shows:
+## The problem
 
-- **Level.** An icon plus a word: Clear, Caution, or High. Colour is not the only cue (`docs/architecture.md` §12; `ARCHITECTURE.md`).
-- **Urgency Score.** The server score over the contract maximum, shown as `<score>/<max>`. The score is clamped at +100 (`ARCHITECTURE.md`; `docs/architecture.md` §6.2). Clear is below 25, Caution starts at 25, and High concern starts at 60 (`docs/architecture.md` §6.3).
-- **Suggested action.** `talk_track.action` when the server sends one: a short imperative, not a question (`contract/api.md`, CHANGE-007; `ARCHITECTURE.md`).
-- **Read-aloud script.** The label plus `talk_track.lines`. That is the wording the teller can say (`ARCHITECTURE.md`).
-- **Signals.** Chips the teller can confirm, dismiss, or restore. A teller-sourced chip can read "Teller confirmed." The copilot row hides an "Observed" badge (`docs/handoff/20261025-0828-signal-rows-no-observed.md`).
-- **Why this level.** The score explanation: what raised it, what would lower it, a strength word, and collapsed technical details. The panel places server fields. It does not rescore them (`ARCHITECTURE.md`).
-- **Timeline.** Step, elapsed time, and speaker. Amounts and phrases such as "on the phone" and "cash" are bold. Speaker is "Customer" (`ARCHITECTURE.md`).
-- **Case file.** The control sits with the Transaction heading. The file omits name, age, and gendered pronouns; those stay off the screen and the customer is labeled Customer (`docs/handoff/20261025-0825-home-panel-up-case-file-link.md`; `ARCHITECTURE.md`).
+In the FBI IC3 2025 Annual Report, people 60 and older reported $7.748 billion in losses, up 59% from 2024, average loss $38,500 [[1]](#source-1). The FTC puts the total cost of fraud to older adults in 2025 between $13.3 billion and $119.5 billion, depending on methodology [[2]](#source-2). Losses reported to the FTC are only the "tip of the iceberg" [[2]](#source-2). Scammers "coach people on what to say to bank employees" [[2]](#source-2).
 
-Four outcomes stay available while the visit is open: proceed, slow down, escalate, and report. After the decision, the visit closes and the teller can start a new customer (`docs/architecture.md` §4; `ARCHITECTURE.md`).
+FinCEN's 2024 analysis counted 155,415 suspicious-activity reports covering more than $27 billion, and it describes in-person victims who "may have been on the phone with someone directing their activities" [[3]](#source-3).
 
-Risk, level, reasons, and the next question are computed by the engine. The web UI renders `SessionState`. It does not compute them (`docs/architecture.md` §12; `ARCHITECTURE.md`; `WORKFLOW.md` §9).
+In the CFPB's 2019 elder exploitation report, fewer than a third of the suspicious-activity reports were also sent to the authorities [[4]](#source-4). In 2024, cash was the payment method in 16% of reports from adults 60+ who lost $10K or more to business or government imposter scams (crypto 33%, bank transfer 20%) [[5]](#source-5).
 
-## Responsible use
+## Why a teller
 
-The teller makes the final call. The outcome is a human event, and it requires an actor. No endpoint approves or denies the withdrawal. The copilot suggests a level, a next action, and words to say. Why this level is the score explanation: what raised it, what would lower it, and a strength word taken from the weights in that response. The panel shows those server fields. It does not compute a new score (`docs/architecture.md` §1, §9; `ARCHITECTURE.md`; `contract/api.md`).
+Staff at the counter have stopped losses in published bank programs. A 2019 AARP and Virginia Tech BankSafe pilot covered more than 1,800 employees from nearly 500 branches in 11 states over six months [[6]](#source-6). Trained staff stopped $900,915, compared with $54,384 (16 times) [[6]](#source-6). It was a pilot, not a controlled trial. BankSafe saved $137 million in 2024, a record up 53%, as reported by AARP itself [[7]](#source-7).
 
-## The demo and a real visit
+## What goes in, and why it's safe for a bank
 
-The demo layout is always on. It is the scripted workstation used for the judging demo: five synthetic customer files play on a timer beside the copilot (`ARCHITECTURE.md`, `web/src/demo/customers.ts`). At 1×, playback targets are routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, and contractor cash 60s. Speed changes wall-clock time only. The on-screen clock is simulated customer time, the sum of each event's `delayMs`. The last two files post no chips (`ARCHITECTURE.md`).
-
-The HackPSU Devpost video is capped at 5 minutes and is meant to cover who, why, how, and future plans (`docs/A_TO_B.md`, M-022). The repo does not include the video file.
-
-**Scripted in that demo**
-
-- The five customer files, their timelines, transaction type, amount, memo, and pacing (`ARCHITECTURE.md`).
-- Chips the simulation posts as the file plays, with source `observed`. A manual post uses source `teller` (`ARCHITECTURE.md`).
-- Sample data when no API is up. `npm run dev` can fall back to the Vite mock. The mock looks up recorded engine bodies in `web/mock/live_answers.json` and `web/mock/live_levels.json`. It does not score (`ARCHITECTURE.md`).
-
-**Real engine behavior behind it**
-
-- With the API up, `npm run dev:api` scores every answer through the engine. Live session opens send `{ mode: "live", amount_band }` (`ARCHITECTURE.md`).
-- The same fold produces the level, the reasons, the pattern, the talk track, and the question. Same events and the same library version produce the same result (`docs/architecture.md` §4).
-- The model, when it is on, returns one question ID from a rules-filtered list. Library text is what the teller reads (`docs/architecture.md` §7.4, §8.2).
-- The benchmark numbers below are separate runs of that engine, not numbers computed in the browser (`docs/architecture.md` §13; `docs/WRITEUP_NUMBERS.md`).
-
-**A real visit**
-
-A live session cannot load a scenario. The API rejects `scenario_id` when `mode` is `live` (`contract/api.md`; `docs/architecture.md` §14.1). The header pill reads `Simulation: <customer title>` for a synthetic file and `LIVE — no scenario loaded` for a live session with no simulation (`ARCHITECTURE.md`). The teller taps chips and records the outcome. If the model is slower than 1500 ms, or the GPU is down, that turn uses the rule engine, which is a complete product on its own (`docs/architecture.md` §7.3, §14.2). The repo does not describe a feed from a bank's core system.
-
-## How it would actually be used
-
-This is the deployment the spec describes. It is separate from the scripted demo above.
-
-1. The teller opens a **live** session and records an amount band. The API refuses a scenario on that session. A feed that pulls the transaction from a bank's core system is **not built yet** (`contract/api.md`; `docs/architecture.md` §14.1).
-2. The teller taps what they see and how the customer answered. Those chips are the inputs (`docs/architecture.md` §4, §5.6–§5.7).
-3. The engine folds that log into an urgency score, a level, reasons, and a pattern. The screen displays that result (`docs/architecture.md` §6, §12).
-4. The copilot shows the suggested action and the read-aloud lines from the library talk track. When another question is needed, the rules choose it, or the local model returns one allowed question ID (`docs/architecture.md` §7.4; `library/talk_tracks.yaml`).
-5. The teller chooses proceed, slow down, escalate, or report. That choice is stored with a human actor, and the visit closes (`docs/architecture.md` §4, §9).
-
-If the model is slower than 1.5 seconds, or the GPU is down, that turn uses the rule engine. The rules-only path was walked end to end (`docs/architecture.md` §14.2; `docs/DECISIONS.md`, Hour 8).
-
-## Limitations / what's scripted
-
-- The judging demo plays five synthetic files on a timer. With no API, the page shows recorded engine answers and does not score them (`ARCHITECTURE.md`).
-- A live visit loads no scenario. The teller taps the chips. There is no described connection to a bank's core system (`contract/api.md`; `docs/architecture.md` §14.1).
-- On the dev set and the held-out set, the 8B matched the rules on catch and false-flag. The spec says to lead with the adaptive interview in that case, and to report the model as a part that has not yet earned its place (`docs/WRITEUP_NUMBERS.md`; `docs/architecture.md` §19.1).
-- The dev miss `scn.coached.bank_perfect_own_account` was left in place. A weight change that caught only that row was tried and not applied. The held-out run, five scenarios per group, missed `scn.coached.ssa_review_rehearsed` on every arm. Those ranges are wide, and the spec says to treat that run as a check, not the headline (`docs/handoff/000-archive.md`, [A-07]; `docs/B_TO_A.md`, B-018; `docs/architecture.md` §13.4).
-- A completed compliance or regulatory review is not in the repo. Three patterns are marked `review: compliance` and ship with no signals (`library/patterns.yaml`). External legal claims, including a Senior Safe Act paraphrase, are marked remove (`docs/WRITEUP_NUMBERS.md` §6).
-- An in-app editor for scripts, reasons, or themes is not built. There is no settings endpoint (`docs/DECISIONS.md`, Hour 2).
-- How to keep the pattern name off a customer's view is still an open choice. The spec lists screen orientation, a privacy filter, or more neutral wording, and it does not record which one was chosen (`docs/architecture.md` §19.4).
-
-## The Llama 8B
-
-The model is **Meta-Llama-3.1-8B-Instruct**, quantized **Q4_K_M**, served locally with `llama-server`. Drivers picked it at hour 6 because a latency bench on an RTX 5070 Laptop put both the 8B and Llama-3.2-3B-Instruct Q4_K_M under the 1.5 s limit and under the ~0.7 s target. The 8B total p95 was 482.7 ms. The 3B is the fallback if VRAM is tight. Quality was not measured in that bench (`docs/DECISIONS.md`, Hour 6; `docs/handoff/000-archive.md`, [A-03]).
-
-Its job is narrow. The opener is fixed, the score and the level are rules, and hypothesis ranking is rules. In strict mode the model only chooses the next question ID among a short candidate list, under a grammar that lists those IDs. It does not write the level, the reasons, or prose (`docs/architecture.md` §7.4, §8.1–§8.2).
-
-The git tag **`weights-frozen`** is `82b788d` (`82b788d1009fe775c3fc5edb20cb5413ee25068e`). It freezes the scoring weights after card A-07. Those weights stayed at the starting table in `library/signals.yaml`. What changed was the static questionnaire's threshold, from 3 to 4, labeled tuned. The tag is not a fine-tune of the Llama file. The repo does not describe training or fine-tuning that model (`docs/handoff/000-archive.md`, [A-07]; `docs/A_TO_B.md`; `docs/A08_HELDOUT_RUN.md`).
-
-### Latency bench (A-03)
-
-RTX 5070 Laptop, 8151 MiB, `llama-server -ngl 99 -c 4096 -np 1`, temperature 0, 3 warm-up runs, then 50 timed. Total is client wall clock. Both models passed L1b (≤1.5 s) and the ~0.7 s target (`docs/handoff/000-archive.md`, [A-03]).
-
-| Model | Total p50 | Total p95 | Prefill p95 | Decode p95 | VRAM |
-|---|---:|---:|---:|---:|---:|
-| Llama-3.2-3B-Instruct Q4_K_M | 273.2 ms | 296.3 ms | 92.2 ms | 184.0 ms | 4865 MiB |
-| Meta-Llama-3.1-8B-Instruct Q4_K_M | 463.6 ms | 482.7 ms | 171.7 ms | 291.9 ms | 7379 MiB |
-
-What those columns measure (`docs/handoff/000-archive.md`, [A-03]; `scripts/bench_llm.py`; `docs/architecture.md` §1, §8.3):
-
-- **Total** is the wait for one reply, timed on the client from send to answer. This is the pause before a question ID comes back.
-- **p50** is the 50th percentile of the 50 timed runs, the midpoint of that sample. It is the typical reply in the test.
-- **p95** is the 95th percentile, the slow end. The product is built against 1.5 seconds here, because the slow tap is the dead air. The design sketch hoped for about 0.7 seconds. Both models landed under both lines, which is why the bench marked them pass. On a live visit, a model call past 1.5 seconds is handed to the rule engine, so the teller still gets a next question.
-- **Prefill** is the server time spent reading the prompt. The design sketch budgets 250 ms at p95. Both rows are under that.
-- **Decode** is the server time spent writing the short answer. The sketch budgets 400 ms at p95. Both rows are under that. In this run the writing step was most of the wait.
-- **VRAM** is graphics memory in use. The laptop had 8151 MiB. The 8B used 7379 MiB, about 7.4 of 8 GB, which the drivers called tight if anything else needed the GPU. The 3B used less. If the 8B does not fit, the documented fallback is the 3B, or the rules with no model.
-
-A later live-path check on the same laptop, 11 model calls across fixtures T1–T7, warm, fallback 0: 8B p50 663 ms / p95 742 ms / max 765 ms; 3B p50 255 ms / p95 342 ms. Agreement with the rules was 9/11 for both (`docs/handoff/000-archive.md`, [A-05] live p95). Same percentiles as above, on a smaller sample. The max is the slowest of those 11 calls. A fallback is a turn the rules answered because the model missed the 1.5 second cutoff or the server was down. Zero means every one of these calls got a model reply. Agreement is how often that reply was the same question the rules would have picked. The health notes say a rate near 100% means the model is adding wait and nothing else (`docs/architecture.md` §14.2, §16).
-
-### Development set (30 scenarios)
-
-CP3, library 1.2.0, 8B Q4_K_M on the RTX 5070, before the threshold change. Arm A is a fixed questionnaire. Arm B is the product with the rule engine. Arm C is the product with the live 8B. Counts, not percentages. The docs say not to call a difference significant on 15 scenarios per population (`docs/WRITEUP_NUMBERS.md`; `docs/B_TO_A.md`, B-013; `docs/architecture.md` §13.2–§13.3).
-
-| Arm | Catch | False-flag | Mean questions |
-|---|---|---|---:|
-| A (threshold 3) | 15/15 | 8/15 (95% Wilson 30–75%) | 6.00 |
-| B (rules) | 14/15 (95% Wilson 70–99%) | 0/15 (95% Wilson 0–20%) | 3.07 |
-| C (live 8B) | 14/15 (95% Wilson 70–99%) | 0/15 (95% Wilson 0–20%) | 3.10 |
-
-What those columns measure (`docs/architecture.md` §13.1–§13.3; `docs/ROSTER.md` §5.2). Each run is 15 coached scenarios and 15 legitimate ones. A coached scenario is a customer who has been walked through a scam story. A legitimate scenario is a genuine reason for the withdrawal, including some with an innocent warning sign.
-
-- **Catch** counts coached scenarios that finish at Caution or High. 15/15 means every coached story was at least Caution. A miss is a coached scenario that finishes Clear. A higher catch means fewer of those Clear finishes. Catch by itself is a weak score: a sheet that marked every customer Caution would catch all 15 and still show no false flags.
-- **False-flag** counts legitimate scenarios that finish High. That is a genuine customer marked high concern. The writeup keeps this beside catch so flagging everyone cannot look like a perfect score. On the fixed questionnaire, moving the bar from 3 to 4 took this count from 8/15 to 0/15 and dropped catch with it.
-- The **Wilson** range next to a count is a 95% interval. On 15 scenarios it is wide. The spec's own example is that 13/15 still spans roughly 62% to 96%. Read the fraction, and treat a gap between arms as unproven on a sample this small.
-- **Mean questions** is the average number of questions before the interview stopped. The spec turns that into time at the window by multiplying by about 13 seconds of human time per question. This run recorded a mean of 40 seconds for the arms that asked about three questions. Arm A asked 6 every time. The low-risk path is meant to finish in under 60 seconds, so this column is the clock. The catch and false-flag columns show what that shorter or longer interview did to coached and legitimate customers.
-
-Arm C on that run: friction 0/15, max 5 questions, scripted time-to-decision mean 40 s, `default_fired` 0/93, validator rejections 0, latency p50 / p95 / max 486 / 576 / 619 ms, no fallbacks. Coached customers finished 1 Clear, 7 Caution, 7 High. All 15 legitimate customers finished Clear. VRAM about 7064/8151 MiB. The shared miss is `scn.coached.bank_perfect_own_account` (`docs/B_TO_A.md`, B-013; `docs/A_TO_B.md`).
-
-The extra figures in that paragraph (`docs/architecture.md` §7.5, §13.1, §13.3–§13.4; `docs/B_TO_A.md`, B-013):
-
-- **Friction** counts legitimate scenarios that finish Caution or High, not High alone. It is the genuine customers who still leave under some concern. False-flag hides them when they are only Caution. Here friction is 0/15, matching a sheet of all Clear.
-- **default_fired** counts questions the scenario had no scripted answer for, so a generic answer was used. 0/93 means every question was one the scenario knew how to answer. A high rate means the test is weaker than it looks.
-- **Validator rejections** count model replies that named a question outside the allowed list. Those are dropped and the rules' question is used. Zero means that did not happen on this run.
-- **Latency** here is model time with the eval timeout turned off, so it is not the live 1.5 second test. p50, p95, and max are the midpoint, the slow end, and the slowest call. The live check is the bench above.
-- **Fallback** on the live path is a turn the rules answered because the model missed the time cutoff, or the GPU was unavailable. When that happens, the rules supply the question for that turn. This eval reported none.
-
-A-07 then moved only arm A's threshold from 3 to 4. Scoring weights were not changed (`docs/WRITEUP_NUMBERS.md`; `docs/handoff/000-archive.md`, [A-07]).
-
-| Arm A | Catch | False-flag | Friction | Mean questions |
-|---|---|---|---|---:|
-| Before (threshold 3) | 15/15 | 8/15 | 8/15 | 6.00 |
-| After (threshold 4) | 13/15 | 0/15 | 0/15 | 6.00 |
-
-Catch, false-flag, and mean questions are the same measures as the table above. Friction is defined in that note. The threshold is how many "concerning" answers the fixed questionnaire needs before it flags someone. It moved from 3 to 4. All eight false flags had a count of 3, so 4 clears them, and friction falls in step because those eight were High. Two coached scenarios sat on that same count and become misses. The questionnaire is no shorter: it still asks 6 questions. For a teller using that fixed sheet, fewer genuine customers are marked High, and two scam stories that used to be caught now finish Clear (`docs/handoff/000-archive.md`, [A-07]; `docs/architecture.md` §13.3–§13.4).
-
-New arm A misses after the change: `scn.coached.gov_perfect_fine` and `scn.coached.tech_refund_perfect`. Arm B stayed 14/15 catch, 0/15 false-flag, mean 3.07 questions (`docs/handoff/000-archive.md`, [A-07]).
-
-### Held-out (10 scenarios, run once)
-
-Five coached and five legitimate, written in a worktree that could not see the dev scenarios or the weights, then run once on Driver B's GPU laptop. No rerun. Arm C matched arm B on catch rate and false-flag rate on this set and on the dev set (`docs/WRITEUP_NUMBERS.md`; `docs/B_TO_A.md`, B-018; `WORKFLOW.md` §10).
-
-| Arm | Catch | False-flag | Friction | Mean questions | Coached Clear / Caution / High | Legitimate Clear / Caution / High |
-|---|---|---|---|---:|---|---|
-| A | 4/5 (Wilson 38–96%) | 1/5 (Wilson 4–62%) | 1/5 | 6.00 | 1 / 0 / 4 | 4 / 0 / 1 |
-| B | 4/5 (Wilson 38–96%) | 0/5 (Wilson 0–43%) | 0/5 | 2.30 | 1 / 0 / 4 | 5 / 0 / 0 |
-| C | 4/5 (Wilson 38–96%) | 0/5 (Wilson 0–43%) | 0/5 | 2.30 | 1 / 0 / 4 | 5 / 0 / 0 |
-
-Same measures as above, on 5 coached and 5 legitimate scenarios. One scenario moves a rate by 1/5, so the Wilson ranges are very wide. The spec says to read this run as a check that the 30-scenario result was not a one-time fit, not as the headline rate. A catch of 4/5 with a range of 38–96% is consistent with anything from a bit over a third to nearly all. The level columns are the raw counts behind those rates: a coached Clear is a miss, a legitimate High is a false flag, and a legitimate Caution or High is friction (`docs/architecture.md` §13.3–§13.4; `docs/B_TO_A.md`, B-018).
-
-On time at the window, this run already multiplied questions by 13 seconds. Arm A's mean of 6.00 questions is 78 seconds. Arms B and C, mean 2.30 questions, are 30 seconds mean and 39 seconds max. On this one run, B and C match A's 4/5 catch, and their false-flag count is 0/5 where A's is 1/5. The ranges overlap by a lot, so that is the count for these 10 scenarios, not a settled gap (`docs/B_TO_A.md`, B-018; `docs/architecture.md` §13.4).
-
-Arm C latency p50 / p95 / max was 354 / 405 / 410 ms, fallback 0/13, validator rejections 0, VRAM peak 7114/8151 MiB. Every arm missed `scn.coached.ssa_review_rehearsed`. Arm A's false flag was `scn.legitimate.shelter_adoption_fuzzy` (`docs/B_TO_A.md`, B-018; `docs/WRITEUP_NUMBERS.md`). Those latency figures are again model time with the eval timeout off. Fallback 0/13 means all 13 model calls were answered by the model. The server stayed up. Validator rejections and VRAM mean the same thing as in the development run.
-
-## Reproduce our numbers
-
-Gates, from the repo root. `a` is the Python suite, `b` is the web suite, and `contract` checks the fixtures against `reference_impl.py` (`ARCHITECTURE.md`).
-
-```bash
-scripts/gate.sh a
-scripts/gate.sh b
-scripts/gate.sh contract
-```
-
-The benchmarks need a local `llama-server` with the 8B Q4_K_M: `-ngl 99 -c 4096 -np 1`, listening on `127.0.0.1:8080`. One GPU job at a time. On Git Bash or WSL, prefix model jobs with `scripts/with-gpu`. On native Windows, skip that wrapper (`docs/CP3_GPU_RUN.md`; `docs/ROSTER.md` §5.3).
-
-Latency bench, from the script header. Defaults are 50 runs and 3 warm-ups (`scripts/bench_llm.py`):
-
-```bash
-python scripts/bench_llm.py --server http://127.0.0.1:8080 --runs 50 --label 8B
-```
-
-Development eval (`docs/CP3_GPU_RUN.md`):
-
-```bash
-scripts/with-gpu env LLAMA_SERVER=http://127.0.0.1:8080 \
-  MODEL_ID=Meta-Llama-3.1-8B-Instruct-Q4_K_M \
-  python -m eval.run --scenarios eval/scenarios/dev \
-  --out eval/results/$(git rev-parse HEAD) \
-  --arms A,B,C --model local
-```
-
-Held-out eval, once (`docs/A08_HELDOUT_RUN.md`). Confirm `git rev-parse weights-frozen` is `82b788d` first.
-
-```bash
-scripts/with-gpu env LLAMA_SERVER=http://127.0.0.1:8080 \
-  MODEL_ID=Meta-Llama-3.1-8B-Instruct-Q4_K_M \
-  python -m eval.run --scenarios eval/scenarios/heldout \
-  --out eval/results/heldout \
-  --arms A,B,C --model local
-```
-
-## How it's built
-
-The browser draws state. The API appends facts, folds them, and sometimes asks the model for one ID. The eval harness imports the same engine and does not go through HTTP (`docs/architecture.md` §3, §13).
-
-```mermaid
-flowchart LR
-  ui["Web UI<br/>renders SessionState"] --> api["FastAPI<br/>127.0.0.1:8000"]
-  api --> fold["Engine fold<br/>score, level, reasons"]
-  fold --> lib["Library YAML<br/>patterns, questions, signals"]
-  api --> llm["llama-server<br/>question ID only"]
-  llm --> api
-  fold --> eval["Eval harness<br/>arms A, B, C"]
-  api --> db["SQLite<br/>append-only log"]
-```
-
-Four bank themes share one layout. `?theme=` or the `T` key cycles `tellr` → `pnc` → `mtb` → `fnb`. Color, font family, and the brand mark are what change. Screens read colour tokens. The bank id does not change the layout, the copy, or the score. Each theme has a light palette and a dark palette, plus Light / Dark / System. F.N.B. is the `fnb` theme, one of the four examples on that shared UI, and the team is opting into the FNB Challenge (`ARCHITECTURE.md`, themes section; `docs/B_TO_A.md`; `docs/A_TO_B.md`, M-022).
-
-| Id | Theme |
+| Model sees | Model never sees |
 |---|---|
-| `tellr` | Default. Poppins, navy-to-indigo |
-| `pnc` | PNC. Arial, orange on slate |
-| `mtb` | M&T. Segoe UI, green |
-| `fnb` | F.N.B. Gold wordmark on the dark field |
+| Anonymous ids for the noted signals, the stated purpose, each answer, the reasons already on the score, the matched pattern, and the next questions.<br>Library labels for the signals and purposes, and the short library reason for each next question. | Name, age, tenure, typical withdrawal, channels, account activity, memo, dollar amount, the withdrawal's size bracket, and the customer's own words. |
 
-The contract in `contract/` is the frozen interface. `CONTRACT_VERSION` is 2.0.0. Every session response is a full `SessionState`. Fixtures T1–T7 are generated from `reference_impl.py`, and both sides test against them. A change is a written `CHANGE-nnn`, approval from both drivers, then an apply on `main` (`contract/api.md`; `WORKFLOW.md` §5).
+- We build the model's prompt from that allowlist (`engine/prompt.py`, `docs/architecture.md` §8.1, §10.2). A typed note can be stored and is dropped before the prompt. This demo does not send one (`web/src/teller.tsx`).
+- The local model posts to `127.0.0.1:8080`. A hosted call runs only when the recommender is hosted and `HOSTED_LLM_URL` is set. The API starts on the rules (`api/main.py`).
+- It returns one question id and cannot set the score, the level, or the action. The rules score the signals those ids map to. The stated purpose picks questions and is not part of the score, and the fields the model never sees stay out of the score. The teller decides. That table is everything the prompt may include (`engine/prompt.py`, `engine/reduce.py`, `engine/rules.py`).
+- If the call is slow, the server is down, or the reply is not an allowed question, the rules pick the question (`recommenders/select.py`).
+- The log stores mode, time, library version, the size bracket (amount band), the noted ids, and each answer's question id and answer id. The account reference is written null. The typed teller name from the Outcome screen is stored with the decision and is not sent to the model (`store/sqlite.py`, `api/main.py`, `web/src/teller.tsx`, `web/src/screens/OutcomeScreen.tsx`).
+- On screen, the case file shows tenure, typical withdrawal, and channels. With it open, Home shows no name, age band, or gendered pronoun. Account activity stays in the demo file and is neither shown nor sent. The memo, the transaction type, and the dollar amount stay on screen and are not posted (`web/src/workstation/TransactionPanel.tsx`, `web/src/privacy.test.tsx`).
 
-## Specs and tech stack
+## Try it in two minutes
 
-| Piece | What the repo records | What it does |
-|---|---|---|
-| Training hardware | Sebastian states an RTX 5070 was used to train the Llama 8B. That training run is not written down in the repo. | The graphics card named for training the question-picking model. |
-| Inference hardware | NVIDIA GeForce RTX 5070 Laptop, 8151 MiB VRAM, driver 592.01, Windows. llama.cpp b11865, CUDA 13.4. `llama-server -ngl 99 -c 4096 -np 1`. The 8B used 7379 MiB in the latency bench (`docs/handoff/000-archive.md`, [A-03]; `docs/DECISIONS.md`). | The laptop that ran the measured question-picking calls and the eval. |
-| Base model | Meta-Llama-3.1-8B-Instruct, Q4_K_M, bartowski GGUF. Llama-3.2-3B-Instruct Q4_K_M is the fallback (`docs/DECISIONS.md`; `docs/handoff/000-archive.md`, [A-03]). | Picks one allowed question ID. It does not write the score or the words the teller reads. |
-| Fine-tune | Not described. No LoRA, QLoRA, epoch count, dataset size, or training time is in the repo. Tag `weights-frozen` (`82b788d`) freezes the scoring weights, not a Llama training checkpoint (`docs/handoff/000-archive.md`, [A-07]; `docs/A08_HELDOUT_RUN.md`). | The score table is frozen. How the 8B weights were trained is not in these files. |
-| Engine | Python >= 3.12. FastAPI, uvicorn, and Pydantic >= 2 are declared with no FastAPI version pin. Pytest and Ruff are the test and lint tools (`pyproject.toml`). `reference_impl.py` is the scoring oracle. Golden tests load `tests/golden/reference_weights.yaml` (`WORKFLOW.md` §4). | Folds the teller's taps into a score, a level, and reasons. The golden tests check that fold against the reference. |
-| Store | SQLite. Events reject updates (`store/sqlite.py`). | Keeps the visit log. |
-| Frontend | React 19.3.1, Vite 8.3.5, TypeScript 6.0.3 with `strict: true`, Tailwind CSS 4.3.3. Tests run on Vitest 5.0.5. The gate script asks for Node 20+ (`web/package.json`; `web/package-lock.json`; `web/tsconfig.json`; `scripts/gate.sh`). | Draws the workstation. It does not compute the score. |
-| API contract | `CONTRACT_VERSION` 2.0.0. Every session response is a `SessionState`. Fixtures T1–T7 come from `reference_impl.py` (`contract/api.md`). | The frozen shape both the engine and the screen share. |
-| Themes | `tellr`, `pnc`, `mtb`, `fnb`. Color, font, and brand mark (`ARCHITECTURE.md`). | Same screens, four bank looks. |
-| Gate | `scripts/gate.sh a` runs Ruff, pytest, import-linter, and the contract check. `scripts/gate.sh b` runs the TypeScript check, ESLint, Vitest, and the contract check (`scripts/gate.sh`). | The automated check a change has to pass. |
-| Development | Cursor agents, including cloud agents. One fresh agent per task, on its own branch. Two drivers steer (`docs/handoff/20261025-0828-signal-rows-no-observed.md`). | How the code was written. |
+```bash
+make dev-api
+make dev-web
+```
 
-The engine does the thinking that can be checked. The screen shows it. The 8B only chooses the next question. Sebastian states that model was trained on an RTX 5070. The notes in this repo describe the published Instruct model, quantized Q4_K_M, running on an RTX 5070 Laptop for inference. They do not record a training recipe.
+Open http://127.0.0.1:5173 (API on port 8000). Under Simulated customer, choose Government impersonation and press Play. Let the file finish. The level climbs to High (`web/src/demo/customers.ts`).
+
+Demo video: link to be added
+
+## How we built it with Cursor
+
+Sebastian ran the engine and the evaluation. Jonathan ran the screen, the API, and the GPU laptop. Agents wrote the code. We ran up to 12 agents in parallel, adding an agent when the work split into its own card or fix and scaling back when it did not. Each agent took one card or one fix, on its own branch and pull request. `scripts/gate.sh` had to pass before we merged. The engine and the screen share a frozen contract, and it changes only when both of us approve a written change (`WORKFLOW.md` §3, §5; `ARCHITECTURE.md`). That path covered roster cards, including the A-08 held-out run (`docs/A08_HELDOUT_RUN.md`) and the B screen cards, and UI fixes such as the Observed badge on the Handoff screen (`docs/handoff/20261025-0935-handoff-observed-badge.md`).
+
+## The demo vs real use
+
+The page you open always loads a simulated customer, so you see a Simulated customer picker, Play, Step, Restart, a 1× / 2× / 4× speed control, an elapsed timer, the script timeline, a header reading `Simulation: <customer title>`, and a Practice data note (`web/src/App.tsx`, `web/src/workstation/Toolbar.tsx`, `web/src/workstation/TransactionPanel.tsx`, `web/src/LiveBadge.tsx`).
+
+A file in `web/src/demo/customers.ts` plays on a timer and posts the signal chips a teller would tap. It does not post answers. That is why those chips show up on their own. There are five synthetic files. Car down payment and Routine Friday cash post no chips. With the API up, the posts go through a live session and the engine scores them as it would a teller's tap: the same events and the same library version produce the same level, reasons, pattern, and question (`docs/architecture.md` §4). With no API, the page shows a recorded engine response and does not score it (`web/mock/live_levels.json`, `web/mock/live_answers.json`). The copilot, the score, the suggested action, and Handoff read that same session.
+
+A live visit loads no scenario (`docs/architecture.md` §14.1). With no simulated customer, the header reads `LIVE — no scenario loaded`.
+
+## The Llama 8B and benchmarks
+
+The question picker is **Meta-Llama-3.1-8B-Instruct**, quantized **Q4_K_M**, on an RTX 5070 Laptop (8151 MiB; the 8B used 7379 MiB on this bench). Llama-3.2-3B-Instruct Q4_K_M is the fallback (p50 273.2 ms, p95 296.3 ms).
+
+| Metric | Figure |
+|---|---|
+| 8B total p50 | 463.6 ms |
+| 8B total p95 | 482.7 ms |
+| Catch | 14/15 |
+| False-flag | 0/15 |
+| Mean questions | 3.10 |
+
+Catch, false-flag, and mean questions are the live 8B on 30 dev scenarios (15 coached, 15 legitimate). p50 and p95 are a 50-run bench of one reply.
+
+- **p50.** The midpoint of those 50 replies: the typical wait. The spec sets no p50 cutoff. A lower number is a faster typical reply for the teller.
+- **p95.** The slow end of that bench. The budget we build against is 1.5 s p95, from a chip tap to the next question (`docs/architecture.md` §1). About 0.7 s is our own sum of stage targets, not that cutoff (`docs/architecture.md` §8.3). For the teller, this is the pause in front of the customer.
+- **Catch.** Coached visits that finish Caution or High. The spec sets no minimum. Good, for us, is a coached visit not left at Clear. On its own, catch is weak: marking every customer Caution would catch them all (`docs/architecture.md` §13.3).
+- **False-flag.** Genuine visits marked High. The spec sets no maximum. Good, for us, is none. That is the number that stops "flag everyone" from looking perfect.
+- **Mean questions.** The average number of questions before the interview stopped. The spec turns that into time at about 13 seconds each, and the low-risk path is under 60 seconds (`docs/architecture.md` §1). For the teller, this is how long the customer stands at the window.
+
+The rules on that dev set matched this catch and false-flag, at mean 3.07 questions, so the 8B did not beat them. Held-out, five and five, run once: the rules and the 8B were each catch 4/5 and false-flag 0/5 (`docs/A08_HELDOUT_RUN.md`). On 15 scenarios the spec says not to call a gap significant (`docs/architecture.md` §13.3).
+
+Dev-set command: `docs/CP3_GPU_RUN.md`. Held-out command: `docs/A08_HELDOUT_RUN.md`. Latency bench: `python scripts/bench_llm.py --server http://127.0.0.1:8080 --runs 50 --label 8B`.
 
 ## Templates
 
-The words on screen, and the bank chrome, are files. The model does not write them. There is no settings screen for editing them. A settings endpoint was rejected (`docs/DECISIONS.md`, Hour 2; `contract/api.md`).
+Talk tracks in `library/talk_tracks.yaml` are the teller-facing wording. `stage` is the level's track: `tt.proceed`, `tt.slow_down`, or `tt.escalate`. `lines` are lines to say. `avoid` is lines to avoid. `action` is the short instruction. `pattern` is a second track id, or empty. `library/patterns.yaml` points at one (`talk_track: tt.bank_impersonation`). Those lines are added only while that pattern is displayed, and they do not replace `action` or `avoid` (`engine/rules.py`). This is the High track, verbatim:
 
-- **Read-aloud scripts.** `library/talk_tracks.yaml` holds a short action, the lines the teller can say, and an avoid list of phrases not to use. The engine uses the track for the suggested outcome, and adds a pattern's lines only while that pattern is displayed (`engine/rules.py`; `docs/architecture.md` §7).
-- **Factor reasons.** Every signal in `library/signals.yaml` has a rationale. The library refuses to boot if that text is blank. The rationale is the only explanation text the product shows (`engine/library.py`; `docs/architecture.md` §5.5).
-- **Questions.** The question text and its one-line why live in the library. The model returns an ID. The screen looks the words up (`docs/architecture.md` §7.4).
-- **Bank themes.** Each bank is one file in `web/src/theme/themes/`. It sets color, font, and the brand mark. Layout and scoring stay the same (`ARCHITECTURE.md`).
-
-Customizing this repo means editing those files. A new theme is a new file. A new reason is a rationale. A new script is a talk track. Score weights are a different matter: they are frozen at `weights-frozen`, and the golden tests keep using `tests/golden/reference_weights.yaml` (`docs/handoff/000-archive.md`, [A-07]; `WORKFLOW.md` §4). An editor inside the app is **not built yet**.
-
-## Safety and bank concerns
-
-- **A person decides.** The outcome requires a human actor. All four choices stay available while the visit is open. The copilot suggests. It does not approve or deny the withdrawal (`docs/architecture.md` §1, §9).
-- **The level is explainable.** Each flag carries a library rationale. Why this level shows what raised the score and what would lower it. The model cannot write that text (`docs/architecture.md` §5.5, §9; `ARCHITECTURE.md`).
-- **What the score is allowed to use.** The engine's library models have no age, appearance, or customer-name field. Stated purpose routes questions and does not enter the score. A prompt test rejects age, appearance, a teller note, the amount band, and an account reference (`engine/library.py`; `tests/recommenders/test_prompt.py`; `docs/architecture.md` §9, §10.2). One chip is about the person, "unusual for this customer," at weight 8, with no probe and no pattern. Context alone cannot reach High (`library/signals.yaml`; `docs/architecture.md` §6.2, §18.9).
-- **What the demo stores and shows.** The five customer files are synthetic. Name and age band may sit in the payload and are not rendered. The screen says Customer (`ARCHITECTURE.md`). A session stores chips, a purpose category, and answers. It does not store a recording of what the customer said. There is no audio. The default model runs on localhost (`docs/architecture.md` §10.1, §10.3, §15).
-- **The log.** Events sit in SQLite. The database rejects an update to an event, and it rejects deleting events while the session is open. Undo adds a marker. The session row pins the library version the fold used (`store/sqlite.py`; `docs/architecture.md` §4, §10.1). A function can delete closed sessions past a retention window, events first. The API does not call it, so a running purge is **not built yet** (`store/sqlite.py`).
-- **Frozen weights, contract, and goldens.** Tag `weights-frozen` freezes the scoring weights. It is not a freeze of a trained Llama file. This repo uses the published Instruct model. Golden tests compare the engine with `reference_impl.py` and a separate reference weight file, and those expected results are not edited to force a pass. The API contract changes only when both drivers approve a written CHANGE (`WORKFLOW.md` §4–§5; `docs/A08_HELDOUT_RUN.md`).
-- **If the model or the engine is unavailable.** A model call past 1.5 seconds uses the rules for that turn. The server can boot with `RECOMMENDER=rules`, and that path was checked end to end (`docs/architecture.md` §14.2; `docs/DECISIONS.md`, Hour 8). If the API is down, the demo page shows recorded sample data and does not score (`ARCHITECTURE.md`). A recorded log can be replayed (`docs/architecture.md` §14.2).
-- **Compliance review a bank would still do.** Government impersonation, family emergency, and tech support are marked `review: compliance` and include no signals, because the spec named them and did not define them (`library/patterns.yaml`). No legal sign-off is in the repo. That review is **not built yet**.
-
-## How we built it
-
-Two people steered. The agents wrote the code. Driver A, Sebastian, watched the engine and the evaluation. Driver B, Jonathan, watched the screen, the API, and the GPU laptop. They kept two running notes, `docs/A_TO_B.md` and `docs/B_TO_A.md`. When one side found a problem in the other's work, they logged it in `docs/CROSS_LANE.md` and left the fix to the owner (`docs/ROSTER.md` §2; `WORKFLOW.md` §7).
-
-Each task or fix got a fresh AI agent and its own branch. Agents worked side by side. They told each other which files they owned, using a one-page map (`ARCHITECTURE.md`) and a short handoff note, so two agents were not editing the same place. A shared file has one owner. The agreement between the engine and the screen stays frozen unless both drivers approve a written change (`docs/ROSTER.md` §3; `WORKFLOW.md` §5; `docs/HANDOFF.md`).
-
-We ran up to 12 agents in parallel. The number moved with the task: more agents when there was more to do, fewer when there was not, for roster cards and UI fixes alike.
-
-The life of a change:
-
-1. **Idea.** A driver names the task.
-2. **Agent.** A new agent takes that task.
-3. **Branch.** The work sits on its own branch, with a note for the next agent.
-4. **Gate.** An automated check has to pass before the change can land. `scripts/gate.sh` runs the Python checks, the web checks, or the contract check (`ARCHITECTURE.md`).
-5. **Merge.** A driver merges one branch at a time, after the gate (`WORKFLOW.md` §7).
-
-## Entered in
-
-From the HackPSU Fall 2026 Devpost page, as recorded by the drivers: the Grand Prize is $3,500 (1st $2,000, 2nd $1,000, 3rd $500) and is the default entry for non-case submissions. The team is also opting into the FNB Challenge, the Nittany AI Challenge, and MLH SpaceXSI. The submission had to be created by midnight, with a hard deadline of noon Sunday (`docs/A_TO_B.md`, M-022; `docs/B_TO_A.md`, B-030).
-
-**Best use of Cursor.** The build itself is the Cursor entry. Two people kept a frozen contract and a one-page map, and agents took cards on separate branches. Section "How we built it" is that workflow: gates on every PR, a change protocol, and a straight line of merged pull requests.
-
-## What's next
-
-These are open in the spec. They are not in this build.
-
-- Spanish wording is a stretch goal. It would be more columns in the library, because the model writes no sentences (`docs/architecture.md` §12).
-- Whether the customer's own words should reach the model is undecided. That field is the only route to one signal, and strict mode keeps free text out (`docs/architecture.md` §19.2, §10.2).
-- The pattern name is for the teller. The spec says it is the wrong text for the customer to read, and that the demo should show how the screen handles that (`docs/architecture.md` §19.4).
-- Several tellers at once are out of scope for the 24-hour build. The event log could be routed later. One shared model server would be the bottleneck (`docs/architecture.md` §19.5).
-
-## Quick start
-
-Python 3.12. Dependencies are listed in `pyproject.toml`. The Makefile starts the API and the web app in tmux (`Makefile`; `pyproject.toml`).
-
-```bash
-make dev-api    # uvicorn on 127.0.0.1:8000
-make dev-web    # Vite on 127.0.0.1:5173, mock installed
+```yaml
+  - id: tt.escalate
+    action: Ask the customer to step aside and get a manager.
+    lines:
+      - I'd like my manager to take a quick look. It's routine for larger cash withdrawals.
+    avoid:
+      - Anything accusatory
+      - Anything the caller warned them the bank would say
 ```
 
-The same processes without Make (`ARCHITECTURE.md`):
+## How a teller uses it
 
-```bash
-python -m uvicorn api.main:app --port 8000
-```
+Home puts the transaction beside the copilot. The copilot shows one server snapshot and does not compute the score, the level, or the next question (`docs/architecture.md` §12). Clear is below 25, Caution starts at 25, and High starts at 60, as an icon plus the word (`docs/architecture.md` §6.3). Urgency Score is `<score>/<max>`, clamped at +100. Suggested action is the talk track's `action`. The explanation shows what raised the score and what would lower it. Signal chips can be confirmed, dismissed, or restored. Proceed, slow down, escalate, and report stay available for the whole visit (`docs/architecture.md` §9).
 
-```bash
-cd web
-npm run dev       # sample data if the API is down
-npm run dev:api   # pins VITE_API_URL to http://127.0.0.1:8000
-```
+## Safety and limitations
 
-Gate and benchmark commands are in [Reproduce our numbers](#reproduce-our-numbers).
+The Senior Safe Act (12 U.S.C. 3423) covers a person who has received the training and served as a supervisor or in a compliance or legal function (including a BSA officer) [[8]](#source-8). It gives no power to hold funds and does not cover a teller acting alone. A bank deploying this needs its compliance review.
 
-## Repo layout
+Cuyahoga County's Scam Squad is related teller-based work. At a participating credit union, tellers use the handout for withdrawals of $5,000 or more [[9]](#source-9). The program is in beta. A research team will study results. There is no outcome data yet.
 
-| Path | What it is |
-|---|---|
-| `engine/`, `library/` | Score, questions, signals |
-| `api/`, `store/`, `recommenders/` | HTTP, SQLite, model client |
-| `eval/` | Scenarios and the three arms |
-| `web/` | React workstation and the four themes |
-| `contract/` | Frozen schemas and T1–T7 fixtures |
-| `docs/architecture.md` | Spec v1.2 |
-| `ARCHITECTURE.md` | Map of the repo |
-| `reference_impl.py` | Executable spec of the scoring rules |
-| `scripts/gate.sh` | The PR gate |
+Three patterns are marked `review: compliance` and ship with no signals (`library/patterns.yaml`).
 
-## Team
+Open items: training recipe for the 8B is not in the repo; no real bank pilot; no compliance sign-off; no encryption at rest, security review, audit-retention policy, or data-retention policy (`store/sqlite.py` can delete closed sessions, and the API does not call it). The Outcome screen stores a typed teller name. Still open in the spec: Spanish wording, whether the customer's words should reach the model, the pattern name on the customer's side of the screen, and more than one teller (`docs/architecture.md` §19).
 
-Driver A, Sebastian. Driver B, Jonathan. The roster pairs Sebastian with the engine and the evaluation, and Jonathan with the frontend, the API, and the held-out set (`docs/ROSTER.md` §2; `docs/DECISIONS.md`).
+## Specs and tech stack
+
+We trained the Llama 8B on an RTX 5070 laptop GPU (the training recipe is not in the repo; see Open items). The engine is Python >= 3.12, FastAPI, and Pydantic >= 2, and `reference_impl.py` is the scoring oracle. The screen is React 19.3.1, Vite 8.3.5, TypeScript 6.0.3, and Tailwind CSS 4.3.3. The store is SQLite, and events reject updates. `CONTRACT_VERSION` is 2.0.0. Every session response is a `SessionState`.
+
+## Sources
+
+1. <a id="source-1"></a>FBI IC3 2025 Annual Report. FBI Internet Crime Complaint Center, 2025. <https://www.ic3.gov/AnnualReport/Reports/2025_IC3Report.pdf>
+2. <a id="source-2"></a>Protecting Older Consumers 2025-2026. Federal Trade Commission, 2026. <https://search.ftc.gov/system/files/ftc_gov/pdf/2026-older-adults-report-10192026.pdf>
+3. <a id="source-3"></a>Elder Financial Exploitation analysis. Financial Crimes Enforcement Network (FinCEN), 2024. <https://www.fincen.gov/system/files/shared/FTA_Elder_Financial_Exploitation_508Final.pdf>
+4. <a id="source-4"></a>Suspicious Activity Reports on Elder Financial Exploitation. Consumer Financial Protection Bureau, 2019. <https://files.consumerfinance.gov/f/documents/cfpb_suspicious-activity-reports-elder-financial-exploitation_report.pdf>
+5. <a id="source-5"></a>False Alarm, Real Scam: How Scammers Are Stealing Older Adults' Life Savings (Data Spotlight). Federal Trade Commission, 2025. <https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2025/08/false-alarm-real-scam-how-scammers-are-stealing-older-adults-life-savings>
+6. <a id="source-6"></a>AARP and Virginia Tech BankSafe pilot. AARP, 2019. <https://www.aarp.org/press/releases/2019-10-17-financial-exploitation-declines-banksafe-aarp.html>
+7. <a id="source-7"></a>AARP BankSafe. AARP, 2025. <https://www.aarp.org/press/releases/2025-02-25-banksafe-trained-seal.html>
+8. <a id="source-8"></a>Senior Safe Act, 12 U.S.C. 3423. United States Code, via Cornell Law School Legal Information Institute. <https://www.law.cornell.edu/uscode/text/12/3423>
+9. <a id="source-9"></a>Cuyahoga County Scam Squad set to launch teller-based fraud prevention program. Cleveland 19 News, 2026. <https://www.cleveland19.com/2026/07/01/cuyahoga-county-scam-squad-set-launch-teller-based-fraud-prevention-program/>

@@ -42,7 +42,8 @@ describe('routes', () => {
     )
     expect(screen.getByTestId('health-screen')).toBeTruthy()
     expect(screen.queryByTestId('settings-screen')).toBeNull()
-    await screen.findByTestId('health-config-note')
+    await screen.findByTestId('health-unavailable')
+    expect(screen.queryByText(/does not change it/i)).toBeNull()
     const calls = spy.mock.calls.map((call) => ({
       url: String(call[0]),
       method: ((call[1] as RequestInit | undefined)?.method ?? 'GET').toUpperCase(),

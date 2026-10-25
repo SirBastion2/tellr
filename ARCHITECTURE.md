@@ -26,7 +26,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json` (incl. `activity.schema.json`, CHANGE-005), `fixtures/T1–T7.json`, `CHANGES.md` (CHANGE-006: optional `level_bands` on untyped `GET /health`; CHANGE-007: optional `talk_track.action`) |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |
 | `docs/` | mixed | Spec and logs (see below) | `architecture.md`, `ROSTER.md`, `HANDOFF.md` (pointer), `handoff/` (one file per PR; newest first), `CP3_GPU_RUN.md`, `A08_HELDOUT_RUN.md`, `WRITEUP_NUMBERS.md` |
-| `scripts/` | A2* | Gates; A2 owns `bench_*` + `with-gpu` | `gate.sh`, `with-gpu`, `bench_llm.py`, `check_contract.py` |
+| `scripts/` | A2* | Gates; A2 owns `bench_*` + `with-gpu`. `gen_live_answers.py` records demo answer climbs into `web/mock/live_answers.json` from `engine.reduce.project` | `gate.sh`, `with-gpu`, `bench_llm.py`, `check_contract.py`, `gen_live_answers.py` |
 | `reference_impl.py` | — | Executable spec of §6–§8 | never edit |
 | `WORKFLOW.md` | — | How the build is run | §3 loop, §5 contract, §8 gates |
 | `ARCHITECTURE.md` | all | This map | edit only when files are added, removed, or moved, and only those lines |
@@ -111,7 +111,7 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 
 | File | What it is |
 |---|---|
-| `web/src/demo/customers.ts` | Five synthetic files and `SCRIPT_TARGETS_MS`. The last two post no chips. Files that post `chip.above_threshold` set `transaction.type` to that chip's library label. Name and age band stay in the data and are not rendered. |
+| `web/src/demo/customers.ts` | Five synthetic files and `SCRIPT_TARGETS_MS`. The three fraud files post context chips, then teller answers (`POST /answers`); the client does not score them. The last two post no chips and no answers. Files that post `chip.above_threshold` set `transaction.type` to that chip's library label. Name and age band stay in the data and are not rendered. Playback totals stay 20s / 32s / 45s / 45s / 60s. |
 | `web/src/demo/customers.test.ts` | Five files, script pacing, and Type strings for above-threshold vs routine files. |
 | `web/src/demo/clock.ts` | Simulated `m:ss` elapsed (sum of `delayMs`) for the toolbar elapsed timer and timeline. |
 | `web/src/demo/clock.test.ts` | Elapsed timer and timeline stay on simulated time at 1× and 4×. |
@@ -131,13 +131,15 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 | `web/src/ui/emphasis.tsx` | Bolds amounts and phrases such as "on the phone" in timeline copy. |
 | `web/src/LiveBadge.tsx` | Header simulation pill. Label from `liveBadgeText`. Same class and tokens whether the demo is idle or playing. |
 | `web/src/workstation/Toolbar.tsx` | Shared 48px customer picker, Play/Pause (stable grid width), Step, Restart, speed segments, elapsed timer (`tabular-nums`), case-file link. No header clock. |
-| `web/src/workstation/CopilotStrip.tsx` | Sticky card that fills the column and grows with its content (no inner scroll). Surface/text tokens for the card; risk color on the level badge. Idle placeholder before play. Last snapshot stays mounted while a write is in flight (dim + inline updating chip). Level icon and word, Urgency Score `<score>/<max>`, one reason, suggested action (`talk_track.action` when non-empty, otherwise the previous fallback), collapsible read-aloud quote that is only the label plus `talk_track.lines`. Teller confirm / dismiss / restore sit on the signal chips (stable `chipOrder`). No predefined-answer chip panel. |
+| `web/src/workstation/CopilotStrip.tsx` | Sticky card that fills the column and grows with its content (no inner scroll). Surface/text tokens for the card; risk color on the level badge. Idle placeholder before play. Last snapshot stays mounted while a write is in flight (dim + inline updating chip). Level icon and word, Urgency Score `<score>/<max>`, one reason, suggested action (`talk_track.action` when non-empty, otherwise the previous fallback), collapsible read-aloud quote that is only the label plus `talk_track.lines`. Teller confirm / dismiss / restore sit on the signal chips (stable `chipOrder`). Answer-derived rows from `explanation.contributions` use the engine label and the badge "From the customer's answer", with no confirm/dismiss. No predefined-answer chip panel. |
 | `web/src/workstation/QuestionCard.tsx` | Two-tap opener and answer chips on Session (`InterviewScreen`) only. |
 | `web/src/workstation.test.tsx` | Home has no answer-chip panel, shows `talk_track.action` when the server sent one and the question text when it did not, one Level row, teller confirm/deny on the copilot chips, and Urgency Score. |
 | `web/src/screens/NotFoundScreen.tsx` | Unknown paths and session routes with no visit. Short “start a customer” copy and a Home link. |
 | `web/src/emptyRoutes.test.tsx` | `/outcome`, `/handoff`, `/history`, `/session`, `/context` and session URLs without a visit. `/health` already has content. |
 | `web/src/feed.ts` | Merged Why this level rows (`mergeSignalRows`), first-seen chip order, source badges, and the handoff flagged list. Display only; no risk math. |
 | `web/src/feed.test.ts` | Stable chip order, merged leftover chips, and handoff listing from the merged rows. |
+| `web/src/answerSignals.ts` | Keep/suppress for answer-asserted signal ids. Rows render only `explanation.contributions` whose id is kept. The label is the engine's. |
+| `web/src/answerSignals.test.tsx` | Keep/suppress table, engine label and order, and the answer badge on tellr / pnc / mtb / fnb in light and dark. |
 | `web/src/workstation/explain.ts` | Reads `explanation` and groups raises and lowers. Strength words from the response's own weights. |
 | `web/src/workstation/ExplanationPanel.tsx` | Why this level. Fact grid (one Level row, plus raw level only when it differs, Urgency Score `<score>/<max>`, pattern, suggested outcome). Read-only model list: reason, origin pill, strength, What would lower it. No confirm/dismiss. Optional single local noted time from `GET /activity`. Collapsed technical details, including `GET /health` `level_bands` as `Clear: 0–N` rows. |
 | `web/src/workstation/TransactionPanel.tsx` | Key-value transaction (type, amount, memo once) on the shared `tc-kv` grid. Type is `customer.transaction.type` (no client rewrite). The label column is `max-content`; the value wraps (`overflow-wrap: break-word`). Then the timeline (speaker Customer), optional case file without name/age, and event progress. Banner is `Practice data.` |
@@ -153,16 +155,18 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 | `web/src/errors.ts` | Plain sentences for API errors. No status code and no error code on screen. |
 | `web/src/presenter.test.tsx` | Demo layout stays on when `?present=0` is set. Hidden dev tabs, type size 105%, no Presenter button, four labeled tabs, Restart key. |
 | `web/src/workstationFit.test.tsx` | Laptop fit: 3fr/2fr at 1280, stack below 900, measured scheme collapse, one-row header, no clock or connection pill, simulation pill ellipsis+tooltip, scaled clamps. |
+| `web/src/homeViewport.test.tsx` | Home is a `100dvh` grid (`tc-home`). Shared compact tokens at `max-height: 860px` and `760px`. Timeline and copilot signal list scroll inside their own boxes. |
 | `web/src/headerRhythm.test.tsx` | One-row header; content-sized tabs; simulation pill may shrink (`min-width: 0`); no clock or connection pill; logo height token; nav labels complete at 1024 / 1180 / 1280 for each bank. `tc-kv` / `tc-facts` share `max-content 1fr`, `--tc-space-4` / `--tc-space-2`, center, and `--tc-line-fact`. |
 | `web/src/factGridAlign.test.tsx` | Shared fact grid: Amount optically centered, equal Type/Amount/Memo row gaps, `--tc-space-4` column gap. Chromium measurement at 1280 with the long Type string. |
 | `web/src/headerSimPill.test.tsx` | Simulation pill / header class names, type tokens, and control sizes stay the same idle vs running vs paused vs after in tellr / pnc / mtb / fnb. Labels complete at 1024 / 1180 / 1280. |
 | `web/src/copilotCard.test.tsx` | Reversible dismiss/undo, idle placeholder, in-flight snapshot hold, card/list stay mounted on dismiss, Urgency Score format, inline origin pill, no Outcome/Handoff Undo. Read-aloud card is the label plus `talk_track.lines` only. |
-| `web/src/copilotScroll.test.tsx` | Copilot panel, read-aloud script card, and signal list have no inner overflow scroll or max-height. |
+| `web/src/copilotScroll.test.tsx` | Copilot panel is at most the column height. Only the signal list scrolls. Level, score, suggested action, and Undo/Escalate stay outside that list. |
 | `web/src/workstationMerge.test.tsx` | Recent activity removed; model reasons stay on Why this level; teller confirm/deny on the copilot chips; timeline above the case file; amount and threshold shown once. |
 | `web/scripts/measure-fit.mjs` | Headless Chrome measures header padding slack, logo size, and overflow at laptop widths. Not part of `gate.sh b`. |
+| `web/scripts/measure-home-viewport.mjs` | Headless Chrome checks page fit, the current timeline step, and pinned copilot controls at 1470×780, 1440×760, and 1280×720 for tellr / pnc / mtb / fnb in light and dark. A 20-row signal list must scroll inside the panel. No screenshots. Not part of `gate.sh b`. |
 | `web/scripts/measure-fact-grid.mjs` | Headless Chrome measures Amount label/value centers, Type→Amount / Amount→Memo row gaps, and the label-to-value column gap at 1280. `--fixture` or a live Vite URL. No screenshots. |
 | `web/mock/live_levels.json` | Recorded engine responses for context-chip subsets. The mock uses these when a live post is not the next fixture step. The mock echoes `context_chips` from the live log and serves `GET /activity`. It leaves `explanation` off unless the recorded body already has it. |
-| `web/mock/live_answers.json` | Recorded engine responses for live answers on the demo chip sets (empty, government impersonation prefixes, contractor cash, romance/crypto). The mock looks them up after `POST /answers`; it does not score. Unrecorded combinations keep the last recorded answer state or the context projection and warn. `npm run dev:api` scores every answer through the API. |
+| `web/mock/live_answers.json` | Recorded engine responses for live answers on the demo chip sets (empty, government impersonation prefixes, contractor cash, romance/crypto), including the fraud-script climbs past the observation cap. `scripts/gen_live_answers.py` appends those climbs from `engine.reduce.project` and writes `explanation.contributions` from `engine.score.contributions` on the climb keys. The mock looks them up after `POST /answers`; it does not score. Unrecorded combinations keep the last recorded answer state or the context projection and warn. `npm run dev:api` scores every answer through the API. |
 | `web/src/routes.ts` | Nav labels are Home, Customer file, Context, Session, Outcome, Handoff, History, Health. |
 
 ### `web/` dev modes

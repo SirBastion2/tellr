@@ -1,3 +1,5 @@
+import type { AnswerPost } from '../types'
+
 /** Synthetic teller-window scripts. Not loaded from eval scenarios. */
 
 export type CustomerEvent = {
@@ -8,6 +10,11 @@ export type CustomerEvent = {
   speaker?: string
   text: string
   chips: string[]
+  /**
+   * Teller answer recorded with this beat (`POST /answers`).
+   * The client posts the chip; the server scores it.
+   */
+  answer?: AnswerPost
 }
 
 export type CustomerActivity = {
@@ -21,7 +28,8 @@ export type CustomerActivity = {
  * 2× halves that sum and 4× quarters it, because the player divides by speed.
  * Reduced motion uses a 0 wait. Targets leave a few seconds to narrate each beat:
  * routine Friday 20s, car down payment 32s, government impersonation and
- * romance/crypto 45s, contractor cash 60s.
+ * romance/crypto 45s, contractor cash 60s. Fraud scripts spend the tail of
+ * that same total on teller answers. The two benign scripts post nothing.
  */
 export const SCRIPT_TARGETS_MS: Readonly<Record<string, number>> = {
   'benign-routine': 20_000,
@@ -103,17 +111,45 @@ export const CUSTOMERS: readonly CustomerFile[] = [
       },
       {
         id: 'cash',
-        delayMs: 14000,
+        delayMs: 6000,
         kind: 'transaction',
         text: 'She asks for $8,000 in cash. A check will not do.',
         chips: ['chip.cash_only', 'chip.above_threshold'],
       },
       {
         id: 'secrecy',
-        delayMs: 14000,
+        delayMs: 6000,
         kind: 'dialogue',
         text: 'The contractor needs it today. She was told not to explain why.',
         chips: ['chip.urgency_secrecy', 'chip.rushed'],
+      },
+      {
+        id: 'answer-purpose',
+        delayMs: 6000,
+        kind: 'dialogue',
+        text: 'Asked what the money is for, she repeats the caller word for word.',
+        chips: [],
+        answer: {
+          question_id: 'q.purpose.open',
+          chip: 'relayed_by_caller',
+          purpose: 'purpose.home_repair',
+        },
+      },
+      {
+        id: 'answer-contractor',
+        delayMs: 5000,
+        kind: 'dialogue',
+        text: 'She cannot name the contractor.',
+        chips: [],
+        answer: { question_id: 'q.homerepair.contractor_name', chip: 'vague' },
+      },
+      {
+        id: 'answer-secrecy',
+        delayMs: 5000,
+        kind: 'dialogue',
+        text: 'She confirms she was told not to explain the withdrawal.',
+        chips: [],
+        answer: { question_id: 'q.secrecy.told_not_to_tell', chip: 'confirmed' },
       },
     ],
   },
@@ -149,31 +185,51 @@ export const CUSTOMERS: readonly CustomerFile[] = [
       },
       {
         id: 'directing',
-        delayMs: 10500,
+        delayMs: 8000,
         kind: 'dialogue',
         text: 'He says his partner told him exactly how to ask for the money.',
         chips: ['chip.someone_directing'],
       },
       {
         id: 'cash',
-        delayMs: 10500,
+        delayMs: 8000,
         kind: 'transaction',
         text: 'He requests $6,500 in cash. The partner said a transfer would fail.',
         chips: ['chip.cash_only', 'chip.above_threshold'],
       },
       {
         id: 'secrecy',
-        delayMs: 10500,
+        delayMs: 7000,
         kind: 'dialogue',
         text: 'It has to be today, and he was asked not to mention the investment.',
         chips: ['chip.urgency_secrecy'],
       },
       {
         id: 'unusual',
-        delayMs: 10500,
+        delayMs: 7000,
         kind: 'transaction',
         text: 'This is several times his usual withdrawal.',
         chips: ['chip.unusual_for_customer'],
+      },
+      {
+        id: 'answer-purpose',
+        delayMs: 6000,
+        kind: 'dialogue',
+        text: 'Asked what the money is for, he repeats his partner instead of answering.',
+        chips: [],
+        answer: {
+          question_id: 'q.purpose.open',
+          chip: 'relayed_by_caller',
+          purpose: 'purpose.other',
+        },
+      },
+      {
+        id: 'answer-check',
+        delayMs: 6000,
+        kind: 'dialogue',
+        text: "A cashier's check will not do. The partner said only cash works today.",
+        chips: [],
+        answer: { question_id: 'q.alternative.cashiers_check', chip: 'denied' },
       },
     ],
   },
@@ -209,14 +265,14 @@ export const CUSTOMERS: readonly CustomerFile[] = [
       },
       {
         id: 'phone',
-        delayMs: 10500,
+        delayMs: 6000,
         kind: 'dialogue',
         text: 'She keeps the phone at her ear and nods at the caller.',
         chips: ['chip.on_phone'],
       },
       {
         id: 'directing',
-        delayMs: 10500,
+        delayMs: 5000,
         kind: 'dialogue',
         speaker: 'Caller',
         text: 'The caller tells her what to say to the teller.',
@@ -224,17 +280,61 @@ export const CUSTOMERS: readonly CustomerFile[] = [
       },
       {
         id: 'secrecy',
-        delayMs: 10500,
+        delayMs: 5000,
         kind: 'dialogue',
         text: 'She says there is a warrant and she must not tell the bank why.',
         chips: ['chip.urgency_secrecy'],
       },
       {
         id: 'cash',
-        delayMs: 10500,
+        delayMs: 4000,
         kind: 'transaction',
         text: 'She asks for $7,500 in cash. The caller said a check is not allowed.',
         chips: ['chip.cash_only', 'chip.above_threshold'],
+      },
+      {
+        id: 'answer-purpose',
+        delayMs: 5000,
+        kind: 'dialogue',
+        text: 'Asked what the money is for, she repeats the caller instead of answering.',
+        chips: [],
+        answer: {
+          question_id: 'q.purpose.open',
+          chip: 'relayed_by_caller',
+          purpose: 'purpose.government_payment',
+        },
+      },
+      {
+        id: 'answer-secrecy',
+        delayMs: 4500,
+        kind: 'dialogue',
+        text: 'She confirms the caller told her to keep this from the bank.',
+        chips: [],
+        answer: { question_id: 'q.secrecy.told_not_to_tell', chip: 'confirmed' },
+      },
+      {
+        id: 'answer-check',
+        delayMs: 4500,
+        kind: 'dialogue',
+        text: "A cashier's check will not do. The caller said cash only.",
+        chips: [],
+        answer: { question_id: 'q.alternative.cashiers_check', chip: 'denied' },
+      },
+      {
+        id: 'answer-gap',
+        delayMs: 4000,
+        kind: 'dialogue',
+        text: 'She cannot say where the payment is supposed to go.',
+        chips: [],
+        answer: { question_id: 'q.recipient.account_details', chip: 'no_answer' },
+      },
+      {
+        id: 'answer-changed',
+        delayMs: 4000,
+        kind: 'dialogue',
+        text: 'She changes the story: a warrant, then a fine, then a different office.',
+        chips: [],
+        answer: { question_id: 'q.homerepair.contractor_name', chip: 'changed' },
       },
     ],
   },

@@ -195,6 +195,16 @@ describe('Interview screen', () => {
     expect(screen.queryByTestId('recommended-stop')).toBeNull()
   })
 
+  it('capitalizes only the first letter of the hard-stop reason', () => {
+    const session = structuredClone(asSession(t6.steps.at(-1)?.response))
+    expect(session.stop?.kind).toBe('hard')
+    session.stop = { kind: 'hard', reason: 'enough to escalate; nothing left to ask' }
+    render(<InterviewScreen library={library} session={session} />)
+    const stop = screen.getByTestId('hard-stop')
+    expect(stop.getAttribute('data-reason')).toBe('enough to escalate; nothing left to ask')
+    expect(stop.textContent).toBe('Enough to escalate; nothing left to ask')
+  })
+
   it('posts purpose and chip from the opener, then chip alone', () => {
     const onAnswer = vi.fn()
     const opener = asSession(t1.steps[0]?.response)

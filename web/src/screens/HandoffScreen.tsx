@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { flaggedSignals } from '../feed'
+import { flaggedSignals, handoffReasonBadge } from '../feed'
 import { controlStyle, secondaryStyle } from '../theme/controls'
 import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
 import { LevelIcon } from '../ui/LevelIcon'
-import { actorLabel, handoffTitle, levelLabel, modeLabel, outcomeLabel, patternValue, shortId, suggestedLabel } from '../ui/plain'
+import { actorLabel, handoffTitle, levelLabel, modeLabel, outcomeLabel, patternValue, shortId, stopReasonLabel, suggestedLabel } from '../ui/plain'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import type { HandoffProjection, Library, SessionState } from '../types'
 
@@ -55,7 +55,9 @@ export function HandoffScreen({
   confirmed?: readonly string[]
   postedChipIds?: readonly string[]
 }) {
-  const signals = flaggedSignals(session, projection, library, dismissed, confirmed, postedChipIds)
+  const signals = flaggedSignals(session, projection, library, dismissed, confirmed, postedChipIds).map(
+    (signal) => ({ ...signal, status: handoffReasonBadge(signal.status) }),
+  )
   return (
     <section data-testid="handoff-screen" className="tc-card tc-screen">
       <PageTitle>{projection ? handoffTitle(projection.outcome, projection.actor) : 'Handoff'}</PageTitle>
@@ -100,7 +102,7 @@ export function HandoffScreen({
             </Fact>
             {projection.stop ? (
               <Fact term="Stop" testId="handoff-stop" data={{ kind: projection.stop.kind }}>
-                {projection.stop.reason}
+                {stopReasonLabel(projection.stop.reason)}
               </Fact>
             ) : null}
           </FactGrid>

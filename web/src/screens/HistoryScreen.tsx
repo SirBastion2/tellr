@@ -156,9 +156,6 @@ export function HistoryScreen() {
               <Fact term="Closed" testId="history-closed">
                 {session.closed_at ? formatLocalDateTime(session.closed_at) : 'Still open'}
               </Fact>
-              <Fact term="Library version" testId="history-library">
-                {session.library_version}
-              </Fact>
             </FactGrid>
           </li>
         ))}

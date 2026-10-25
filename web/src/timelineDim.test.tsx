@@ -25,7 +25,7 @@ function pastRule(css: string): string {
 describe('home timeline previous steps', () => {
   it('dims steps before the current step and leaves the current step at full brightness', () => {
     const customer = contractor()
-    expect(customer.events).toHaveLength(5)
+    expect(customer.events.length).toBeGreaterThan(5)
     const css = readFileSync('src/index.css', 'utf8')
     const rule = pastRule(css)
     expect(rule).toMatch(/opacity:\s*0\.55/)
@@ -53,26 +53,22 @@ describe('home timeline previous steps', () => {
 
       render(<TransactionPanel customer={customer} fired={customer.events.length} showCase={false} onToggleCase={() => undefined} />)
       const steps = screen.getAllByTestId('demo-event')
-      expect(steps).toHaveLength(5)
+      expect(steps).toHaveLength(customer.events.length)
       for (const [index, step] of steps.slice(0, -1).entries()) {
         expect(step.getAttribute('data-past'), `step ${index + 1}`).toBe('true')
         expect(step.getAttribute('data-current'), `step ${index + 1}`).toBe('false')
         expect(Number(getComputedStyle(step).opacity), `step ${index + 1}`).toBeCloseTo(0.55, 2)
       }
-      const current = steps[4]
+      const current = steps.at(-1)
       if (!current) {
         throw new Error('missing current step')
       }
       expect(current.getAttribute('data-current')).toBe('true')
       expect(current.hasAttribute('data-past')).toBe(false)
       expect(Number(getComputedStyle(current).opacity)).toBe(1)
-      expect(screen.getAllByTestId('event-marker').map((row) => row.textContent ?? '')).toEqual([
-        expect.stringMatching(/^Step 1 ·/),
-        expect.stringMatching(/^Step 2 ·/),
-        expect.stringMatching(/^Step 3 ·/),
-        expect.stringMatching(/^Step 4 ·/),
-        expect.stringMatching(/^Step 5 ·/),
-      ])
+      expect(screen.getAllByTestId('event-marker').map((row) => row.textContent ?? '')).toEqual(
+        customer.events.map((_, index) => expect.stringMatching(new RegExp(`^Step ${index + 1} ·`))),
+      )
     } finally {
       style.remove()
     }

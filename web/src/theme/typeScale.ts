@@ -87,10 +87,49 @@ export const TYPE_TRANSFORM = {
 /** Arial aspect value. Applied on every bank, not only tellr. */
 export const FONT_SIZE_ADJUST = '0.52'
 
-/** Demo is always on. `html` uses `demo`; the theme root uses `live`. */
+/**
+ * Demo is always on. `html` uses `demo`; the theme root uses `live`.
+ * `compact` / `short` keep the same step ratios and only drop the root
+ * when the viewport is short (`VIEWPORT_FIT` in tokens.ts). Both are
+ * 87.5% of the 16px browser default, so body text stays at 14px.
+ */
 export const TYPE_ROOT = {
   demo: '105%',
   live: '100%',
+  compact: '87.5%',
+  short: '87.5%',
+} as const
+
+/** Line-heights when the viewport is at most 860px tall. Same steps, tighter leading. */
+export const TYPE_LINE_COMPACT: Record<TypeStep, string> = {
+  xs: '1.1',
+  sm: '1.1',
+  base: '1.25',
+  lg: '1.1',
+  xl: '1.1',
+  '2xl': '1.05',
+}
+
+/** Line-heights when the viewport is at most 760px tall. */
+export const TYPE_LINE_SHORT: Record<TypeStep, string> = {
+  xs: '1.05',
+  sm: '1.05',
+  base: '1.2',
+  lg: '1.05',
+  xl: '1.05',
+  '2xl': '1.05',
+}
+
+export const TYPE_LINE_ROLE_COMPACT = {
+  body: TYPE_LINE_COMPACT.base,
+  heading: TYPE_LINE_COMPACT.xl,
+  ui: TYPE_LINE_COMPACT.sm,
+} as const
+
+export const TYPE_LINE_ROLE_SHORT = {
+  body: TYPE_LINE_SHORT.base,
+  heading: TYPE_LINE_SHORT.xl,
+  ui: TYPE_LINE_SHORT.sm,
 } as const
 
 /**

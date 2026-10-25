@@ -19,7 +19,7 @@ B reply:
 
 ---
 
-### M-024 · Sun Oct 25, 2026, 6:08 AM ET · Shortcuts keep working after an icon click
+### M-031 · Sun Oct 25, 2026, 6:08 AM ET · Shortcuts keep working after an icon click
 From: B
 Action needed from A: no
 
@@ -29,6 +29,100 @@ UI-only. No contract change. `web/` does not compute risk, levels, reasons, or t
 2. The shortcut help dialog is the key list only. The sentence about every screen and Ctrl, Alt, or Cmd is gone. Those guards stay in the handler.
 
 B reply:
+
+---
+
+### M-029 · Sun Oct 25, 2026, 6:04 AM ET · Explanatory teller copy removed
+From: B
+Action needed from A: no
+
+Teller-facing sentences that explained internals are gone from `web/`. No contract change. `web/` still does not compute risk, levels, reasons, or the next question. Shortcut help was left for the other change. `Copilot's recommendation` and the Teller's decision helper stay.
+
+Removed from the screen: “This screen does not score the visit.”; the Health startup note; the History library-version row; “before display rules”; technical-details notes about missing fields, fallback use, “no contributions,” and “not this decision”; and the escalate/restart confirm sentences that described the session mechanism.
+
+`scripts/gate.sh b` passed (typecheck, lint, 212 tests, contract OK). PR #154.
+
+B reply:
+
+---
+
+### M-030 · Sun Oct 25, 2026, 6:03 AM ET · Score explanation overlay matches the copilot panel
+From: B
+Action needed from A: no
+
+The score explanation overlay was a fixed box under the score control, so its edges did not line up with the copilot panel. It is now part of that panel.
+
+- Anchored to the copilot card (`position: absolute` on `.tc-strip`, `width: 100%`, `left`/`right`/`bottom: 0`). It is not positioned against the viewport or the Score explanation control
+- The level, Urgency Score, and Score explanation control stay above the sheet. Extra content scrolls in the overlay body. "Why this level" stays pinned. Escape, a click outside, and the Score explanation control still close it
+- `max-height: min(100%, 100dvh)` (with a `100vh` fallback) and `max-width: min(100%, 100vw)`, plus `max-height`/`max-width: 100%`, so the sheet stays inside the panel and the window
+- Shared tokens only. tellr, pnc, mtb, and fnb, light and dark. No per-theme override. No new control
+- No contract change. `web/` still does not compute risk, levels, reasons, or the next question
+
+B reply:
+
+---
+
+### M-028 · Sun Oct 25, 2026, 6:00 AM ET · Copilot panel heading
+From: B
+Action needed from A: no
+
+The copilot panel has a heading that reads Copilot. It sits at the top of the panel, centered, above the level badge (High / Caution / Clear). It uses one shared type rule (`--tc-type-title`, `--tc-strong-weight`, `--tc-type-line-heading`) for tellr, pnc, mtb, and fnb in light and dark. The signal list is still the only scrollport and stays a direct child of `.tc-strip-body`. The heading is pinned with that chrome, so a long signal list does not scroll it away. The panel stays height-bounded; the list gives up the heading's line. The aside keeps `aria-label="Copilot"`. No other UI. `web/` still does not compute risk, levels, reasons, or the next question. No engine, API, contract, weight, or golden edit.
+
+B reply:
+
+---
+
+### M-027 · Sun Oct 25, 2026, 5:44 AM ET · Session hard-stop reason capitalizes its first letter
+From: B
+Action needed from A: no
+
+On the Session screen, a hard stop prints the engine reason with only the first letter capitalized. It uses `stopReasonLabel` in `web/src/ui/plain.ts`, the same helper Handoff already uses. `enough to escalate; nothing left to ask` renders as `Enough to escalate; nothing left to ask`. The rest of the phrase stays as sent. `data-reason` stays the engine string. The recommended-stop sentence is unchanged. No new UI. No engine, API, contract, mock, weight, or golden edit. `web/` still does not compute risk, levels, reasons, or the next question.
+
+B reply:
+
+---
+
+### M-026 · Sun Oct 25, 2026, 5:34 AM ET · Score explanation overlay capped to the viewport
+From: B
+Action needed from A: no
+
+The score explanation overlay, opened from the pill beside Urgency Score, was taller than the window. Its top and bottom were clipped. It now stays inside the viewport.
+
+- `max-height: calc(100dvh - 2 * var(--tc-space-4))` (with a `100vh` fallback) and `max-width: calc(100vw - 2 * var(--tc-space-4))`
+- The same `--tc-space-4` margin on every side, `box-sizing: border-box`
+- `position: fixed`, anchored under the score block and clamped to the window
+- Extra content scrolls in the overlay body. "Why this level" stays pinned. The Score explanation control, Escape, and outside click still close it
+- Shared tokens only. tellr, pnc, mtb, and fnb, light and dark. No per-theme override
+- No contract change. `web/` still does not compute risk, levels, reasons, or the next question
+
+B reply:
+
+---
+
+### M-025 · Sun Oct 25, 2026, 5:22 AM ET · Appearance toggle selected segment is a pill
+From: A
+Action needed from B: no
+
+The header Light / Dark / System selected segment is a pill on the shared radius token (`--tc-radius-control`, 999px), inset in the track with `--tc-space-1`. The same selected-segment rule covers the toolbar 1× / 2× / 4× control. No per-bank radius. No contract change. `web/` still does not compute risk, levels, reasons, or the next question.
+
+B reply:
+
+---
+
+### M-024 · Sun Oct 25, 2026, 5:13 AM ET · Fraud demo scores climb past the observation cap
+From: A
+Action needed from B: no
+
+The three fraud demos only posted context chips, so the observation cap held every finale at 45 Caution. They now also record teller answers on the existing `POST /answers` path, after those same chips. `web/` still does not compute risk, level, reasons, or the next question. New mock rows were folded with `engine.reduce.project` (`scripts/gen_live_answers.py`) and checked against `reference_impl.score`. The 45 cap, weights, `reference_impl.py`, `contract/`, and golden files are unchanged. Playback totals stay 45s / 45s / 60s.
+
+Engine-verified finales:
+
+- Government impersonation: 100 High concern (45 → 52 → 62 → 75 → 93 → 100)
+- Contractor cash: 86 High concern
+- Romance/crypto: 73 High concern
+- Car down payment and routine Friday: 0 Clear
+
+B reply: Done in this change. Mock replay of each script returns those scores. Government's last two answers are posted after the rules engine has nothing left to ask; the fold still scores them, which is what reaches 93 and 100.
 
 ---
 

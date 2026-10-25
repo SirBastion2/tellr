@@ -75,7 +75,6 @@ function SchemeToggle() {
             style={{
               ...headerTap,
               borderWidth: 0,
-              borderRadius: 0,
               height: '100%',
               minHeight: '100%',
               padding: 'var(--tc-scheme-pad-block, 7px) var(--tc-scheme-pad-inline, 14px)',
@@ -434,6 +433,7 @@ export function AppShell({
                     session={session}
                     closed={closed}
                     recorded={recorded}
+                    recordedOutcome={handoff?.outcome ?? null}
                     onSubmit={onSubmitOutcome}
                     onStartNew={onStartNew}
                   />
@@ -483,11 +483,6 @@ export function AppShell({
                 : confirm.kind === 'restart'
                   ? 'Restart the simulation?'
                   : 'Switch customer?'
-            }
-            body={
-              confirm.kind === 'escalate'
-                ? 'This records an escalate outcome for the teller and opens the handoff.'
-                : 'This resets the live session and the simulated timeline.'
             }
             confirmLabel={
               confirm.kind === 'escalate' ? 'Escalate' : confirm.kind === 'restart' ? 'Restart' : 'Reset session'
@@ -623,6 +618,9 @@ function ConnectedShell() {
       }
       if (event.chips.length > 0) {
         await tellerRef.current.postContext(event.chips, 'observed')
+      }
+      if (event.answer && !tellerRef.current.closed) {
+        await tellerRef.current.postAnswer(event.answer)
       }
       if (tellerRef.current.closed) {
         autoPlayRef.current = false
