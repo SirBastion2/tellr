@@ -187,13 +187,14 @@ function timelineOrder(count: number, index: number): number[] {
 export function PlaybackBar({ demo }: { demo: DemoView }) {
   const customer = customerById(demo.customerId)
   const events = customer?.events ?? []
-  const order = timelineOrder(events.length, demo.index)
+  const shown = events.length > 0 ? Math.max(demo.index, 1) : 0
+  const order = timelineOrder(events.length, shown)
   const dot = (step: number) => {
     const event = events[step - 1]
     if (!event) {
       return null
     }
-    const state = step < demo.index ? 'past' : step === demo.index ? 'current' : 'future'
+    const state = step < shown ? 'past' : step === shown ? 'current' : 'future'
     return (
       <button
         key={event.id}
@@ -208,7 +209,7 @@ export function PlaybackBar({ demo }: { demo: DemoView }) {
       />
     )
   }
-  const currentStep = demo.index > 0 ? order[0] : null
+  const currentStep = shown > 0 ? order[0] : null
   const following = currentStep == null ? order : order.slice(1)
   return (
     <div className="tc-playback" data-testid="playback-bar">

@@ -3481,3 +3481,9 @@ body {
 .tc-stage .tc-dots .tc-step-dot[data-state='future'] {
   opacity: 0.7;
 }
+
+/* Timeline dots: no black focus outline around the current step. */
+.tc-stage .tc-dots .tc-step-dot:focus-visible,
+.tc-stage .tc-dots .tc-step-dot:focus {
+  outline: none;
+}
