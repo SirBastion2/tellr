@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { listedChipIds, notesOnlyChip, notesOnlyLabels, originText, sourceForChip } from '../feed'
+import { listedChipIds, notesOnlyChip, originText, sourceForChip } from '../feed'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { CheckIcon, DismissIcon } from '../ui/icons'
 import { LEVEL_WORD, LevelIcon } from '../ui/LevelIcon'
@@ -100,9 +100,6 @@ export function CopilotStrip({
   const reason = session.risk.reasons[0]?.label ?? session.risk.counterpoint?.label ?? 'No concern flagged'
   const action = suggestedAction(session)
   const script = readAloud(session)
-  const extraNotes = notesOnlyLabels(library, postedChipIds, session.context_chips).filter(
-    (label) => !script.includes(label),
-  )
   const tellerChips = listedChipIds(postedChipIds, session.context_chips, dismissed, chipOrder).filter(
     (chipId) => !notesOnlyChip(library, chipId),
   )
@@ -172,11 +169,6 @@ export function CopilotStrip({
         <blockquote data-testid="read-aloud" className="tc-prose" style={{ margin: '8px 0 0', maxWidth: '70ch' }}>
           {script}
         </blockquote>
-        {extraNotes.length > 0 ? (
-          <p data-testid="teller-notes" className="tc-prose" style={{ margin: '8px 0 0', maxWidth: '70ch' }}>
-            {extraNotes.join(' ')}
-          </p>
-        ) : null}
       </details>
       <ul aria-label="Signals" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
         {tellerChips.map((chipId) => {

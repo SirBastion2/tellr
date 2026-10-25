@@ -2201,29 +2201,42 @@ GATE PASS (b)
 
 ---
 
-### [B] One-row header, hugging pills — Agent B1 — 2026-10-25 05:40
+### [B] Read-aloud script only; even fact-grid gaps — Agent B1 — 2026-10-25 05:43
 - **Status:** done
-- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 178 tests, contract OK)
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 181 tests, contract OK)
 
 ```
 ── typecheck
 ── lint
 ── test
  Test Files  50 passed (50)
-      Tests  178 passed (178)
+      Tests  181 passed (181)
 ── contract
 contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
 
 GATE PASS (b)
 ```
 
+- **Changed:** `web/src/workstation/CopilotStrip.tsx`, `web/src/workstation/TransactionPanel.tsx`, `web/src/screens/CustomerFileScreen.tsx`, `web/src/ui/facts.tsx`, `web/src/index.css`, `web/src/theme/tokens.ts`, `web/src/theme/vars.ts`, `web/src/theme/typeScale.ts`, `web/src/copilotCard.test.tsx`, `web/src/workstationMerge.test.tsx`, `web/src/headerRhythm.test.tsx`, `web/src/shortcutsCustomer.test.tsx`, `ARCHITECTURE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Extra line in the read-aloud card was `notesOnlyLabels()` for `chip.above_threshold` (`Cash withdrawal above the branch threshold`). Removed it. The card is the label plus `talk_track.lines` (architecture §12 render-only).
+  - Type stays `customer.transaction.type` (`Cash withdrawal`). The fuller string is the chip label, a different field. Mapping it onto Type would be web-side logic. It is not appended on Outcome, Handoff, or the Session question card.
+  - Shared `tc-kv` / `tc-facts` grid: `max-content 1fr`, `--tc-space-3` column-gap, `--tc-space-2` row-gap, baseline, `--tc-line-fact` = `--tc-text-base` so Amount (`--tc-text-2xl`) does not add extra row gap. Type-scale / spacing tokens only.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/106. Merged to main. No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+
+---
+
+### [B] One-row header, hugging pills — Agent B1 — 2026-10-25 05:50
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → pending after #106 merge
 - **Changed:** `web/src/index.css`, `web/src/App.tsx`, `web/src/theme/{tokens,vars,controls,Wordmark}.tsx`, `web/src/ui/LocalClock.tsx`, `web/src/workstation/Toolbar.tsx`, header/fit/a11y/theme tests, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
 - **Decisions I made, and the section that justified each:**
   - Removed `--tc-sim-pill-min` / `--tc-conn-pill-min` (the #103 fixed rem widths) so status pills hug text (`width: max-content`, `padding-inline: 0.85em`). Same control height (`48px`) in tellr / pnc / mtb / fnb.
   - Tabs are `flex: 0 0 auto`. Nav keeps `flex: 1 1 auto` + `margin-inline: auto` so leftover space sits between groups (brand | status+clock | tabs | scheme+help), never inside a pill (#101).
   - Tellr graphic is `--tc-wordmark-h` 40px (control minus pad), aspect 155/61. Title uses the 48px box.
   - Local clock from #104 lives in the header status group. Only the digits reserve width (`tabular-nums` + `8ch`).
-  - One row at 1280 and 1180 (gaps tighten at 1180). At 1024 the scenario pill may ellipsize (`8em`–`12em`). Font sizes still from `typeScale.ts` only.
+  - One row at 1280, 1180, and 1024 (`flex-wrap: nowrap`). Gaps tighten at 1180. At 1024 the scenario pill may ellipsize (`8em`–`12em`). Font sizes still from `typeScale.ts` only. Kept #106 `--tc-line-fact` and fact-grid tests.
 - **Questions logged:** none
-- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/107. Do not merge. Merged `origin/main` `#108` (`44b77a3`). Chromium measured 4 themes × 3 widths × idle/play: one row, 48px controls, no overflow. No new dependency. No screenshots or videos. Gate `b` only.
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/107. Do not merge. Merged `origin/main` including #106 (`f9aa501`) and #108. Chromium measured 4 themes × 3 widths × idle/play with PNC longest sim label + Live API connected: one row, 48px controls, pill slack ≤ token pad. No new dependency. No screenshots or videos. Gate `b` only.
 

@@ -140,7 +140,7 @@ export function TransactionPanel({
       {showCase ? (
         <section data-testid="case-file" aria-label="Synthetic case file" className="tc-stack-heading">
           <SectionHeading>Case file</SectionHeading>
-          <dl className="tc-kv" style={{ display: 'grid', gridTemplateColumns: '9.5rem minmax(0, 1fr)', gap: 'var(--tc-space-2) var(--tc-space-4)', margin: 0 }}>
+          <dl className="tc-kv">
             <Row term="Tenure">{customer.profile.tenure}</Row>
             <Row term="Typical withdrawal">{customer.profile.typicalWithdrawal}</Row>
             <Row term="Channels">{customer.profile.channels}</Row>

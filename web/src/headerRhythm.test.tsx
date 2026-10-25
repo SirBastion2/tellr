@@ -7,6 +7,7 @@ import { App } from './App'
 import './index.css'
 import { THEME_IDS } from './theme/registry'
 import { DENSITY } from './theme/tokens'
+import { TYPE_SIZE } from './theme/typeScale'
 
 const css = () => readFileSync('src/index.css', 'utf8')
 
@@ -70,6 +71,28 @@ describe('header labels and spacing rhythm', () => {
     expect(source).toMatch(/\.tc-live-badge[\s\S]*padding-inline:\s*var\(--tc-control-pad-inline/)
     expect(source).toMatch(/\.tc-connection[\s\S]*padding-inline:\s*var\(--tc-control-pad-inline/)
     expect(DENSITY.spaceControlPadInlineEm).toMatch(/em$/)
+  })
+
+  it('uses the same two-column fact grid and line-height token on kv lists', () => {
+    const source = css()
+    expect(DENSITY.lineFact).toBe(TYPE_SIZE.base)
+    expect(source).toMatch(/--tc-line-fact:\s*var\(--tc-text-base\)/)
+
+    for (const selector of ['.tc-kv', '.tc-facts'] as const) {
+      const rule = headerRule(source, selector)
+      expect(rule, selector).toMatch(/display:\s*grid/)
+      expect(rule, selector).toMatch(/grid-template-columns:\s*max-content\s+minmax\(0,\s*1fr\)/)
+      expect(rule, selector).toMatch(/column-gap:\s*var\(--tc-space-3/)
+      expect(rule, selector).toMatch(/row-gap:\s*var\(--tc-space-2/)
+      expect(rule, selector).toMatch(/align-items:\s*baseline/)
+    }
+
+    expect(headerRule(source, '.tc-kv dt')).toMatch(/line-height:\s*var\(--tc-line-fact/)
+    expect(headerRule(source, '.tc-kv dd')).toMatch(/line-height:\s*var\(--tc-line-fact/)
+    expect(source).toMatch(/\.tc-facts dt[\s\S]*?line-height:\s*var\(--tc-line-fact/)
+    expect(source).toMatch(/\.tc-facts dd[\s\S]*?line-height:\s*var\(--tc-line-fact/)
+    expect(headerRule(source, '.tc-amount')).toMatch(/line-height:\s*var\(--tc-line-fact/)
+    expect(headerRule(source, '.tc-amount')).toMatch(/font-size:\s*var\(--tc-text-2xl/)
   })
 
   it('keeps the header on one row with content-sized tabs and hugging status pills', () => {
