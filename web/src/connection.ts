@@ -1,3 +1,4 @@
+import { installSampleFetch } from '../mock/sampleFetch'
 import { resetApiBase, setApiBase } from './api'
 import { readHealth } from './screens/HealthScreen'
 
@@ -55,7 +56,8 @@ export function configuredApiUrl(): string {
 
 /**
  * Live when GET /health on the configured origin (or 127.0.0.1:8000) returns a health report.
- * Otherwise the Vite mock, when it answers /health. Otherwise offline.
+ * Otherwise sample data, when /health answers. In dev that is the Vite mock. In a production
+ * build the browser replay is installed first. Otherwise offline.
  */
 export function connectionFromProbe(options: {
   configured: string
@@ -99,7 +101,7 @@ export async function ensureConnection(): Promise<ConnectionState> {
     return next
   }
   if (!pending) {
-    pending = probe().catch((error: unknown) => {
+    pending = probeConnection(import.meta.env.PROD).catch((error: unknown) => {
       pending = null
       throw error
     })
@@ -107,10 +109,14 @@ export async function ensureConnection(): Promise<ConnectionState> {
   return pending
 }
 
-async function probe(): Promise<ConnectionState> {
+/** `prod` is true for a production build. Dev passes false and keeps the Vite middleware. */
+export async function probeConnection(prod: boolean): Promise<ConnectionState> {
   const configured = configuredApiUrl()
   const candidate = configured || DEFAULT_LIVE_ORIGIN
   const liveOk = await healthOk(candidate)
+  if (!liveOk && prod) {
+    installSampleFetch()
+  }
   const sampleOk = liveOk ? false : await healthOk('')
   return commit(connectionFromProbe({ configured, liveOk, sampleOk }))
 }

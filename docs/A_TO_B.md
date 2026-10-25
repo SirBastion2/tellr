@@ -19,6 +19,20 @@ B reply:
 
 ---
 
+### M-033 · Sun Oct 25, 2026, 6:43 AM ET · Static web build replays sample data
+From: B
+Action needed from A: no
+
+`web/` can be deployed as a static Vite site. The dev mock is still Vite middleware only, so a production build installs a browser `fetch` shim when no live API answers `GET /health`. The shim calls `mockRequest` for `/library`, `/health`, and `/sessions` and does not score. The connection label stays "Using sample data". Dev and vitest do not install the shim. `npm run build` is `tsc --noEmit && vite build`. `web/vercel.json` rewrites non-asset paths to `/index.html`.
+
+Vercel project settings: root directory `web`, framework Vite, build command `npm run build`, output directory `dist`.
+
+No engine, API, contract, weight, or golden edit.
+
+B reply:
+
+---
+
 ### M-032 · Sun Oct 25, 2026, 6:30 AM ET · Timeline vs the saved log
 From: A
 Action needed from B: no

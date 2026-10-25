@@ -21,7 +21,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `eval/` except `heldout/` | A3 | Validator, 30 dev scenarios, harness (§13) | `validate.py`, `PREREGISTRATION.md`, `scenarios/dev/`, `run.py`, `arms/` |
 | `eval/scenarios/heldout/` | H | Held-out set, written once (B-07) | created at hour 20 |
 | `tests/eval/` | A3 | Scenario, validator, and harness tests | `test_validate.py`, `test_dev_scenarios.py`, `test_run.py` |
-| `web/` | B1 | React UI, mock, screens, bank themes, simulated workstation (§12) | `src/App.tsx`, `src/LiveBadge.tsx`, `src/screens/`, `src/theme/` (incl. `typeScale.ts`), `src/demo/`, `src/presenter.tsx`, `src/workstation/`, `src/ui/`, `src/assets/tellr-wordmark.png`, `src/index.css`, `index.html`, `public/favicon.svg`, `mock/live_levels.json`, `mock/live_answers.json`, `vite.config.ts`, `.env.api`, `src/devApi.ts` |
+| `web/` | B1 | React UI, mock, screens, bank themes, simulated workstation (§12) | `src/App.tsx`, `src/LiveBadge.tsx`, `src/screens/`, `src/theme/` (incl. `typeScale.ts`), `src/demo/`, `src/presenter.tsx`, `src/workstation/`, `src/ui/`, `src/assets/tellr-wordmark.png`, `src/index.css`, `index.html`, `public/favicon.svg`, `mock/live_levels.json`, `mock/live_answers.json`, `mock/sampleFetch.ts`, `vite.config.ts`, `vercel.json`, `.env.api`, `src/devApi.ts` |
 | `web/src/screens/history/` `…/settings/` `web/e2e/` | B2 | Leaf screens + e2e if added at hour 8. Not created. B-06 filled history and health in `web/src/screens/` | — |
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json` (incl. `activity.schema.json`, CHANGE-005), `fixtures/T1–T7.json`, `CHANGES.md` (CHANGE-006: optional `level_bands` on untyped `GET /health`; CHANGE-007: optional `talk_track.action`) |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |
@@ -48,6 +48,7 @@ History and the read-only recommender view live in the existing screen files. Th
 | `web/src/screens/NotFoundScreen.tsx` | Catch-all and session routes with no visit. Link back to Home. |
 | `web/mock/replay.ts` | Also serves `GET /sessions` (live by default, `mode=practice`, `mode=all`) and `GET /health` (includes CHANGE-006 `level_bands` echoing `engine.score.level_bands()`). Live answers look up `live_answers.json`. |
 | `web/mock/plugin.ts` | Installed by `npm run dev`. Answers `/library`, `/health`, and `/sessions`. Not installed when `VITE_API_URL` is set. |
+| `web/mock/sampleFetch.ts` | Production builds only. When no live API answers `GET /health`, replaces `fetch` and replays those same routes through `mockRequest`. Dev and vitest do not install it. |
 
 ### `web/` themes
 
@@ -151,7 +152,7 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 | `web/src/shortcutsAfterClick.test.tsx` | After a click focuses a step, speed, scheme, chip, or help button, the shortcut key still runs. A button that stops the key does not block it. Typing in the customer select does not. Enter and Space are not cancelled. |
 | `web/src/ui/icons.tsx` | Play, pause, step, restart, confirm, and dismiss icons. |
 | `web/src/ui/ConfirmDialog.tsx` | Confirm before restart and escalate. Customer switch resets without a dialog. |
-| `web/src/connection.ts` | Probes `GET /health` and chooses the live origin or the sample-data fallback. Not rendered in the header. |
+| `web/src/connection.ts` | Probes `GET /health` and chooses the live origin or the sample-data fallback. A production build installs `web/mock/sampleFetch.ts` only after the live probe fails. Sample mode stays "Using sample data". Not rendered in the header. |
 | `web/src/errors.ts` | Plain sentences for API errors. No status code and no error code on screen. |
 | `web/src/presenter.test.tsx` | Demo layout stays on when `?present=0` is set. Hidden dev tabs, type size 105%, no Presenter button, four labeled tabs, Restart key. |
 | `web/src/workstationFit.test.tsx` | Laptop fit: 3fr/2fr at 1280, stack below 900, measured scheme collapse, one-row header, no clock or connection pill, simulation pill ellipsis+tooltip, scaled clamps. |
@@ -171,13 +172,14 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 
 ### `web/` dev modes
 
-Two local runs. Neither script starts the API. On load, `web/src/connection.ts` calls `GET /health` on `VITE_API_URL` when that is set, otherwise on `http://127.0.0.1:8000`. A health report selects that origin and `setApiBase` points later requests there. If that probe fails and the Vite origin answers `/health`, requests stay on the page origin. If neither answers, requests keep the configured origin and fail until the API is up. The header does not show a connection pill. Vitest skips the probe and uses `VITE_API_URL` or the page origin. See `docs/UI_REFERENCE.md`.
+Two local runs. Neither script starts the API. On load, `web/src/connection.ts` calls `GET /health` on `VITE_API_URL` when that is set, otherwise on `http://127.0.0.1:8000`. A health report selects that origin and `setApiBase` points later requests there. If that probe fails and the Vite origin answers `/health`, requests stay on the page origin. If neither answers, requests keep the configured origin and fail until the API is up. A production build (`npm run build`, Vercel root `web/`) has no Vite middleware, so a failed live probe installs `web/mock/sampleFetch.ts` and the same routes are replayed in the browser. That fallback stays sample data. The header does not show a connection pill. Vitest skips the probe and uses `VITE_API_URL` or the page origin. See `docs/UI_REFERENCE.md`.
 
 Real-API mode uses the CORS middleware from #71, merged at `6d063eb` (8:24 PM ET). `api/main.py` allows any origin and sends no credentials, so a page on `http://127.0.0.1:5173` can call `http://127.0.0.1:8000`. Restart uvicorn if it was started before the pull.
 
 | File | What it is |
 |---|---|
-| `web/package.json` | `dev` is `vite`. `dev:api` is `vite --mode api`. The script has no `VAR=value` prefix, so Windows PowerShell can run it. |
+| `web/package.json` | `dev` is `vite`. `dev:api` is `vite --mode api`. `build` is `tsc --noEmit && vite build`. The dev script has no `VAR=value` prefix, so Windows PowerShell can run it. |
+| `web/vercel.json` | Static deploy. Build `npm run build`, output `dist`. SPA rewrite sends non-asset paths to `/index.html`. |
 | `web/.env.api` | Loaded only for mode `api`. Sets `VITE_API_URL=http://127.0.0.1:8000`. |
 | `web/vite.config.ts` | Always installs `mockApiPlugin`, including when `VITE_API_URL` is set, so a failed health probe can fall back. |
 | `web/src/devApi.ts` | `useMockApi` (true when the URL is blank) and `directoryFromFileUrl` (config directory, including `C:/...`). |
