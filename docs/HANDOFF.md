@@ -2229,7 +2229,20 @@ GATE PASS (b)
 
 ### [B] One-row header, hugging pills — Agent B1 — 2026-10-25 05:50
 - **Status:** done
-- **Gate:** `scripts/gate.sh b` → pending after #106 merge
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 181 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  50 passed (50)
+      Tests  181 passed (181)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
 - **Changed:** `web/src/index.css`, `web/src/App.tsx`, `web/src/theme/{tokens,vars,controls,Wordmark}.tsx`, `web/src/ui/LocalClock.tsx`, `web/src/workstation/Toolbar.tsx`, header/fit/a11y/theme tests, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
 - **Decisions I made, and the section that justified each:**
   - Removed `--tc-sim-pill-min` / `--tc-conn-pill-min` (the #103 fixed rem widths) so status pills hug text (`width: max-content`, `padding-inline: 0.85em`). Same control height (`48px`) in tellr / pnc / mtb / fnb.
@@ -2238,5 +2251,5 @@ GATE PASS (b)
   - Local clock from #104 lives in the header status group. Only the digits reserve width (`tabular-nums` + `8ch`).
   - One row at 1280, 1180, and 1024 (`flex-wrap: nowrap`). Gaps tighten at 1180. At 1024 the scenario pill may ellipsize (`8em`–`12em`). Font sizes still from `typeScale.ts` only. Kept #106 `--tc-line-fact` and fact-grid tests.
 - **Questions logged:** none
-- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/107. Do not merge. Merged `origin/main` including #106 (`f9aa501`) and #108. Chromium measured 4 themes × 3 widths × idle/play with PNC longest sim label + Live API connected: one row, 48px controls, pill slack ≤ token pad. No new dependency. No screenshots or videos. Gate `b` only.
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/107. Do not merge. Merged `origin/main` including #106 (`f9aa501`) and #108. Chromium measured 4 themes × 3 widths × idle/play with PNC longest sim label (`Simulation: Contractor cash, coached`) + `Live API connected`: headerH = oneRowH = 64, Δcy = 0, pill slack ≤ token pad (ellipsis only at 1024 on the sim pill). No new dependency. No screenshots or videos. Gate `b` only.
 
