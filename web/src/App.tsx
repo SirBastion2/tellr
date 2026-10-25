@@ -28,6 +28,7 @@ import { ThemeProvider, useColorScheme, useThemeActions } from './theme/ThemePro
 import { ThemeRoot } from './theme/ThemeRoot'
 import { ThemeWordmark } from './theme/Wordmark'
 import { ConfirmDialog } from './ui/ConfirmDialog'
+import { LocalClock } from './ui/LocalClock'
 import { useDemoShortcuts } from './ui/DemoShortcuts'
 import { LEVEL_WORD } from './ui/LevelIcon'
 import { ShortcutHelp } from './ui/ShortcutHelp'
@@ -236,7 +237,7 @@ export function AppShell({
           data-testid="app-header"
           style={{
             display: 'flex',
-            flexWrap: 'wrap',
+            flexWrap: 'nowrap',
             alignItems: 'center',
             gap: 'var(--tc-space-header, 8px)',
             minHeight: DENSITY.headerMinHeight,
@@ -248,23 +249,30 @@ export function AppShell({
             padding: 'var(--tc-space-2)',
           }}
         >
-          <ThemeWordmark />
-          <h1 className="tc-header-title" title="Teller Copilot">
-            Teller Copilot
-          </h1>
-          <LiveBadge mode={session?.mode ?? null} simulationTitle={simulationTitle} />
-          <ConnectionBadge />
+          <div className="tc-header-brand" data-testid="header-brand">
+            <ThemeWordmark />
+            <h1 className="tc-header-title" title="Teller Copilot">
+              Teller Copilot
+            </h1>
+          </div>
+          <div className="tc-header-status" data-testid="header-status">
+            <LiveBadge mode={session?.mode ?? null} simulationTitle={simulationTitle} />
+            <ConnectionBadge />
+            <LocalClock />
+          </div>
           <nav
             aria-label="Screens"
             data-testid="app-nav"
             className="tc-header-nav"
             style={{
               display: 'flex',
-              flexWrap: 'wrap',
+              flexWrap: 'nowrap',
               alignItems: 'center',
+              justifyContent: 'center',
               overflow: 'visible',
-              minWidth: 0,
+              minWidth: 'min-content',
               flex: '1 1 auto',
+              marginInline: 'auto',
               minHeight: 'var(--tc-header-control-h, 48px)',
               gap: 'var(--tc-space-header, 8px)',
             }}
@@ -274,7 +282,7 @@ export function AppShell({
               const label = route.label
               const tabFill: CSSProperties = {
                 ...headerTap,
-                flex: '1 1 0',
+                flex: '0 0 auto',
                 justifyContent: 'center',
                 textAlign: 'center',
                 minWidth: 'min-content',
@@ -322,19 +330,21 @@ export function AppShell({
               )
             })}
           </nav>
-          {schemeCompact ? <SchemeMenu /> : <SchemeToggle />}
-          <button
-            type="button"
-            className="tc-btn"
-            data-variant="secondary"
-            data-testid="shortcut-help-button"
-            aria-label="Keyboard shortcuts"
-            title="Keyboard shortcuts (?)"
-            style={{ ...headerTap, ...secondaryStyle, flex: '0 0 auto' }}
-            onClick={() => onHelp?.(!helpOpen)}
-          >
-            ?
-          </button>
+          <div className="tc-header-tools" data-testid="header-tools">
+            {schemeCompact ? <SchemeMenu /> : <SchemeToggle />}
+            <button
+              type="button"
+              className="tc-btn"
+              data-variant="secondary"
+              data-testid="shortcut-help-button"
+              aria-label="Keyboard shortcuts"
+              title="Keyboard shortcuts (?)"
+              style={{ ...headerTap, ...secondaryStyle, flex: '0 0 auto' }}
+              onClick={() => onHelp?.(!helpOpen)}
+            >
+              ?
+            </button>
+          </div>
         </header>
         <p className="tc-sr" aria-live="polite" data-testid="live-region">
           {announcement}

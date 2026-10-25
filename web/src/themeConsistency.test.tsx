@@ -260,13 +260,15 @@ describe('shared theme leftovers', () => {
     }
   })
 
-  it('fills leftover header space with four even tabs and keeps the #93 wrap', () => {
+  it('sizes four content tabs and puts leftover space between header groups', () => {
     const source = css()
     expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*flex:\s*1 1 auto/)
-    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*flex-wrap:\s*wrap/)
+    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*margin-inline:\s*auto/)
+    expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*flex-wrap:\s*nowrap/)
     expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*overflow:\s*visible/)
     expect(source).toMatch(/\.tc-header-nav\s*\{[^}]*gap:\s*var\(--tc-space-header/)
-    expect(source).toMatch(/\.tc-header-nav a[\s\S]*flex:\s*1 1 0/)
+    expect(source).toMatch(/\.tc-header-nav a[\s\S]*flex:\s*0 0 auto/)
+    expect(source).not.toMatch(/\.tc-header-nav a[\s\S]*flex:\s*1 1 0/)
     expect(source).toMatch(/\.tc-header-nav a[\s\S]*text-align:\s*center/)
     expect(source).toMatch(/\.tc-header-nav a[\s\S]*min-width:\s*min-content/)
     expect(source).toMatch(/\.tc-header-nav a[\s\S]*border-radius:\s*var\(--tc-header-radius/)
@@ -275,14 +277,15 @@ describe('shared theme leftovers', () => {
       const { unmount } = renderThemed(id)
       const nav = screen.getByTestId('app-nav')
       expect(nav.style.flex, id).toBe('1 1 auto')
-      expect(nav.style.flexWrap, id).toBe('wrap')
+      expect(nav.style.flexWrap, id).toBe('nowrap')
       expect(nav.style.overflow, id).toBe('visible')
       expect(nav.style.gap, id).toBe('var(--tc-space-header, 8px)')
+      expect(screen.getByTestId('local-clock'), id).toBeTruthy()
       const tabs = ['Home', 'Customer file', 'Outcome', 'Handoff'].map((label) => screen.getByText(label))
       expect(tabs, id).toHaveLength(4)
       for (const tab of tabs) {
         expect(tab.className, `${id} ${tab.textContent}`).toContain('tc-nav-tab')
-        expect(tab.style.flex, `${id} ${tab.textContent}`).toMatch(/^1 1 0(px)?$/)
+        expect(tab.style.flex, `${id} ${tab.textContent}`).toMatch(/^0 0 auto$/)
         expect(tab.style.justifyContent, `${id} ${tab.textContent}`).toBe('center')
         expect(tab.style.textAlign, `${id} ${tab.textContent}`).toBe('center')
         expect(tab.style.whiteSpace, `${id} ${tab.textContent}`).toBe('nowrap')
@@ -294,10 +297,10 @@ describe('shared theme leftovers', () => {
       for (const width of LAPTOP_WIDTHS) {
         Object.defineProperty(window, 'innerWidth', { configurable: true, value: width })
         window.dispatchEvent(new Event('resize'))
-        expect(nav.style.flexWrap, `${id} @ ${width}`).toBe('wrap')
+        expect(nav.style.flexWrap, `${id} @ ${width}`).toBe('nowrap')
         expect(nav.style.overflow, `${id} @ ${width}`).toBe('visible')
         for (const tab of tabs) {
-          expect(tab.style.flex, `${id} ${tab.textContent} @ ${width}`).toMatch(/^1 1 0(px)?$/)
+          expect(tab.style.flex, `${id} ${tab.textContent} @ ${width}`).toMatch(/^0 0 auto$/)
           expect(tab.textContent, `${id} @ ${width}`).not.toMatch(/…|\.\.\./)
         }
       }
