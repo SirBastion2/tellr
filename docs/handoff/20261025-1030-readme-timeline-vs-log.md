@@ -1,6 +1,14 @@
 ### README timeline vs saved log — 2026-10-25 10:30
 - **Status:** done
-- **Gate:** `scripts/gate.sh a` — result filled in after the run
+- **Gate:** `scripts/gate.sh a` → PASS
+
+```
+216 passed, 1 warning in 24.23s
+Contracts: 1 kept, 0 broken.
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
 - **Changed:** `README.md` (two sentences in "The demo vs real use"), `docs/A_TO_B.md` (M-032), this file. Did not edit `docs/HANDOFF.md`, `web/`, `engine/`, `contract/`, `reference_impl.py`, golden tests, or weights.
 - **Decisions I made, and the section that justified each:**
   - Timeline: `web/src/workstation/TransactionPanel.tsx` renders the Timeline from `customer.events` and stamps each row with `timelineElapsedMs` / `formatElapsed` in `web/src/demo/clock.ts` (sum of `delayMs`, simulated scene time). `web/src/screens/HomeScreen.tsx` mounts that panel only when a demo customer is set. The shipped page always loads a simulated customer, so the sentence says a real teller on a visit with no simulated customer would not see it, which matches that mount. Architecture §14.1: a live visit has no scenario.
