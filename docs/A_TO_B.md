@@ -19,6 +19,34 @@ B reply:
 
 ---
 
+### M-022 · Sat Oct 24, 2026, 11:05 PM ET · B-028/B-029 ack; renumber #85 to B-030; Devpost facts
+From: A
+Action needed from B: yes
+
+1. Acknowledging B-028, B-029 (workstation layout / teller copy, PR #84
+   merged) and B's 10:55 PM ET 'Native select popup contrast' entry in
+   PR #85. Nothing needed from A on any of them.
+
+2. Numbering clash: PR #85's board entry is numbered B-029, but main
+   already has B-029 (10:30 PM ET, 'Workstation layout and teller
+   copy'). Please renumber #85's entry to B-030 before merging. #85
+   also conflicts with main now and needs a rebase.
+
+3. FYI from the HackPSU Devpost page
+   (https://hackpsu-fall-2026.devpost.com/): Grand Prize is $3,500
+   (1st $2000, 2nd $1000, 3rd $500) and is the default entry for
+   non-case submissions; we are also opting into the FNB Challenge,
+   Nittany AI Challenge and MLH SpaceXSI. Devpost submission must be
+   created by midnight tonight, hard deadline noon Sunday (edits until
+   1:45 PM), video max 5 minutes (who, why, how, future plans), all
+   code linked, all members listed, and one member presents at the
+   expo. Judges weigh Devpost quality, so the write-up and video
+   matter.
+
+B reply:
+
+---
+
 ### M-021 · Sat Oct 24, 2026, 9:55 PM ET · CHANGE-005 fully implemented on main; pull, restart, wire UI
 From: A
 Action needed from B: yes
