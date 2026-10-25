@@ -207,4 +207,64 @@ Agents append; drivers answer. An open question blocks only the work that depend
   `api/`, `engine/`, `web/`, `reference_impl.py`, or goldens in the request PR.
 - **Status:** answered: accepted by Driver A; CHANGE-005 drafted
 
+### Q-014 · Scenario-specific read-aloud scripts cannot ship without a fixture / §7.1 change
+- **Raised by:** Agent A · stress-test (contractor / romance / government-impersonation
+  demo visits) · **Sections:** architecture §5.2–§5.3, §6.2–§6.3, §7.1, §9;
+  `library/talk_tracks.yaml`; `engine/rules.py` `talk_track_for`;
+  `tests/golden/test_traces.py`; `contract/fixtures/T1–T7.json`;
+  `scripts/gen_fixtures.py` `TALK_TRACKS`; WORKFLOW.md §5
+- **Detail:** The three simulated customers all land at Caution with `risk.pattern`
+  null. `talk_track_for` then emits only the Caution stage track `tt.slow_down`
+  (the three generic lines about calls / a cashier's check / calling back on a
+  known number). Pattern lines are appended only while a pattern is displayed
+  (§7.1). These visits post context chips only, so the §7.1 display gate never
+  fires (it needs an interview signal of the top pattern's own).
+  `pat.government_impersonation`, `pat.family_emergency`, and `pat.tech_support`
+  are compliance stubs with `signals: []` and no `talk_track`. Context chips
+  overlap across the three families, so they cannot route distinct copy. Stated
+  purpose is allowed to route questions and nothing else (§5.3) and the demo
+  visits do not post a purpose.
+- **Why a library-only add is not an implementation:** New `tt.*` rows are
+  schema-valid and would not fail goldens *if unused*. They stay unused:
+  `talk_track_for` will not select them without a displayed pattern, and those
+  stub patterns can never display. Changing the existing `tt.slow_down` lines,
+  or appending family lines from purpose / chips / a new selector, changes
+  `SessionState.talk_track` on T1–T7 Caution steps.
+  `test_project_matches_t1_through_t7_fixtures` asserts exact `talk_track`
+  equality; `scripts/check_contract.py` requires fixtures to match
+  `scripts/gen_fixtures.py` (which hard-codes `TALK_TRACKS`). Weights-frozen; do
+  not edit goldens, `contract/`, or `reference_impl.py` outside the protocol. No
+  engine/library code change in this request.
+- **Smallest change-protocol request (scripts):** If drivers want distinct
+  read-aloud copy per family on these observation-only visits, one CHANGE that
+  (1) amends §7.1 so family lines may attach from stated purpose (copy routing
+  only; still never score or displayed pattern) and notes the §5.3 "does nothing
+  else" sentence; (2) adds DRAFT `tt.government_impersonation` /
+  romance-or-`tt.family_emergency` / richer contractor lines in
+  `library/talk_tracks.yaml` (`copy_status` stays the compliance-review banner);
+  (3) lets `talk_track_for` append the purpose-routed track even when
+  `risk.pattern` is null; (4) has R regenerate T1–T7 fixtures (every post-opener
+  Caution/High step that already has `purpose.home_repair` or
+  `purpose.moving_money` picks up extra lines) and rehash oracles if §7.1 text
+  in `docs/architecture.md` is an oracle. The workstation must also post a
+  purpose (or a new non-scoring family id) on the three demo visits — context
+  chips alone cannot tell them apart. WORKFLOW.md §5 budget of two post-hour-4
+  changes is already used (CHANGE-004, CHANGE-005); this needs an explicit extra
+  slot.
+- **Not requested / do not apply:** Invent characteristic signals for the three
+  stub patterns; edit `tt.slow_down` in place; change weights or levels; edit
+  goldens or `contract/` in this PR.
+- **Government-impersonation Caution / 45** is the §6.2 observation cap, not a
+  missing weight. Full arithmetic is in the PR body. Smallest *protocol* item to
+  make that *observation-only* visit read a higher **score** (still Caution):
+  raise `observation_cap` 45 → ≥52 (oracles: §6.2, `reference_impl.py`,
+  `tests/golden/reference_weights.yaml`, `contract/oracle.sha256`). Smallest
+  protocol item to make it **High** from observation alone: raise that cap to
+  ≥60 and drop the High interview-gate invariant. Neither is a weight change. A
+  teller `confirmed` on `q.secrecy.told_not_to_tell` (`sig.secrecy_bank`) lifts
+  the cap inside the current formula (raw 62 → High) with no protocol;
+  `sig.answer_relayed` does not (third_party already at +22, score 52, still
+  Caution).
+- **Status:** open — no code until drivers answer
+
 ---
