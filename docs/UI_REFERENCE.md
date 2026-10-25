@@ -111,7 +111,7 @@ Teller-facing copy does not show `sig.*`, `chip.*`, `mit.*`, `pat.*`, `purpose.*
 | Confidence `null` | Not applicable (rules engine) |
 | Strength | Strong factor, Moderate factor, or Minor factor from `\|weight\| / sum(\|weight\|)` in that response. `>= 1/3` strong, `>= 1/6` moderate, otherwise minor. This is presentation of server weights. It is not a new score |
 
-Signal source is Observed or Teller confirmed. On Why this level that badge is read-only. Teller confirm and dismiss sit on the copilot signal chips. A dismissed chip stays visible and offers Restore. Undo on Home reverses the last teller confirm, dismiss, or restore; otherwise it posts `/undo`.
+Signal source is Observed or Teller confirmed. On Why this level that badge is read-only. Teller confirm and dismiss sit on the copilot signal chips. A dismissed chip stays visible and offers Restore. Undo on Home reverses the last teller confirm, dismiss, or restore; otherwise it posts `/undo`. Answer-derived signals from `explanation.contributions` that are not already said by a context-chip label render under those chips. The row text is the engine label. The badge reads "From the customer's answer". Those rows have no confirm, dismiss, or restore control.
 
 ## Accessibility
 

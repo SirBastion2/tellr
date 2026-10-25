@@ -372,6 +372,20 @@ describe('fixture replay', () => {
       answers: 5,
       risk: { level: 'high', raw_level: 'high', score: 100 },
     })
+    const contributions = (
+      changed.body as {
+        explanation: { contributions: { signal_id: string; label: string }[] }
+      }
+    ).explanation.contributions
+    expect(contributions.map((row) => [row.signal_id, row.label])).toEqual(
+      expect.arrayContaining([
+        ['sig.secrecy_bank', 'Told not to discuss with the bank'],
+        ['sig.answer_relayed', 'Answer relayed by caller'],
+        ['sig.specificity_gap', 'Missing details'],
+        ['sig.cash_refusal_unexplained', 'Turned down a safer option'],
+        ['sig.story_drift', 'Story changed'],
+      ]),
+    )
   })
 
   it('plays each demo script to an engine-recorded score', () => {

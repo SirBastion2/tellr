@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { ANSWER_ORIGIN, answerSignalRows } from '../answerSignals'
 import { listedChipIds, notesOnlyChip, originText, sourceForChip } from '../feed'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { DENSITY } from '../theme/tokens'
@@ -8,6 +9,7 @@ import type { ActivityRow, Library, SessionState } from '../types'
 import { Fact, FactGrid } from '../ui/facts'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import { ExplanationPanel } from './ExplanationPanel'
+import { readExplanation } from './explain'
 
 function roundIconButton(fill: CSSProperties): CSSProperties {
   return {
@@ -157,6 +159,7 @@ export function CopilotStrip({
   const tellerChips = listedChipIds(postedChipIds, session.context_chips, dismissed, chipOrder).filter(
     (chipId) => !notesOnlyChip(library, chipId),
   )
+  const answerRows = answerSignalRows(readExplanation(session)?.contributions ?? [])
 
   return (
     <aside
@@ -322,6 +325,23 @@ export function CopilotStrip({
             </li>
           )
         })}
+        {answerRows.map((row) => (
+          <li
+            key={row.signal_id}
+            data-testid="signal-row"
+            data-signal={row.signal_id}
+            data-origin="answer"
+            data-state="answer"
+            className="tc-signal-row"
+          >
+            <span className="tc-signal-meta">
+              <span className="tc-signal-label">{row.label}</span>
+              <span data-testid="signal-origin" className="tc-badge">
+                {ANSWER_ORIGIN}
+              </span>
+            </span>
+          </li>
+        ))}
       </ul>
       {closed ? (
         <p className="tc-prose" style={{ margin: 0 }}>

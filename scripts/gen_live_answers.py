@@ -4,7 +4,9 @@
 The mock cannot score. It only returns a row whose key is already in that
 file. This script folds each fraud demo's context chips and teller answers
 with engine.reduce.project and checks the score against reference_impl.score.
-Existing keys are left untouched. Missing keys are appended from that fold.
+Missing keys are appended from that fold. Climb keys whose public state
+already matches gain explanation.contributions from engine.score.contributions,
+the same list the live API attaches. Other recorded keys are left untouched.
 
     python3 scripts/gen_live_answers.py
 """
@@ -23,15 +25,16 @@ import reference_impl
 from engine.library import load_library
 from engine.reduce import project
 from engine.rules import public_state
+from engine.score import contributions, tables_from_library
 from engine.score import level as engine_level
 from engine.score import score as engine_score
-from engine.score import tables_from_library
 
 OUT = ROOT / "web" / "mock" / "live_answers.json"
 
 # Chip groups follow web/src/demo/customers.ts. Answer tuples are
 # (question_id, chip, purpose or None). Expected scores are the check,
-# not the recorded body: the body is project()'s public state.
+# not the recorded body: the body is project()'s public state plus
+# explanation.contributions.
 CLIMBS: list[tuple[str, list[list[str]], list[tuple[str, str, str | None]], list[int]]] = [
     (
         "government-impersonation",
@@ -111,11 +114,24 @@ def events_for(
     return log
 
 
+def api_body(state: dict, lib) -> dict:
+    """public_state plus the rules-path explanation the live API attaches."""
+    body = public_state(state)
+    evidence = list(state["_engine"]["evidence"])
+    body["explanation"] = {
+        "confidence": None,
+        "used_fallback": False,
+        "contributions": contributions(evidence, lib),
+    }
+    return body
+
+
 def main() -> int:
     lib = load_library(ROOT / "library")
     tables = tables_from_library(lib)
     recorded = json.loads(OUT.read_text())
     added = 0
+    updated = 0
     for name, groups, answers, expected in CLIMBS:
         chips: list[str] = [chip for group in groups for chip in group]
         print(name)
@@ -138,17 +154,24 @@ def main() -> int:
                 f"q={(state.get('question') or {}).get('id')}"
             )
             key = answer_key(chips, prefix)
-            body = public_state(state)
-            if key in recorded:
-                if recorded[key] != body:
-                    print(f"  existing key differs from engine output:\n  {key}", file=sys.stderr)
-                    return 1
+            body = api_body(state, lib)
+            if key not in recorded:
+                recorded[key] = body
+                added += 1
                 continue
+            current = recorded[key]
+            if current == body:
+                continue
+            without = {field: value for field, value in current.items() if field != "explanation"}
+            fresh = {field: value for field, value in body.items() if field != "explanation"}
+            if without != fresh:
+                print(f"  existing key differs from engine output:\n  {key}", file=sys.stderr)
+                return 1
             recorded[key] = body
-            added += 1
+            updated += 1
     text = json.dumps(recorded, separators=(",", ":"))
     OUT.write_text(text)
-    print(f"added {added} keys -> {OUT}")
+    print(f"added {added} keys, updated {updated} keys -> {OUT}")
     return 0
 
 
