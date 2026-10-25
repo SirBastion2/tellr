@@ -78,6 +78,7 @@ function SchemeToggle() {
               borderRadius: 0,
               height: '100%',
               minHeight: '100%',
+              padding: 'var(--tc-scheme-pad-block, 7px) var(--tc-scheme-pad-inline, 14px)',
               backgroundColor: selected ? 'var(--tc-button)' : 'var(--tc-secondary-bg)',
               color: selected ? 'var(--tc-button-text)' : 'var(--tc-secondary-fg)',
             }}
@@ -229,7 +230,6 @@ export function AppShell({
             alignItems: 'center',
             boxSizing: 'border-box',
             justifyContent: 'space-between',
-            gap: 'var(--tc-space-header, 8px)',
             minHeight: DENSITY.headerMinHeight,
             overflow: 'visible',
             minWidth: 0,
@@ -237,7 +237,7 @@ export function AppShell({
             background: 'var(--tc-glass-fallback)',
             borderRadius: 'var(--tc-radius-card, 16px)',
             paddingBlock: 'var(--tc-space-2)',
-            paddingInline: 'var(--tc-space-2)',
+            paddingInline: 'var(--tc-space-4, 16px)',
           }}
         >
           <div className="tc-header-brand" data-testid="header-brand">
@@ -262,7 +262,7 @@ export function AppShell({
               minWidth: 'min-content',
               flex: '0 0 auto',
               minHeight: 'var(--tc-header-control-h, 48px)',
-              gap: 'var(--tc-space-header, 8px)',
+              gap: 'var(--tc-nav-tab-gap, 26px)',
             }}
           >
             {routes.map((route) => {
@@ -277,6 +277,7 @@ export function AppShell({
                 overflow: 'visible',
                 borderColor: 'transparent',
                 whiteSpace: 'nowrap',
+                padding: 'var(--tc-space-2, 8px) var(--tc-nav-pad-inline, 14px)',
               }
               if (!path) {
                 return (
@@ -323,12 +324,22 @@ export function AppShell({
             <SchemeMenu />
             <button
               type="button"
-              className="tc-btn"
+              className="tc-btn tc-header-help"
               data-variant="secondary"
               data-testid="shortcut-help-button"
               aria-label="Keyboard shortcuts"
               title="Keyboard shortcuts (?)"
-              style={{ ...headerTap, ...secondaryStyle, flex: '0 0 auto' }}
+              style={{
+                ...headerTap,
+                ...secondaryStyle,
+                flex: '0 0 auto',
+                boxSizing: 'border-box',
+                width: 'var(--tc-help-size, 34px)',
+                height: 'var(--tc-help-size, 34px)',
+                minWidth: 'var(--tc-help-size, 34px)',
+                minHeight: 'var(--tc-help-size, 34px)',
+                padding: 0,
+              }}
               onClick={() => onHelp?.(!helpOpen)}
             >
               ?

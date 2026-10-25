@@ -97,6 +97,19 @@ export const DENSITY = {
   spaceControlPadX: '12px',
   /** Header pills scale padding with the text, not a fixed rem width. */
   spaceControlPadInlineEm: '0.85em',
+  /**
+   * Header pill spacing that is not a 4/8/12/16/24 step.
+   * End padding and the minimum gap between groups use `space4` (16px).
+   * Block padding on the simulation pill and nav tabs uses `space2` (8px).
+   */
+  simPillPadInline: '18px',
+  navTabPadInline: '14px',
+  navTabGap: '26px',
+  schemePadBlock: '7px',
+  schemePadInline: '14px',
+  schemeInset: '2px',
+  helpSize: '34px',
+  helpGap: '10px',
   /** Shared gap after per-bank 13/11/8/13 overrides were removed. */
   spaceGap: '12px',
   /** Simulation and connection pills share this size. */
