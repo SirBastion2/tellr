@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import { customerById } from '../demo/customers'
 import type { DemoView } from '../demo/types'
 import { PageTitle, SectionHeading } from '../ui/facts'
+import { displayCustomerLabel, personalNamesFrom, redactPersonalCopy } from '../ui/privacy'
 import { controlStyle } from '../theme/controls'
 
 const card: CSSProperties = {
@@ -16,7 +17,6 @@ const card: CSSProperties = {
 
 const term: CSSProperties = {
   margin: 0,
-  fontWeight: 700,
 }
 
 export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) {
@@ -27,12 +27,14 @@ export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) 
       <div className="tc-stack-heading">
         <PageTitle>Customer file</PageTitle>
         <p data-testid="synthetic-banner" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-          Practice data. The name and age band stay on this screen. They are not sent to the copilot.
+          Practice data.
         </p>
       </div>
       {demo ? (
         <label htmlFor="customer-file-picker" className="tc-stack-heading" style={{ maxWidth: 360 }}>
-          <span style={term}>Simulated customer</span>
+          <span className="tc-text-base" style={term}>
+            Simulated customer
+          </span>
           <select
             id="customer-file-picker"
             data-testid="customer-file-picker"
@@ -53,21 +55,21 @@ export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) 
       {customer ? (
         <>
           <p className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-            {customer.summary}
+            {redactPersonalCopy(customer.summary, personalNamesFrom(customer.profile.name))}
           </p>
           <section style={card} aria-labelledby="profile-heading">
             <SectionHeading id="profile-heading">Profile</SectionHeading>
             <dl className="tc-kv">
-              <dt>Name</dt>
-              <dd data-testid="profile-name">{customer.profile.name}</dd>
-              <dt>Age band</dt>
-              <dd data-testid="profile-age">{customer.profile.ageBand}</dd>
-              <dt>Tenure</dt>
-              <dd>{customer.profile.tenure}</dd>
-              <dt>Typical withdrawal</dt>
-              <dd>{customer.profile.typicalWithdrawal}</dd>
-              <dt>Channels</dt>
-              <dd>{customer.profile.channels}</dd>
+              <dt className="tc-fact-term">Customer</dt>
+              <dd className="tc-fact-value" data-testid="profile-name">
+                {displayCustomerLabel()}
+              </dd>
+              <dt className="tc-fact-term">Tenure</dt>
+              <dd className="tc-fact-value">{customer.profile.tenure}</dd>
+              <dt className="tc-fact-term">Typical withdrawal</dt>
+              <dd className="tc-fact-value">{customer.profile.typicalWithdrawal}</dd>
+              <dt className="tc-fact-term">Channels</dt>
+              <dd className="tc-fact-value">{customer.profile.channels}</dd>
             </dl>
           </section>
         </>

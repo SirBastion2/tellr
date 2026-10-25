@@ -5,9 +5,14 @@ export type ThemeBackground = {
   size: string
 }
 
-export type ThemeDensity = 'compact' | 'regular' | 'comfortable'
+/** Color-only glass. Blur, radius, and padding live on the shared scale. */
+export type ThemeGlass = {
+  fill: string
+  border: string
+  fallback: string
+}
 
-/** Full bank chrome. Adding a bank is one file that exports `theme`. */
+/** Full bank chrome. Structure is shared; a bank file is colors, fonts, and brand. */
 export type BankTheme = {
   id: string
   name: string
@@ -20,36 +25,10 @@ export type BankTheme = {
   footerPlacement: 'center' | 'end'
   footerText: string
   fontFamily: string
-  fontWeight: number
-  headingWeight: number
   wordmarkFont: string
   wordmarkColor: string
-  wordmarkWeight: number
-  wordmarkLetterSpacing: string
-  radius: {
-    card: string
-    control: string
-  }
-  border: {
-    width: string
-    style: string
-  }
-  shadow: {
-    card: string
-  }
-  density: ThemeDensity
-  space: {
-    gap: string
-    cardPadding: string
-  }
   background: ThemeBackground
-  glass: {
-    fill: string
-    border: string
-    blur: string
-    /** Opaque fill when backdrop-filter is unavailable. */
-    fallback: string
-  }
+  glass: ThemeGlass
   text: string
   mutedText: string
   inputFill: string
@@ -86,6 +65,9 @@ export type BankTheme = {
   quoteFg: string
   quoteBorder: string
   focus: string
+  /** Suggested-outcome highlight. Paired with `highlightFg` for AA contrast. */
+  highlightBg: string
+  highlightFg: string
   /** Light-mode palette. Top-level color fields are the dark palette. */
   light: ThemePalette
 }
@@ -94,7 +76,7 @@ export type BankTheme = {
 export type ThemePalette = {
   wordmarkColor: string
   background: ThemeBackground
-  glass: BankTheme['glass']
+  glass: ThemeGlass
   text: string
   mutedText: string
   inputFill: string
@@ -117,4 +99,6 @@ export type ThemePalette = {
   quoteFg: string
   quoteBorder: string
   focus: string
+  highlightBg: string
+  highlightFg: string
 }

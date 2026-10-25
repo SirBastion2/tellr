@@ -6,7 +6,8 @@ import { describe, expect, it } from 'vitest'
 import { App, AppShell } from './App'
 import { THEME_IDS, THEMES } from './theme/registry'
 import { resolveThemeId } from './theme/resolve'
-import { DEFAULT_THEME_ID, FOOTER_TEXT, THEME_STORAGE_KEY } from './theme/tokens'
+import { DEFAULT_THEME_ID, DENSITY, FOOTER_TEXT, THEME_STORAGE_KEY } from './theme/tokens'
+import { SHARED_STRUCTURE_VARS, themeVars } from './theme/vars'
 import type { Library, SessionState } from './types'
 
 const library = libraryJson as Library
@@ -39,14 +40,19 @@ describe('theme selection', () => {
       expect(theme?.id, id).toBe(id)
       expect(theme?.footerText, id).toBe(FOOTER_TEXT)
       expect(theme?.fontFamily.length, id).toBeGreaterThan(0)
-      expect(theme?.fontWeight, id).toBeGreaterThan(0)
-      expect(theme?.headingWeight, id).toBeGreaterThan(0)
-      expect(theme?.radius.card.length, id).toBeGreaterThan(0)
-      expect(theme?.radius.control.length, id).toBeGreaterThan(0)
-      expect(theme?.border.width.length, id).toBeGreaterThan(0)
-      expect(theme?.shadow.card.length, id).toBeGreaterThan(0)
-      expect(theme?.space.gap.length, id).toBeGreaterThan(0)
+      expect(theme, id).not.toHaveProperty('fontWeight')
+      expect(theme, id).not.toHaveProperty('headingWeight')
+      expect(theme, id).not.toHaveProperty('radius')
+      expect(theme, id).not.toHaveProperty('border')
+      expect(theme, id).not.toHaveProperty('shadow')
+      expect(theme, id).not.toHaveProperty('density')
+      expect(theme, id).not.toHaveProperty('space')
+      expect(theme?.highlightBg.length, id).toBeGreaterThan(0)
+      expect(theme?.highlightFg.length, id).toBeGreaterThan(0)
+      expect(theme?.light.highlightBg.length, id).toBeGreaterThan(0)
+      expect(theme?.light.highlightFg.length, id).toBeGreaterThan(0)
       expect(theme?.glass.fallback.length, id).toBeGreaterThan(0)
+      expect(theme?.glass, id).not.toHaveProperty('blur')
       expect(theme?.risk.clearFg.length, id).toBeGreaterThan(0)
       for (const image of [theme?.background.image ?? '', theme?.light.background.image ?? '']) {
         expect(image.includes('transparent'), id).toBe(false)
@@ -64,7 +70,6 @@ describe('theme selection', () => {
       expect(theme?.background.image.length, id).toBeGreaterThan(0)
       expect(theme?.glass.fill.length, id).toBeGreaterThan(0)
       expect(theme?.glass.border.length, id).toBeGreaterThan(0)
-      expect(theme?.glass.blur.length, id).toBeGreaterThan(0)
       expect(theme?.text.length, id).toBeGreaterThan(0)
       expect(theme?.mutedText.length, id).toBeGreaterThan(0)
       expect(theme?.inputFill.length, id).toBeGreaterThan(0)
@@ -79,6 +84,16 @@ describe('theme selection', () => {
     expect(THEMES.mtb?.mark).toBe('text')
     expect(THEMES.mtb?.markPlacement).toBe('bottom-left')
     expect(THEMES.mtb?.footerPlacement).toBe('end')
+    const tellrVars = themeVars(THEMES.tellr!)
+    for (const id of THEME_IDS) {
+      const vars = themeVars(THEMES[id]!)
+      for (const key of SHARED_STRUCTURE_VARS) {
+        expect(vars[key], `${id} ${key}`).toBe(tellrVars[key])
+      }
+    }
+    expect(DENSITY.radiusControl).toBe('999px')
+    expect(DENSITY.radiusCard).toBe('16px')
+    expect(DENSITY.headerRadius).toBe('999px')
   })
 
   it('uses tellr when nothing is chosen', () => {
@@ -148,5 +163,6 @@ describe('theme selection', () => {
     expect(getComputedStyle(screen.getByTestId('theme-page')).flexDirection).toBe('column')
     expect(screen.getByTestId('theme-card')).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Teller Copilot' })).toBeTruthy()
+    expect(screen.getByTestId('app-shell').className).toContain('tc-shell')
   })
 })

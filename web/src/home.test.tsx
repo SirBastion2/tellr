@@ -29,6 +29,7 @@ function demo(overrides: Partial<DemoView> = {}): DemoView {
     onToggleCase: () => undefined,
     onConfirmSignal: () => undefined,
     onDismissSignal: () => undefined,
+    onRestoreSignal: () => undefined,
     onEscalate: () => undefined,
     ...overrides,
   }
@@ -43,8 +44,7 @@ describe('Home shell', () => {
     expect(screen.getByText(/Library/)).toBeTruthy()
     expect(screen.getByTestId('customer-picker')).toBeTruthy()
     expect(screen.queryByTestId('scenario-picker')).toBeNull()
-    expect(screen.getByTestId('synthetic-banner').textContent).toMatch(/Practice data/)
-    expect(screen.getByTestId('synthetic-banner').textContent).toMatch(/not sent to the copilot/)
+    expect(screen.getByTestId('synthetic-banner').textContent).toBe('Practice data.')
     fireEvent.click(screen.getByTestId('demo-play'))
     expect(onPlay).toHaveBeenCalledOnce()
   })

@@ -98,7 +98,7 @@ describe('demo polish', () => {
     expect(screen.getByTestId('confirm-accept').textContent).toBe('Restart')
   })
 
-  it('fills the padded page and keeps a 13px footer', () => {
+  it('fills the padded page and keeps the shared footer type token', () => {
     installFetch()
     render(<App />)
     const card = screen.getByTestId('theme-card')
@@ -106,7 +106,7 @@ describe('demo polish', () => {
     expect(card.style.width).not.toMatch(/1440|1180|960|770/)
     expect(card.style.maxWidth).toBe('100%')
     const footer = screen.getByTestId('theme-footer')
-    expect(footer.style.fontSize).toBe(FOOTER_FONT_SIZE)
-    expect(footer.style.fontSize).toBe('13px')
+    expect(footer.className).toContain('tc-footer')
+    expect(FOOTER_FONT_SIZE).toBe('0.75rem')
   })
 })

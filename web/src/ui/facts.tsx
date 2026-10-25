@@ -2,12 +2,10 @@ import type { CSSProperties, ReactNode } from 'react'
 
 const termStyle: CSSProperties = {
   margin: 0,
-  fontWeight: 700,
 }
 
 const valueStyle: CSSProperties = {
   margin: 0,
-  fontWeight: 400,
   minWidth: 0,
 }
 
@@ -40,8 +38,10 @@ export function Fact({
   }
   return (
     <>
-      <dt style={termStyle}>{term}</dt>
-      <dd style={valueStyle} data-testid={testId} {...extra}>
+      <dt className="tc-fact-term" style={termStyle}>
+        {term}
+      </dt>
+      <dd className="tc-fact-value" style={valueStyle} data-testid={testId} {...extra}>
         {children}
       </dd>
     </>

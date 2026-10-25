@@ -4,6 +4,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { AppShell } from './App'
+import { CUSTOMERS } from './demo/customers'
+import type { DemoView } from './demo/types'
+import { InterviewScreen } from './screens/InterviewScreen'
 import { TellerProvider, useTeller } from './teller'
 import type { Library, SessionState } from './types'
 import { formatUrgencyScore } from './ui/urgencyScore'
@@ -17,23 +20,53 @@ function http(status: number, body: unknown) {
   })
 }
 
+function demo(): DemoView {
+  return {
+    customers: CUSTOMERS,
+    customerId: CUSTOMERS[0]?.id ?? '',
+    index: 1,
+    playing: false,
+    speed: 1,
+    pending: false,
+    showCase: false,
+    confirmed: [],
+    presenter: false,
+    elapsedMs: 0,
+    onSelectCustomer: () => undefined,
+    onPlay: () => undefined,
+    onPause: () => undefined,
+    onStep: () => undefined,
+    onRestart: () => undefined,
+    onSpeed: () => undefined,
+    onToggleCase: () => undefined,
+    onConfirmSignal: () => undefined,
+    onDismissSignal: () => undefined,
+    onRestoreSignal: () => undefined,
+    onEscalate: () => undefined,
+  }
+}
+
 function Harness() {
   const teller = useTeller()
   return (
-    <MemoryRouter initialEntries={['/sessions/pending']}>
-      <p data-testid="lib">{teller.library ? 'yes' : 'no'}</p>
-      <button type="button" onClick={() => void teller.startCase('T2')}>
-        start
-      </button>
-      <AppShell
-        library={teller.library}
-        session={teller.session}
-        issues={[]}
-        onUndo={() => {
-          void teller.undo()
-        }}
-      />
-    </MemoryRouter>
+    <>
+      <MemoryRouter initialEntries={['/']}>
+        <p data-testid="lib">{teller.library ? 'yes' : 'no'}</p>
+        <button type="button" onClick={() => void teller.startCase('T2')}>
+          start
+        </button>
+        <AppShell
+          library={teller.library}
+          session={teller.session}
+          issues={[]}
+          demo={demo()}
+          onUndo={() => {
+            void teller.undo()
+          }}
+        />
+      </MemoryRouter>
+      {teller.session ? <InterviewScreen library={teller.library} session={teller.session} /> : null}
+    </>
   )
 }
 

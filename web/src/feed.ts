@@ -1,4 +1,4 @@
-import type { ChipSource, ContextChipEcho, Library, SessionState } from './types'
+import type { ChipSource, ContextChipEcho, HandoffProjection, Library, SessionState } from './types'
 import { groupFactors, humanLabel, type FactorDirection, type LevelFactor } from './workstation/explain'
 
 export function sourceForChip(
@@ -24,23 +24,41 @@ export function originText(source: ChipSource | undefined, confirmed: boolean): 
   return 'Observed'
 }
 
+export function rememberChipOrder(order: readonly string[], incoming: readonly string[]): string[] {
+  const next = [...order]
+  for (const id of incoming) {
+    if (!next.includes(id)) {
+      next.push(id)
+    }
+  }
+  return next
+}
+
 export function listedChipIds(
   posted: readonly string[],
   chips: readonly ContextChipEcho[] | undefined,
   dismissed: readonly string[] = [],
+  order: readonly string[] = [],
 ): string[] {
-  const ids = [...posted]
+  const incoming = [...posted]
   for (const chip of chips ?? []) {
-    if (!ids.includes(chip.id)) {
-      ids.push(chip.id)
+    if (!incoming.includes(chip.id)) {
+      incoming.push(chip.id)
     }
   }
   for (const id of dismissed) {
-    if (!ids.includes(id)) {
-      ids.push(id)
+    if (!incoming.includes(id)) {
+      incoming.push(id)
     }
   }
-  return ids
+  const live = new Set(incoming)
+  const stable = order.filter((id) => live.has(id))
+  for (const id of incoming) {
+    if (!stable.includes(id)) {
+      stable.push(id)
+    }
+  }
+  return stable
 }
 
 /**
@@ -177,7 +195,9 @@ function decorateFactor(
     ...factor,
     chipId,
     state: rowState(wasConfirmed, wasDismissed, teller),
-    origin: listed ? originText(source, wasConfirmed) : factorOrigin(library, factor.id, factor.label, postedChipIds, session.context_chips),
+    origin: listed
+      ? originText(source, wasConfirmed)
+      : factorOrigin(library, factor.id, factor.label, postedChipIds, session.context_chips),
   }
 }
 
@@ -187,9 +207,27 @@ function leftoverDirection(library: Library | null, chipId: string): FactorDirec
   return signal?.direction === 'mitigating' ? 'lowers' : 'raises'
 }
 
+function rowOrderKey(row: MergedSignalRow): string {
+  return row.chipId ?? row.id
+}
+
+function sortByChipOrder(rows: MergedSignalRow[], order: readonly string[]): MergedSignalRow[] {
+  if (order.length === 0) {
+    return rows
+  }
+  return [...rows].sort((left, right) => {
+    const leftAt = order.indexOf(rowOrderKey(left))
+    const rightAt = order.indexOf(rowOrderKey(right))
+    const leftIndex = leftAt === -1 ? order.length : leftAt
+    const rightIndex = rightAt === -1 ? order.length : rightAt
+    return leftIndex - rightIndex
+  })
+}
+
 /**
  * One row per signal for Why this level. Notes-only chips stay out.
  * Placement uses the server factor lists, then leftover posted chips.
+ * `order` is first-seen chip/signal ids so dismiss/restore/confirm do not jump.
  */
 export function mergeSignalRows(
   library: Library | null,
@@ -197,6 +235,7 @@ export function mergeSignalRows(
   postedChipIds: readonly string[],
   confirmed: readonly string[] = [],
   dismissed: readonly string[] = [],
+  order: readonly string[] = [],
 ): { raises: MergedSignalRow[]; lowers: MergedSignalRow[] } {
   const grouped = groupFactors(session, library)
   const used = new Set<string>()
@@ -206,7 +245,7 @@ export function mergeSignalRows(
   const lowers = grouped.lowers.map((factor) =>
     decorateFactor(library, session, factor, postedChipIds, confirmed, dismissed, used),
   )
-  for (const chipId of listedChipIds(postedChipIds, session.context_chips, dismissed)) {
+  for (const chipId of listedChipIds(postedChipIds, session.context_chips, dismissed, order)) {
     if (used.has(chipId) || notesOnlyChip(library, chipId)) {
       continue
     }
@@ -232,5 +271,40 @@ export function mergeSignalRows(
       raises.push(row)
     }
   }
-  return { raises, lowers }
+  return {
+    raises: sortByChipOrder(raises, order),
+    lowers: sortByChipOrder(lowers, order),
+  }
+}
+
+export type FlaggedSignal = {
+  id: string
+  label: string
+  status: 'Observed' | 'Teller confirmed' | 'Dismissed' | null
+}
+
+/** Display-only handoff list. Uses the merged Why this level rows when a session exists. */
+export function flaggedSignals(
+  session: SessionState | null,
+  projection: HandoffProjection | null,
+  library: Library | null,
+  dismissed: readonly string[] = [],
+  confirmed: readonly string[] = [],
+  postedChipIds: readonly string[] = [],
+  order: readonly string[] = [],
+): FlaggedSignal[] {
+  if (session) {
+    const posted = postedChipIds.length > 0 ? postedChipIds : (session.context_chips ?? []).map((chip) => chip.id)
+    const merged = mergeSignalRows(library, session, posted, confirmed, dismissed, order)
+    const rows = [...merged.raises, ...merged.lowers]
+    if (rows.length > 0) {
+      return rows.map((row) => ({
+        id: row.chipId ?? row.id,
+        label: row.label,
+        status: row.state === 'dismissed' ? 'Dismissed' : row.origin,
+      }))
+    }
+  }
+  const reasons = session?.risk.reasons ?? projection?.risk.reasons ?? []
+  return reasons.map((reason) => ({ id: reason.id, label: reason.label, status: null }))
 }

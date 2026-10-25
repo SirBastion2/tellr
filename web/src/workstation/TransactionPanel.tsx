@@ -3,25 +3,24 @@ import { formatElapsed, timelineElapsedMs } from '../demo/clock'
 import type { CustomerEvent, CustomerFile } from '../demo/customers'
 import { Emphasis } from '../ui/emphasis'
 import { SectionHeading } from '../ui/facts'
+import { displaySpeaker, personalNamesFrom, redactPersonalCopy } from '../ui/privacy'
 
 const label: CSSProperties = {
   margin: 0,
-  fontWeight: 700,
 }
 
 const value: CSSProperties = { margin: 0 }
 
-function eventSpeaker(event: CustomerEvent): string {
-  if (event.speaker) {
-    return event.speaker
-  }
-  return event.kind === 'transaction' ? 'Transaction' : 'Customer'
+function eventSpeaker(event: CustomerEvent, names: readonly string[]): string {
+  return displaySpeaker(event.kind, event.speaker, names)
 }
 
 function Row({ term, children }: { term: string; children: ReactNode }) {
   return (
     <>
-      <dt style={label}>{term}</dt>
+      <dt className="tc-fact-term" style={label}>
+        {term}
+      </dt>
       <dd style={value}>{children}</dd>
     </>
   )
@@ -40,6 +39,7 @@ export function TransactionPanel({
 }) {
   const visible = customer.events.slice(0, fired)
   const current = fired > 0 ? customer.events[fired - 1] : null
+  const names = personalNamesFrom(customer.profile.name)
   const shown = Math.min(fired, customer.events.length)
   const total = customer.events.length
   const pct = total === 0 ? 0 : Math.round((shown / total) * 100)
@@ -49,28 +49,25 @@ export function TransactionPanel({
       <div className="tc-stack-heading">
         <h2 className="tc-title">Transaction</h2>
         <p data-testid="synthetic-banner" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-          Practice data. The name and age band stay on this screen. They are not sent to the copilot.
+          Practice data.
         </p>
       </div>
       <p
         data-testid="event-caption"
-        className="tc-prose"
+        className={presenter ? 'tc-prose tc-display' : 'tc-prose tc-text-base'}
         style={{
           margin: 0,
-          fontSize: presenter ? 'var(--tc-type-display)' : 'var(--tc-type-section)',
-          lineHeight: 1.25,
-          fontWeight: 700,
           maxWidth: '70ch',
         }}
       >
-        <Emphasis text={current?.text ?? 'Press play to start the simulation.'} />
+        <Emphasis text={current ? redactPersonalCopy(current.text, names) : 'Press play to start the simulation.'} />
       </p>
       <dl className="tc-kv">
         <Row term="Type">
           <span data-testid="txn-type">{customer.transaction.type}</span>
         </Row>
         <Row term="Amount">
-          <span data-testid="txn-amount" className="tc-amount" style={{ fontWeight: 700 }}>
+          <span data-testid="txn-amount" className="tc-amount">
             {customer.transaction.amount}
           </span>
         </Row>
@@ -122,15 +119,18 @@ export function TransactionPanel({
                   margin: 0,
                   maxWidth: '70ch',
                   padding: 'var(--tc-space-1) var(--tc-space-2)',
-                  borderRadius: 8,
+                  borderRadius: 'var(--tc-radius-card, 16px)',
                   background: isCurrent ? 'var(--tc-input)' : 'transparent',
                 }}
               >
                 <p className="tc-kicker" data-testid="event-marker" style={{ margin: 0 }}>
-                  Step {index + 1} · {formatElapsed(elapsed)} · {eventSpeaker(event)}
+                  Step {index + 1} · {formatElapsed(elapsed)} · {eventSpeaker(event, names)}
                 </p>
-                <p className="tc-prose" style={{ margin: '4px 0 0', fontWeight: isCurrent ? 600 : 400 }}>
-                  <Emphasis text={event.text} />
+                <p
+                  className="tc-prose"
+                  style={{ margin: '4px 0 0', fontWeight: isCurrent ? 'var(--tc-heading-weight)' : 'var(--tc-font-weight)' }}
+                >
+                  <Emphasis text={redactPersonalCopy(event.text, names)} />
                 </p>
               </div>
             </li>
@@ -141,8 +141,6 @@ export function TransactionPanel({
         <section data-testid="case-file" aria-label="Synthetic case file" className="tc-stack-heading">
           <SectionHeading>Case file</SectionHeading>
           <dl className="tc-kv">
-            <Row term="Name">{customer.profile.name}</Row>
-            <Row term="Age band">{customer.profile.ageBand}</Row>
             <Row term="Tenure">{customer.profile.tenure}</Row>
             <Row term="Typical withdrawal">{customer.profile.typicalWithdrawal}</Row>
             <Row term="Channels">{customer.profile.channels}</Row>
@@ -150,7 +148,7 @@ export function TransactionPanel({
         </section>
       ) : null}
       <div>
-        <p style={{ margin: 0, fontWeight: 700 }}>
+        <p className="tc-text-base" style={{ margin: 0, fontWeight: 'var(--tc-strong-weight)' }}>
           Event {shown} of {total}
         </p>
         <div
@@ -164,7 +162,7 @@ export function TransactionPanel({
             height: 8,
             marginTop: 8,
             background: 'var(--tc-input)',
-            borderRadius: 999,
+            borderRadius: 'var(--tc-radius-control, 999px)',
             overflow: 'hidden',
             border: '1px solid var(--tc-accent)',
           }}

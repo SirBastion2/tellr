@@ -1983,3 +1983,194 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/100. Do not merge. Other theme notes: per-bank `space.gap` is still 13/11/8/13 (not on the 4–24 scale); connection pill is 0.75rem vs simulation 0.875rem; Outcome highlight is hardcoded `#fef3c7`; scheme segment + menu both stay in the DOM; theme-page `overflow-x: hidden` can clip focus rings. No new dependency.
 
+---
+
+### [B] Theme structure, pill radius, even header tabs — Agent B1 — 2026-10-25 05:09
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 156 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  44 passed (44)
+      Tests  156 passed (156)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/theme/tokens.ts`, `web/src/theme/types.ts`, `web/src/theme/vars.ts`, `web/src/theme/themes/{tellr,pnc,mtb,fnb}.ts`, `web/src/theme/controls.ts`, `web/src/theme/scheme.ts`, `web/src/theme/ThemeRoot.tsx`, `web/src/theme/Wordmark.tsx`, `web/src/App.tsx`, `web/src/index.css`, `web/src/screens/OutcomeScreen.tsx`, `web/src/screens/InterviewScreen.tsx`, `web/src/workstation/{Toolbar,CopilotStrip,TransactionPanel}.tsx`, `web/src/themeConsistency.test.tsx`, `web/src/theme.test.tsx`, `web/src/headerRhythm.test.tsx`, `web/src/workstationFit.test.tsx`, `web/src/a11y.test.tsx`, `web/src/outcome.test.tsx`, `ARCHITECTURE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Structural values (radius, heights, padding, weights, blur, type size/line-height) live on `DENSITY`, not `themes/*.ts`. Banks keep color, font family, brand mark, and accent (driver items 6–8).
+  - FNB/PNC rectangular radius overrides removed. Shared control/header radius is `999px`; card radius is `16px`. tellr and mtb already matched; all four now resolve the same `--tc-radius-*` tokens (item 7 clarification).
+  - Tellr Poppins x-height uses `font-size-adjust: 0.52` so the rem scale matches Arial/Segoe (item 8).
+  - Header tabs fill leftover space (`flex: 1 1 auto` on the group, `flex: 1 1 0` and centered text on each tab, `--tc-space-header` gap). `#93` wrap and unclipped labels at 1024/1180/1280 stay (item 9). `web/` still computes nothing (§9, §12).
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/101. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
+
+---
+
+### [B] Merge main #95–#99 into UI stress-test fixes — Agent B1 — 2026-10-25 05:12
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 152 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  43 passed (43)
+      Tests  152 passed (152)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merged `origin/main` (`d5fcf16`, #95–#99) into `cursor/web-ui-stress-fixes-e50e`; `web/src/feed.ts`; `web/src/feed.test.ts`; `web/src/App.tsx`; `web/src/App.test.tsx`; `web/src/screens/HomeScreen.tsx`; `web/src/screens/HandoffScreen.tsx`; `web/src/workstation/ExplanationPanel.tsx`; `web/src/ui/ShortcutHelp.tsx`; `web/src/index.css`; tests; `ARCHITECTURE.md`; `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Kept both sides. #98’s `mergeSignalRows` list is the source of truth (architecture §12; UI_REFERENCE “each fact once”). Dropped #94’s CopilotStrip signal rows and Recent activity memory because those lists are gone.
+  - First-seen `chipOrder` still feeds `mergeSignalRows` so dismiss/restore/confirm do not jump. Handoff `flaggedSignals` uses the same merged rows and marks dismissed/confirmed from state. Display only; no risk math (§9, §12).
+  - Floating Undo stays off Customer file, Outcome, and Handoff. Context and Session still get the top Undo. `tc-shell` keeps the header gap. Shortcut help is a two-column grid including `T`, with a space after the keys.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/94. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots.
+
+---
+
+### [B] Merge main #100 + #101 into UI stress-test fixes — Agent B1 — 2026-10-25 05:16
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 164 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  45 passed (45)
+      Tests  164 passed (164)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merged `origin/main` (`5512be9`, #100 header/spacing, #101 shared theme tokens) into `cursor/web-ui-stress-fixes-e50e`; `ARCHITECTURE.md`; `docs/HANDOFF.md`; `web/src/App.tsx`; `web/src/index.css`; `web/src/screens/HandoffScreen.tsx`; `web/src/ui/ShortcutHelp.tsx`; `web/src/theme.test.tsx`
+- **Decisions I made, and the section that justified each:**
+  - Header, spacing, and theme structure stay on main’s shared tokens (`--tc-space-*`, `--tc-radius-*`, even tabs, logo pill). Dropped #94’s hardcoded `tc-shell` clamp gap and grid display.
+  - Kept only #94’s non-duplicate behavior: first-seen `chipOrder` into `mergeSignalRows`, Handoff merged rows with dismissed/confirmed marks, floating Undo off Customer file, shortcut help two-column grid including `T`. Display only; no risk math (§9, §12).
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/94. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots.
+
+---
+
+### [B] Restore teller controls, single level, hide demo identity — Agent B1 — 2026-10-25 05:22
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 167 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  46 passed (46)
+      Tests  167 passed (167)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/workstation/CopilotStrip.tsx`, `web/src/workstation/ExplanationPanel.tsx`, `web/src/workstation/TransactionPanel.tsx`, `web/src/screens/HomeScreen.tsx`, `web/src/screens/CustomerFileScreen.tsx`, `web/src/App.tsx`, `web/src/ui/privacy.ts`, `web/src/privacy.test.tsx`, `web/src/workstation.test.tsx`, `web/src/workstationMerge.test.tsx`, `web/src/copilotCard.test.tsx`, `web/src/change005.test.tsx`, `web/src/home.test.tsx`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Removed the Home “How did they answer?” chip panel (#95). Suggested action still shows `question.text`; two-tap answers stay on Session (`QuestionCard`). §12: web does not choose the next question.
+  - Why this level is read-only model analysis again (reasons, origin pill, noted time, What would lower it). Teller confirm/deny/restore is back on the copilot signal chips (pre-#98). Kept #94 `chipOrder`, Handoff dismissed/confirmed marks (no buttons), Home-only Undo, and the shortcut grid. Urgency Score stays. One Level row unless `raw_level` differs. §9 / §12: no client risk math.
+  - Demo UI never renders name, age band, or gendered pronouns. Banner is `Practice data.` Display maps to Customer. Payloads in `customers.ts` / API are unchanged.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/102. Do not merge. Branched from `27903ed` (#94). No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
+
+---
+
+### [B] Stable header simulation pill across Play — Agent B1 — 2026-10-25 05:24
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 171 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  47 passed (47)
+      Tests  171 passed (171)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/index.css`, `web/src/theme/tokens.ts`, `web/src/theme/vars.ts`, `web/src/LiveBadge.tsx`, `web/src/workstation/Toolbar.tsx`, `web/src/headerSimPill.test.tsx`, `web/src/workstationFit.test.tsx`, `ARCHITECTURE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Cause: after #100/#101 the nav fills leftover space (`flex: 1 1 auto` / tab `flex: 1 1 0`). The pill was `flex: 0 1 auto` + `min-width: 0`, so Play (hints → links) resized it and shifted tabs/scheme. Label stays `Simulation: <title>` (architecture §12 live badge; no running-label variant).
+  - Fix: shared `--tc-header-control-h` / `--tc-type-pill`, stable `--tc-sim-pill-min`/`max` with `flex: 0 0 auto`. Ellipsis only if a label still cannot fit; current titles stay complete at 1024/1180/1280. Play/Pause and Show/Hide use a grid for the longer word. Timer is `tabular-nums` + `--tc-timer-min`. `#93` wrap and shared tokens stay. `web/` computes nothing (§9, §12).
+  - Merged `origin/main` `6d291d5` (#102). Kept #102 copilot/privacy file-table rows and the LiveBadge/toolbar width notes.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/103. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
+
+---
+
+### [B] One type scale across all four themes — Agent B1 — 2026-10-25 05:28
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 173 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  48 passed (48)
+      Tests  173 passed (173)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/theme/typeScale.ts` (new), `web/src/typeScale.test.tsx` (new), `web/src/theme/tokens.ts`, `web/src/theme/vars.ts`, `web/src/theme/ThemeRoot.tsx`, `web/src/theme/Wordmark.tsx`, `web/src/theme/controls.ts`, `web/src/index.css`, `web/src/App.tsx`, `web/src/ui/{facts,ShortcutHelp,ConfirmDialog}.tsx`, `web/src/screens/{Home,CustomerFile,Interview,Outcome}Screen.tsx`, `web/src/workstation/{CopilotStrip,ExplanationPanel,QuestionCard,TransactionPanel}.tsx`, theme/header/fit/presenter/demo/interview tests, `ARCHITECTURE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - One scale (`--tc-text-xs/sm/base/lg/xl/2xl`) in `typeScale.ts`. Themes keep font family and color only (architecture §12; #101 leftover). Simulation bar, answers, urgency, signals, Handoff, Outcome, pills, and buttons all read those tokens.
+  - `font-size-adjust: 0.52` (Arial x-height) is on every theme root, not only tellr, so Poppins and Segoe match Arial. Demo 105% is on `html`; theme-root stays 100% so rem does not double-scale.
+  - Merged `origin/main` `086587c` (#102 identity hide, #103 stable pills). Kept their width tokens, privacy redaction, and Play-label grid. Type still comes from the scale.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/105. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots or videos. Gate `b` only.
+
+---
+
+### [B/A2] Client local time of day — Agent B1 — 2026-10-25 05:28
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS (ruff, 210 pytest, import-linter, contract). `scripts/gate.sh b` → PASS (typecheck, lint, 175 tests, contract OK)
+
+```
+── ruff
+All checks passed!
+── pytest
+210 passed, 1 warning in 24.27s
+── import-linter
+Contracts: 1 kept, 0 broken.
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (a)
+
+── typecheck
+── lint
+── test
+ Test Files  48 passed (48)
+      Tests  175 passed (175)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/ui/localTime.ts`, `web/src/ui/localTime.test.tsx`, `web/src/ui/LocalClock.tsx`, `web/src/ui/plain.ts`, `web/src/workstation/Toolbar.tsx`, `web/src/screens/HistoryScreen.tsx`, `web/src/teller.tsx`, `web/mock/replay.ts`, `web/src/modes.test.tsx`, `web/src/history.test.tsx`, `api/time.py`, `api/main.py`, `tests/api/test_local_hour.py`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Display uses `Intl` / local `Date` (architecture §12). Naive ISO stamps are UTC, then shown in the client zone. UTC 05:17 on America/New_York (EDT, UTC-4) renders 1:17. Live clock ticks each minute. Elapsed timer stays simulated `delayMs`.
+  - Reused existing `opened_at` (optional on POST /sessions) plus IANA `timezone`. No contract schema change (WORKFLOW §5). API `local_hour` never uses `datetime.utcnow()` / naive UTC. Engine fold unchanged; web still computes no risk/level/question (§9).
+  - Merged `origin/main` `086587c` (#102, #103) then `e0a53e4` (#105). `ARCHITECTURE.md` keeps local-clock files, privacy / simulation-pill rows, and the type-scale map. Live clock type is `--tc-text-sm` from `typeScale.ts` (no raw font-size).
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/104. Do not merge. No contract / engine / library / golden edits. No new dependency. No screenshots. After #105: `scripts/gate.sh a` PASS (210 pytest); `scripts/gate.sh b` PASS (49 files, 177 tests).
+

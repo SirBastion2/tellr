@@ -148,7 +148,9 @@ describe('Copilot card on latest main', () => {
         onUndo={onUndo}
       />,
     )
-    expect(screen.getByTestId('signal-origin').textContent).toBe('Teller confirmed')
+    expect(within(screen.getByTestId('signal-row')).getByTestId('signal-origin').textContent).toBe(
+      'Teller confirmed',
+    )
     fireEvent.click(screen.getByTestId('undo'))
     expect(onUndo).toHaveBeenCalledOnce()
   })
@@ -282,8 +284,8 @@ describe('Copilot card on latest main', () => {
     expect(screen.getByTestId('txn-type').textContent).toBe(customer?.transaction.type)
     expect(screen.getByTestId('txn-type').closest('dl')?.className).toContain('tc-kv')
     expect(screen.getByTestId('txn-amount').className).toContain('tc-amount')
-    expect(screen.getByTestId('answer-panel').textContent).not.toContain(threshold?.label)
-    expect(screen.getByTestId('question-card').textContent).not.toContain(threshold?.label)
+    expect(screen.queryByTestId('answer-panel')).toBeNull()
+    expect(screen.queryByTestId('question-card')).toBeNull()
   })
 
   it('does not append the threshold chip label on Outcome or Handoff', () => {
@@ -329,7 +331,7 @@ describe('Copilot card on latest main', () => {
       />,
     )
     const row = screen.getByTestId('signal-row')
-    const badge = screen.getByTestId('signal-origin')
+    const badge = within(row).getByTestId('signal-origin')
     const label = within(row).getByText(/On the phone/)
     expect(badge.textContent).toBe('Observed')
     expect(badge.className).toContain('tc-badge')

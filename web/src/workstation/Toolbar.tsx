@@ -1,7 +1,9 @@
 import type { CSSProperties } from 'react'
 import { formatElapsed } from '../demo/clock'
 import type { DemoSpeed, DemoView } from '../demo/types'
+import { LocalClock } from '../ui/LocalClock'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
+import { DENSITY } from '../theme/tokens'
 import { PauseIcon, PlayIcon, RestartIcon, StepIcon } from '../ui/icons'
 
 const control: CSSProperties = {
@@ -10,8 +12,8 @@ const control: CSSProperties = {
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'center',
-  height: 40,
-  minHeight: 40,
+  height: DENSITY.controlHeight,
+  minHeight: DENSITY.controlHeight,
   boxSizing: 'border-box',
   gap: 8,
   padding: 'var(--tc-space-control-pad-y, 8px) var(--tc-space-control-pad-x, 12px)',
@@ -20,8 +22,8 @@ const control: CSSProperties = {
 const iconButton: CSSProperties = {
   ...control,
   ...secondaryStyle,
-  width: 40,
-  minWidth: 40,
+  width: DENSITY.controlHeight,
+  minWidth: DENSITY.controlHeight,
   padding: 0,
 }
 
@@ -57,11 +59,18 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
             aria-pressed={demo.playing}
             data-loading={demo.pending ? 'true' : 'false'}
             aria-busy={demo.pending}
-            style={{ ...control, ...primaryStyle, minWidth: 96 }}
+            style={{ ...control, ...primaryStyle, minWidth: 'var(--tc-play-min, 7.5rem)' }}
             onClick={() => (demo.playing ? demo.onPause() : demo.onPlay())}
           >
             {demo.playing ? <PauseIcon /> : <PlayIcon />}
-            <span>{demo.playing ? 'Pause' : 'Play'}</span>
+            <span className="tc-play-label">
+              <span data-show={demo.playing ? 'false' : 'true'} aria-hidden={demo.playing}>
+                Play
+              </span>
+              <span data-show={demo.playing ? 'true' : 'false'} aria-hidden={!demo.playing}>
+                Pause
+              </span>
+            </span>
           </button>
           <button
             type="button"
@@ -103,7 +112,8 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
                   ...control,
                   borderRadius: 0,
                   borderWidth: 0,
-                  minWidth: 44,
+                  minWidth: 'var(--tc-speed-min, 2.75rem)',
+                  fontVariantNumeric: 'tabular-nums',
                   backgroundColor: selected ? 'var(--tc-button)' : 'var(--tc-secondary-bg)',
                   color: selected ? 'var(--tc-button-text)' : 'var(--tc-secondary-fg)',
                 }}
@@ -117,6 +127,7 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
         <p data-testid="elapsed-timer" aria-label="Elapsed time" className="tc-timer">
           {formatElapsed(demo.elapsedMs)}
         </p>
+        <LocalClock />
         <button
           type="button"
           className="tc-btn tc-case-link"
@@ -131,11 +142,18 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
             borderColor: 'transparent',
             textDecoration: 'underline',
             textUnderlineOffset: '3px',
-            minWidth: 0,
+            minWidth: 'var(--tc-case-link-min, 9.5rem)',
           }}
           onClick={() => demo.onToggleCase()}
         >
-          {demo.showCase ? 'Hide case file' : 'Show case file'}
+          <span className="tc-case-label">
+            <span data-show={demo.showCase ? 'false' : 'true'} aria-hidden={demo.showCase}>
+              Show case file
+            </span>
+            <span data-show={demo.showCase ? 'true' : 'false'} aria-hidden={!demo.showCase}>
+              Hide case file
+            </span>
+          </span>
         </button>
       </div>
     </div>

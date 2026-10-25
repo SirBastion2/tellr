@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { usePresenter } from '../presenter'
-import { DEMO_ROOT_FONT, DENSITY, FOOTER_FONT_SIZE } from './tokens'
+import { DENSITY } from './tokens'
 import { useColorScheme, useTheme } from './ThemeProvider'
 import { themeVars } from './vars'
 
@@ -26,7 +26,9 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
         color: 'var(--tc-text)',
         fontFamily: 'var(--tc-font)',
         fontWeight: 'var(--tc-font-weight)' as CSSProperties['fontWeight'],
-        fontSize: presenter.on ? DEMO_ROOT_FONT : '100%',
+        fontSize: 'var(--tc-root-live)',
+        lineHeight: 'var(--tc-type-line-body)',
+        fontSizeAdjust: 'var(--tc-font-size-adjust)',
         colorScheme: scheme,
         backgroundColor: 'var(--tc-bg-color)',
         backgroundImage: 'var(--tc-bg-image)',
@@ -37,6 +39,7 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
     >
       <div
         data-testid="theme-page"
+        className="tc-theme-page"
         style={{
           minHeight: '100vh',
           boxSizing: 'border-box',
@@ -46,7 +49,8 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
           justifyContent: 'flex-start',
           maxWidth: '100%',
           minWidth: 0,
-          overflowX: 'hidden',
+          overflowX: 'clip',
+          overflowClipMargin: DENSITY.focusClip,
           padding: `${DENSITY.pagePadY} ${DENSITY.pagePadX} ${DENSITY.pagePadBottom}`,
           gap: DENSITY.spaceWorkstation,
         }}
@@ -78,8 +82,6 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
           style={{
             width: '100%',
             margin: '0 auto',
-            fontSize: FOOTER_FONT_SIZE,
-            lineHeight: 1.4,
             color: 'var(--tc-muted)',
             ...footerPosition,
           }}

@@ -6,6 +6,7 @@ import { CUSTOMERS } from './demo/customers'
 import type { DemoView } from './demo/types'
 import { CustomerFileScreen } from './screens/CustomerFileScreen'
 import type { Library, SessionState } from './types'
+import { CopilotStrip } from './workstation/CopilotStrip'
 import { ExplanationPanel } from './workstation/ExplanationPanel'
 
 const library = libraryJson as Library
@@ -36,6 +37,7 @@ function demo(): DemoView {
     onToggleCase: () => undefined,
     onConfirmSignal: () => undefined,
     onDismissSignal: () => undefined,
+    onRestoreSignal: () => undefined,
     onEscalate: () => undefined,
   }
 }
@@ -155,24 +157,44 @@ describe('CHANGE-005 fields', () => {
     expect(screen.getByTestId('explain-contribution').textContent).toMatch(/no contributions/)
   })
 
-  it('badges signal source from context_chips and falls back to local confirm', () => {
+  it('badges signal source from context_chips on the model list', () => {
     const { rerender } = render(
       <ExplanationPanel
         library={library}
         session={{
           ...base,
+          risk: {
+            ...base.risk,
+            reasons: [],
+            counterpoint: {
+              id: 'sig.third_party_call',
+              label: 'On the phone during the visit',
+              rationale: 'Scammers often stay on the line.',
+            },
+          },
           context_chips: [{ id: 'chip.on_phone', source: 'observed' }],
         }}
-        postedChipIds={[]}
+        postedChipIds={['chip.on_phone']}
       />,
     )
     expect(screen.getByTestId('signal-origin').textContent).toBe('Observed')
     rerender(
       <ExplanationPanel
         library={library}
-        session={base}
+        session={{
+          ...base,
+          risk: {
+            ...base.risk,
+            reasons: [],
+            counterpoint: {
+              id: 'sig.third_party_call',
+              label: 'On the phone during the visit',
+              rationale: 'Scammers often stay on the line.',
+            },
+          },
+          context_chips: [{ id: 'chip.on_phone', source: 'teller' }],
+        }}
         postedChipIds={['chip.on_phone']}
-        confirmed={['chip.on_phone']}
       />,
     )
     expect(screen.getByTestId('signal-origin').textContent).toBe('Teller confirmed')
@@ -188,5 +210,51 @@ describe('CHANGE-005 fields', () => {
     expect(screen.queryByRole('heading', { name: 'Recent activity' })).toBeNull()
     expect(screen.queryByRole('heading', { name: 'This withdrawal' })).toBeNull()
     expect(screen.queryByRole('heading', { name: 'What was noted' })).toBeNull()
+  })
+
+  it('keeps teller signal chips in first-seen order after dismiss and confirm', () => {
+    const posted = ['chip.on_phone', 'chip.cash_only', 'chip.rushed']
+    const session = {
+      ...base,
+      context_chips: posted.map((id) => ({ id, source: 'observed' as const })),
+    }
+    const { rerender } = render(
+      <CopilotStrip
+        library={library}
+        session={session}
+        postedChipIds={posted}
+        confirmed={[]}
+        dismissed={[]}
+        chipOrder={posted}
+        pending={false}
+        onConfirm={() => undefined}
+        onDismiss={() => undefined}
+        onRestore={() => undefined}
+        onEscalate={() => undefined}
+      />,
+    )
+    const ids = () => screen.getAllByTestId('signal-row').map((row) => row.getAttribute('data-chip'))
+    expect(ids()).toEqual(posted)
+    rerender(
+      <CopilotStrip
+        library={library}
+        session={{
+          ...session,
+          context_chips: session.context_chips.filter((chip) => chip.id !== 'chip.cash_only'),
+        }}
+        postedChipIds={['chip.on_phone', 'chip.rushed']}
+        confirmed={['chip.rushed']}
+        dismissed={['chip.cash_only']}
+        chipOrder={posted}
+        pending={false}
+        onConfirm={() => undefined}
+        onDismiss={() => undefined}
+        onRestore={() => undefined}
+        onEscalate={() => undefined}
+      />,
+    )
+    expect(ids()).toEqual(posted)
+    expect(screen.getAllByTestId('signal-row')[1]?.getAttribute('data-state')).toBe('dismissed')
+    expect(screen.getByTestId('signal-restore')).toBeTruthy()
   })
 })

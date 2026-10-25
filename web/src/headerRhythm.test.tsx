@@ -7,6 +7,7 @@ import { App } from './App'
 import './index.css'
 import { THEME_IDS } from './theme/registry'
 import { DENSITY } from './theme/tokens'
+import { TYPE_SIZE } from './theme/typeScale'
 
 const css = () => readFileSync('src/index.css', 'utf8')
 
@@ -73,8 +74,8 @@ describe('header labels and spacing rhythm', () => {
 
   it('uses the same two-column fact grid and line-height token on kv lists', () => {
     const source = css()
-    expect(DENSITY.lineFact).toBe(DENSITY.space4)
-    expect(source).toContain(`--tc-line-fact: ${DENSITY.lineFact}`)
+    expect(DENSITY.lineFact).toBe(TYPE_SIZE.base)
+    expect(source).toMatch(/--tc-line-fact:\s*var\(--tc-text-base\)/)
 
     for (const selector of ['.tc-kv', '.tc-facts'] as const) {
       const rule = headerRule(source, selector)
@@ -87,10 +88,10 @@ describe('header labels and spacing rhythm', () => {
 
     expect(headerRule(source, '.tc-kv dt')).toMatch(/line-height:\s*var\(--tc-line-fact/)
     expect(headerRule(source, '.tc-kv dd')).toMatch(/line-height:\s*var\(--tc-line-fact/)
-    expect(headerRule(source, '.tc-facts dt')).toMatch(/line-height:\s*var\(--tc-line-fact/)
-    expect(headerRule(source, '.tc-facts dd')).toMatch(/line-height:\s*var\(--tc-line-fact/)
+    expect(source).toMatch(/\.tc-facts dt[\s\S]*?line-height:\s*var\(--tc-line-fact/)
+    expect(source).toMatch(/\.tc-facts dd[\s\S]*?line-height:\s*var\(--tc-line-fact/)
     expect(headerRule(source, '.tc-amount')).toMatch(/line-height:\s*var\(--tc-line-fact/)
-    expect(headerRule(source, '.tc-amount')).toMatch(/font-size:\s*var\(--tc-type-amount/)
+    expect(headerRule(source, '.tc-amount')).toMatch(/font-size:\s*var\(--tc-text-2xl/)
   })
 
   it('wraps nav tabs instead of clipping them and keeps the #93 header wrap', () => {
@@ -101,12 +102,18 @@ describe('header labels and spacing rhythm', () => {
     expect(headerCss).toMatch(/overflow:\s*visible/)
     expect(navCss).toMatch(/flex-wrap:\s*wrap/)
     expect(navCss).toMatch(/overflow:\s*visible/)
+    expect(navCss).toMatch(/flex:\s*1 1 auto/)
+    expect(navCss).toMatch(/gap:\s*var\(--tc-space-header/)
     expect(navCss).not.toMatch(/overflow-x:\s*auto/)
     expect(navCss).not.toMatch(/overflow:\s*hidden/)
+    expect(source).toMatch(/\.tc-header-nav a[\s\S]*flex:\s*1 1 0/)
+    expect(source).toMatch(/\.tc-header-nav a[\s\S]*text-align:\s*center/)
+    expect(source).toMatch(/\.tc-header-nav a[\s\S]*min-width:\s*min-content/)
+    expect(source).toMatch(/\.tc-header-nav a[\s\S]*border-radius:\s*var\(--tc-header-radius/)
     expect(headerRule(source, '.tc-header-title')).not.toMatch(/overflow:\s*hidden/)
     expect(headerRule(source, '.tc-header-title')).not.toMatch(/text-overflow:\s*ellipsis/)
     expect(headerRule(source, '.tc-live-badge')).toMatch(/text-overflow:\s*ellipsis/)
-    expect(source).toMatch(/\.tc-header-nav[\s\S]*font-size:\s*clamp/)
+    expect(source).toMatch(/\.tc-header-nav[\s\S]*font-size:\s*var\(--tc-text-sm/)
   })
 
   it('centers the tellr logo in its pill with flex, equal padding, and object-fit', () => {
@@ -116,8 +123,8 @@ describe('header labels and spacing rhythm', () => {
     expect(headerRule(source, '.tc-wordmark')).toMatch(/justify-content:\s*center/)
     expect(headerRule(source, '.tc-wordmark')).toMatch(/line-height:\s*0/)
     expect(DENSITY.wordmarkAspect).toBe('155 / 61')
-    expect(DENSITY.wordmarkHeight).toBe('40px')
-    expect(source).toMatch(/\.tc-wordmark\[data-mark='logo'\][\s\S]*padding:\s*var\(--tc-space-2/)
+    expect(DENSITY.wordmarkHeight).toBe('48px')
+    expect(source).toMatch(/\.tc-wordmark\[data-mark='logo'\][\s\S]*padding:\s*var\(--tc-space-1/)
     expect(source).toMatch(/\.tc-wordmark\[data-mark='logo'\][\s\S]*width:\s*auto/)
     expect(source).toMatch(/\.tc-wordmark\[data-mark='logo'\][\s\S]*border-radius:\s*var\(--tc-radius-control/)
     expect(source).not.toMatch(/--tc-wordmark-w/)
@@ -125,7 +132,7 @@ describe('header labels and spacing rhythm', () => {
     expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/align-items:\s*center/)
     expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/justify-content:\s*center/)
     expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/line-height:\s*0/)
-    expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/height:\s*var\(--tc-wordmark-h/)
+    expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/height:\s*100%/)
     expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/width:\s*auto/)
     expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/aspect-ratio:\s*var\(--tc-wordmark-aspect/)
     expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/mask-position:\s*center/)
@@ -163,6 +170,8 @@ describe('header labels and spacing rhythm', () => {
     expect(getComputedStyle(nav).flexWrap).toBe('wrap')
     expect(getComputedStyle(nav).overflow).toBe('visible')
     expect(getComputedStyle(nav).overflowX).not.toBe('auto')
+    expect(getComputedStyle(nav).flexGrow).toBe('1')
+    expect(getComputedStyle(nav).flexShrink).toBe('1')
     expect(header.className).toContain('tc-header')
     expect(screen.getByTestId('app-shell').className).toContain('tc-shell')
 
@@ -177,6 +186,12 @@ describe('header labels and spacing rhythm', () => {
           expect(clipsLabel(tab), `${label} overflow @ ${width} ${themeId}`).toBe(false)
           expect(tab.getAttribute('style') ?? '', label).not.toMatch(/overflow:\s*hidden/)
           expect(tab.getAttribute('style') ?? '', label).not.toMatch(/text-overflow:\s*ellipsis/)
+          expect(tab.className, `${label} class @ ${width} ${themeId}`).toContain('tc-nav-tab')
+          expect(getComputedStyle(tab).flexGrow, `${label} grow @ ${width} ${themeId}`).toBe('1')
+          expect(getComputedStyle(tab).flexShrink, `${label} shrink @ ${width} ${themeId}`).toBe('1')
+          expect(getComputedStyle(tab).flexBasis, `${label} basis @ ${width} ${themeId}`).toMatch(/^0(px|%)?$/)
+          expect(getComputedStyle(tab).justifyContent, `${label} justify @ ${width} ${themeId}`).toBe('center')
+          expect(getComputedStyle(tab).textAlign, `${label} align @ ${width} ${themeId}`).toBe('center')
         }
         const title = within(header).getByRole('heading', { name: 'Teller Copilot' })
         expect(title.textContent).toBe('Teller Copilot')

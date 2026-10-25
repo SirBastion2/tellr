@@ -85,6 +85,34 @@ describe('Handoff screen', () => {
     expect(screen.getByTestId('handoff-actor').textContent).toBe(actorLabel(null))
   })
 
+  it('lists session chips and marks dismissed or confirmed ones', () => {
+    const session = asSession(t2.steps.find((step) => asSession(step.response).answers === 2)?.response)
+    const projection = projectionFromFixture(session)
+    const chips = [
+      { id: 'chip.on_phone', source: 'observed' as const },
+      { id: 'chip.someone_directing', source: 'observed' as const },
+      { id: 'chip.cash_only', source: 'observed' as const },
+      { id: 'chip.urgency_secrecy', source: 'observed' as const },
+      { id: 'chip.rushed', source: 'teller' as const },
+    ]
+    render(
+      <HandoffScreen
+        library={library}
+        projection={projection}
+        session={{ ...session, context_chips: chips }}
+        dismissed={['chip.cash_only']}
+        confirmed={['chip.rushed']}
+      />,
+    )
+    const rows = screen.getAllByTestId('handoff-reason')
+    expect(rows.length).toBeGreaterThanOrEqual(5)
+    expect(rows.map((row) => row.getAttribute('data-id') ?? row.textContent).join(' ')).toMatch(/phone|directing|cash|secrecy|rush/i)
+    expect(rows.find((row) => row.getAttribute('data-status') === 'Dismissed')?.textContent).toMatch(/Dismissed/)
+    expect(rows.find((row) => row.getAttribute('data-status') === 'Teller confirmed')?.textContent).toMatch(
+      /Teller confirmed/,
+    )
+  })
+
   it('renders a recorded outcome and actor', () => {
     const session = asSession(t2.steps[3]?.response)
     const projection = projectionFromFixture(session)
