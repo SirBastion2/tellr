@@ -125,6 +125,108 @@ describe('CHANGE-005 fields', () => {
     expect(raisedList).not.toMatch(/Observed/)
   })
 
+  it('renders strength for every weighted contribution and omits Observed when the response has no weights', () => {
+    const labels = [
+      'Mentioned urgency or secrecy',
+      'Someone else directing them',
+      'On the phone during the visit',
+    ]
+    const reasons = [
+      {
+        id: 'sig.urgency_secrecy_mentioned',
+        label: labels[0] ?? '',
+        rationale: 'Being told to hurry or keep quiet is a hallmark of coaching.',
+      },
+      {
+        id: 'sig.someone_directing',
+        label: labels[1] ?? '',
+        rationale: 'Another person steering the transaction can mean the customer is not acting freely.',
+      },
+      {
+        id: 'sig.third_party_call',
+        label: labels[2] ?? '',
+        rationale: 'Scammers often stay on the line to coach the customer through the withdrawal.',
+      },
+    ]
+    const chips = [
+      { id: 'chip.urgency_secrecy', source: 'observed' as const },
+      { id: 'chip.someone_directing', source: 'observed' as const },
+      { id: 'chip.on_phone', source: 'observed' as const },
+      { id: 'chip.cash_only', source: 'teller' as const },
+      { id: 'chip.rushed', source: 'observed' as const },
+    ]
+    const posted = chips.map((chip) => chip.id)
+    const unweighted = {
+      ...base,
+      risk: {
+        ...base.risk,
+        level: 'caution' as const,
+        raw_level: 'caution' as const,
+        score: 45,
+        reasons,
+        counterpoint: null,
+      },
+      context_chips: chips,
+    }
+    const { rerender } = render(
+      <ExplanationPanel library={library} session={unweighted} postedChipIds={posted} />,
+    )
+    const plainRows = screen.getAllByTestId('explain-reason')
+    expect(plainRows.map((row) => row.querySelector('strong')?.textContent)).toEqual(labels)
+    for (const row of plainRows) {
+      expect(row.querySelector('.tc-factor-strength')).toBeNull()
+      expect(row.querySelector('.tc-meter')).toBeNull()
+      expect(row.querySelector('[data-testid="signal-origin"]')).toBeNull()
+      expect(row.textContent).not.toMatch(/Observed/)
+    }
+    expect(screen.getByTestId('explain-gap')).toBeTruthy()
+
+    rerender(
+      <ExplanationPanel
+        library={library}
+        session={{
+          ...unweighted,
+          explanation: {
+            confidence: null,
+            used_fallback: false,
+            contributions: [
+              { signal_id: 'sig.urgency_secrecy_mentioned', label: labels[0] ?? '', weight: 18, direction: 'raises' },
+              { signal_id: 'sig.someone_directing', label: labels[1] ?? '', weight: 16, direction: 'raises' },
+              { signal_id: 'sig.third_party_call', label: labels[2] ?? '', weight: 14, direction: 'raises' },
+              { signal_id: 'sig.cash_insistence', label: 'Insists on cash', weight: 12, direction: 'raises' },
+              { signal_id: 'sig.rushed', label: 'Seems rushed', weight: 6, direction: 'raises' },
+            ],
+          },
+        }}
+        postedChipIds={posted}
+      />,
+    )
+    expect(screen.queryByTestId('explain-gap')).toBeNull()
+    const weighted = screen.getAllByTestId('explain-reason')
+    expect(weighted).toHaveLength(5)
+    const words = weighted.map((row) =>
+      row.querySelector('.tc-factor-strength')?.textContent?.replace(/\s+/g, ' ').trim(),
+    )
+    expect(words).toEqual([
+      '↑ Moderate factor',
+      '↑ Moderate factor',
+      '↑ Moderate factor',
+      '↑ Moderate factor',
+      '↑ Minor factor',
+    ])
+    const widths = weighted.map((row) => row.querySelector('.tc-meter span')?.getAttribute('style'))
+    expect(widths).toEqual(['width: 27%;', 'width: 24%;', 'width: 21%;', 'width: 18%;', 'width: 9%;'])
+    const cash = weighted.find((row) => row.textContent?.includes('Insists on cash'))
+    expect(cash?.querySelector('[data-testid="signal-origin"]')?.textContent).toBe('Teller confirmed')
+    for (const row of weighted) {
+      if (row === cash) {
+        continue
+      }
+      expect(row.querySelector('[data-testid="signal-origin"]')).toBeNull()
+      expect(row.textContent).not.toMatch(/Observed/)
+    }
+  })
+
   it('puts a raising counterpoint under what raised it when explanation is absent at Clear', () => {
     render(
       <ExplanationPanel
