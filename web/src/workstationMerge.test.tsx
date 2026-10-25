@@ -135,9 +135,11 @@ describe('merged workstation signals', () => {
     expect(screen.getByTestId('copilot-strip').querySelector('[data-testid="signal-row"]')).toBeTruthy()
     expect(screen.queryByTestId('answer-panel')).toBeNull()
     expect(screen.getByTestId('copilot-action').textContent).toBe(liveVisit.question?.text)
+    expect(screen.getByTestId('txn-type').textContent).toBe('Cash withdrawal above the branch threshold')
     expect(screen.getByTestId('txn-type').textContent).toBe(
       CUSTOMERS.find((customer) => customer.id === 'romance-crypto')?.transaction.type,
     )
+    expect(screen.getByTestId('read-aloud-block').contains(screen.getByTestId('txn-type'))).toBe(false)
   })
 
   it('keeps teller confirm and deny on the copilot chips beside the read-only model list', () => {

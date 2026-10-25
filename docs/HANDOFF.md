@@ -2225,3 +2225,29 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/106. Do not merge. Merged `origin/main` including #108 (`44b77a3`). No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
 
+---
+
+### [B] Transaction Type uses above-threshold chip wording — Agent B1 — 2026-10-25 05:48
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 182 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  50 passed (50)
+      Tests  182 passed (182)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/demo/customers.ts`, `web/src/demo/customers.test.ts`, `web/src/index.css`, `web/src/copilotCard.test.tsx`, `web/src/workstationMerge.test.tsx`, `web/src/headerRhythm.test.tsx`, `web/src/themeCycle.test.tsx`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - `transaction.type` is demo data, not a contract enum (`web/src/demo/customers.ts`; architecture §12 render-only). The three files that post `chip.above_threshold` now store that chip's library label (`Cash withdrawal above the branch threshold`). Benign-car ($9,000, no chip) and routine Friday stay `Cash withdrawal`.
+  - Home Type is still `customer.transaction.type`. No UI derivation from risk, amount, or chips (§9, §12). Read-aloud stays `talk_track.lines` only (#106).
+  - Fact grid already used `max-content minmax(0, 1fr)`. Added `overflow-wrap: break-word` on values so the longer Type string wraps in the value column on all four themes.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/109. Do not merge. No contract / engine / library / golden edits. `scripts/gate.sh contract` not run separately (gate `b` already checked it). No new dependency. No screenshots or videos.
+

@@ -16,6 +16,14 @@ describe('synthetic customers', () => {
     }
   })
 
+  it('uses the above-threshold chip wording as Type when that chip is on the file', () => {
+    const threshold = 'Cash withdrawal above the branch threshold'
+    for (const customer of CUSTOMERS) {
+      const above = customer.events.some((event) => event.chips.includes('chip.above_threshold'))
+      expect(customer.transaction.type, customer.id).toBe(above ? threshold : 'Cash withdrawal')
+    }
+  })
+
   it('paces scripts for a narrated demo and halves them at 2×', () => {
     for (const customer of CUSTOMERS) {
       const target = SCRIPT_TARGETS_MS[customer.id]
