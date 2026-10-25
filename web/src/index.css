@@ -3487,3 +3487,39 @@ body {
 .tc-stage .tc-dots .tc-step-dot:focus {
   outline: none;
 }
+
+/* Score explanation: header and summary stay fixed; only the list under "What raised it" scrolls. */
+.tc-explain-overlay-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tc-explain-overlay .tc-explain {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tc-explain-overlay .tc-explain-fixed {
+  flex: 0 0 auto;
+  display: grid;
+  gap: var(--tc-space-explain, clamp(6px, 0.8vw, 12px));
+}
+
+.tc-explain-overlay .tc-explain-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  gap: var(--tc-space-explain, clamp(6px, 0.8vw, 12px));
+  align-content: start;
+}
+
+.tc-explain-overlay .tc-title {
+  position: static;
+}

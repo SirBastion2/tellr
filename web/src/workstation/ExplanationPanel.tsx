@@ -130,6 +130,7 @@ export function ExplanationPanel({
 
   return (
     <section data-testid="explain-panel" aria-label="Why this level" className="tc-explain">
+      <div className="tc-explain-fixed">
       <h2 className="tc-title">Why this level</h2>
       {noted ? (
         <p data-testid="noted-at" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
@@ -153,6 +154,8 @@ export function ExplanationPanel({
       </FactGrid>
 
       <SectionHeading>What raised it</SectionHeading>
+      </div>
+      <div className="tc-explain-scroll">
       <FactorList
         items={grouped.raises}
         total={total}
@@ -216,6 +219,7 @@ export function ExplanationPanel({
           ) : null}
         </div>
       </details>
+      </div>
     </section>
   )
 }
