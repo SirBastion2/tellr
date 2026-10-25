@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react'
 import { apiSend } from '../api'
 import { controlStyle, inputFill } from '../theme/controls'
 import { Fact, FactGrid, PageTitle } from '../ui/facts'
+import { formatLocalDateTime } from '../ui/localTime'
 import { modeLabel, shortId } from '../ui/plain'
 import type { Mode } from '../types'
 
@@ -142,10 +143,10 @@ export function HistoryScreen() {
                 {modeLabel(session.mode)}
               </Fact>
               <Fact term="Opened" testId="history-opened">
-                {session.opened_at}
+                {formatLocalDateTime(session.opened_at)}
               </Fact>
               <Fact term="Closed" testId="history-closed">
-                {session.closed_at ?? 'Still open'}
+                {session.closed_at ? formatLocalDateTime(session.closed_at) : 'Still open'}
               </Fact>
               <Fact term="Library version" testId="history-library">
                 {session.library_version}

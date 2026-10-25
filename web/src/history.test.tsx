@@ -57,6 +57,8 @@ describe('History screen', () => {
     await waitFor(() => {
       expect(screen.getByTestId('history-session-id').textContent).toBe('live-1')
     })
+    expect(screen.getByTestId('history-opened').textContent).not.toBe(liveRow.opened_at)
+    expect(screen.getByTestId('history-opened').textContent).not.toMatch(/UTC/)
     expect(screen.queryByText('practice-1')).toBeNull()
     expect(calls.map((call) => call.url)).toEqual(['http://api.test/sessions'])
     expect(calls.every((call) => call.method === 'GET')).toBe(true)

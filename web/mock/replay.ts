@@ -1,3 +1,4 @@
+import { formatOffsetIso } from '../src/ui/localTime'
 import library from '../../contract/library.json' with { type: 'json' }
 import liveAnswers from './live_answers.json' with { type: 'json' }
 import liveLevels from './live_levels.json' with { type: 'json' }
@@ -66,7 +67,9 @@ export function resetMock(): void {
 
 function nextOpenedAt(): string {
   openedCount += 1
-  return `2026-10-24T00:00:${String(openedCount).padStart(2, '0')}`
+  const stamp = new Date()
+  stamp.setUTCSeconds(stamp.getUTCSeconds() + openedCount)
+  return formatOffsetIso(stamp)
 }
 
 function libraryVersionOf(body: unknown): string {
@@ -139,6 +142,8 @@ function comparableOpen(body: unknown): unknown {
   }
   const copy = { ...record }
   delete copy.scenario_id
+  delete copy.opened_at
+  delete copy.timezone
   if (copy.mode === 'live') {
     copy.mode = 'practice'
   }
@@ -392,7 +397,7 @@ export function mockRequest(method: string, url: string, body?: unknown): MockRe
       outcome: null,
       actor: null,
       mode,
-      openedAt: nextOpenedAt(),
+      openedAt: typeof record?.opened_at === 'string' && record.opened_at.length > 0 ? record.opened_at : nextOpenedAt(),
       closedAt: null,
       libraryVersion: libraryVersionOf(presented),
       amountBand: amountBandOf(body),

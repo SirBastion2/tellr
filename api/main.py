@@ -7,7 +7,6 @@ import sqlite3
 import tempfile
 import uuid
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
 
@@ -17,6 +16,7 @@ from pydantic import BaseModel
 
 from api.activity import register_activity_routes
 from api.errors import rejected_response
+from api.time import ZoneInfoNotFoundError, iso_now, resolve_session_time
 from engine import (
     CommandRejected,
     candidates,
@@ -62,6 +62,8 @@ class OpenBody(BaseModel):
     mode: Literal["live", "practice"]
     amount_band: str
     scenario_id: str | None = None
+    opened_at: str | None = None
+    timezone: str | None = None
 
 
 class ContextBody(BaseModel):
@@ -83,7 +85,7 @@ class OutcomeBody(BaseModel):
 
 
 def _timestamp() -> str:
-    return datetime.now(UTC).replace(tzinfo=None).strftime("%Y-%m-%dT%H:%M:%S")
+    return iso_now()
 
 
 def _live_indices(events: list[dict[str, Any]]) -> list[int]:
@@ -325,7 +327,10 @@ def create_app(
         }
         check_command([], command, library)
         session_id = str(uuid.uuid4())
-        ts = _timestamp()
+        try:
+            ts = resolve_session_time(body.opened_at, body.timezone)
+        except (ValueError, ZoneInfoNotFoundError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
         try:
             store.create_session(
                 conn,
