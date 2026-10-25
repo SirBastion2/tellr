@@ -397,7 +397,6 @@ export function AppShell({
                   demo={demo}
                   closed={closed}
                   onUndo={onUndo}
-                  onAnswer={onAnswer}
                 />
               }
             />
