@@ -190,7 +190,7 @@ describe('Copilot card on latest main', () => {
     expect(screen.getByTestId('copilot-level').textContent).toBe('Clear')
     expect(screen.getByTestId('copilot-action').textContent).toBe('Complete the withdrawal.')
     expect(screen.getByTestId('copilot-action').textContent).not.toBe(phoneVisit.question?.text)
-    expect(screen.getByTestId('read-aloud')).toBeTruthy()
+    expect(screen.queryByTestId('read-aloud')).toBeNull()
   })
 
   it('holds the last server snapshot on Home while a write is in flight', () => {
@@ -255,16 +255,15 @@ describe('Copilot card on latest main', () => {
     expect(emptyVisit.talk_track.action).toBe('Complete the withdrawal.')
     expect(screen.getByTestId('copilot-action').textContent).toBe('Complete the withdrawal.')
     expect(screen.getByTestId('copilot-action').textContent).not.toBe(emptyVisit.question?.text)
-    expect(screen.getByTestId('read-aloud').textContent).toBe(emptyVisit.talk_track.lines.join(' '))
-    expect(screen.getByTestId('read-aloud').textContent).not.toContain('Complete the withdrawal.')
+    expect(screen.queryByTestId('read-aloud')).toBeNull()
+    expect(screen.queryByTestId('read-aloud-block')).toBeNull()
   })
 
-  it('keeps the read-aloud card to the label and talk-track script only', () => {
+  it('keeps the branch threshold on the transaction type', () => {
     const threshold = library.context_chips.find((chip) => chip.id === 'chip.above_threshold')
     expect(threshold?.label).toBe('Cash withdrawal above the branch threshold')
     const customer = CUSTOMERS[0]
     expect(customer).toBeTruthy()
-    const script = phoneVisit.talk_track.lines.join(' ')
     render(
       <HomeScreen
         library={library}
@@ -280,16 +279,14 @@ describe('Copilot card on latest main', () => {
       />,
     )
 
-    const block = screen.getByTestId('read-aloud-block')
-    expect(within(block).getByText(/read-aloud script/i)).toBeTruthy()
-    expect(within(block).getByTestId('read-aloud').textContent).toBe(script)
-    expect((block.textContent ?? '').replace(/Read-aloud script/i, '').replace(script, '').replace(/\s+/g, '')).toBe('')
-    expect(within(block).queryByTestId('teller-notes')).toBeNull()
-    expect(block.textContent).not.toContain(threshold?.label)
+    expect(screen.queryByTestId('read-aloud-block')).toBeNull()
+    expect(screen.queryByTestId('read-aloud')).toBeNull()
+    expect(screen.queryByText(/read-aloud script/i)).toBeNull()
+    expect(screen.queryByTestId('teller-notes')).toBeNull()
     expect(customer?.transaction.type).toBe(threshold?.label)
     expect(screen.getByTestId('txn-type').textContent).toBe(threshold?.label)
     expect(screen.getByTestId('txn-type').closest('dl')?.className).toContain('tc-kv')
-    expect(screen.getByTestId('read-aloud-block').contains(screen.getByTestId('txn-type'))).toBe(false)
+    expect(screen.getByTestId('copilot-strip').contains(screen.getByTestId('txn-type'))).toBe(false)
     expect(screen.getByTestId('txn-amount').className).toContain('tc-amount')
     expect(screen.queryByTestId('answer-panel')).toBeNull()
     expect(screen.queryByTestId('question-card')).toBeNull()
