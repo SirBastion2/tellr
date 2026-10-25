@@ -2330,6 +2330,6 @@ GATE PASS (b)
   - Removed the header clock and the Live API / connection pill. No replacement indicator. `web/src/ui/localTime.ts` and `web/src/connection.ts` stay for API timestamps and health probe.
   - Scheme collapse is measured (`schemeNeedsCompact`): brand + hugged sim + nav min-content + full segment + help + gaps vs header content box. Not a 1280px breakpoint. Sim pill may ellipsize (`min-width: 0`) before overflow. Equal `--tc-space-2` padding on both ends.
 - **Questions logged:** none
-- **The next agent needs to know:** One PR, do not merge. Merged `origin/main` including #107 and #110. Playwright header table is scratch (gate cannot run a committed Playwright header test). No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/113. Do not merge. Merged `origin/main` including #107 and #110. Playwright header table is scratch (gate cannot run a committed Playwright header test). No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
 
 
