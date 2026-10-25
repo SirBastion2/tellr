@@ -52,21 +52,22 @@ The page card fills the padded page (`width: 100%`) and starts at the top of the
 | 1280px and up | `3fr` / `2fr`. Copilot stays sticky and scrolls inside the column |
 | Header container or viewport under 1280px | Light/Dark/System segment hides. A single scheme menu replaces it |
 
-Type and padding use `clamp()` from `DENSITY` in `web/src/theme/tokens.ts` (about 15–20% tighter than the first workstation pass). Vertical rhythm is the 4 / 8 / 12 / 16 / 24 scale in that file and `web/src/index.css`. Header-to-content is 16px. Heading-to-body is 8px. Body-to-control is 12px. Pills and buttons pad 8×12 so text does not sit on an edge. Prose is at most `70ch`. Toolbar controls share a 40px height. Play keeps the icon and the word on one line. The customer select matches that height. Show case file, the elapsed timer, and the live local time-of-day clock sit on that row.
+Type and padding use `clamp()` from `DENSITY` in `web/src/theme/tokens.ts` (about 15–20% tighter than the first workstation pass). Vertical rhythm is the 4 / 8 / 12 / 16 / 24 scale in that file and `web/src/index.css`. Header-to-content is 16px. Heading-to-body is 8px. Body-to-control is 12px. Header pills pad `0.85em` inline so they hug their text. Prose is at most `70ch`. Toolbar controls share the 48px control-height token. Play keeps the icon and the word on one line. The customer select matches that height. Show case file and the elapsed timer sit on that row. The live local time-of-day clock sits in the header.
 
 Target playback at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. The elapsed timer and the timeline stamps use that same simulated customer time at every speed. Speed only changes how long the wall clock takes. The time-of-day clock is the client's real local time (`Intl` / `Date`), ticks each minute, and is not UTC.
 
 ## Header and toolbar
 
-The header wraps when the first row is tight (`flex-wrap: wrap`, #93). One 8px gap token between items. Title stays complete. Tabs wrap or shrink with `clamp()` and never clip (`Handoff` stays `Handoff`). Simulation and connection pills may ellipsize with a title tooltip. Nothing may overflow the viewport width at 1024, 1180, 1280, or 1440. The tellr logo is centered in its rounded pill.
+The header is one row at 1280 and 1180. At 1024 it tightens gaps and the scenario pill may ellipsize with a title tooltip; it stays one row when it can. Leftover space sits between groups (brand | status pills + clock | tabs | scheme + help), never inside a pill. Title stays complete. Tabs are content-sized and never clip (`Handoff` stays `Handoff`). Simulation and connection pills hug their text. Nothing may overflow the viewport width at 1024, 1180, 1280, or 1440. The tellr logo graphic is the control height minus small padding, centered in its rounded pill.
 
 1. Bank mark
 2. Title "Teller Copilot"
 3. Simulation pill: `Simulation: <customer title>`, or `LIVE — no scenario loaded` when the session is live and no synthetic customer is selected
 4. Connection pill (see Live and sample)
-5. Tabs that fit the demo layout: Home, Customer file, Outcome, and Handoff. Outcome and Handoff are hint labels until a visit exists; they are not extra screens
-6. Light / Dark / System
-7. `?` opens keyboard help
+5. Local time-of-day clock (`tabular-nums` on the digits)
+6. Tabs that fit the demo layout: Home, Customer file, Outcome, and Handoff. Outcome and Handoff are hint labels until a visit exists; they are not extra screens
+7. Light / Dark / System
+8. `?` opens keyboard help
 
 There is no Presenter button.
 
@@ -123,7 +124,7 @@ Signal source is Observed or Teller confirmed. On Why this level that badge is r
 - `forced-colors: active` uses `Canvas`, `ButtonFace`, `ButtonText`, `Field`, `FieldText`, `Highlight`, and `HighlightText`. Borders and focus stay. The level is still an icon plus a word. Select options use Field/FieldText, and the highlighted option uses Highlight/HighlightText
 - `prefers-reduced-motion: reduce` cuts animation, transitions, the press offset, and simulation waits
 - Do not use color alone for the level or for Observed versus Teller confirmed
-- 200% zoom: the header wraps. Tab labels stay complete. Columns stack below 900px. Do not set a fixed page width that clips the decision buttons
+- 200% zoom: the header stays one row when it can, then wraps below 1024. Tab labels stay complete. Columns stack below 900px. Do not set a fixed page width that clips the decision buttons
 
 ## Dark mode, light mode, and forced colors
 

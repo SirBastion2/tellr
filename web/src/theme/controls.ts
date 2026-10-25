@@ -21,6 +21,7 @@ export const headerControlStyle: CSSProperties = {
   height: DENSITY.headerControlHeight,
   minHeight: DENSITY.headerControlHeight,
   minWidth: DENSITY.headerControlHeight,
+  padding: `0 ${DENSITY.spaceControlPadInlineEm}`,
   borderRadius: 'var(--tc-header-radius, 999px)',
 }
 

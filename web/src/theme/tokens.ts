@@ -77,8 +77,11 @@ export const DENSITY = {
    * Poppins and Segoe UI match Arial's rendered size.
    */
   fontSizeAdjust: FONT_SIZE_ADJUST,
-  /** Tellr wordmark is 155×61. Height matches the shared control box. */
-  wordmarkHeight: '48px',
+  /**
+   * Tellr wordmark is 155×61. Graphic height is the control box minus
+   * the 4px pad on each side so the mark is not taller than other chrome.
+   */
+  wordmarkHeight: '40px',
   wordmarkAspect: '155 / 61',
   /** Shared 4 / 8 / 12 / 16 / 24 rhythm. Screens and chrome read these, not ad-hoc px. */
   space1: '4px',
@@ -92,22 +95,23 @@ export const DENSITY = {
   spaceBodyControl: '12px',
   spaceControlPadY: '8px',
   spaceControlPadX: '12px',
+  /** Header pills scale padding with the text, not a fixed rem width. */
+  spaceControlPadInlineEm: '0.85em',
   /** Shared gap after per-bank 13/11/8/13 overrides were removed. */
   spaceGap: '12px',
   /** Simulation and connection pills share this size. */
   typePill: TYPE_SIZE.sm,
   /**
-   * Longest `Simulation: <title>` / LIVE label, including 8×12 padding.
-   * Fixed so tab flex after Play cannot shrink or grow the pill.
+   * Safety cap only. Status pills use natural content width; ellipsis
+   * kicks in when the row is tight (1024). No min/fixed rem width.
    */
-  simPillMinWidth: '22rem',
-  simPillMaxWidth: '22rem',
-  /** Longest connection label (`Checking connection` / `Live API connected`). */
-  connPillMinWidth: '14rem',
+  simPillMaxWidth: '100%',
   /** Wide enough for the Pause label plus icon so Play does not jump. */
   playMinWidth: '7.5rem',
   /** `m:ss` with room for `10:00`. */
   timerMinWidth: '5ch',
+  /** Longest `h:mm AM` / `12:00 PM` slot; tabular-nums, not the whole pill. */
+  clockMinWidth: '8ch',
   speedMinWidth: '2.75rem',
   caseLinkMinWidth: '9.5rem',
   /** Room for a 2px outline + 2px offset + 3px ring outside the clip edge. */

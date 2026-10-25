@@ -30,16 +30,10 @@ export function LocalClock({
     <p
       data-testid="local-clock"
       aria-label="Local time of day"
-      className="tc-timer"
-      style={{
-        fontSize: 'var(--tc-text-sm)',
-        fontWeight: 'var(--tc-text-sm-weight)',
-        lineHeight: 'var(--tc-text-sm-lh)',
-        width: 'auto',
-        minWidth: '8ch',
-      }}
+      className="tc-local-clock"
+      title={formatTimeOfDay(now ?? live, timeZone)}
     >
-      {formatTimeOfDay(now ?? live, timeZone)}
+      <span className="tc-local-clock-slot">{formatTimeOfDay(now ?? live, timeZone)}</span>
     </p>
   )
 }

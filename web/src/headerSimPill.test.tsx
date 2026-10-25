@@ -114,9 +114,8 @@ function headerTokens(root: HTMLElement) {
     headerControlH: root.style.getPropertyValue('--tc-header-control-h'),
     controlH: root.style.getPropertyValue('--tc-control-h'),
     headingWeight: root.style.getPropertyValue('--tc-heading-weight'),
-    simPillMin: root.style.getPropertyValue('--tc-sim-pill-min'),
     simPillMax: root.style.getPropertyValue('--tc-sim-pill-max'),
-    connPillMin: root.style.getPropertyValue('--tc-conn-pill-min'),
+    clockMin: root.style.getPropertyValue('--tc-clock-min'),
     playMin: root.style.getPropertyValue('--tc-play-min'),
     timerMin: root.style.getPropertyValue('--tc-timer-min'),
   }
@@ -129,49 +128,55 @@ describe('simulation pill stays the same size before and during play', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 })
   })
 
-  it('uses shared control-height and type tokens and a stable pill width', () => {
+  it('uses shared control-height and type tokens and content-width status pills', () => {
     const source = css()
     const badge = headerRule(source, '.tc-live-badge')
     const connection = headerRule(source, '.tc-connection')
     const timer = headerRule(source, '.tc-timer')
     expect(DENSITY.headerControlHeight).toBe(DENSITY.controlHeight)
     expect(DENSITY.typePill).toBe('0.875rem')
-    expect(DENSITY.simPillMinWidth).toBe(DENSITY.simPillMaxWidth)
-    expect(DENSITY.simPillMinWidth).toMatch(/rem$/)
-    expect(source).toContain(`--tc-sim-pill-min: ${DENSITY.simPillMinWidth}`)
+    expect(DENSITY.simPillMaxWidth).toBe('100%')
+    expect(source).not.toContain('--tc-sim-pill-min:')
+    expect(source).not.toContain('--tc-conn-pill-min:')
     expect(source).toContain(`--tc-sim-pill-max: ${DENSITY.simPillMaxWidth}`)
+    expect(source).toContain(`--tc-clock-min: ${DENSITY.clockMinWidth}`)
     expect(source).toContain(`--tc-text-sm: ${DENSITY.typePill}`)
     expect(source).toContain('--tc-type-pill: var(--tc-text-sm)')
     expect(source).toContain(`--tc-header-control-h: ${DENSITY.headerControlHeight}`)
-    expect(badge).toMatch(/flex:\s*0 0 auto/)
+    expect(badge).toMatch(/flex:\s*0 1 auto/)
     expect(badge).toMatch(/display:\s*inline-flex/)
     expect(badge).toMatch(/align-items:\s*center/)
+    expect(badge).toMatch(/width:\s*max-content/)
     expect(badge).toMatch(/height:\s*var\(--tc-header-control-h/)
     expect(badge).toMatch(/min-height:\s*var\(--tc-header-control-h/)
-    expect(badge).toMatch(/min-width:\s*var\(--tc-sim-pill-min/)
-    expect(badge).toMatch(/max-width:\s*min\(var\(--tc-sim-pill-max/)
+    expect(badge).not.toMatch(/min-width:/)
+    expect(badge).toMatch(/max-width:\s*var\(--tc-sim-pill-max/)
+    expect(badge).toMatch(/padding-inline:\s*var\(--tc-control-pad-inline/)
     expect(badge).toMatch(/font-size:\s*var\(--tc-text-sm/)
     expect(badge).toMatch(/font-weight:\s*var\(--tc-heading-weight/)
     expect(badge).toMatch(/text-overflow:\s*ellipsis/)
-    expect(badge).not.toMatch(/flex:\s*0 1 auto/)
     expect(source).not.toMatch(/\.tc-live-badge\[/)
     expect(source).not.toMatch(/\.tc-live-badge--/)
-    expect(connection).toMatch(/flex:\s*0 0 auto/)
-    expect(connection).toMatch(/min-width:\s*var\(--tc-conn-pill-min/)
+    expect(connection).toMatch(/flex:\s*0 1 auto/)
+    expect(connection).toMatch(/width:\s*max-content/)
+    expect(connection).not.toMatch(/min-width:/)
     expect(connection).toMatch(/font-size:\s*var\(--tc-text-sm/)
     expect(connection).toMatch(/min-height:\s*var\(--tc-header-control-h/)
     expect(timer).toMatch(/font-variant-numeric:\s*tabular-nums/)
     expect(timer).toMatch(/min-width:\s*var\(--tc-timer-min/)
     expect(headerRule(source, '.tc-play-label')).toMatch(/display:\s*grid/)
     expect(headerRule(source, '.tc-case-label')).toMatch(/display:\s*grid/)
-    expect(headerRule(source, '.tc-header')).toMatch(/flex-wrap:\s*wrap/)
+    expect(headerRule(source, '.tc-header')).toMatch(/flex-wrap:\s*nowrap/)
     expect(headerRule(source, '.tc-header-nav')).toMatch(/flex:\s*1 1 auto/)
+    expect(headerRule(source, '.tc-header-nav')).toMatch(/margin-inline:\s*auto/)
     for (const id of BANKS) {
       const vars = themeVars(THEMES[id]!)
-      expect(vars['--tc-sim-pill-min'], id).toBe(DENSITY.simPillMinWidth)
+      expect(vars['--tc-sim-pill-max'], id).toBe(DENSITY.simPillMaxWidth)
       expect(vars['--tc-type-pill'], id).toBe(DENSITY.typePill)
       expect(vars['--tc-header-control-h'], id).toBe(DENSITY.headerControlHeight)
-      expect(SHARED_STRUCTURE_VARS, id).toContain('--tc-sim-pill-min')
+      expect(vars['--tc-clock-min'], id).toBe(DENSITY.clockMinWidth)
+      expect(SHARED_STRUCTURE_VARS, id).toContain('--tc-clock-min')
+      expect(SHARED_STRUCTURE_VARS, id).not.toContain('--tc-sim-pill-min')
     }
   })
 
@@ -223,7 +228,8 @@ describe('simulation pill stays the same size before and during play', () => {
         expect(snap.tokens, `${id} ${snap.state} tokens`).toEqual(idle!.tokens)
         expect(snap.tokens.typePill, `${id} ${snap.state}`).toBe(DENSITY.typePill)
         expect(snap.tokens.headerControlH, `${id} ${snap.state}`).toBe(DENSITY.headerControlHeight)
-        expect(snap.tokens.simPillMin, `${id} ${snap.state}`).toBe(DENSITY.simPillMinWidth)
+        expect(snap.tokens.simPillMax, `${id} ${snap.state}`).toBe(DENSITY.simPillMaxWidth)
+        expect(snap.tokens.clockMin, `${id} ${snap.state}`).toBe(DENSITY.clockMinWidth)
       }
     }
   })
@@ -243,10 +249,11 @@ describe('simulation pill stays the same size before and during play', () => {
           expect(badge.getAttribute('title'), `${customer.id} ${state} @ ${width}`).toBe(label)
           expect(badge.textContent, `${customer.id} ${state} @ ${width}`).not.toMatch(/…|\.\.\.$/)
           expect(badge.className, `${customer.id} ${state} @ ${width}`).toBe('tc-live-badge')
-          expect(headerRule(css(), '.tc-live-badge')).toMatch(/flex:\s*0 0 auto/)
-          expect(headerRule(css(), '.tc-live-badge')).toMatch(/flex-shrink:\s*0/)
+          expect(headerRule(css(), '.tc-live-badge')).toMatch(/flex:\s*0 1 auto/)
+          expect(headerRule(css(), '.tc-live-badge')).toMatch(/width:\s*max-content/)
           expect(nav.className, `${customer.id} ${state} @ ${width}`).toBe('tc-header-nav')
           expect(headerRule(css(), '.tc-header-nav')).toMatch(/flex:\s*1 1 auto/)
+          expect(screen.getByTestId('local-clock')).toBeTruthy()
           for (const tabLabel of ['Home', 'Customer file', 'Outcome', 'Handoff']) {
             expect(screen.getByText(tabLabel).textContent, `${tabLabel} ${state} @ ${width}`).toBe(tabLabel)
           }
