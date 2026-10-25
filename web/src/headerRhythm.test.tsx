@@ -82,9 +82,9 @@ describe('header labels and spacing rhythm', () => {
       const rule = headerRule(source, selector)
       expect(rule, selector).toMatch(/display:\s*grid/)
       expect(rule, selector).toMatch(/grid-template-columns:\s*max-content\s+minmax\(0,\s*1fr\)/)
-      expect(rule, selector).toMatch(/column-gap:\s*var\(--tc-space-3/)
+      expect(rule, selector).toMatch(/column-gap:\s*var\(--tc-space-4/)
       expect(rule, selector).toMatch(/row-gap:\s*var\(--tc-space-2/)
-      expect(rule, selector).toMatch(/align-items:\s*baseline/)
+      expect(rule, selector).toMatch(/align-items:\s*center/)
     }
 
     expect(headerRule(source, '.tc-kv dt')).toMatch(/line-height:\s*var\(--tc-line-fact/)
@@ -94,7 +94,8 @@ describe('header labels and spacing rhythm', () => {
     expect(source).toMatch(/\.tc-facts dt[\s\S]*?line-height:\s*var\(--tc-line-fact/)
     expect(source).toMatch(/\.tc-facts dd[\s\S]*?line-height:\s*var\(--tc-line-fact/)
     expect(source).toMatch(/\.tc-facts dd[\s\S]*?overflow-wrap:\s*break-word/)
-    expect(headerRule(source, '.tc-amount')).toMatch(/line-height:\s*var\(--tc-line-fact/)
+    expect(headerRule(source, '.tc-amount')).toMatch(/display:\s*block/)
+    expect(headerRule(source, '.tc-amount')).toMatch(/line-height:\s*var\(--tc-text-2xl-lh/)
     expect(headerRule(source, '.tc-amount')).toMatch(/font-size:\s*var\(--tc-text-2xl/)
   })
 

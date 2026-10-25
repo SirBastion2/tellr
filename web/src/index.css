@@ -269,15 +269,16 @@ button[data-loading='true'],
 .tc-facts {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
-  column-gap: var(--tc-space-3, 12px);
+  column-gap: var(--tc-space-4, 16px);
   row-gap: var(--tc-space-2, 8px);
   margin: 0;
-  align-items: baseline;
+  align-items: center;
 }
 
 .tc-facts dt,
 .tc-facts dd {
   min-width: 0;
+  margin: 0;
 }
 
 .tc-explain {
@@ -720,10 +721,10 @@ button[data-loading='true'],
 .tc-kv {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
-  column-gap: var(--tc-space-3, 12px);
+  column-gap: var(--tc-space-4, 16px);
   row-gap: var(--tc-space-2, 8px);
   margin: 0;
-  align-items: baseline;
+  align-items: center;
 }
 
 .tc-kv dt {
@@ -1064,8 +1065,9 @@ body {
 }
 
 .tc-amount {
+  display: block;
   font-size: var(--tc-text-2xl);
-  line-height: var(--tc-line-fact);
+  line-height: var(--tc-text-2xl-lh);
   font-weight: var(--tc-text-2xl-weight);
 }
 

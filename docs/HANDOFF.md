@@ -2279,3 +2279,31 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/109. Do not merge. No contract / engine / library / golden edits. `scripts/gate.sh contract` not run separately (gate `b` already checked it). No new dependency. No screenshots or videos.
 
+---
+
+### [B] Fact-grid Amount optical center + space-4 column gap — Agent B1 — 2026-10-25 05:54
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 185 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  51 passed (51)
+      Tests  185 passed (185)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/index.css`, `web/src/headerRhythm.test.tsx`, `web/src/factGridAlign.test.tsx`, `web/scripts/measure-fact-grid.mjs`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Shared `tc-kv` / `tc-facts`: `align-items: center` so the Amount label sits on the `$8,000` cap-height center, and wrapping Type (#109) stays centered too (UI_REFERENCE fact grid; architecture §12 render-only).
+  - `.tc-amount` uses `display: block` and `--tc-text-2xl-lh` so the large number has a real line box. `--tc-space-2` row-gap is then visually even (Type→Amount = Amount→Memo).
+  - Label-to-value column gap steps one token: `--tc-space-3` (12px) → `--tc-space-4` (16px). Same on Home, Customer file, Outcome, and Handoff. Zeroed default `dd` margin on `.tc-facts` so that indent cannot steal the gap.
+  - Playwright at 1280 (live Home + fixture, long Type string): Amount center delta 0px; row gaps 8px / 8px; column gap 16px. No screenshots.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/110. Do not merge. Merged latest `origin/main` including #109 and #107. No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+
+

@@ -75,7 +75,7 @@ The toolbar is the simulated-customer select, Play/Pause, Step, Restart, speed `
 
 ## Screens and fields
 
-Fact grids are two columns: a bold label beside a normal value. Section headings are bold. Do not put a label in a paragraph and the value on the next line when a fact grid fits.
+Fact grids are two columns: a bold label beside a normal value, `--tc-space-4` between columns, `--tc-space-2` between rows, and `align-items: center` so a wrapping Type value and the large Amount share a vertical center with their labels. Section headings are bold. Do not put a label in a paragraph and the value on the next line when a fact grid fits.
 
 | Screen | Route | On the demo nav | Fields |
 |---|---|---|---|
