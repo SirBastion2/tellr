@@ -6,7 +6,7 @@ import { CUSTOMERS, customerById } from './demo/customers'
 import type { ConfirmKind, DemoSpeed, DemoView } from './demo/types'
 import { connectionLabel, connectionState, subscribeConnection, type ConnectionState } from './connection'
 import { friendlyApiError } from './errors'
-import { sourceForChip } from './feed'
+import { notesOnlyChip, sourceForChip } from './feed'
 import { LiveBadge } from './LiveBadge'
 import { PRESENTER_HIDDEN_ROUTES, PresenterProvider, usePresenter } from './presenter'
 import { SchemaBanner } from './SchemaBanner'
@@ -355,19 +355,7 @@ export function AppShell({
                 />
               }
             />
-            <Route
-              path="/customer"
-              element={
-                <CustomerFileScreen
-                  library={library}
-                  postedChipIds={postedChipIds}
-                  dismissed={dismissed}
-                  contextChips={session?.context_chips}
-                  activity={activity}
-                  demo={demo}
-                />
-              }
-            />
+            <Route path="/customer" element={<CustomerFileScreen demo={demo} />} />
             <Route path="/sessions" element={<HistoryScreen />} />
             <Route
               path="/sessions/:id/context"
@@ -676,7 +664,9 @@ function ConnectedShell() {
       }
     },
     onConfirm: () => {
-      const chips = tellerRef.current.postedChipIds
+      const chips = tellerRef.current.postedChipIds.filter(
+        (id) => !notesOnlyChip(tellerRef.current.library, id),
+      )
       const chipId = chips[chips.length - 1]
       if (!chipId) {
         return
@@ -685,7 +675,9 @@ function ConnectedShell() {
       setActions((current) => [...current, { kind: 'confirm', chipId }])
     },
     onDismiss: () => {
-      const chips = tellerRef.current.postedChipIds
+      const chips = tellerRef.current.postedChipIds.filter(
+        (id) => !notesOnlyChip(tellerRef.current.library, id),
+      )
       const chipId = chips[chips.length - 1]
       if (!chipId) {
         return

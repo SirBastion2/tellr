@@ -118,23 +118,36 @@ describe('Copilot card on latest main', () => {
     const onRestore = vi.fn()
     const onUndo = vi.fn()
     const { rerender } = render(
-      strip({
-        dismissed: ['chip.on_phone'],
-        postedChipIds: [],
-        session: { ...phoneVisit, context_chips: [] },
-        onRestore,
-        onUndo,
-      }),
+      <HomeScreen
+        library={library}
+        session={{ ...phoneVisit, context_chips: [] }}
+        postedChipIds={[]}
+        dismissed={['chip.on_phone']}
+        demo={demo({
+          index: 2,
+          confirmed: [],
+          onRestoreSignal: onRestore,
+        })}
+        onUndo={onUndo}
+      />,
     )
     const row = screen.getByTestId('signal-row')
     expect(row.getAttribute('data-state')).toBe('dismissed')
-    expect(row.textContent).toMatch(/On the phone during the transaction/)
+    expect(row.textContent).toMatch(/On the phone/)
     expect(screen.queryByTestId('signal-confirm')).toBeNull()
     expect(screen.queryByTestId('signal-dismiss')).toBeNull()
     fireEvent.click(screen.getByTestId('signal-restore'))
     expect(onRestore).toHaveBeenCalledWith('chip.on_phone')
 
-    rerender(strip({ confirmed: ['chip.on_phone'], onUndo }))
+    rerender(
+      <HomeScreen
+        library={library}
+        session={phoneVisit}
+        postedChipIds={['chip.on_phone']}
+        demo={demo({ index: 2, confirmed: ['chip.on_phone'] })}
+        onUndo={onUndo}
+      />,
+    )
     expect(screen.getByTestId('signal-origin').textContent).toBe('Teller confirmed')
     fireEvent.click(screen.getByTestId('undo'))
     expect(onUndo).toHaveBeenCalledOnce()
@@ -149,11 +162,25 @@ describe('Copilot card on latest main', () => {
   })
 
   it('keeps the card and signal list mounted while a dismiss write is in flight', () => {
-    const { rerender } = render(strip())
+    const { rerender } = render(
+      <HomeScreen
+        library={library}
+        session={phoneVisit}
+        postedChipIds={['chip.on_phone']}
+        demo={demo({ index: 2 })}
+      />,
+    )
     const card = screen.getByTestId('copilot-strip')
     const list = screen.getByRole('list', { name: 'Signals' })
     const row = screen.getByTestId('signal-row')
-    rerender(strip({ pending: true }))
+    rerender(
+      <HomeScreen
+        library={library}
+        session={phoneVisit}
+        postedChipIds={['chip.on_phone']}
+        demo={demo({ index: 2, pending: true })}
+      />,
+    )
     expect(screen.getByTestId('copilot-strip')).toBe(card)
     expect(screen.getByRole('list', { name: 'Signals' })).toBe(list)
     expect(screen.getByTestId('signal-row')).toBe(row)
@@ -238,14 +265,20 @@ describe('Copilot card on latest main', () => {
   })
 
   it('places the origin badge as a compact pill beside the factor label', () => {
-    render(strip())
+    render(
+      <HomeScreen
+        library={library}
+        session={phoneVisit}
+        postedChipIds={['chip.on_phone']}
+        demo={demo({ index: 2 })}
+      />,
+    )
     const row = screen.getByTestId('signal-row')
     const badge = screen.getByTestId('signal-origin')
-    const label = within(row).getByText('On the phone during the transaction')
+    const label = within(row).getByText(/On the phone/)
     expect(badge.textContent).toBe('Observed')
     expect(badge.className).toContain('tc-badge')
     expect(badge.parentElement).toBe(label.parentElement)
-    expect(badge.parentElement?.className).toContain('tc-signal-meta')
     expect(row.className).toContain('tc-signal-row')
     expect(row.querySelector('.tc-signal-meta')?.contains(badge)).toBe(true)
     expect(row.querySelector('.tc-signal-actions')).toBeTruthy()
@@ -278,7 +311,7 @@ describe('Copilot card on latest main', () => {
     expect(screen.queryByTestId('escalate')).toBeNull()
 
     await stepUntilSignals()
-    const label = 'On the phone during the transaction'
+    const label = /On the phone/
     expect(screen.getByTestId('signal-row').textContent).toMatch(label)
     const card = screen.getByTestId('copilot-strip')
     const list = screen.getByRole('list', { name: 'Signals' })

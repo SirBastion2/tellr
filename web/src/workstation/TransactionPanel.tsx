@@ -3,8 +3,6 @@ import { formatElapsed, timelineElapsedMs } from '../demo/clock'
 import type { CustomerEvent, CustomerFile } from '../demo/customers'
 import { Emphasis } from '../ui/emphasis'
 import { SectionHeading } from '../ui/facts'
-import type { ActivityRow, Library } from '../types'
-import { SessionActivity } from './ActivityFeed'
 
 const label: CSSProperties = {
   margin: 0,
@@ -35,15 +33,11 @@ export function TransactionPanel({
   fired,
   showCase,
   presenter = false,
-  library = null,
-  activity = null,
 }: {
   customer: CustomerFile
   fired: number
   showCase: boolean
   presenter?: boolean
-  library?: Library | null
-  activity?: readonly ActivityRow[] | null
 }) {
   const visible = customer.events.slice(0, fired)
   const current = fired > 0 ? customer.events[fired - 1] : null
@@ -85,19 +79,6 @@ export function TransactionPanel({
           </span>
         </Row>
       </dl>
-      {activity && activity.length > 0 ? <SessionActivity library={library} rows={activity} /> : null}
-      {showCase ? (
-        <section data-testid="case-file" aria-label="Synthetic case file" style={{ display: 'grid', gap: 8 }}>
-          <SectionHeading>Case file</SectionHeading>
-          <dl className="tc-kv" style={{ display: 'grid', gridTemplateColumns: '9.5rem minmax(0, 1fr)', gap: '8px 16px', margin: 0 }}>
-            <Row term="Name">{customer.profile.name}</Row>
-            <Row term="Age band">{customer.profile.ageBand}</Row>
-            <Row term="Tenure">{customer.profile.tenure}</Row>
-            <Row term="Typical withdrawal">{customer.profile.typicalWithdrawal}</Row>
-            <Row term="Channels">{customer.profile.channels}</Row>
-          </dl>
-        </section>
-      ) : null}
       <SectionHeading>Timeline</SectionHeading>
       <ol data-testid="demo-timeline" className="tc-timeline" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid' }}>
         {visible.map((event, index) => {
@@ -155,6 +136,18 @@ export function TransactionPanel({
           )
         })}
       </ol>
+      {showCase ? (
+        <section data-testid="case-file" aria-label="Synthetic case file" style={{ display: 'grid', gap: 8 }}>
+          <SectionHeading>Case file</SectionHeading>
+          <dl className="tc-kv" style={{ display: 'grid', gridTemplateColumns: '9.5rem minmax(0, 1fr)', gap: '8px 16px', margin: 0 }}>
+            <Row term="Name">{customer.profile.name}</Row>
+            <Row term="Age band">{customer.profile.ageBand}</Row>
+            <Row term="Tenure">{customer.profile.tenure}</Row>
+            <Row term="Typical withdrawal">{customer.profile.typicalWithdrawal}</Row>
+            <Row term="Channels">{customer.profile.channels}</Row>
+          </dl>
+        </section>
+      ) : null}
       <div>
         <p style={{ margin: 0, fontWeight: 700 }}>
           Event {shown} of {total}
