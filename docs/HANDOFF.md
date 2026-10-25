@@ -1793,3 +1793,29 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. PR #96. Do not merge from this card.
 
+---
+
+### [B] Global demo shortcuts on Customer file — Agent B1 — 2026-10-25 04:15
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 119 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  38 passed (38)
+      Tests  119 passed (119)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/ui/shortcuts.ts` (new), `web/src/ui/DemoShortcuts.tsx` (new), `web/src/ui/shortcuts.test.ts` (new), `web/src/shortcutsCustomer.test.tsx` (new), `web/src/App.tsx`, `web/src/ui/ShortcutHelp.tsx`, `ARCHITECTURE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - One window listener at the app shell so `?` `P` `N` `R` `C` `D` `E` `[` / `]` work on Customer file, Outcome, and Handoff as well as Home (`ARCHITECTURE.md` workstation; UI_REFERENCE keyboard). No key is route-limited.
+  - Ignore typing in input / textarea / select / contenteditable, and Ctrl/Cmd/Alt. Escape still closes help and confirms, including while a field is focused. Restart confirm stays available from any page.
+  - Help text states they work on every screen. `web/` still does not compute risk, level, reasons, or the next question (architecture §12).
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/97. Do not merge. Concurrent header / signal-list / handoff work should conflict little: `App.tsx` only replaced the inline `keydown` effect in `ConnectedShell`. No contract / api / engine edits. No new npm dependency. No screenshots.
+
