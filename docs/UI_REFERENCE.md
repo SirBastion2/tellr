@@ -148,10 +148,11 @@ While it is on, which is always:
 | Probe | Requests go to |
 |---|---|
 | `VITE_API_URL/health`, or `http://127.0.0.1:8000/health` when that variable is unset, returns a health report | That origin |
-| That probe fails and the page origin answers `/health` | The Vite origin (mock plugin) |
+| That probe fails and the page origin answers `/health` | The Vite origin (mock plugin) during `npm run dev` |
+| Production build and that probe fails | The page origin, answered in the browser by `web/mock/sampleFetch.ts` (`mockRequest`). The label stays "Using sample data" |
 | Neither answers | The configured origin, which will fail until the API is up |
 
-`npm run dev` and `npm run dev:api` both install the mock plugin. `npm run dev:api` loads `web/.env.api`, which sets `VITE_API_URL=http://127.0.0.1:8000`. The script has no inline `VAR=value`, so Windows PowerShell can run it. Override the origin with `web/.env.api.local` or `$env:VITE_API_URL`.
+`npm run dev` and `npm run dev:api` both install the mock plugin. They do not install the browser shim. `npm run build` (`tsc --noEmit && vite build`) is the static production build. `npm run dev:api` loads `web/.env.api`, which sets `VITE_API_URL=http://127.0.0.1:8000`. The script has no inline `VAR=value`, so Windows PowerShell can run it. Override the origin with `web/.env.api.local` or `$env:VITE_API_URL`.
 
 CORS from #71 allows the Vite origin to call port 8000 with no credentials. Start the API with `python -m uvicorn api.main:app --host 127.0.0.1 --port 8000`. Neither npm script starts it.
 
