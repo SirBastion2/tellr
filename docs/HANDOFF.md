@@ -2368,4 +2368,29 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/113. Do not merge. Merged `origin/main` including #107 and #110. Playwright header table is scratch (gate cannot run a committed Playwright header test). No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
 
+---
+
+### [B] Spread header groups across the pill — Agent B1 — 2026-10-25 06:55
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 187 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  52 passed (52)
+      Tests  187 passed (187)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/App.tsx`, `web/src/index.css`, `web/src/headerRhythm.test.tsx`, `web/src/headerSimPill.test.tsx`, `web/src/themeConsistency.test.tsx`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - The nav was `flex: 1 1 auto` with `margin-inline: auto`, so leftover width sat around the tabs and the logo, simulation pill, and scheme controls stayed bunched. Header is now `justify-content: space-between` with the existing equal `padding-inline: var(--tc-space-2)`. The nav stays content-sized (`flex: 0 0 auto`) and its tabs stay centered. Brand, simulation pill, nav, and scheme + `?` share the free space as equal gaps.
+  - Did not force a geometrically centered nav with equal side columns. That kept the logo against the simulation pill whenever the left cluster was at max-content, and it overflowed tellr and mtb at 1024. Equal gaps keep one row inside the pill from 1024 to 1920 on tellr, pnc, mtb, and fnb. Scheme collapse from #113 is unchanged.
+- **Questions logged:** none
+- **The next agent needs to know:** No contract / engine / library / golden edits. `ARCHITECTURE.md` unchanged (no files moved). No new dependency. No screenshots or videos.
+
 
