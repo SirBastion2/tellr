@@ -12,7 +12,7 @@ import { TYPE_SIZE } from './theme/typeScale'
 const css = () => readFileSync('src/index.css', 'utf8')
 
 const HEADER_WIDTHS = [1024, 1180, 1280] as const
-const NAV_LABELS = ['Home', 'Customer file', 'Outcome', 'Handoff'] as const
+const NAV_LABELS = ['Home', 'Outcome', 'Handoff'] as const
 
 function headerRule(source: string, selector: string): string {
   const match = source.match(new RegExp(`${selector.replace('.', '\\.')}\\s*\\{([^}]*)\\}`))
@@ -214,6 +214,12 @@ describe('header labels and spacing rhythm', () => {
       setViewportWidth(width)
       for (const themeId of THEME_IDS) {
         expect(root.getAttribute('data-theme'), `${themeId} @ ${width}`).toBe(themeId)
+        expect(header.style.justifyContent, `${themeId} @ ${width}`).toBe('space-between')
+        expect(header.style.paddingInline, `${themeId} @ ${width}`).toBe('var(--tc-space-2)')
+        expect(header.style.flexWrap, `${themeId} @ ${width}`).toBe('nowrap')
+        expect(nav.style.flex, `${themeId} @ ${width}`).toBe('0 0 auto')
+        expect(nav.style.justifyContent, `${themeId} @ ${width}`).toBe('center')
+        expect(nav.querySelectorAll('.tc-nav-tab'), `${themeId} @ ${width}`).toHaveLength(NAV_LABELS.length)
         for (const label of NAV_LABELS) {
           const tab = within(nav).getByText(label)
           expect(tab.textContent, `${label} @ ${width} ${themeId}`).toBe(label)

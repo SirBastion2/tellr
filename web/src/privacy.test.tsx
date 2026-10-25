@@ -6,7 +6,6 @@ import { describe, expect, it } from 'vitest'
 import { AppShell } from './App'
 import { CUSTOMERS } from './demo/customers'
 import type { DemoView } from './demo/types'
-import { CustomerFileScreen } from './screens/CustomerFileScreen'
 import { HandoffScreen } from './screens/HandoffScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { OutcomeScreen } from './screens/OutcomeScreen'
@@ -62,7 +61,7 @@ function assertNoPersonalId(root: HTMLElement) {
 }
 
 describe('demo personal identification', () => {
-  it('renders Home, Customer file, Outcome, and Handoff without name, age, or gender', () => {
+  it('renders Home, Outcome, and Handoff without name, age, or gender', () => {
     const view = demo()
     const home = render(<HomeScreen library={library} session={session} demo={view} />)
     assertNoPersonalId(screen.getByTestId('home-screen'))
@@ -71,12 +70,6 @@ describe('demo personal identification', () => {
     expect(markers.some((text) => text.includes(CUSTOMER_LABEL))).toBe(true)
     expect(markers.every((text) => NAMES.every((name) => !text.includes(name)))).toBe(true)
     home.unmount()
-
-    const file = render(<CustomerFileScreen demo={view} />)
-    assertNoPersonalId(screen.getByTestId('customer-screen'))
-    expect(screen.getByTestId('profile-name').textContent).toBe(CUSTOMER_LABEL)
-    expect(screen.queryByTestId('profile-age')).toBeNull()
-    file.unmount()
 
     const outcome = render(<OutcomeScreen session={session} />)
     assertNoPersonalId(screen.getByTestId('outcome-screen'))
