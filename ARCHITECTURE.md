@@ -101,7 +101,7 @@ The toolbar controls share a 40px height. Play keeps the icon and the word on on
 
 Playback length at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. The on-screen clock and the timeline stamps are the same unit: simulated customer time (the running sum of `delayMs`). Speed changes wall-clock duration only. Timeline rows show step, elapsed time, and speaker, and bold amounts and phrases such as "on the phone" and "cash". The footer is 13px.
 
-The demo layout is always on. `?present` and `teller.presenter` are ignored, and nothing in the UI names that layout. It hides Context, Session, History, and Health; sets the root font size to 105%; resets the session when the customer changes; enlarges the current-event caption; and keeps the working keys: help (`?`), play/pause (`P`), step (`N`), restart (`R`, confirm button reads Restart), confirm (`C`), dismiss (`D`), escalate (`E`), and customer switch (`[` / `]`). Type, gaps, and card padding come from `DENSITY` in `web/src/theme/tokens.ts` plus the matching `clamp()` tokens in `web/src/index.css` (~15–20% tighter than the first workstation pass) so a 1280×720 laptop sees the header, toolbar, transaction, and copilot without horizontal clip. The full UI reference is `docs/UI_REFERENCE.md`.
+The demo layout is always on. `?present` and `teller.presenter` are ignored, and nothing in the UI names that layout. It hides Context, Session, History, and Health; sets the root font size to 105%; resets the session when the customer changes; enlarges the current-event caption; and keeps the working keys: help (`?`), play/pause (`P`), step (`N`), restart (`R`, confirm button reads Restart), confirm (`C`), dismiss (`D`), escalate (`E`), and customer switch (`[` / `]`). Those keys are registered once at the app shell (`web/src/ui/DemoShortcuts.tsx`), so they work on Customer file, Outcome, and Handoff as well as Home. They ignore typing in inputs, textareas, selects, and contenteditable, and they ignore Ctrl, Cmd, or Alt. Type, gaps, and card padding come from `DENSITY` in `web/src/theme/tokens.ts` plus the matching `clamp()` tokens in `web/src/index.css` (~15–20% tighter than the first workstation pass) so a 1280×720 laptop sees the header, toolbar, transaction, and copilot without horizontal clip. The full UI reference is `docs/UI_REFERENCE.md`.
 
 | File | What it is |
 |---|---|
@@ -123,7 +123,11 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 | `web/src/workstation/explain.ts` | Reads `explanation` and groups raises and lowers. Strength words from the response's own weights. |
 | `web/src/workstation/ExplanationPanel.tsx` | Why this level. Fact grid, two contribution lists with the Observed or Teller confirmed badge on the matching row, collapsed technical details. |
 | `web/src/workstation/TransactionPanel.tsx` | Key-value transaction, timeline with step and speaker, event progress. Session activity appears when `GET /activity` returns rows. |
-| `web/src/ui/ShortcutHelp.tsx` | `?` lists the working keys: `?`, `P`, `N`, `R`, `C`, `D`, `E`, `[` / `]`. |
+| `web/src/ui/ShortcutHelp.tsx` | `?` lists the working keys: `?`, `P`, `N`, `R`, `C`, `D`, `E`, `[` / `]`. Notes that they work on every screen. No key is route-limited. |
+| `web/src/ui/shortcuts.ts` | Pure key map. Escape always closes help or a confirm. Other keys no-op while typing or while Ctrl/Cmd/Alt is held. |
+| `web/src/ui/DemoShortcuts.tsx` | One window listener, mounted from `ConnectedShell`. Home, Customer file, Outcome, and Handoff share it. |
+| `web/src/ui/shortcuts.test.ts` | Key map, modifier ignore, and contenteditable / field ignore. |
+| `web/src/shortcutsCustomer.test.tsx` | Keys fire on `/customer`. Restart confirm works there. Outcome and Handoff still get help, restart, and customer switch. |
 | `web/src/ui/icons.tsx` | Play, pause, step, restart, confirm, and dismiss icons. |
 | `web/src/ui/ConfirmDialog.tsx` | Confirm before restart and escalate. Customer switch resets without a dialog. |
 | `web/src/connection.ts` | Probes `GET /health` and chooses the live origin or the sample-data fallback. |
