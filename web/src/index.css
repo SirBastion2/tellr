@@ -348,6 +348,7 @@ button[data-loading='true'],
 .tc-header-title {
   margin: 0;
   flex: 0 0 auto;
+  flex-shrink: 0;
   overflow: visible;
   font-size: var(--tc-type-header, clamp(0.88rem, 0.45vw + 0.72rem, 1.05rem));
   line-height: 1.2;
