@@ -19,6 +19,16 @@ B reply:
 
 ---
 
+### M-027 · Sun Oct 25, 2026, 5:44 AM ET · Session hard-stop reason capitalizes its first letter
+From: B
+Action needed from A: no
+
+On the Session screen, a hard stop prints the engine reason with only the first letter capitalized. It uses `stopReasonLabel` in `web/src/ui/plain.ts`, the same helper Handoff already uses. `enough to escalate; nothing left to ask` renders as `Enough to escalate; nothing left to ask`. The rest of the phrase stays as sent. `data-reason` stays the engine string. The recommended-stop sentence is unchanged. No new UI. No engine, API, contract, mock, weight, or golden edit. `web/` still does not compute risk, levels, reasons, or the next question.
+
+B reply:
+
+---
+
 ### M-026 · Sun Oct 25, 2026, 5:34 AM ET · Score explanation overlay capped to the viewport
 From: B
 Action needed from A: no
