@@ -26,7 +26,7 @@ type TellerValue = {
   startLive: () => Promise<SessionState | null>
   postContext: (chips: string[], source?: ChipSource) => Promise<void>
   postAnswer: (answer: AnswerPost) => Promise<void>
-  postOutcome: (outcome: OutcomeId, actor: string) => Promise<void>
+  postOutcome: (outcome: OutcomeId, actor: string) => Promise<boolean>
   loadHandoff: () => Promise<void>
   undo: () => Promise<void>
   dismissChip: (chipId: string) => Promise<void>
@@ -251,11 +251,11 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const postOutcome = useCallback(async (outcome: OutcomeId, actor: string): Promise<void> => {
+  const postOutcome = useCallback(async (outcome: OutcomeId, actor: string): Promise<boolean> => {
     const current = sessionRef.current
     const trimmed = actor.trim()
     if (!current || trimmed.length === 0 || closedRef.current) {
-      return
+      return false
     }
     const gen = generation.current
     const result = await apiSend('POST', `/sessions/${current.session_id}/outcome`, {
@@ -263,13 +263,15 @@ export function TellerProvider({ children }: { children: ReactNode }) {
       actor: trimmed,
     })
     if (gen !== generation.current) {
-      return
+      return false
     }
-    if (result.status === 200) {
+    const recordedNow = result.status === 200
+    if (recordedNow) {
       markClosed(true)
       setRecorded({ outcome, actor: trimmed })
     }
     takeSession(result, gen)
+    return recordedNow
   }, [markClosed, takeSession])
 
   const loadHandoff = useCallback(async (): Promise<void> => {

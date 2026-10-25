@@ -173,28 +173,52 @@ export function MiniTransport({ demo }: { demo: DemoView }) {
   )
 }
 
+/** Current beat first (left). Older beats follow to the right. Later beats stay dim after those. */
+function timelineOrder(count: number, index: number): number[] {
+  const steps = Array.from({ length: count }, (_, i) => i + 1)
+  if (index <= 0) {
+    return steps
+  }
+  const older = steps.filter((step) => step < index).reverse()
+  const future = steps.filter((step) => step > index)
+  return [index, ...older, ...future]
+}
+
 export function PlaybackBar({ demo }: { demo: DemoView }) {
   const customer = customerById(demo.customerId)
   const events = customer?.events ?? []
+  const order = timelineOrder(events.length, demo.index)
+  const dot = (step: number) => {
+    const event = events[step - 1]
+    if (!event) {
+      return null
+    }
+    const state = step < demo.index ? 'past' : step === demo.index ? 'current' : 'future'
+    const outward = step === demo.index ? 1 : step < demo.index ? demo.index - step + 1 : step - demo.index + 1
+    return (
+      <button
+        key={event.id}
+        type="button"
+        className="tc-step-dot"
+        data-testid="step-dot"
+        data-step={step}
+        data-state={state}
+        aria-current={state === 'current' ? 'step' : undefined}
+        aria-label={`Step ${outward}`}
+        onClick={() => demo.onSeek?.(step)}
+      />
+    )
+  }
+  const currentStep = demo.index > 0 ? order[0] : null
+  const following = currentStep == null ? order : order.slice(1)
   return (
     <div className="tc-playback" data-testid="playback-bar">
-      <div className="tc-dots" role="group" aria-label="Timeline steps" data-testid="step-dots">
-        {events.map((event, index) => {
-          const step = index + 1
-          const on = demo.index === step
-          return (
-            <button
-              key={event.id}
-              type="button"
-              className="tc-step-dot"
-              data-testid="step-dot"
-              data-step={step}
-              aria-current={on ? 'step' : undefined}
-              aria-label={`Step ${step}`}
-              onClick={() => demo.onSeek?.(step)}
-            />
-          )
-        })}
+      <div className="tc-timeline-row">
+        <div className="tc-dots" role="group" aria-label="Timeline steps" data-testid="step-dots">
+          {currentStep != null ? dot(currentStep) : null}
+          <MiniTransport demo={demo} />
+          {following.map((step) => dot(step))}
+        </div>
       </div>
       <div className="tc-footer-utilities" aria-label="Playback extras">
         <button

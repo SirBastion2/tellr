@@ -10,9 +10,16 @@ import type { RecordedDecision } from '../teller'
 
 const OUTCOME_LABEL: Record<OutcomeId, string> = {
   proceed: 'Proceed',
-  slow_down: 'Slow Down',
+  slow_down: 'Slow down',
   escalate: 'Escalate',
   report: 'Report',
+}
+
+const OUTCOME_HINT: Record<OutcomeId, string> = {
+  proceed: 'Finish this transaction',
+  slow_down: 'Pause and ask more',
+  escalate: 'Bring in a supervisor',
+  report: 'Send this visit for review',
 }
 
 const RECOMMENDATION = "Copilot's recommendation"
@@ -101,32 +108,11 @@ export function OutcomeScreen({
     onSubmit({ outcome: chosen, actor: actor.trim() })
   }
 
+  const nameMissing = actor.trim().length === 0
+
   return (
     <section data-testid="outcome-screen" className="tc-card tc-screen tc-outcome">
-      {session && closed ? (
-        <>
-          <PageTitle>Outcome</PageTitle>
-          <p data-testid="visit-closed" className="tc-prose" style={{ margin: 0 }}>
-            This visit is closed. Start a new customer to record another decision.
-          </p>
-          {recorded ? (
-            <FactGrid label="Recorded decision">
-              <Fact term="Teller's decision">{outcomeLabel(recorded.outcome)}</Fact>
-              <Fact term="Teller name">{recorded.actor}</Fact>
-            </FactGrid>
-          ) : null}
-          <button
-            type="button"
-            className="tc-btn"
-            data-variant="primary"
-            data-testid="start-new-customer"
-            style={{ ...tap, backgroundColor: buttonFill, color: buttonText, borderColor: 'transparent' }}
-            onClick={() => onStartNew?.()}
-          >
-            Start new customer
-          </button>
-        </>
-      ) : session ? (
+      {session ? (
         <div className="tc-outcome-card">
           <div className="tc-outcome-body">
             <PageTitle>Outcome</PageTitle>
@@ -144,82 +130,119 @@ export function OutcomeScreen({
                 {session.answers} Questions Answered
               </span>
             </div>
-            <label className="tc-outcome-actor" htmlFor="outcome-actor">
-              <span className="tc-fact-term">Teller's Decision</span>
-              <input
-                id="outcome-actor"
-                data-testid="actor"
-                placeholder="Type your Name here..."
-                value={actor}
-                onChange={(event) => {
-                  setActor(event.target.value)
-                }}
-                style={{ ...tap, backgroundColor: inputFill, borderRadius: '999px', width: '100%' }}
-              />
-            </label>
-            <ul className="tc-outcome-choices">
-              {session.available_outcomes.map((outcome) => {
-                const suggested = outcome !== 'report' && outcome === session.suggested_outcome
-                const selected = selectedId === outcome
-                return (
-                  <li key={outcome}>
-                    <button
-                      type="button"
-                      disabled={false}
-                      className="tc-outcome-choice"
-                      data-testid={`outcome-${outcome}`}
-                      data-suggested={suggested ? 'true' : 'false'}
-                      data-highlighted={suggested ? 'true' : 'false'}
-                      data-selected={selected ? 'true' : 'false'}
-                      aria-pressed={selected}
-                      title={suggested ? RECOMMENDATION : undefined}
-                      onClick={() => {
-                        choose(outcome)
-                      }}
-                      onKeyDown={(event) => {
-                        onOutcomeKey(event, outcome)
-                      }}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '8px',
-                        width: '100%',
-                        minHeight: '148px',
-                        padding: '16px 12px',
-                        boxSizing: 'border-box',
-                        borderRadius: CHOICE_RADIUS,
-                        font: 'inherit',
-                        cursor: 'pointer',
-                        ...outcomePaint(theme, selected, suggested),
-                      }}
-                    >
-                      <span>{OUTCOME_LABEL[outcome]}</span>
-                      {suggested ? <span className="tc-text-xs">{RECOMMENDATION}</span> : null}
-                      {selected ? (
-                        <span data-testid="outcome-check" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <CheckIcon />
-                          Selected
-                        </span>
-                      ) : null}
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
+            {closed ? (
+              <div className="tc-outcome-closed">
+                <p data-testid="visit-closed" className="tc-prose">
+                  This visit is closed. Start a new customer to record another decision.
+                </p>
+                {recorded ? (
+                  <FactGrid label="Recorded decision">
+                    <Fact term="Teller's decision">{outcomeLabel(recorded.outcome)}</Fact>
+                    <Fact term="Teller name">{recorded.actor}</Fact>
+                  </FactGrid>
+                ) : null}
+                <button
+                  type="button"
+                  className="tc-btn"
+                  data-variant="primary"
+                  data-testid="start-new-customer"
+                  style={{ ...tap, backgroundColor: buttonFill, color: buttonText, borderColor: 'transparent' }}
+                  onClick={() => onStartNew?.()}
+                >
+                  Start new customer
+                </button>
+              </div>
+            ) : (
+              <>
+                <label className="tc-outcome-actor" htmlFor="outcome-actor">
+                  <span className="tc-fact-term">Teller's Decision</span>
+                  <input
+                    id="outcome-actor"
+                    data-testid="actor"
+                    placeholder="Type your Name here..."
+                    value={actor}
+                    onChange={(event) => {
+                      setActor(event.target.value)
+                    }}
+                    style={{ ...tap, backgroundColor: inputFill, borderRadius: '999px', width: '100%' }}
+                  />
+                </label>
+                <ul className="tc-outcome-choices">
+                  {session.available_outcomes.map((outcome) => {
+                    const suggested = outcome !== 'report' && outcome === session.suggested_outcome
+                    const selected = selectedId === outcome
+                    return (
+                      <li key={outcome}>
+                        <button
+                          type="button"
+                          disabled={false}
+                          className="tc-outcome-choice"
+                          data-testid={`outcome-${outcome}`}
+                          data-suggested={suggested ? 'true' : 'false'}
+                          data-highlighted={suggested ? 'true' : 'false'}
+                          data-selected={selected ? 'true' : 'false'}
+                          aria-pressed={selected}
+                          title={suggested ? RECOMMENDATION : undefined}
+                          onClick={() => {
+                            choose(outcome)
+                          }}
+                          onKeyDown={(event) => {
+                            onOutcomeKey(event, outcome)
+                          }}
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            width: '100%',
+                            height: '100%',
+                            minHeight: '140px',
+                            padding: '16px 12px',
+                            boxSizing: 'border-box',
+                            borderRadius: CHOICE_RADIUS,
+                            font: 'inherit',
+                            cursor: 'pointer',
+                            ...outcomePaint(theme, selected, suggested),
+                          }}
+                        >
+                          <span className="tc-outcome-name">{OUTCOME_LABEL[outcome]}</span>
+                          <span className="tc-outcome-hint">{OUTCOME_HINT[outcome]}</span>
+                          {suggested ? <span className="tc-text-xs">{RECOMMENDATION}</span> : null}
+                          {selected ? (
+                            <span data-testid="outcome-check" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                              <CheckIcon />
+                              Selected
+                            </span>
+                          ) : null}
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </>
+            )}
           </div>
-          <button
-            type="button"
-            className="tc-btn tc-outcome-go"
-            data-testid="outcome-submit"
-            aria-label="Record decision"
-            disabled={!ready}
-            onClick={submit}
-            style={{ ...tap, backgroundColor: buttonFill, color: buttonText, borderColor: 'transparent', borderRadius: '999px', width: '48px', height: '48px', minWidth: '48px', padding: 0 }}
-          >
-            <ArrowRightIcon />
-          </button>
+          {closed ? null : (
+            <div className="tc-outcome-go-row">
+              {nameMissing ? (
+                <p className="tc-outcome-need" data-testid="outcome-need-name">
+                  Enter your name to continue
+                </p>
+              ) : null}
+              <button
+                type="button"
+                className="tc-btn tc-outcome-go"
+                data-testid="outcome-submit"
+                aria-label="Record decision"
+                disabled={!ready}
+                onClick={submit}
+                style={{ ...tap, backgroundColor: buttonFill, color: buttonText, borderColor: 'transparent', borderRadius: '999px', width: '48px', height: '48px', minWidth: '48px', padding: 0 }}
+              >
+                <ArrowRightIcon />
+              </button>
+            </div>
+          )}
         </div>
       ) : null}
     </section>

@@ -49,7 +49,11 @@ describe('closed visits', () => {
     render(<App />)
     await recordSlowDown()
     await waitFor(() => {
-      expect(screen.getByTestId('start-new-customer')).toBeTruthy()
+      expect(screen.getByTestId('handoff-screen')).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('link', { name: 'Outcome' }))
+    await waitFor(() => {
+      expect(screen.getByTestId('visit-closed')).toBeTruthy()
     })
     expect(screen.queryByTestId('outcome-proceed')).toBeNull()
     expect(screen.queryByTestId('outcome-submit')).toBeNull()
@@ -72,8 +76,9 @@ describe('closed visits', () => {
     render(<App />)
     await recordSlowDown()
     await waitFor(() => {
-      expect(screen.getByTestId('start-new-customer')).toBeTruthy()
+      expect(screen.getByTestId('visit-closed')).toBeTruthy()
     })
+    expect(screen.queryByTestId('handoff-screen')).toBeNull()
     expect(screen.queryByTestId('outcome-proceed')).toBeNull()
     const text = document.body.textContent ?? ''
     expect(text).toMatch(/This visit is closed/)

@@ -46,7 +46,7 @@ export function StepSwap({
 }) {
   const [frame, setFrame] = useState<Frame>({ key: stepKey, title, subtitle })
   const [exit, setExit] = useState<Frame | null>(null)
-  const [dir, setDir] = useState<StepDirection>('none')
+  const [dir, setDir] = useState<StepDirection>(direction)
 
   if (stepKey !== frame.key) {
     setExit(direction === 'none' ? null : frame)
