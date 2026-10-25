@@ -1848,3 +1848,27 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. `T` does not reload or reset the session. PR #99. Do not merge from this card.
 
+---
+
+### [B] Bank theme toggle remount on #97 handler — Agent B1 — 2026-10-25 04:21
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 133 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  40 passed (40)
+      Tests  133 passed (133)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merged `origin/main` (#96, #97); `web/src/ui/shortcuts.ts`, `web/src/ui/DemoShortcuts.tsx`, `web/src/ui/shortcuts.test.ts`, `web/src/App.tsx`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - `T` is `theme` on the #97 key map. `useDemoShortcuts({ onTheme: cycleTheme })` is the only window listener for demo keys. The old `ConnectedShell` `keydown` effect is gone.
+- **Questions logged:** none
+- **The next agent needs to know:** PR #99. Do not merge.
+
