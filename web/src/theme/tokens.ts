@@ -51,8 +51,9 @@ export const DENSITY = {
   pagePadX: 'clamp(8px, 1.6vw, 24px)',
   pagePadBottom: 'clamp(12px, 2vw, 28px)',
   cardPad: 'clamp(10px, 1.1vw, 18px)',
-  wordmarkWidth: '110px',
+  /** Tellr wordmark is 155×61. Height drives width so the box keeps that ratio. */
   wordmarkHeight: '40px',
+  wordmarkAspect: '155 / 61',
   /** Shared 4 / 8 / 12 / 16 / 24 rhythm. Screens and chrome read these, not ad-hoc px. */
   space1: '4px',
   space2: '8px',

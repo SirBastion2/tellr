@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockRequest, resetMock } from '../mock/replay'
 import { App } from './App'
 
@@ -29,6 +29,9 @@ function press(key: string, target: Element) {
 }
 
 describe('demo shortcuts on other routes', () => {
+  beforeEach(() => {
+    resetMock()
+  })
   afterEach(() => {
     resetMock()
     vi.unstubAllGlobals()

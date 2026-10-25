@@ -7,8 +7,9 @@ const logoBox: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   boxSizing: 'border-box',
-  width: '100%',
-  height: '100%',
+  height: 'var(--tc-wordmark-h, 40px)',
+  width: 'auto',
+  aspectRatio: 'var(--tc-wordmark-aspect, 155 / 61)',
   padding: 0,
   lineHeight: 0,
   backgroundColor: 'var(--tc-logo)',
@@ -25,8 +26,9 @@ const logoBox: CSSProperties = {
 
 const logoImg: CSSProperties = {
   display: 'block',
-  width: '100%',
   height: '100%',
+  width: 'auto',
+  aspectRatio: 'var(--tc-wordmark-aspect, 155 / 61)',
   objectFit: 'contain',
   objectPosition: 'center',
   lineHeight: 0,
@@ -52,8 +54,8 @@ export function ThemeWordmark() {
           ...(theme.mark === 'logo'
             ? {
                 '--tc-logo-src': `url("${markUrl}")`,
-                width: 'var(--tc-wordmark-w, 110px)',
-                height: 'var(--tc-wordmark-h, 40px)',
+                width: 'auto',
+                height: 'auto',
                 padding: 'var(--tc-space-2, 8px)',
                 borderRadius: 'var(--tc-radius-control, 999px)',
               }

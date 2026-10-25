@@ -1957,3 +1957,29 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/98. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots.
 
+---
+
+### [B] Header wrap, tellr logo center, spacing scale — Agent B1 — 2026-10-25 04:50
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 148 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  43 passed (43)
+      Tests  148 passed (148)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/index.css`, `web/src/theme/tokens.ts`, `web/src/theme/vars.ts`, `web/src/theme/Wordmark.tsx`, `web/src/theme/controls.ts`, `web/src/App.tsx`, Home / Customer file / Outcome / Handoff screens, Toolbar, TransactionPanel, `web/src/assets/tellr-wordmark.png` (replaced, 155×61), `web/src/headerRhythm.test.tsx`, fit/a11y/shortcut tests, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Nav wraps / clamp-shrinks and never clips (user Part A; keep #93 header wrap, drop nav `overflow-x: auto` so Handoff cannot become `Hand…`).
+  - Tellr mark is the attached tight 155×61 PNG, height-driven `aspect-ratio: 155 / 61`, flex-centered in a padded pill (`object-fit: contain`, `line-height: 0`). Still tinted with `--tc-logo`.
+  - One 4/8/12/16/24 scale for header gap (8), header-to-content (16), heading-to-body (8), body-to-control (12), pill/button pad 8×12. No copy changes. `web/` computes nothing (§9, §12).
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/100. Do not merge. Other theme notes: per-bank `space.gap` is still 13/11/8/13 (not on the 4–24 scale); connection pill is 0.75rem vs simulation 0.875rem; Outcome highlight is hardcoded `#fef3c7`; scheme segment + menu both stay in the DOM; theme-page `overflow-x: hidden` can clip focus rings. No new dependency.
+

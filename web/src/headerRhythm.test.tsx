@@ -2,7 +2,7 @@
 // @ts-expect-error node:fs is provided by the test runner
 import { readFileSync } from 'node:fs'
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { App } from './App'
 import './index.css'
 import { THEME_IDS } from './theme/registry'
@@ -33,6 +33,11 @@ function clipsLabel(element: HTMLElement): boolean {
 }
 
 describe('header labels and spacing rhythm', () => {
+  afterEach(() => {
+    window.localStorage.clear()
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 })
+  })
+
   it('exposes the 4/8/12/16/24 scale and uses it for header and text rhythm', () => {
     const source = css()
     expect(DENSITY.space1).toBe('4px')
@@ -88,15 +93,24 @@ describe('header labels and spacing rhythm', () => {
     expect(headerRule(source, '.tc-wordmark')).toMatch(/align-items:\s*center/)
     expect(headerRule(source, '.tc-wordmark')).toMatch(/justify-content:\s*center/)
     expect(headerRule(source, '.tc-wordmark')).toMatch(/line-height:\s*0/)
+    expect(DENSITY.wordmarkAspect).toBe('155 / 61')
+    expect(DENSITY.wordmarkHeight).toBe('40px')
     expect(source).toMatch(/\.tc-wordmark\[data-mark='logo'\][\s\S]*padding:\s*var\(--tc-space-2/)
+    expect(source).toMatch(/\.tc-wordmark\[data-mark='logo'\][\s\S]*width:\s*auto/)
     expect(source).toMatch(/\.tc-wordmark\[data-mark='logo'\][\s\S]*border-radius:\s*var\(--tc-radius-control/)
+    expect(source).not.toMatch(/--tc-wordmark-w/)
     expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/display:\s*flex/)
     expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/align-items:\s*center/)
     expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/justify-content:\s*center/)
     expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/line-height:\s*0/)
+    expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/height:\s*var\(--tc-wordmark-h/)
+    expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/width:\s*auto/)
+    expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/aspect-ratio:\s*var\(--tc-wordmark-aspect/)
     expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/mask-position:\s*center/)
     expect(headerRule(source, '.tc-wordmark-logo')).toMatch(/object-fit:\s*contain/)
     expect(headerRule(source, '.tc-wordmark-img')).toMatch(/object-fit:\s*contain/)
+    expect(headerRule(source, '.tc-wordmark-img')).toMatch(/width:\s*auto/)
+    expect(headerRule(source, '.tc-wordmark-img')).toMatch(/aspect-ratio:\s*var\(--tc-wordmark-aspect/)
     expect(headerRule(source, '.tc-wordmark-img')).toMatch(/line-height:\s*0/)
 
     window.localStorage.clear()

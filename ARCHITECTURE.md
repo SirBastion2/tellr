@@ -70,9 +70,9 @@ Each bank has a dark palette (the top-level color fields) and a `light` palette.
 | `web/src/theme/vars.ts` | Maps a `BankTheme` onto the `--tc-*` custom properties. |
 | `web/src/theme/ThemeProvider.tsx` | Reads `?theme=` and `localStorage`, resolves the color scheme, provides the theme. `useThemeActions` cycles the bank in place. |
 | `web/src/theme/ThemeRoot.tsx` | Full-bleed background with a solid color under the image. The card fills the padded page so a wide screen does not letterbox a 1440px column. The header is not clipped. No progress-dot column. Footer is 13px. |
-| `web/src/theme/Wordmark.tsx` | Bank mark inside the app header. The tellr logo is flex-centered in a padded pill (`object-fit: contain`). |
+| `web/src/theme/Wordmark.tsx` | Bank mark inside the app header. The tellr logo is flex-centered in a padded pill (`object-fit: contain`, height-driven 155 / 61). |
 | `web/src/theme/controls.ts` | Shared control styles, including filled secondary and link styles. |
-| `web/src/assets/tellr-wordmark.png` | Tellr wordmark (transparent). `mark: 'logo'` paints it with `--tc-logo` (periwinkle on the tellr dark theme). |
+| `web/src/assets/tellr-wordmark.png` | Tellr wordmark (transparent, 155×61, tight crop). `mark: 'logo'` paints it with `--tc-logo` (periwinkle on the tellr dark theme). Height drives width. |
 | `web/src/theme.test.tsx` | Selection, unknown-id fallback, storage, both palettes, and the flow layout. |
 | `web/src/themeCycle.test.tsx` | `T` cycles all four banks and wraps, default `tellr`, Customer file route, ignore-in-inputs, and a header / Urgency Score / copilot render per theme in light and dark. |
 | `web/src/scheme.test.tsx` | Light/dark/system toggle, storage, native select popup tokens, and the color-scheme / forced-colors / contrast CSS. |

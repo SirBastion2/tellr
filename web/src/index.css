@@ -371,8 +371,6 @@ button[data-loading='true'],
 
 .tc-connection {
   box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
   margin: 0;
   white-space: nowrap;
   flex: 0 1 auto;
@@ -422,8 +420,6 @@ button[data-loading='true'],
 
 .tc-live-badge {
   box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
   margin: 0;
   white-space: nowrap;
   flex: 0 1 auto;
@@ -485,8 +481,8 @@ button[data-loading='true'],
 
 .tc-wordmark[data-mark='logo'] {
   box-sizing: border-box;
-  width: var(--tc-wordmark-w, 110px);
-  height: var(--tc-wordmark-h, 40px);
+  width: auto;
+  height: auto;
   padding: var(--tc-space-2, 8px);
   border-radius: var(--tc-radius-control, 999px);
   line-height: 0;
@@ -497,8 +493,9 @@ button[data-loading='true'],
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 100%;
-  height: 100%;
+  height: var(--tc-wordmark-h, 40px);
+  width: auto;
+  aspect-ratio: var(--tc-wordmark-aspect, 155 / 61);
   padding: 0;
   line-height: 0;
   background-color: var(--tc-logo);
@@ -515,8 +512,9 @@ button[data-loading='true'],
 
 .tc-wordmark-img {
   display: block;
-  width: 100%;
   height: 100%;
+  width: auto;
+  aspect-ratio: var(--tc-wordmark-aspect, 155 / 61);
   object-fit: contain;
   object-position: center;
   line-height: 0;
@@ -769,6 +767,8 @@ html[data-color-scheme='light'] select option:checked,
   --tc-space-body-control: 12px;
   --tc-space-control-pad-y: 8px;
   --tc-space-control-pad-x: 12px;
+  --tc-wordmark-h: 40px;
+  --tc-wordmark-aspect: 155 / 61;
 }
 
 html,
