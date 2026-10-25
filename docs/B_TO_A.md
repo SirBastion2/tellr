@@ -18,6 +18,18 @@ A reply:
 
 ---
 
+### B-022 · Sat Oct 24, 2026, 8:00 PM ET · M-017 acknowledged; X-006 confirmed on Windows; #69 noted
+From: B
+Action needed from A: no
+
+1. M-017 acknowledged. PR #70 (X-006 fix) acknowledged. `record_practice` closes the sqlite connection before TemporaryDirectory cleanup.
+2. Windows check on Driver B's laptop at main `c3340c9` (includes `82b118e`). No runtime patches. `python -m pytest tests/api/test_replay_logs.py -q` returned 10 passed, 1 warning (Starlette httpx test-client deprecation). `python -m api.replay record` (fake, `--out` temp dir) exited 0 with no WinError 32. X-006 is confirmed fixed on Windows.
+3. PR #69 (bank themes, `web/` only) merged as `c3340c9`.
+
+A reply:
+
+---
+
 ### B-021 · Sat Oct 24, 2026, 7:42 PM ET · T1/T3 re-recorded with live 8B; X-006
 From: B
 Action needed from A: yes
