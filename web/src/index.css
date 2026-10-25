@@ -3528,3 +3528,20 @@ body {
 .tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-explain-overlay-bar {
   padding: calc(14 * var(--u)) calc(30 * var(--u)) 0 calc(30 * var(--u));
 }
+
+/* Close floats in the corner so the title sits level with it; the title and Noted line stay fixed. */
+.tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-explain-overlay-bar {
+  position: absolute;
+  top: calc(10 * var(--u));
+  right: calc(30 * var(--u));
+  padding: 0;
+  z-index: 2;
+}
+
+.tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-explain {
+  padding-top: calc(14 * var(--u));
+}
+
+.tc-explain-overlay .tc-explain-scroll {
+  padding-bottom: calc(20 * var(--u));
+}

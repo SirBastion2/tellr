@@ -137,6 +137,8 @@ export function ExplanationPanel({
           Noted {notedAtLocal(noted)}
         </p>
       ) : null}
+      </div>
+      <div className="tc-explain-scroll">
       <FactGrid label="Level summary">
         <Fact term="Level" testId="explain-level">
           {levelLabel(session.risk.level)}
@@ -154,8 +156,6 @@ export function ExplanationPanel({
       </FactGrid>
 
       <SectionHeading>What raised it</SectionHeading>
-      </div>
-      <div className="tc-explain-scroll">
       <FactorList
         items={grouped.raises}
         total={total}
