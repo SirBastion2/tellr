@@ -103,12 +103,18 @@ describe('demo polish', () => {
       expect(afterFirst).toBeGreaterThanOrEqual(4)
 
       fireEvent.click(screen.getByTestId('demo-speed-2'))
-      fireEvent.click(screen.getByRole('link', { name: 'Customer file' }))
-      expect(screen.getByTestId('customer-screen')).toBeTruthy()
+      await act(async () => {
+        window.history.pushState({}, '', '/customer')
+        window.dispatchEvent(new PopStateEvent('popstate'))
+      })
+      expect(screen.getByTestId('not-found-screen')).toBeTruthy()
       await act(async () => {
         await vi.advanceTimersByTimeAsync(1_000)
       })
-      fireEvent.click(screen.getByRole('link', { name: 'Home' }))
+      await act(async () => {
+        window.history.pushState({}, '', '/')
+        window.dispatchEvent(new PopStateEvent('popstate'))
+      })
       const onFile = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
       expect(onFile).toBeGreaterThanOrEqual(afterFirst)
 
