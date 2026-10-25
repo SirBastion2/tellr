@@ -2420,4 +2420,29 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/112. Do not open a new PR. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos.
 
+---
+
+### [B] Center signal confirm and dismiss icons — Agent B1 — 2026-10-25 06:51
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 192 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  53 passed (53)
+      Tests  192 passed (192)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/workstation/CopilotStrip.tsx`, `web/src/ui/icons.tsx`, `web/src/workstation.test.tsx`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Confirm (✓) and dismiss (✕) stay the 48px circles on the copilot signal rows (`CopilotStrip`, architecture workstation). Both use grid `place-items: center`, `line-height: 1`, and padding 0 so the inline SVG sits in the middle of the circle. Size, fill, border, and radius are unchanged. The same styles apply in tellr, pnc, mtb, and fnb because those banks share the control.
+  - The check stroke was half a unit right of the 24 viewBox center. Shifted that path left by 0.5 so the ink is centered. The X path was already centered.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/114. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos. ARCHITECTURE.md unchanged (no files moved).
+
 
