@@ -129,6 +129,39 @@ describe('merged workstation signals', () => {
     expect(notes.textContent).toContain(thresholdChip.label)
     expect(signalTexts().join('\n')).not.toContain(thresholdChip.label)
     expect(screen.getByTestId('copilot-strip').querySelector('[data-testid="signal-row"]')).toBeNull()
+    expect(screen.getByTestId('answer-panel')).toBeTruthy()
+    expect(screen.getByTestId('copilot-action').textContent).toBe(liveVisit.question?.text)
+  })
+
+  it('keeps the copilot answer panel working beside the merged signal list', () => {
+    const onAnswer = vi.fn()
+    render(workstation({ onAnswer }))
+    expect(screen.getByTestId('answer-panel')).toBeTruthy()
+    expect(within(screen.getByTestId('explain-panel')).getAllByTestId('signal-row')).toHaveLength(2)
+    expect(screen.getByTestId('copilot-strip').querySelector('[data-testid="signal-row"]')).toBeNull()
+
+    const firstChipId = liveVisit.question?.chips[0]
+    const firstChip = library.chips.find((chip) => chip.id === firstChipId)
+    expect(firstChip).toBeTruthy()
+    if (liveVisit.question?.id === 'q.opener.who_are_you_helping') {
+      fireEvent.click(screen.getByRole('button', { name: firstChip?.label ?? firstChipId }))
+      expect(onAnswer).not.toHaveBeenCalled()
+      const purpose = library.purposes[0]
+      fireEvent.click(screen.getByRole('button', { name: purpose.label }))
+      fireEvent.click(screen.getByRole('button', { name: firstChip?.label ?? firstChipId }))
+      expect(onAnswer).toHaveBeenCalledWith({
+        question_id: liveVisit.question.id,
+        chip: firstChipId,
+        purpose: purpose.id,
+      })
+    } else {
+      fireEvent.click(screen.getByRole('button', { name: firstChip?.label ?? firstChipId }))
+      expect(onAnswer).toHaveBeenCalledWith({
+        question_id: liveVisit.question?.id,
+        chip: firstChipId,
+      })
+    }
+    expect(within(screen.getByTestId('explain-panel')).getAllByTestId('signal-row')).toHaveLength(2)
   })
 
   it('keeps dismissed and confirmed marks plus keyboard labels on the merged rows', () => {

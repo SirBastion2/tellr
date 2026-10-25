@@ -5,7 +5,9 @@ import { CopilotStrip } from '../workstation/CopilotStrip'
 import { ExplanationPanel } from '../workstation/ExplanationPanel'
 import { SimulationToolbar } from '../workstation/Toolbar'
 import { TransactionPanel } from '../workstation/TransactionPanel'
-import type { ActivityRow, Library, SessionState } from '../types'
+import type { ActivityRow, AnswerPost, Library, SessionState } from '../types'
+
+const EMPTY_IDS: readonly string[] = []
 
 function useHeldValue<T>(value: T, hold: boolean): T {
   const [held, setHeld] = useState(value)
@@ -18,12 +20,13 @@ function useHeldValue<T>(value: T, hold: boolean): T {
 export function HomeScreen({
   library,
   session,
-  postedChipIds = [],
+  postedChipIds = EMPTY_IDS,
   dismissed = [],
   activity = null,
   demo = null,
   closed = false,
   onUndo,
+  onAnswer,
 }: {
   library: Library | null
   session: SessionState | null
@@ -33,6 +36,7 @@ export function HomeScreen({
   demo?: DemoView | null
   closed?: boolean
   onUndo?: () => void
+  onAnswer?: (answer: AnswerPost) => void
 }) {
   const customer = demo ? customerById(demo.customerId) : null
   const idle = Boolean(demo && demo.index === 0 && !demo.playing)
@@ -77,6 +81,7 @@ export function HomeScreen({
               onRestore={demo.onRestoreSignal}
               onEscalate={demo.onEscalate}
               onUndo={live ? onUndo : undefined}
+              onAnswer={onAnswer}
               closed={closed}
             />
           </div>

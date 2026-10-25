@@ -261,4 +261,60 @@ describe('fixture replay', () => {
     expect((projected.body as { rows: { channel: string; type: string }[] }).rows.length).toBeGreaterThan(0)
     expect(practice.status).toBe(200)
   })
+
+  it('scores a live government-impersonation answer path to High/62', () => {
+    const opened = mockRequest('POST', '/sessions', { mode: 'live', amount_band: '5000_9999' })
+    const sessionId = (opened.body as { session_id: string }).session_id
+    const chips = [
+      'chip.on_phone',
+      'chip.someone_directing',
+      'chip.urgency_secrecy',
+      'chip.cash_only',
+      'chip.above_threshold',
+    ]
+    const context = mockRequest('POST', `/sessions/${sessionId}/context`, { chips, source: 'observed' })
+    expect(context.status).toBe(200)
+    expect(validateSessionState(context.body)).toEqual([])
+    expect(context.body).toMatchObject({
+      answers: 0,
+      risk: { level: 'caution', score: 45 },
+      question: { id: 'q.purpose.open', text: "What's the money for today?" },
+    })
+
+    const missingPurpose = mockRequest('POST', `/sessions/${sessionId}/answers`, {
+      question_id: 'q.purpose.open',
+      chip: 'relayed_by_caller',
+    })
+    expect(missingPurpose.status).toBe(409)
+    expect(validateError(missingPurpose.body)).toEqual([])
+    expect(missingPurpose.body).toMatchObject({ error: { code: 'purpose_required_on_opener' } })
+
+    const opener = mockRequest('POST', `/sessions/${sessionId}/answers`, {
+      question_id: 'q.purpose.open',
+      chip: 'relayed_by_caller',
+      purpose: 'purpose.government_payment',
+    })
+    expect(opener.status).toBe(200)
+    expect(opener.warnings).toEqual([])
+    expect(validateSessionState(opener.body)).toEqual([])
+    expect(opener.body).toMatchObject({
+      answers: 1,
+      stated_purpose: 'purpose.government_payment',
+      risk: { level: 'caution', score: 52 },
+      question: { id: 'q.secrecy.told_not_to_tell' },
+    })
+    expect((opener.body as { question: { text: string } }).question.text).not.toBe("What's the money for today?")
+
+    const secrecy = mockRequest('POST', `/sessions/${sessionId}/answers`, {
+      question_id: 'q.secrecy.told_not_to_tell',
+      chip: 'confirmed',
+    })
+    expect(secrecy.status).toBe(200)
+    expect(secrecy.warnings).toEqual([])
+    expect(validateSessionState(secrecy.body)).toEqual([])
+    expect(secrecy.body).toMatchObject({
+      answers: 2,
+      risk: { level: 'high', raw_level: 'high', score: 62 },
+    })
+  })
 })
