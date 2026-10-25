@@ -58,7 +58,7 @@ SessionState in v1. Recorded 2026-10-24.
 
 ### Hour 6 · A-03 model pick · Meta-Llama-3.1-8B-Instruct Q4_K_M (Driver A)
 Chosen by Driver A (Sebastian) on 2026-10-24 from the A-03 benchmark in
-`docs/HANDOFF.md`. 8B total p95 482.7 ms vs 3B 296.3 ms; both under the 1.5 s L1b
+`docs/handoff/000-archive.md`. 8B total p95 482.7 ms vs 3B 296.3 ms; both under the 1.5 s L1b
 limit and the ~0.7 s target. 8B uses about 7.4 of 8 GB VRAM on the RTX 5070 Laptop.
 Quality is not yet measured. Both models picked `q.homerepair.contractor_name` on
 T2. A-05 must compare 8B and 3B on the dev scenarios. The 3B is the fallback if 8B

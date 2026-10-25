@@ -12,7 +12,7 @@ git diff main...$B -- contract/ reference_impl.py docs/architecture.md tests/gol
 ## Checklist
 
 - [ ] The diff touches only the owner's directories (docs/ROSTER.md §3, per agent), plus
-      `docs/HANDOFF.md` and `docs/QUESTIONS.md`.
+      a new file under `docs/handoff/` (do not edit `docs/HANDOFF.md`) and `docs/QUESTIONS.md`.
 - [ ] `eval/` PRs are reviewed by Driver A.
 - [ ] The second command prints nothing, unless an approved `CHANGE-nnn` explains it.
 - [ ] The branch is rebased on `main` and its gate passes (`scripts/gate.sh a` or `b`).
@@ -25,8 +25,8 @@ git diff main...$B -- contract/ reference_impl.py docs/architecture.md tests/gol
   - no outcome button is ever `disabled`;
   - model output is parsed as a question ID and nothing else.
 - [ ] Read `docs/CROSS_LANE.md`.
-- [ ] The HANDOFF entry exists and matches the diff.
-- [ ] Every new dependency is justified in HANDOFF.
+- [ ] The new `docs/handoff/` file exists and matches the diff.
+- [ ] Every new dependency is justified in that file.
 
 ## Verdict
 
