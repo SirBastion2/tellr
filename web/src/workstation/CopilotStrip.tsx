@@ -4,6 +4,7 @@ import { CheckIcon, DismissIcon } from '../ui/icons'
 import { LEVEL_WORD, LevelIcon } from '../ui/LevelIcon'
 import { listedChipIds, originText, sourceForChip } from '../feed'
 import type { Library, SessionState } from '../types'
+import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 
 const primary = { ...controlStyle, ...primaryStyle }
 const iconButton: CSSProperties = {
@@ -77,14 +78,14 @@ export function CopilotStrip({
     )
   }
 
-  if (pending || !session) {
+  if (!session) {
     return (
       <aside
         aria-label="Copilot"
         data-testid="copilot-strip"
         className="tc-strip"
-        aria-busy="true"
-        data-updating="true"
+        aria-busy={pending}
+        data-updating={pending ? 'true' : undefined}
       >
         <p data-testid="copilot-updating" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
           Updating copilot…
@@ -99,12 +100,34 @@ export function CopilotStrip({
   const script = readAloud(session)
 
   return (
-    <aside aria-label="Copilot" data-testid="copilot-strip" className="tc-strip" data-level={level}>
+    <aside
+      aria-label="Copilot"
+      data-testid="copilot-strip"
+      className="tc-strip"
+      data-level={level}
+      aria-busy={pending}
+      data-updating={pending ? 'true' : undefined}
+    >
+      {pending ? (
+        <p data-testid="copilot-updating" className="tc-strip-updating">
+          <span className="tc-inline-spinner" aria-hidden="true" />
+          Updating copilot…
+        </p>
+      ) : null}
+      <div className="tc-strip-body" data-dimmed={pending ? 'true' : 'false'}>
       <div style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: 8, alignItems: 'center' }}>
         <LevelIcon level={level} />
         <div style={{ minWidth: 0 }}>
           <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0, lineHeight: 1.2 }}>
             {LEVEL_WORD[level]}
+          </p>
+          <p
+            data-testid="copilot-score"
+            className="tc-prose"
+            title={URGENCY_SCORE_TERM}
+            style={{ margin: 0, lineHeight: 1.2 }}
+          >
+            {URGENCY_SCORE_TERM} {formatUrgencyScore(session.risk.score)}
           </p>
           <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
             {reason}
@@ -169,6 +192,7 @@ export function CopilotStrip({
                     aria-label={`Restore ${label}`}
                     title="Restore signal"
                     style={{ ...controlStyle, ...secondaryStyle }}
+                    disabled={pending}
                     onClick={() => onRestore?.(chipId)}
                   >
                     Restore
@@ -184,6 +208,7 @@ export function CopilotStrip({
                     aria-label={`Confirm ${label}`}
                     title="Confirm signal (C)"
                     style={primary}
+                    disabled={pending}
                     onClick={() => onConfirm(chipId)}
                   >
                     <CheckIcon />
@@ -196,6 +221,7 @@ export function CopilotStrip({
                     aria-label={`Dismiss ${label}`}
                     title="Dismiss signal (D)"
                     style={iconButton}
+                    disabled={pending}
                     onClick={() => onDismiss(chipId)}
                   >
                     <DismissIcon />
@@ -220,6 +246,7 @@ export function CopilotStrip({
               data-testid="undo"
               title="Undo the last signal"
               style={{ ...controlStyle, ...secondaryStyle }}
+              disabled={pending}
               onClick={() => onUndo()}
             >
               Undo
@@ -231,8 +258,9 @@ export function CopilotStrip({
             data-variant="danger"
             data-testid="escalate"
             title="Escalate to supervisor (E)"
-            data-loading="false"
-            aria-busy={false}
+            data-loading={pending ? 'true' : 'false'}
+            aria-busy={pending}
+            disabled={pending}
             style={{
               ...controlStyle,
               backgroundColor: 'var(--tc-risk-high-bg)',
@@ -246,6 +274,7 @@ export function CopilotStrip({
           </button>
         </div>
       )}
+      </div>
     </aside>
   )
 }

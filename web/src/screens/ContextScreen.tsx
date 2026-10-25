@@ -4,6 +4,7 @@ import { controlStyle, inputFill, primaryStyle } from '../theme/controls'
 import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
 import { LEVEL_WORD } from '../ui/LevelIcon'
 import { shortId } from '../ui/plain'
+import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import type { Library, SessionState } from '../types'
 
 const tap: CSSProperties = controlStyle
@@ -71,8 +72,8 @@ export function ContextScreen({
             <Fact term="Level" testId="risk-level">
               {LEVEL_WORD[session.risk.level]}
             </Fact>
-            <Fact term="Score" testId="risk-score">
-              {session.risk.score}
+            <Fact term={URGENCY_SCORE_TERM} testId="risk-score">
+              {formatUrgencyScore(session.risk.score)}
             </Fact>
           </FactGrid>
         </>

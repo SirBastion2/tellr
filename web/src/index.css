@@ -86,6 +86,51 @@ button[data-loading='true'],
   border: 1px solid var(--tc-glass-border, #1c1917);
 }
 
+.tc-strip-body {
+  display: grid;
+  gap: inherit;
+  align-content: start;
+  min-width: 0;
+}
+
+.tc-strip-body[data-dimmed='true'] {
+  opacity: 0.72;
+}
+
+.tc-strip-updating {
+  position: absolute;
+  top: var(--tc-space-card-fluid, 10px);
+  right: var(--tc-space-card-fluid, 10px);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--tc-secondary-bg, #e7e5e4);
+  color: var(--tc-secondary-fg, #1c1917);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  pointer-events: none;
+}
+
+.tc-inline-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: tc-spin 0.7s linear infinite;
+}
+
+@keyframes tc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (min-width: 900px) {
   .tc-workstation {
     grid-template-columns: minmax(0, 1.15fr) minmax(220px, 0.85fr);

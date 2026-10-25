@@ -10,6 +10,7 @@ import { listedChipIds } from './feed'
 import { mockRequest, resetMock } from '../mock/replay'
 import { HomeScreen } from './screens/HomeScreen'
 import type { Library, SessionState } from './types'
+import { formatUrgencyScore, URGENCY_SCORE_TERM } from './ui/urgencyScore'
 import { CopilotStrip } from './workstation/CopilotStrip'
 
 const library = libraryJson as Library
@@ -147,22 +148,74 @@ describe('Copilot card on latest main', () => {
     ])
   })
 
-  it('shows an updating state instead of mixing an in-flight Clear level with leftover copy', () => {
-    render(
-      strip({
-        pending: true,
-        session: {
+  it('keeps the card and signal list mounted while a dismiss write is in flight', () => {
+    const { rerender } = render(strip())
+    const card = screen.getByTestId('copilot-strip')
+    const list = screen.getByRole('list', { name: 'Signals' })
+    const row = screen.getByTestId('signal-row')
+    rerender(strip({ pending: true }))
+    expect(screen.getByTestId('copilot-strip')).toBe(card)
+    expect(screen.getByRole('list', { name: 'Signals' })).toBe(list)
+    expect(screen.getByTestId('signal-row')).toBe(row)
+    expect(screen.getByTestId('copilot-updating').textContent).toMatch(/Updating/)
+    expect(screen.getByTestId('copilot-level').textContent).toBe('Clear')
+    expect(screen.getByTestId('copilot-action').textContent).toBe(phoneVisit.question?.text)
+    expect(screen.getByTestId('read-aloud')).toBeTruthy()
+  })
+
+  it('holds the last server snapshot on Home while a write is in flight', () => {
+    const { rerender } = render(
+      <HomeScreen
+        library={library}
+        session={phoneVisit}
+        postedChipIds={['chip.on_phone']}
+        demo={demo({ index: 1 })}
+      />,
+    )
+    const card = screen.getByTestId('copilot-strip')
+    const list = screen.getByRole('list', { name: 'Signals' })
+    const row = screen.getByTestId('signal-row')
+    expect(screen.getByTestId('copilot-score').textContent).toBe(formatUrgencyScore(phoneVisit.risk.score))
+    expect(screen.getByTestId('explain-score').textContent).toBe(formatUrgencyScore(phoneVisit.risk.score))
+    expect(screen.getByTestId('copilot-reason').textContent).toMatch(/On the phone/)
+
+    rerender(
+      <HomeScreen
+        library={library}
+        session={{
           ...emptyVisit,
           question: phoneVisit.question,
           talk_track: phoneVisit.talk_track,
-        },
-      }),
+        }}
+        postedChipIds={['chip.on_phone']}
+        demo={demo({ index: 1, pending: true })}
+      />,
     )
+    expect(screen.getByTestId('copilot-strip')).toBe(card)
+    expect(screen.getByRole('list', { name: 'Signals' })).toBe(list)
+    expect(screen.getByTestId('signal-row')).toBe(row)
     expect(screen.getByTestId('copilot-updating').textContent).toMatch(/Updating/)
-    expect(screen.queryByTestId('copilot-level')).toBeNull()
-    expect(screen.queryByTestId('copilot-action')).toBeNull()
-    expect(screen.queryByTestId('read-aloud')).toBeNull()
-    expect(screen.queryByTestId('explain-panel')).toBeNull()
+    expect(screen.getByTestId('copilot-reason').textContent).toMatch(/On the phone/)
+    expect(screen.getByTestId('copilot-score').textContent).toBe(formatUrgencyScore(phoneVisit.risk.score))
+    expect(screen.getByTestId('explain-panel')).toBeTruthy()
+    expect(screen.getByTestId('explain-score').textContent).toBe(formatUrgencyScore(phoneVisit.risk.score))
+    expect(screen.queryByText('No concern flagged')).toBeNull()
+  })
+
+  it('labels the workstation score Urgency Score as score/max', () => {
+    render(
+      <HomeScreen
+        library={library}
+        session={phoneVisit}
+        postedChipIds={['chip.on_phone']}
+        demo={demo({ index: 1 })}
+      />,
+    )
+    expect(screen.getByTestId('copilot-score').textContent).toBe(formatUrgencyScore(14))
+    expect(screen.getByTestId('copilot-score').getAttribute('title')).toBe(URGENCY_SCORE_TERM)
+    expect(screen.getByTestId('explain-score').textContent).toBe('14/100')
+    expect(screen.getAllByText(URGENCY_SCORE_TERM).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/^Score$/)).toBeNull()
   })
 
   it('renders one server snapshot when that snapshot is Clear and still has a question', () => {
@@ -227,7 +280,14 @@ describe('Copilot card on latest main', () => {
     await stepUntilSignals()
     const label = 'On the phone during the transaction'
     expect(screen.getByTestId('signal-row').textContent).toMatch(label)
+    const card = screen.getByTestId('copilot-strip')
+    const list = screen.getByRole('list', { name: 'Signals' })
+    const row = screen.getByTestId('signal-row')
     fireEvent.click(screen.getByTestId('signal-dismiss'))
+    expect(screen.getByTestId('copilot-strip')).toBe(card)
+    expect(screen.getByRole('list', { name: 'Signals' })).toBe(list)
+    expect(screen.getByTestId('signal-row')).toBe(row)
+    expect(screen.queryByTestId('copilot-level')).toBeTruthy()
     await waitFor(() => {
       expect(screen.getByTestId('signal-row').getAttribute('data-state')).toBe('dismissed')
     })
