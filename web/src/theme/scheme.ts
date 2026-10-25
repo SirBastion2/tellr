@@ -1,39 +1,86 @@
 import { useEffect, useState, type RefObject } from 'react'
-import { HEADER_SCHEME_COLLAPSE_PX } from './tokens'
 
 export type ColorChoice = 'light' | 'dark' | 'system'
 
 export type ResolvedScheme = 'light' | 'dark'
 
-const SCHEME_COMPACT_QUERY = `(max-width: ${HEADER_SCHEME_COLLAPSE_PX}px)`
-
-/** Viewport or header container at or under 1280px uses the scheme menu. */
-export function readSchemeCompact(header?: HTMLElement | null): boolean {
-  try {
-    if (window.matchMedia(SCHEME_COMPACT_QUERY).matches) {
-      return true
-    }
-  } catch {
-    // jsdom and older engines have no matchMedia.
-  }
-  const width = header?.clientWidth ?? 0
-  return width > 0 && width <= HEADER_SCHEME_COLLAPSE_PX
+export type HeaderFitMeasure = {
+  available: number
+  brand: number
+  status: number
+  nav: number
+  schemeFull: number
+  help: number
+  gap: number
 }
 
-/** Mount the scheme menu or the segment, never both. */
+function contentWidth(el: Element | null): number {
+  if (!el || !(el instanceof HTMLElement)) {
+    return 0
+  }
+  return Math.ceil(Math.max(el.scrollWidth, el.offsetWidth))
+}
+
+/** Sum in-flow children so a grown flex nav does not count leftover space. */
+function groupMinWidth(el: Element | null, gap: number): number {
+  if (!el || !(el instanceof HTMLElement)) {
+    return 0
+  }
+  const kids = [...el.children].filter((child) => {
+    if (!(child instanceof HTMLElement)) {
+      return false
+    }
+    const style = getComputedStyle(child)
+    return style.visibility !== 'hidden' && style.position !== 'fixed'
+  })
+  if (kids.length === 0) {
+    return contentWidth(el)
+  }
+  const widths = kids.reduce((sum, child) => sum + contentWidth(child), 0)
+  return widths + gap * Math.max(0, kids.length - 1)
+}
+
+/** True when brand + hugged status + nav + full scheme + help + gaps will not fit. */
+export function schemeNeedsCompact(measure: HeaderFitMeasure): boolean {
+  if (measure.available <= 0) {
+    return false
+  }
+  const tools = measure.schemeFull + measure.help + measure.gap
+  const needed = measure.brand + measure.status + measure.nav + tools + 3 * measure.gap
+  return needed > measure.available
+}
+
+export function measureHeaderFit(header: HTMLElement): HeaderFitMeasure {
+  const style = getComputedStyle(header)
+  const padL = parseFloat(style.paddingLeft) || 0
+  const padR = parseFloat(style.paddingRight) || 0
+  const gap = parseFloat(style.columnGap || style.gap) || 0
+  return {
+    available: Math.max(0, header.clientWidth - padL - padR),
+    brand: groupMinWidth(header.querySelector('[data-testid="header-brand"]'), gap),
+    status: groupMinWidth(header.querySelector('[data-testid="header-status"]'), gap),
+    nav: groupMinWidth(header.querySelector('[data-testid="app-nav"]'), gap),
+    schemeFull: contentWidth(header.querySelector('[data-testid="color-scheme"]')),
+    help: contentWidth(header.querySelector('[data-testid="shortcut-help-button"]')),
+    gap,
+  }
+}
+
+/** Collapse the scheme segment when the measured full row would overflow the header. */
+export function readSchemeCompact(header?: HTMLElement | null): boolean {
+  if (!header || header.clientWidth <= 0) {
+    return false
+  }
+  return schemeNeedsCompact(measureHeaderFit(header))
+}
+
+/** Mount both scheme controls; hide one. Collapse from measured content, not a px breakpoint. */
 export function useSchemeCompact(headerRef: RefObject<HTMLElement | null>): boolean {
   const [compact, setCompact] = useState(() => readSchemeCompact(null))
 
   useEffect(() => {
     const update = () => setCompact(readSchemeCompact(headerRef.current))
     update()
-    let media: MediaQueryList | null = null
-    try {
-      media = window.matchMedia(SCHEME_COMPACT_QUERY)
-      media.addEventListener('change', update)
-    } catch {
-      // jsdom
-    }
     const header = headerRef.current
     const observer = header && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null
     if (header && observer) {
@@ -41,7 +88,6 @@ export function useSchemeCompact(headerRef: RefObject<HTMLElement | null>): bool
     }
     window.addEventListener('resize', update)
     return () => {
-      media?.removeEventListener('change', update)
       observer?.disconnect()
       window.removeEventListener('resize', update)
     }

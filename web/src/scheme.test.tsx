@@ -5,9 +5,25 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { App } from './App'
 import { THEMES } from './theme/registry'
+import { schemeNeedsCompact } from './theme/scheme'
 import { COLOR_STORAGE_KEY } from './theme/tokens'
 
 describe('color scheme', () => {
+  it('collapses the scheme segment from measured content width, not a 1280px breakpoint', () => {
+    const wide = {
+      available: 1600,
+      brand: 260,
+      status: 280,
+      nav: 420,
+      schemeFull: 220,
+      help: 48,
+      gap: 8,
+    }
+    expect(schemeNeedsCompact(wide)).toBe(false)
+    expect(schemeNeedsCompact({ ...wide, available: 1100 })).toBe(true)
+    expect(schemeNeedsCompact({ ...wide, available: 0 })).toBe(false)
+  })
+
   it('toggles light and dark and opts out of forced darkening', () => {
     const html = readFileSync('index.html', 'utf8')
     const css = readFileSync('src/index.css', 'utf8')

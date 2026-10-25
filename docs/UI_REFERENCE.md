@@ -50,24 +50,22 @@ The page card fills the padded page (`width: 100%`) and starts at the top of the
 | 900px and up | Transaction and copilot side by side, about `1.15fr` / `0.85fr` |
 | 1024px and up | Columns tighten to about `1.4fr` / `1fr` |
 | 1280px and up | `3fr` / `2fr`. Copilot stays sticky and grows with its content; the page or column scrolls |
-| Header container or viewport under 1280px | Light/Dark/System segment hides. A single scheme menu replaces it |
+| Header row would overflow with the full Light/Dark/System segment | That segment hides. A single scheme menu replaces it (measured, not a 1280px breakpoint) |
 
-Type and padding use `clamp()` from `DENSITY` in `web/src/theme/tokens.ts` (about 15–20% tighter than the first workstation pass). Vertical rhythm is the 4 / 8 / 12 / 16 / 24 scale in that file and `web/src/index.css`. Header-to-content is 16px. Heading-to-body is 8px. Body-to-control is 12px. Header pills pad `0.85em` inline so they hug their text. Prose is at most `70ch`. Toolbar controls share the 48px control-height token. Play keeps the icon and the word on one line. The customer select matches that height. Show case file and the elapsed timer sit on that row. The live local time-of-day clock sits in the header.
+Type and padding use `clamp()` from `DENSITY` in `web/src/theme/tokens.ts` (about 15–20% tighter than the first workstation pass). Vertical rhythm is the 4 / 8 / 12 / 16 / 24 scale in that file and `web/src/index.css`. Header-to-content is 16px. Heading-to-body is 8px. Body-to-control is 12px. Header pills pad `0.85em` inline so they hug their text. Prose is at most `70ch`. Toolbar controls share the 48px control-height token. Play keeps the icon and the word on one line. The customer select matches that height. Show case file and the elapsed timer sit on that row. The header does not show a clock.
 
-Target playback at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. The elapsed timer and the timeline stamps use that same simulated customer time at every speed. Speed only changes how long the wall clock takes. The time-of-day clock is the client's real local time (`Intl` / `Date`), ticks each minute, and is not UTC.
+Target playback at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. The elapsed timer and the timeline stamps use that same simulated customer time at every speed. Speed only changes how long the wall clock takes. History and activity stamps use the client's local `Intl` / `Date` formatter and are not UTC.
 
 ## Header and toolbar
 
-The header is one row at 1280, 1180, and 1024 (`flex-wrap: nowrap`). At 1180 and 1024 it tightens gaps; the scenario pill may ellipsize with a title tooltip. Theme toggle and `?` stay on that row. Leftover space sits between groups (brand | status pills + clock | tabs | scheme + help), never inside a pill. Title stays complete. Tabs are content-sized and never clip (`Handoff` stays `Handoff`). Simulation and connection pills hug their text. Nothing may overflow the viewport width at 1024, 1180, 1280, or 1440. The tellr logo graphic is the control height minus small padding, centered in its rounded pill.
+The header is one row (`flex-wrap: nowrap`). Equal `--tc-space-2` padding sits on the left and right of the header pill. At 1180 and 1024 it tightens gaps; the scenario pill may ellipsize with a title tooltip. Theme toggle and `?` stay on that row. Leftover space sits between groups (brand | simulation pill | tabs | scheme + help), never inside a pill. Title stays complete. Tabs are content-sized and never clip (`Handoff` stays `Handoff`). The simulation pill hugs its text until the row is tight. Nothing may overflow the viewport width. The tellr logo graphic is the control height minus small padding, centered in its rounded pill.
 
 1. Bank mark
 2. Title "Teller Copilot"
 3. Simulation pill: `Simulation: <customer title>`, or `LIVE — no scenario loaded` when the session is live and no synthetic customer is selected
-4. Connection pill (see Live and sample)
-5. Local time-of-day clock (`tabular-nums` on the digits)
-6. Tabs that fit the demo layout: Home, Customer file, Outcome, and Handoff. Outcome and Handoff are hint labels until a visit exists; they are not extra screens
-7. Light / Dark / System
-8. `?` opens keyboard help
+4. Tabs that fit the demo layout: Home, Customer file, Outcome, and Handoff. Outcome and Handoff are hint labels until a visit exists; they are not extra screens
+5. Light / Dark / System
+6. `?` opens keyboard help
 
 There is no Presenter button.
 
@@ -145,13 +143,13 @@ While it is on, which is always:
 
 ## Live and sample
 
-The header pill is driven by `GET /health`, not by a build flag alone.
+`GET /health` still chooses the request origin. The header does not show a connection pill.
 
-| Probe | Pill | Requests go to |
-|---|---|---|
-| `VITE_API_URL/health`, or `http://127.0.0.1:8000/health` when that variable is unset, returns a health report | Live API connected | That origin |
-| That probe fails and the page origin answers `/health` | Using sample data | The Vite origin (mock plugin) |
-| Neither answers | API not connected | The configured origin, which will fail until the API is up |
+| Probe | Requests go to |
+|---|---|
+| `VITE_API_URL/health`, or `http://127.0.0.1:8000/health` when that variable is unset, returns a health report | That origin |
+| That probe fails and the page origin answers `/health` | The Vite origin (mock plugin) |
+| Neither answers | The configured origin, which will fail until the API is up |
 
 `npm run dev` and `npm run dev:api` both install the mock plugin. `npm run dev:api` loads `web/.env.api`, which sets `VITE_API_URL=http://127.0.0.1:8000`. The script has no inline `VAR=value`, so Windows PowerShell can run it. Override the origin with `web/.env.api.local` or `$env:VITE_API_URL`.
 
