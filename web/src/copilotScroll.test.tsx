@@ -53,7 +53,7 @@ describe('copilot panel scroll', () => {
     forbidsInnerScroll(stripRule)
     expect(stripRule).toMatch(/height:\s*auto/)
     expect(stripRule).toMatch(/overflow:\s*visible/)
-    expect(stripRule).not.toMatch(/height:\s*100%/)
+    expect(stripRule).not.toMatch(/(?<![-\w])height:\s*100%/)
 
     const bodyRule = rule(source, '.tc-strip-body')
     forbidsInnerScroll(bodyRule)
