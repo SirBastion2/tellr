@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { formatElapsed, timelineElapsedMs } from '../demo/clock'
 import type { CustomerEvent, CustomerFile } from '../demo/customers'
 import { Emphasis } from '../ui/emphasis'
@@ -7,6 +8,22 @@ import { CaseFileLink } from './Toolbar'
 
 function eventSpeaker(event: CustomerEvent, names: readonly string[]): string {
   return displaySpeaker(event.kind, event.speaker, names)
+}
+
+/** Move only the timeline list so the highlighted step is fully inside it. */
+export function revealCurrentStep(list: HTMLElement): void {
+  const current = list.querySelector<HTMLElement>('[data-current="true"]')
+  if (!current) {
+    return
+  }
+  const listRect = list.getBoundingClientRect()
+  const itemRect = current.getBoundingClientRect()
+  const slack = 1
+  if (itemRect.bottom > listRect.bottom + slack) {
+    list.scrollTop += itemRect.bottom - listRect.bottom
+  } else if (itemRect.top < listRect.top - slack) {
+    list.scrollTop -= listRect.top - itemRect.top
+  }
 }
 
 export function TransactionPanel({
@@ -28,6 +45,14 @@ export function TransactionPanel({
   const shown = Math.min(fired, customer.events.length)
   const total = customer.events.length
   const pct = total === 0 ? 0 : Math.round((shown / total) * 100)
+  const timelineRef = useRef<HTMLOListElement>(null)
+
+  useEffect(() => {
+    const list = timelineRef.current
+    if (list) {
+      revealCurrentStep(list)
+    }
+  }, [fired, customer.id, showCase])
 
   return (
     <section aria-label="Core banking" data-testid="transaction-panel" className="tc-transaction tc-screen" style={{ alignContent: 'start' }}>
@@ -66,7 +91,7 @@ export function TransactionPanel({
         </Fact>
       </FactGrid>
       <SectionHeading>Timeline</SectionHeading>
-      <ol data-testid="demo-timeline" className="tc-timeline" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid' }}>
+      <ol ref={timelineRef} data-testid="demo-timeline" className="tc-timeline" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid' }}>
         {visible.map((event, index) => {
           const isCurrent = index === visible.length - 1
           const isPast = index < shown - 1
@@ -84,7 +109,7 @@ export function TransactionPanel({
                 display: 'grid',
                 gridTemplateColumns: '16px minmax(0, 1fr)',
                 columnGap: 'var(--tc-space-3)',
-                paddingBottom: last ? 0 : 'var(--tc-space-4)',
+                paddingBottom: last ? 0 : 'var(--tc-timeline-gap, var(--tc-space-4))',
               }}
             >
               <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -116,7 +141,7 @@ export function TransactionPanel({
                 <p className="tc-kicker" data-testid="event-marker" style={{ margin: 0 }}>
                   Step {index + 1} · {formatElapsed(elapsed)} · {eventSpeaker(event, names)}
                 </p>
-                <p className="tc-prose" style={{ margin: '4px 0 0' }}>
+                <p className="tc-prose" style={{ margin: 'var(--tc-space-1, 4px) 0 0' }}>
                   <Emphasis text={redactPersonalCopy(event.text, names)} />
                 </p>
               </div>
@@ -147,7 +172,7 @@ export function TransactionPanel({
           data-testid="event-progress"
           style={{
             height: 8,
-            marginTop: 8,
+            marginTop: 'var(--tc-space-2, 8px)',
             background: 'var(--tc-input)',
             borderRadius: 'var(--tc-radius-control, 999px)',
             overflow: 'hidden',

@@ -11,14 +11,16 @@ import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import { ExplanationPanel } from './ExplanationPanel'
 import { readExplanation } from './explain'
 
+const controlHeight = `var(--tc-control-h, ${DENSITY.controlHeight})`
+
 function roundIconButton(fill: CSSProperties): CSSProperties {
   return {
     ...controlStyle,
     ...fill,
-    width: DENSITY.controlHeight,
-    height: DENSITY.controlHeight,
-    minWidth: DENSITY.controlHeight,
-    minHeight: DENSITY.controlHeight,
+    width: controlHeight,
+    height: controlHeight,
+    minWidth: controlHeight,
+    minHeight: controlHeight,
     padding: 0,
     display: 'grid',
     placeItems: 'center',
@@ -240,9 +242,9 @@ export function CopilotStrip({
           background: 'var(--tc-action-bg)',
           color: 'var(--tc-action-fg)',
           borderRadius: 'var(--tc-radius-card, 16px)',
-          padding: 12,
+          padding: 'var(--tc-space-3, 12px)',
           display: 'grid',
-          gap: 6,
+          gap: 'var(--tc-space-2, 8px)',
         }}
       >
         <p className="tc-kicker">Suggested action</p>
@@ -250,7 +252,7 @@ export function CopilotStrip({
           {action}
         </p>
       </div>
-      <ul aria-label="Signals" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
+      <ul aria-label="Signals" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 'var(--tc-space-2, 8px)' }}>
         {tellerChips.map((chipId) => {
           const source = sourceForChip(session.context_chips, chipId)
           const wasDismissed = dismissed.includes(chipId)
@@ -348,7 +350,7 @@ export function CopilotStrip({
           This visit is closed.
         </p>
       ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--tc-space-2, 8px)' }}>
           {onUndo ? (
             <button
               type="button"

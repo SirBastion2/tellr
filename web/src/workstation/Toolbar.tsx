@@ -5,24 +5,26 @@ import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { DENSITY } from '../theme/tokens'
 import { PauseIcon, PlayIcon, RestartIcon, StepIcon } from '../ui/icons'
 
+const controlHeight = `var(--tc-control-h, ${DENSITY.controlHeight})`
+
 const control: CSSProperties = {
   ...controlStyle,
   display: 'inline-flex',
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'center',
-  height: DENSITY.controlHeight,
-  minHeight: DENSITY.controlHeight,
+  height: controlHeight,
+  minHeight: controlHeight,
   boxSizing: 'border-box',
-  gap: 8,
+  gap: 'var(--tc-space-2, 8px)',
   padding: 'var(--tc-space-control-pad-y, 8px) var(--tc-space-control-pad-x, 12px)',
 }
 
 const iconButton: CSSProperties = {
   ...control,
   ...secondaryStyle,
-  width: DENSITY.controlHeight,
-  minWidth: DENSITY.controlHeight,
+  width: controlHeight,
+  minWidth: controlHeight,
   padding: 0,
 }
 

@@ -63,30 +63,52 @@ button[data-loading='true'],
   gap: var(--tc-space-workstation, clamp(10px, 1.3vw, 20px));
   align-items: stretch;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.tc-workstation > * {
+  min-width: 0;
+  min-height: 0;
 }
 
 .tc-home-column {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--tc-space-body-control, 12px);
   align-content: start;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.tc-home-column > .tc-toolbar {
+  flex: 0 0 auto;
+}
+
+.tc-home-column > .tc-transaction {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
 }
 
 .tc-transaction {
-  min-height: 100%;
+  min-height: 0;
+  height: 100%;
 }
 
 .tc-strip {
-  position: sticky;
-  top: 8px;
-  height: auto;
-  min-height: 100%;
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
   overflow: visible;
   border-radius: var(--tc-radius-card, 16px);
   padding: var(--tc-space-card-fluid, clamp(10px, 1vw, 16px));
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--tc-space-strip, clamp(10px, 1vw, 13px));
-  align-content: start;
   min-width: 0;
   background: var(--tc-surface, #1e1b4b);
   color: var(--tc-text, #ffffff);
@@ -94,16 +116,33 @@ button[data-loading='true'],
 }
 
 .tc-strip-body {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   gap: inherit;
-  align-content: start;
   min-width: 0;
+  min-height: 0;
   overflow: visible;
 }
 
-.tc-signal-list,
+/* Level, score, suggested action, and Undo/Escalate stay outside this list. */
+.tc-strip-body > :not(ul) {
+  flex: 0 0 auto;
+}
+
+/*
+  Scrollport for signal rows. Keep this list a direct child of .tc-strip-body.
+  Row markup inside it can change; the list itself is what scrolls.
+*/
 .tc-strip ul[aria-label='Signals'] {
-  overflow: visible;
+  flex: 1 1 auto;
+  align-content: start;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, currentColor 40%, transparent) transparent;
 }
 
 .tc-strip-body[data-dimmed='true'] {
@@ -445,13 +484,77 @@ button[data-loading='true'],
 .tc-shell {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   gap: var(--tc-space-header-content, 16px);
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.tc-shell > main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .tc-screen {
   display: grid;
   gap: var(--tc-space-body-control, 12px);
+}
+
+.tc-transaction.tc-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tc-transaction.tc-screen > * {
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+/* Last resort: the event list scrolls inside the column. The progress bar stays put. */
+.tc-transaction.tc-screen > .tc-timeline {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, currentColor 40%, transparent) transparent;
+}
+
+.tc-transaction.tc-screen > .tc-timeline::-webkit-scrollbar,
+.tc-strip ul[aria-label='Signals']::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.tc-transaction.tc-screen > .tc-timeline::-webkit-scrollbar-track,
+.tc-strip ul[aria-label='Signals']::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tc-transaction.tc-screen > .tc-timeline::-webkit-scrollbar-thumb,
+.tc-strip ul[aria-label='Signals']::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, currentColor 40%, transparent);
+  border-radius: 999px;
+}
+
+/* Home fills the card. The workstation is the only row, so it takes the leftover height. */
+.tc-home {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  align-content: stretch;
+}
+
+.tc-home > * {
+  min-height: 0;
 }
 
 .tc-stack-heading {
@@ -666,16 +769,24 @@ button[data-loading='true'],
 .tc-page-card {
   width: 100%;
   max-width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .tc-theme-page {
   overflow-x: clip;
+  overflow-y: hidden;
   overflow-clip-margin: var(--tc-space-2, 8px);
   max-width: 100%;
   min-width: 0;
+  height: 100%;
+  min-height: 0;
 }
 
 .tc-footer {
+  flex: 0 0 auto;
   font-size: var(--tc-text-xs);
   line-height: var(--tc-text-xs-lh);
   font-weight: var(--tc-text-xs-weight);
@@ -775,6 +886,7 @@ button[data-loading='true'],
   margin: 0;
   padding: 0;
   display: grid;
+  align-content: start;
 }
 
 /* Earlier steps only. Opacity keeps each bank's own ink, so tellr / pnc / mtb / fnb stay readable. */
@@ -1019,6 +1131,9 @@ html[data-color-scheme='light'] select option:checked,
   --tc-space-body-control: 12px;
   --tc-space-control-pad-y: 8px;
   --tc-space-control-pad-x: 12px;
+  --tc-page-pad-y: clamp(8px, 1.6vw, 20px);
+  --tc-page-pad-x: clamp(8px, 1.6vw, 24px);
+  --tc-page-pad-bottom: clamp(12px, 2vw, 28px);
   --tc-sim-pad-inline: 18px;
   --tc-nav-pad-inline: 14px;
   --tc-nav-tab-gap: 26px;
@@ -1054,14 +1169,22 @@ html {
 }
 
 html,
+body,
+#root {
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+}
+
+html,
 body {
   overflow-x: hidden;
+  overflow-y: hidden;
   max-width: 100%;
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
   font-family: var(--tc-font, 'Segoe UI', system-ui, sans-serif);
   font-size-adjust: var(--tc-font-size-adjust);
   background-color: var(--tc-bg-color, #0b1026);
@@ -1271,5 +1394,99 @@ body {
   button:active,
   .tc-btn:active {
     transform: none;
+  }
+}
+
+/*
+  Short demo windows. Tokens are shared (VIEWPORT_FIT). Overrides sit on the
+  theme root so they beat the inline custom properties. space-4 stays put.
+  Body text stays on the same steps; only the root size and leading change.
+*/
+@media (max-height: 860px) {
+  :root {
+    --tc-root-font: 87.5% !important;
+  }
+
+  [data-testid='theme-root'] {
+    --tc-space-1: 2px !important;
+    --tc-space-2: 4px !important;
+    --tc-space-3: 6px !important;
+    --tc-space-5: 8px !important;
+    --tc-space-header: 4px !important;
+    --tc-space-header-content: 6px !important;
+    --tc-space-heading-body: 2px !important;
+    --tc-space-body-control: 6px !important;
+    --tc-space-control-pad-y: 2px !important;
+    --tc-space-control-pad-x: 8px !important;
+    --tc-space-gap: 6px !important;
+    --tc-space-workstation: 6px !important;
+    --tc-space-strip: 4px !important;
+    --tc-space-card: 6px !important;
+    --tc-space-card-fluid: 6px !important;
+    --tc-page-pad-y: 6px !important;
+    --tc-page-pad-x: 10px !important;
+    --tc-page-pad-bottom: 6px !important;
+    --tc-control-h: 36px !important;
+    --tc-header-control-h: 36px !important;
+    --tc-header-h: 36px !important;
+    --tc-wordmark-h: 28px !important;
+    --tc-help-size: 32px !important;
+    --tc-timeline-gap: 6px !important;
+    --tc-text-xs-lh: 1.1 !important;
+    --tc-text-sm-lh: 1.1 !important;
+    --tc-text-base-lh: 1.25 !important;
+    --tc-text-lg-lh: 1.1 !important;
+    --tc-text-xl-lh: 1.1 !important;
+    --tc-text-2xl-lh: 1.05 !important;
+    --tc-type-line-body: 1.25 !important;
+    --tc-type-line-heading: 1.1 !important;
+    --tc-type-line-ui: 1.1 !important;
+  }
+
+  .tc-header {
+    min-height: var(--tc-header-h) !important;
+    padding-block: 0 !important;
+  }
+}
+
+@media (max-height: 760px) {
+  :root {
+    --tc-root-font: 87.5% !important;
+  }
+
+  [data-testid='theme-root'] {
+    --tc-space-1: 2px !important;
+    --tc-space-2: 4px !important;
+    --tc-space-3: 4px !important;
+    --tc-space-5: 6px !important;
+    --tc-space-header: 4px !important;
+    --tc-space-header-content: 4px !important;
+    --tc-space-heading-body: 2px !important;
+    --tc-space-body-control: 4px !important;
+    --tc-space-control-pad-y: 2px !important;
+    --tc-space-control-pad-x: 8px !important;
+    --tc-space-gap: 4px !important;
+    --tc-space-workstation: 4px !important;
+    --tc-space-strip: 4px !important;
+    --tc-space-card: 4px !important;
+    --tc-space-card-fluid: 4px !important;
+    --tc-page-pad-y: 4px !important;
+    --tc-page-pad-x: 8px !important;
+    --tc-page-pad-bottom: 4px !important;
+    --tc-control-h: 36px !important;
+    --tc-header-control-h: 36px !important;
+    --tc-header-h: 36px !important;
+    --tc-wordmark-h: 28px !important;
+    --tc-help-size: 32px !important;
+    --tc-timeline-gap: 4px !important;
+    --tc-text-xs-lh: 1.05 !important;
+    --tc-text-sm-lh: 1.05 !important;
+    --tc-text-base-lh: 1.2 !important;
+    --tc-text-lg-lh: 1.05 !important;
+    --tc-text-xl-lh: 1.05 !important;
+    --tc-text-2xl-lh: 1.05 !important;
+    --tc-type-line-body: 1.2 !important;
+    --tc-type-line-heading: 1.05 !important;
+    --tc-type-line-ui: 1.05 !important;
   }
 }
