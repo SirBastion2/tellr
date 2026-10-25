@@ -849,7 +849,7 @@ button[data-loading='true'],
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--tc-space-2, 8px);
   min-width: 0;
   overflow: visible;
   font-size: var(--tc-text-base);
@@ -862,16 +862,24 @@ button[data-loading='true'],
 
 .tc-signal-meta {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: var(--tc-space-1, 4px);
   min-width: 0;
   flex: 1 1 auto;
 }
 
+.tc-signal-label {
+  align-self: stretch;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
 .tc-signal-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--tc-space-2, 8px);
   flex: 0 0 auto;
 }
 
