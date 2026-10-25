@@ -1,3 +1,5 @@
+import { FONT_SIZE_ADJUST, TYPE_LINE_ROLE, TYPE_ROOT, TYPE_SIZE, TYPE_TRACKING, TYPE_WEIGHT } from './typeScale'
+
 /** Shared copy and keys. Each bank theme stores these on its own object. */
 export const DEFAULT_THEME_ID = 'tellr'
 
@@ -18,13 +20,13 @@ export const UI_FONT = 'Poppins, "Segoe UI", system-ui, sans-serif'
 
 export const FOOTER_TEXT = 'Made for HackPSU 2026 © By Team KotR'
 
-/** Readable footer size. Absolute so the 105% demo root does not shrink it. */
-export const FOOTER_FONT_SIZE = '13px'
+/** Footer uses `--tc-text-xs`. Re-export so older tests can still import the token. */
+export const FOOTER_FONT_SIZE = TYPE_SIZE.xs
 
 export const PROGRESS_DOTS = 5
 
-/** Demo layout root size. ~16% below the old 125% so a 1280×720 laptop can see the fold. */
-export const DEMO_ROOT_FONT = '105%'
+/** Demo layout root size. Applied on `html` so rem tokens scale once. */
+export const DEMO_ROOT_FONT = TYPE_ROOT.demo
 
 /** Header Light/Dark/System segment collapses at this container and viewport width. */
 export const HEADER_SCHEME_COLLAPSE_PX = 1280
@@ -35,13 +37,13 @@ export const HEADER_SCHEME_COLLAPSE_PX = 1280
  * `space1`–`space5` are the 4 / 8 / 12 / 16 / 24 rhythm.
  */
 export const DENSITY = {
-  typeTitle: 'clamp(1.1rem, 0.8vw + 0.82rem, 1.45rem)',
-  typeSection: 'clamp(0.9rem, 0.28vw + 0.78rem, 0.98rem)',
-  typeHeader: 'clamp(0.88rem, 0.45vw + 0.72rem, 1.05rem)',
-  typeDisplay: 'clamp(1.1rem, 1.1vw, 1.5rem)',
-  typeAmount: 'clamp(1.22rem, 1.3vw, 1.5rem)',
-  typeLevel: 'clamp(0.95rem, 0.48vw + 0.82rem, 1.15rem)',
-  typeAction: 'clamp(1.1rem, 1.1vw, 1.5rem)',
+  typeTitle: TYPE_SIZE.xl,
+  typeSection: TYPE_SIZE.base,
+  typeHeader: TYPE_SIZE.lg,
+  typeDisplay: TYPE_SIZE.xl,
+  typeAmount: TYPE_SIZE['2xl'],
+  typeLevel: TYPE_SIZE.lg,
+  typeAction: TYPE_SIZE.xl,
   spaceWorkstation: 'clamp(10px, 1.3vw, 20px)',
   spaceCard: 'clamp(10px, 1vw, 16px)',
   spaceStrip: 'clamp(10px, 1vw, 13px)',
@@ -62,19 +64,19 @@ export const DENSITY = {
   borderStyle: 'solid',
   shadowCard: '0 16px 40px rgba(0, 0, 0, 0.28)',
   glassBlur: '20px',
-  fontWeight: '400',
-  headingWeight: '600',
-  strongWeight: '700',
-  wordmarkWeight: '600',
-  wordmarkLetterSpacing: '0.02em',
-  typeLineBody: '1.5',
-  typeLineHeading: '1.2',
-  typeLineUi: '1.2',
+  fontWeight: TYPE_WEIGHT.body,
+  headingWeight: TYPE_WEIGHT.heading,
+  strongWeight: TYPE_WEIGHT.strong,
+  wordmarkWeight: TYPE_WEIGHT.heading,
+  wordmarkLetterSpacing: TYPE_TRACKING.wordmark,
+  typeLineBody: TYPE_LINE_ROLE.body,
+  typeLineHeading: TYPE_LINE_ROLE.heading,
+  typeLineUi: TYPE_LINE_ROLE.ui,
   /**
-   * Arial / Segoe x-height. Poppins is taller at the same rem; tellr applies
-   * this as font-size-adjust so the rendered size matches the other banks.
+   * Arial x-height. Every theme root applies this as font-size-adjust so
+   * Poppins and Segoe UI match Arial's rendered size.
    */
-  fontSizeAdjust: '0.52',
+  fontSizeAdjust: FONT_SIZE_ADJUST,
   /** Tellr wordmark is 155×61. Height matches the shared control box. */
   wordmarkHeight: '48px',
   wordmarkAspect: '155 / 61',
@@ -93,7 +95,7 @@ export const DENSITY = {
   /** Shared gap after per-bank 13/11/8/13 overrides were removed. */
   spaceGap: '12px',
   /** Simulation and connection pills share this size. */
-  typePill: '0.875rem',
+  typePill: TYPE_SIZE.sm,
   /**
    * Longest `Simulation: <title>` / LIVE label, including 8×12 padding.
    * Fixed so tab flex after Play cannot shrink or grow the pill.

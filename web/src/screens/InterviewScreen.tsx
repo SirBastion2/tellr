@@ -109,7 +109,8 @@ export function InterviewScreen({
                 data-testid="risk-level"
                 data-level={level.id}
                 data-position={String(level.position)}
-                style={{ color: level.colour, fontSize: '28px', margin: 0, lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: 8 }}
+                className="tc-text-2xl"
+                style={{ color: level.colour, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}
               >
                 <LevelIcon level={level.id} />{level.label}
               </p>
@@ -140,7 +141,7 @@ export function InterviewScreen({
                   )
                 })}
               </ol>
-              <p data-testid="pattern-label" style={{ fontSize: '14px', margin: 0 }}>
+              <p data-testid="pattern-label" className="tc-text-sm" style={{ margin: 0 }}>
                 {session.risk.pattern_label}
               </p>
               <FactGrid>

@@ -294,7 +294,7 @@ export function AppShell({
                       ...tabFill,
                       color: 'var(--tc-muted)',
                       borderBottom: '3px solid transparent',
-                      fontWeight: 500,
+                      fontWeight: 'var(--tc-heading-weight)',
                       cursor: 'default',
                     }}
                   >
@@ -314,7 +314,7 @@ export function AppShell({
                     textDecoration: 'none',
                     backgroundColor: current ? 'var(--tc-input)' : 'transparent',
                     borderBottom: current ? '3px solid var(--tc-accent)' : '3px solid transparent',
-                    fontWeight: current ? 700 : 500,
+                    fontWeight: current ? 'var(--tc-strong-weight)' : 'var(--tc-heading-weight)',
                   }}
                 >
                   {label}

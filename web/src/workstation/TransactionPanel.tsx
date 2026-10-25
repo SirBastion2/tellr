@@ -7,8 +7,6 @@ import { displaySpeaker, personalNamesFrom, redactPersonalCopy } from '../ui/pri
 
 const label: CSSProperties = {
   margin: 0,
-  fontWeight: 700,
-  fontSize: '1rem',
 }
 
 const value: CSSProperties = { margin: 0 }
@@ -20,7 +18,9 @@ function eventSpeaker(event: CustomerEvent, names: readonly string[]): string {
 function Row({ term, children }: { term: string; children: ReactNode }) {
   return (
     <>
-      <dt style={label}>{term}</dt>
+      <dt className="tc-fact-term" style={label}>
+        {term}
+      </dt>
       <dd style={value}>{children}</dd>
     </>
   )
@@ -54,12 +54,9 @@ export function TransactionPanel({
       </div>
       <p
         data-testid="event-caption"
-        className="tc-prose"
+        className={presenter ? 'tc-prose tc-display' : 'tc-prose tc-text-base'}
         style={{
           margin: 0,
-          fontSize: presenter ? 'var(--tc-type-display)' : 'var(--tc-type-section)',
-          lineHeight: 1.25,
-          fontWeight: 700,
           maxWidth: '70ch',
         }}
       >
@@ -70,7 +67,7 @@ export function TransactionPanel({
           <span data-testid="txn-type">{customer.transaction.type}</span>
         </Row>
         <Row term="Amount">
-          <span data-testid="txn-amount" className="tc-amount" style={{ fontWeight: 700, lineHeight: 1.2 }}>
+          <span data-testid="txn-amount" className="tc-amount">
             {customer.transaction.amount}
           </span>
         </Row>
@@ -129,7 +126,10 @@ export function TransactionPanel({
                 <p className="tc-kicker" data-testid="event-marker" style={{ margin: 0 }}>
                   Step {index + 1} · {formatElapsed(elapsed)} · {eventSpeaker(event, names)}
                 </p>
-                <p className="tc-prose" style={{ margin: '4px 0 0', fontWeight: isCurrent ? 600 : 400 }}>
+                <p
+                  className="tc-prose"
+                  style={{ margin: '4px 0 0', fontWeight: isCurrent ? 'var(--tc-heading-weight)' : 'var(--tc-font-weight)' }}
+                >
                   <Emphasis text={redactPersonalCopy(event.text, names)} />
                 </p>
               </div>
@@ -148,7 +148,7 @@ export function TransactionPanel({
         </section>
       ) : null}
       <div>
-        <p style={{ margin: 0, fontWeight: 700 }}>
+        <p className="tc-text-base" style={{ margin: 0, fontWeight: 'var(--tc-strong-weight)' }}>
           Event {shown} of {total}
         </p>
         <div

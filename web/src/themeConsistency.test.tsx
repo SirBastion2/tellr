@@ -98,9 +98,10 @@ describe('shared theme leftovers', () => {
   it('sizes the connection and simulation pills from one token on every bank', () => {
     expect(DENSITY.typePill).toBe('0.875rem')
     const source = css()
-    expect(source).toContain(`--tc-type-pill: ${DENSITY.typePill}`)
-    expect(source).toMatch(/\.tc-connection[\s\S]*font-size:\s*var\(--tc-type-pill/)
-    expect(source).toMatch(/\.tc-live-badge[\s\S]*font-size:\s*var\(--tc-type-pill/)
+    expect(source).toContain(`--tc-text-sm: ${DENSITY.typePill}`)
+    expect(source).toContain('--tc-type-pill: var(--tc-text-sm)')
+    expect(source).toMatch(/\.tc-connection[\s\S]*font-size:\s*var\(--tc-text-sm/)
+    expect(source).toMatch(/\.tc-live-badge[\s\S]*font-size:\s*var\(--tc-text-sm/)
     for (const id of BANKS) {
       const { unmount } = renderThemed(id)
       const root = screen.getByTestId('theme-root')
