@@ -1819,3 +1819,30 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/97. Do not merge. Concurrent header / signal-list / handoff work should conflict little: `App.tsx` only replaced the inline `keydown` effect in `ConnectedShell`. No contract / api / engine edits. No new npm dependency. No screenshots.
 
+---
+
+### [B] Merge Recent activity into Why this level — Agent B1 — 2026-10-25 04:20
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 130 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  40 passed (40)
+      Tests  130 passed (130)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/workstation/ActivityFeed.tsx` (removed), `web/src/workstation/ExplanationPanel.tsx`, `web/src/workstation/CopilotStrip.tsx`, `web/src/workstation/TransactionPanel.tsx`, `web/src/screens/CustomerFileScreen.tsx`, `web/src/screens/HomeScreen.tsx`, `web/src/feed.ts`, `web/src/ui/plain.ts`, `web/src/App.tsx`, `web/src/workstationMerge.test.tsx` (new), tests, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Recent activity repeated Why this level (Sebastian design call; UI_REFERENCE “each fact once”). One merged list on Why this level with the server rationale, origin pill, and confirm / dismiss / restore. Timeline moved up to that slot.
+  - Amount stays in the Amount field. Notes-only chips (`signal: null`, the branch-threshold label) append to teller notes from `GET /library`, not as rows. One local “Noted” time from `GET /activity` when rows exist. No per-row When / Amount / Record.
+  - Customer file keeps profile only. Removed This withdrawal and What was noted copies. Optional Show case file peek stays.
+  - Rebased onto main after #96 (Urgency Score + dismiss hold) and #97 (global shortcuts). Kept those behaviors. `web/` still does not compute risk, level, reasons, or the next question (architecture §12).
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/98. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots.
+

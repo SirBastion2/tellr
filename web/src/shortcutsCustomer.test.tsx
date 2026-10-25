@@ -28,10 +28,6 @@ function press(key: string, target: Element) {
   fireEvent.keyDown(target, { key })
 }
 
-function statusOf(testId: string): string[] {
-  return screen.getAllByTestId(testId).map((row) => row.getAttribute('data-status') ?? '')
-}
-
 describe('demo shortcuts on other routes', () => {
   afterEach(() => {
     resetMock()
@@ -78,22 +74,24 @@ describe('demo shortcuts on other routes', () => {
       expect(screen.getByRole('link', { name: 'Outcome' })).toBeTruthy()
     })
     press('n', file)
+    fireEvent.click(screen.getByRole('link', { name: 'Home' }))
     await waitFor(() => {
-      expect(statusOf('file-signal')).toContain('Observed')
+      expect(screen.getByTestId('signal-row')).toBeTruthy()
     })
-    press('c', file)
+    fireEvent.click(screen.getByRole('link', { name: 'Customer file' }))
+    const onFile = screen.getByTestId('customer-screen')
+    press('c', onFile)
+    press('d', onFile)
+    fireEvent.click(screen.getByRole('link', { name: 'Home' }))
     await waitFor(() => {
-      expect(statusOf('file-signal')).toContain('Teller confirmed')
+      expect(screen.getByTestId('signal-row').getAttribute('data-state')).toBe('dismissed')
     })
-    press('d', file)
-    await waitFor(() => {
-      expect(statusOf('file-signal')).toContain('Dismissed')
-    })
-    press('e', file)
+    fireEvent.click(screen.getByRole('link', { name: 'Customer file' }))
+    press('e', screen.getByTestId('customer-screen'))
     expect(screen.getByTestId('confirm-accept').textContent).toBe('Escalate')
     fireEvent.click(screen.getByTestId('confirm-cancel'))
 
-    press(']', file)
+    press(']', screen.getByTestId('customer-screen'))
     await waitFor(() => {
       expect(screen.getByTestId('live-badge').textContent).toBe('Simulation: Romance, crypto cash')
     })
