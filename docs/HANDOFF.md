@@ -2087,3 +2087,29 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/102. Do not merge. Branched from `27903ed` (#94). No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
 
+---
+
+### [B] Stable header simulation pill across Play — Agent B1 — 2026-10-25 05:24
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 171 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  47 passed (47)
+      Tests  171 passed (171)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/index.css`, `web/src/theme/tokens.ts`, `web/src/theme/vars.ts`, `web/src/LiveBadge.tsx`, `web/src/workstation/Toolbar.tsx`, `web/src/headerSimPill.test.tsx`, `web/src/workstationFit.test.tsx`, `ARCHITECTURE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Cause: after #100/#101 the nav fills leftover space (`flex: 1 1 auto` / tab `flex: 1 1 0`). The pill was `flex: 0 1 auto` + `min-width: 0`, so Play (hints → links) resized it and shifted tabs/scheme. Label stays `Simulation: <title>` (architecture §12 live badge; no running-label variant).
+  - Fix: shared `--tc-header-control-h` / `--tc-type-pill`, stable `--tc-sim-pill-min`/`max` with `flex: 0 0 auto`. Ellipsis only if a label still cannot fit; current titles stay complete at 1024/1180/1280. Play/Pause and Show/Hide use a grid for the longer word. Timer is `tabular-nums` + `--tc-timer-min`. `#93` wrap and shared tokens stay. `web/` computes nothing (§9, §12).
+  - Merged `origin/main` `6d291d5` (#102). Kept #102 copilot/privacy file-table rows and the LiveBadge/toolbar width notes.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/103. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
+

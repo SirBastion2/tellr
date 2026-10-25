@@ -58,11 +58,18 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
             aria-pressed={demo.playing}
             data-loading={demo.pending ? 'true' : 'false'}
             aria-busy={demo.pending}
-            style={{ ...control, ...primaryStyle, minWidth: 96 }}
+            style={{ ...control, ...primaryStyle, minWidth: 'var(--tc-play-min, 7.5rem)' }}
             onClick={() => (demo.playing ? demo.onPause() : demo.onPlay())}
           >
             {demo.playing ? <PauseIcon /> : <PlayIcon />}
-            <span>{demo.playing ? 'Pause' : 'Play'}</span>
+            <span className="tc-play-label">
+              <span data-show={demo.playing ? 'false' : 'true'} aria-hidden={demo.playing}>
+                Play
+              </span>
+              <span data-show={demo.playing ? 'true' : 'false'} aria-hidden={!demo.playing}>
+                Pause
+              </span>
+            </span>
           </button>
           <button
             type="button"
@@ -104,7 +111,8 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
                   ...control,
                   borderRadius: 0,
                   borderWidth: 0,
-                  minWidth: 44,
+                  minWidth: 'var(--tc-speed-min, 2.75rem)',
+                  fontVariantNumeric: 'tabular-nums',
                   backgroundColor: selected ? 'var(--tc-button)' : 'var(--tc-secondary-bg)',
                   color: selected ? 'var(--tc-button-text)' : 'var(--tc-secondary-fg)',
                 }}
@@ -132,11 +140,18 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
             borderColor: 'transparent',
             textDecoration: 'underline',
             textUnderlineOffset: '3px',
-            minWidth: 0,
+            minWidth: 'var(--tc-case-link-min, 9.5rem)',
           }}
           onClick={() => demo.onToggleCase()}
         >
-          {demo.showCase ? 'Hide case file' : 'Show case file'}
+          <span className="tc-case-label">
+            <span data-show={demo.showCase ? 'false' : 'true'} aria-hidden={demo.showCase}>
+              Show case file
+            </span>
+            <span data-show={demo.showCase ? 'true' : 'false'} aria-hidden={!demo.showCase}>
+              Hide case file
+            </span>
+          </span>
         </button>
       </div>
     </div>
