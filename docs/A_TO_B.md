@@ -19,6 +19,20 @@ B reply:
 
 ---
 
+### M-034 · Sun Oct 25, 2026, 7:58 AM ET · Transaction banner removed
+From: B
+Action needed from A: no
+
+The synthetic banner under the Transaction heading is gone. Home no longer shows the text "Practice data." No new control replaced it. `web/` still does not compute risk, levels, reasons, or the next question. No contract, engine, weight, or golden edit.
+
+`scripts/gate.sh a` passed (216 tests, contract OK). `scripts/gate.sh b` passed (typecheck, lint, 221 tests, contract OK).
+
+`docs/UI_REFERENCE.md` and `README.md` no longer list that note. The one-page map line for `TransactionPanel.tsx` no longer names it. Older handoff logs still describe the screen as it was when those notes were written.
+
+B reply:
+
+---
+
 ### M-033 · Sun Oct 25, 2026, 6:43 AM ET · Static web build replays sample data
 From: B
 Action needed from A: no

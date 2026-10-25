@@ -1,0 +1,26 @@
+### Remove the Transaction banner — Agent B — 2026-10-25 11:58
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS
+  ```
+  216 passed, 1 warning in 29.69s
+  Contracts: 1 kept, 0 broken.
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (a)
+  ```
+  `scripts/gate.sh b` → PASS
+  ```
+  Test Files  58 passed (58)
+  Tests  221 passed (221)
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+  Also `npx vitest --run src/home.test.tsx src/privacy.test.tsx` (2 files, 3 tests passed).
+- **Changed:** `web/src/workstation/TransactionPanel.tsx`, `web/src/home.test.tsx`, `web/src/privacy.test.tsx`, `docs/UI_REFERENCE.md`, `README.md`, `ARCHITECTURE.md`, `docs/A_TO_B.md`
+- **Decisions I made, and the section that justified each:**
+  - Removed the paragraph under the Transaction heading and did not put another control in its place. The one-page map (`ARCHITECTURE.md`, workstation table) named that line on `TransactionPanel.tsx`. The same line no longer names it, so the next agent does not treat the banner as still required. No file was added or moved; this is the path description for the panel this change edits.
+  - Left `.tc-stack-heading` and `.tc-txn-head` in place. The heading row, the case file, Outcome, and `headerRhythm.test.tsx` still use them. The `synthetic-banner` test id existed only on the removed paragraph.
+  - Home and privacy tests now expect that test id and the old sentence to be absent. Privacy checks for name, age band, and gendered pronouns are unchanged.
+  - `docs/UI_REFERENCE.md` workstation and customer-file rows, and the one phrase in `README.md` ("The demo vs real use"), no longer list the note. The README sentence still names the controls a reader sees, in the same voice as that section.
+  - Did not edit `docs/HANDOFF.md` or older files in `docs/handoff/`. Those notes record the screen as it was. Did not edit `reference_impl.py`, `contract/`, golden tests, or `tests/golden/reference_weights.yaml`. `web/` does not compute risk, level, reasons, or the next question (architecture §9).
+- **Questions logged:** none
+- **The next agent needs to know:** History still has a Practice control for `GET /sessions?mode=practice`. That label is a different control. Do not put the Transaction banner back. Older handoff logs still name it as what those notes shipped.
