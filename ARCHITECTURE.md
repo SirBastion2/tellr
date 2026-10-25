@@ -110,7 +110,7 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 | `web/src/demo/clock.test.ts` | Clock and timeline stay on simulated time at 1× and 4×. |
 | `web/src/demoPolish.test.tsx` | Timer matches timeline, shortcut list, Restart confirm, four labeled tabs, full-width card, 13px footer. |
 | `web/src/presenter.tsx` | Demo layout, always on. No toggle and no `?present` switch. |
-| `web/src/screens/HomeScreen.tsx` | Toolbar, transaction panel, copilot card, explanation. |
+| `web/src/screens/HomeScreen.tsx` | Toolbar, transaction panel, copilot card, explanation. Holds the last session / posted chips / activity while a write is in flight so the card does not mix snapshots. |
 | `web/src/screens/CustomerFileScreen.tsx` | Profile, activity table, this withdrawal, and what was noted. Session activity replaces the synthetic table when `GET /activity` returns rows. Source badges prefer `context_chips` and otherwise stay Not yet, Observed, Teller confirmed, or Dismissed. |
 | `web/src/screens/HandoffScreen.tsx` | Handoff card. Fact grid, level badge, Urgency Score `<score>/<max>`, flagged list, suggested outcome versus the teller's decision. |
 | `web/src/ui/facts.tsx` | Bold-label fact grid and section headings shared by the screens. |
