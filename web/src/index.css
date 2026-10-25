@@ -131,6 +131,20 @@ button[data-loading='true'],
 }
 
 /*
+  Panel title. One shared rule for every bank and scheme. It stays with the
+  pinned chrome (not in the signal scrollport). Its block size is one title
+  line; the signal list shrinks by that line plus the strip gap.
+*/
+.tc-strip-heading {
+  margin: 0;
+  flex: 0 0 auto;
+  text-align: center;
+  font-size: var(--tc-type-title);
+  font-weight: var(--tc-strong-weight);
+  line-height: var(--tc-type-line-heading);
+}
+
+/*
   Scrollport for signal rows. Keep this list a direct child of .tc-strip-body.
   Row markup inside it can change; the list itself is what scrolls.
 */
