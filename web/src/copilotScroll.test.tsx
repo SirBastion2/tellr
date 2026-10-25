@@ -51,7 +51,7 @@ function forbidsInnerScroll(block: string) {
 }
 
 describe('copilot panel scroll', () => {
-  it('grows the panel and script card without an inner overflow scroll or max-height', () => {
+  it('grows the panel without an inner overflow scroll or max-height', () => {
     const source = css()
     const stripRule = rule(source, '.tc-strip')
     forbidsInnerScroll(stripRule)
@@ -62,10 +62,6 @@ describe('copilot panel scroll', () => {
     const bodyRule = rule(source, '.tc-strip-body')
     forbidsInnerScroll(bodyRule)
     expect(bodyRule).toMatch(/overflow:\s*visible/)
-
-    const quoteRule = rule(source, "[data-testid='read-aloud-block']")
-    forbidsInnerScroll(quoteRule)
-    expect(quoteRule).toMatch(/overflow:\s*visible/)
 
     forbidsInnerScroll(rule(source, '.tc-factor-list'))
     forbidsInnerScroll(rule(source, '.tc-signal-row'))
@@ -87,46 +83,18 @@ describe('copilot panel scroll', () => {
     )
 
     const panel = screen.getByTestId('copilot-strip')
-    const script = screen.getByTestId('read-aloud-block')
     const signals = screen.getByTestId('signal-row')
-    for (const node of [panel, script, signals]) {
+    for (const node of [panel, signals]) {
       const style = getComputedStyle(node)
       expect(style.maxHeight).toMatch(/^(none|)$/)
       expect(style.overflowY).not.toMatch(/auto|scroll/)
       expect(style.overflow).not.toMatch(/auto|scroll/)
     }
+    expect(screen.queryByTestId('read-aloud-block')).toBeNull()
   })
 
-  it('uses equal space-token padding and a small tag gap on every bank', () => {
-    const source = css()
-    const block = rule(source, "[data-testid='read-aloud-block'].tc-block")
-    expect(block).toMatch(/padding:\s*var\(--tc-space-4,\s*16px\)\s*;/)
-    expect(block).toMatch(/gap:\s*var\(--tc-space-2,\s*8px\)\s*;/)
-    expect(block).toMatch(/margin-bottom:\s*0/)
-    forbidsInnerScroll(block)
-    expect(block).toMatch(/height:\s*auto/)
-    expect(block).toMatch(/overflow:\s*visible/)
-
-    const summary = rule(source, "[data-testid='read-aloud-block'] > summary")
-    expect(summary).toMatch(/margin:\s*0/)
-    expect(summary).toMatch(/padding:\s*0/)
-    expect(summary).toMatch(/min-height:\s*0/)
-
-    const scriptRule = rule(source, "[data-testid='read-aloud'].tc-prose")
-    expect(scriptRule).toMatch(/margin:\s*0/)
-    expect(scriptRule).toMatch(/padding:\s*0/)
-    expect(scriptRule).toMatch(/text-box-trim:\s*trim-both/)
-    expect(scriptRule).toMatch(/text-box-edge:\s*text/)
-    forbidsInnerScroll(rule(source, "[data-testid='read-aloud-block']::details-content"))
-
-    const component = readFileSync('src/workstation/CopilotStrip.tsx', 'utf8')
-    const card = component.slice(component.indexOf('data-testid="read-aloud-block"'))
-    expect(card).not.toMatch(/minHeight/)
-    expect(card).not.toMatch(/padding:\s*'/)
-    expect(card).not.toMatch(/margin:\s*'/)
-
+  it('leaves no empty read-aloud slot in any bank theme', () => {
     const longLine = 'Pause and read this back. '.repeat(24).trim()
-    let padding = ''
     for (const themeId of THEME_IDS) {
       for (const scheme of ['dark', 'light'] as const) {
         const theme = THEMES[themeId]
@@ -145,22 +113,20 @@ describe('copilot panel scroll', () => {
             />
           </div>,
         )
-        const node = screen.getByTestId('read-aloud-block')
-        const quote = screen.getByTestId('read-aloud')
-        const style = getComputedStyle(node)
-        const sides = [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft]
-        expect(sides.every((side) => side === sides[0] && side !== '' && side !== '0px'), `${themeId} ${scheme}`).toBe(true)
-        if (!padding) {
-          padding = sides[0] ?? ''
+        const panel = screen.getByTestId('copilot-strip')
+        const body = panel.querySelector('.tc-strip-body')
+        expect(screen.queryByTestId('read-aloud-block'), `${themeId} ${scheme}`).toBeNull()
+        expect(screen.queryByTestId('read-aloud'), `${themeId} ${scheme}`).toBeNull()
+        expect(screen.queryByText(/read-aloud script/i), `${themeId} ${scheme}`).toBeNull()
+        expect(panel.textContent, `${themeId} ${scheme}`).not.toContain(longLine)
+        expect(body, `${themeId} ${scheme}`).toBeTruthy()
+        for (const child of Array.from(body?.children ?? [])) {
+          expect(child.textContent?.trim(), `${themeId} ${scheme}`).not.toBe('')
         }
-        expect(sides[0], `${themeId} ${scheme}`).toBe(padding)
-        expect(style.overflow).not.toMatch(/auto|scroll/)
-        expect(style.overflowY).not.toMatch(/auto|scroll/)
-        expect(style.maxHeight).toMatch(/^(none|)$/)
-        expect(node.style.padding).toBe('')
-        expect(quote.style.margin).toBe('')
-        expect(quote.textContent).toBe(longLine)
-        expect(node.scrollHeight).toBeLessThanOrEqual(node.clientHeight + 1)
+        expect(screen.getByTestId('copilot-action').textContent, `${themeId} ${scheme}`).toBe(phoneVisit.talk_track.action)
+        const actionCard = screen.getByText('Suggested action').parentElement
+        const signals = screen.getByRole('list', { name: 'Signals' })
+        expect(actionCard?.nextElementSibling, `${themeId} ${scheme}`).toBe(signals)
         unmount()
       }
     }

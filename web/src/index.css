@@ -67,6 +67,13 @@ button[data-loading='true'],
   height: 100%;
 }
 
+.tc-home-column {
+  display: grid;
+  gap: var(--tc-space-body-control, 12px);
+  align-content: start;
+  min-width: 0;
+}
+
 .tc-transaction {
   min-height: 0;
   height: 100%;
@@ -94,11 +101,6 @@ button[data-loading='true'],
   gap: inherit;
   align-content: start;
   min-width: 0;
-  overflow: visible;
-}
-
-.tc-quote,
-[data-testid='read-aloud-block'] {
   overflow: visible;
 }
 
@@ -288,55 +290,6 @@ button[data-loading='true'],
   padding-top: 0;
 }
 
-/* Quote card: equal inset on every side. Beats `.tc-block` padding-top. */
-[data-testid='read-aloud-block'].tc-block {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--tc-space-2, 8px);
-  margin-bottom: 0;
-  padding: var(--tc-space-4, 16px);
-  height: auto;
-  overflow: visible;
-}
-
-[data-testid='read-aloud-block'] > summary {
-  display: flex;
-  align-items: center;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  min-height: 0;
-  height: auto;
-  cursor: pointer;
-  list-style: none;
-}
-
-[data-testid='read-aloud-block'] > summary::-webkit-details-marker {
-  display: none;
-}
-
-[data-testid='read-aloud-block'] > summary::marker {
-  content: '';
-}
-
-[data-testid='read-aloud-block']::details-content {
-  display: block;
-  margin: 0;
-  padding: 0;
-  overflow: visible;
-  height: auto;
-}
-
-[data-testid='read-aloud-block'] .tc-kicker,
-[data-testid='read-aloud'].tc-prose {
-  margin: 0;
-  padding: 0;
-  text-box-trim: trim-both;
-  text-box-edge: text;
-}
-
 .tc-facts {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
@@ -356,6 +309,39 @@ button[data-loading='true'],
   display: grid;
   gap: var(--tc-space-explain, clamp(6px, 0.8vw, 12px));
   align-content: start;
+}
+
+.tc-score-line {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: var(--tc-space-2, 8px);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.tc-explain-anchor {
+  position: relative;
+  z-index: 2;
+  height: 0;
+}
+
+.tc-explain-overlay {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: calc(-1 * var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)));
+  right: calc(-1 * var(--tc-space-card-fluid, clamp(10px, 1vw, 16px)));
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background: var(--tc-surface, #1e1b4b);
+  color: var(--tc-text, #ffffff);
+  border: 1px solid var(--tc-glass-border, #1c1917);
+  border-radius: var(--tc-radius-card, 16px);
+  padding: var(--tc-space-card-fluid, clamp(10px, 1vw, 16px));
 }
 
 .tc-factor-list {
@@ -518,6 +504,12 @@ button[data-loading='true'],
 .tc-stack-heading {
   display: grid;
   gap: var(--tc-space-heading-body, 8px);
+}
+
+.tc-txn-head {
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }
 
 .tc-header {
@@ -834,6 +826,11 @@ button[data-loading='true'],
   display: grid;
 }
 
+/* Earlier steps only. Opacity keeps each bank's own ink, so tellr / pnc / mtb / fnb stay readable. */
+.tc-timeline > [data-past='true'] {
+  opacity: 0.55;
+}
+
 .tc-badge {
   display: inline-flex;
   align-items: center;
@@ -854,7 +851,7 @@ button[data-loading='true'],
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--tc-space-2, 8px);
   min-width: 0;
   overflow: visible;
   font-size: var(--tc-text-base);
@@ -867,16 +864,24 @@ button[data-loading='true'],
 
 .tc-signal-meta {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: var(--tc-space-1, 4px);
   min-width: 0;
   flex: 1 1 auto;
 }
 
+.tc-signal-label {
+  align-self: stretch;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
 .tc-signal-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--tc-space-2, 8px);
   flex: 0 0 auto;
 }
 

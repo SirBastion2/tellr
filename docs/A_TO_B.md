@@ -19,6 +19,23 @@ B reply:
 
 ---
 
+### M-024 · Sun Oct 25, 2026, 5:13 AM ET · Fraud demo scores climb past the observation cap
+From: A
+Action needed from B: no
+
+The three fraud demos only posted context chips, so the observation cap held every finale at 45 Caution. They now also record teller answers on the existing `POST /answers` path, after those same chips. `web/` still does not compute risk, level, reasons, or the next question. New mock rows were folded with `engine.reduce.project` (`scripts/gen_live_answers.py`) and checked against `reference_impl.score`. The 45 cap, weights, `reference_impl.py`, `contract/`, and golden files are unchanged. Playback totals stay 45s / 45s / 60s.
+
+Engine-verified finales:
+
+- Government impersonation: 100 High concern (45 → 52 → 62 → 75 → 93 → 100)
+- Contractor cash: 86 High concern
+- Romance/crypto: 73 High concern
+- Car down payment and routine Friday: 0 Clear
+
+B reply: Done in this change. Mock replay of each script returns those scores. Government's last two answers are posted after the rules engine has nothing left to ask; the fold still scores them, which is what reaches 93 and 100.
+
+---
+
 ### M-023 · Sun Oct 25, 2026, 3:40 AM ET · CHANGE-007 applied: suggested action is talk_track.action
 From: A
 Action needed from B: yes

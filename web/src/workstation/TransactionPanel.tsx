@@ -3,6 +3,7 @@ import type { CustomerEvent, CustomerFile } from '../demo/customers'
 import { Emphasis } from '../ui/emphasis'
 import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { displaySpeaker, personalNamesFrom, redactPersonalCopy } from '../ui/privacy'
+import { CaseFileLink } from './Toolbar'
 
 function eventSpeaker(event: CustomerEvent, names: readonly string[]): string {
   return displaySpeaker(event.kind, event.speaker, names)
@@ -13,11 +14,13 @@ export function TransactionPanel({
   fired,
   showCase,
   presenter = false,
+  onToggleCase,
 }: {
   customer: CustomerFile
   fired: number
   showCase: boolean
   presenter?: boolean
+  onToggleCase: () => void
 }) {
   const visible = customer.events.slice(0, fired)
   const current = fired > 0 ? customer.events[fired - 1] : null
@@ -29,7 +32,10 @@ export function TransactionPanel({
   return (
     <section aria-label="Core banking" data-testid="transaction-panel" className="tc-transaction tc-screen" style={{ alignContent: 'start' }}>
       <div className="tc-stack-heading">
-        <h2 className="tc-title">Transaction</h2>
+        <div className="tc-txn-head">
+          <h2 className="tc-title">Transaction</h2>
+          <CaseFileLink showCase={showCase} onToggleCase={onToggleCase} />
+        </div>
         <p data-testid="synthetic-banner" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
           Practice data.
         </p>
@@ -63,6 +69,7 @@ export function TransactionPanel({
       <ol data-testid="demo-timeline" className="tc-timeline" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid' }}>
         {visible.map((event, index) => {
           const isCurrent = index === visible.length - 1
+          const isPast = index < shown - 1
           const last = index === visible.length - 1
           const elapsed = timelineElapsedMs(customer.events, index + 1)
           return (
@@ -71,6 +78,7 @@ export function TransactionPanel({
               data-testid="demo-event"
               data-kind={event.kind}
               data-current={isCurrent ? 'true' : 'false'}
+              data-past={isPast ? 'true' : undefined}
               aria-current={isCurrent ? 'step' : undefined}
               style={{
                 display: 'grid',

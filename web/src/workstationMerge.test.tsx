@@ -118,15 +118,10 @@ describe('merged workstation signals', () => {
     expect(screen.getByTestId('explain-panel').textContent).not.toMatch(/\$5,000–\$9,999/)
   })
 
-  it('does not put the branch threshold in the read-aloud card or a signal row', () => {
+  it('does not put the branch threshold in a signal row', () => {
     render(workstation())
-    const block = screen.getByTestId('read-aloud-block')
-    const script = liveVisit.talk_track.lines.join(' ')
-    expect(within(block).getByText(/read-aloud script/i)).toBeTruthy()
-    expect(within(block).getByTestId('read-aloud').textContent).toBe(script)
-    expect((block.textContent ?? '').replace(/Read-aloud script/i, '').replace(script, '').replace(/\s+/g, '')).toBe('')
-    expect(within(block).queryByTestId('teller-notes')).toBeNull()
-    expect(block.textContent).not.toContain(thresholdChip.label)
+    expect(screen.queryByTestId('read-aloud-block')).toBeNull()
+    expect(screen.queryByText(/read-aloud script/i)).toBeNull()
     expect(screen.queryByTestId('teller-notes')).toBeNull()
     expect(signalTexts().join('\n')).not.toContain(thresholdChip.label)
     expect(screen.getByTestId('copilot-strip').querySelector('[data-testid="signal-row"]')).toBeTruthy()
@@ -134,12 +129,11 @@ describe('merged workstation signals', () => {
     expect(liveVisit.talk_track.action).toBe('Pause the cash. Verify the story, and offer a cashier\'s check.')
     expect(screen.getByTestId('copilot-action').textContent).toBe(liveVisit.talk_track.action)
     expect(screen.getByTestId('copilot-action').textContent).not.toBe(liveVisit.question?.text)
-    expect(block.textContent).not.toContain(liveVisit.talk_track.action ?? '')
     expect(screen.getByTestId('txn-type').textContent).toBe('Cash withdrawal above the branch threshold')
     expect(screen.getByTestId('txn-type').textContent).toBe(
       CUSTOMERS.find((customer) => customer.id === 'romance-crypto')?.transaction.type,
     )
-    expect(screen.getByTestId('read-aloud-block').contains(screen.getByTestId('txn-type'))).toBe(false)
+    expect(screen.getByTestId('copilot-strip').contains(screen.getByTestId('txn-type'))).toBe(false)
   })
 
   it('keeps teller confirm and deny on the copilot chips beside the read-only model list', () => {
@@ -173,7 +167,8 @@ describe('merged workstation signals', () => {
     const cash = screen.getAllByTestId('signal-row').find((row) => row.textContent?.includes('Insists on cash'))
     expect(phone?.getAttribute('data-state')).toBe('dismissed')
     expect(cash?.getAttribute('data-state')).toBe('confirmed')
-    expect(within(phone as HTMLElement).getByTestId('signal-origin').textContent).toBe('Observed')
+    expect(within(phone as HTMLElement).queryByTestId('signal-origin')).toBeNull()
+    expect(phone?.textContent).not.toMatch(/Observed/)
     expect(within(cash as HTMLElement).getByTestId('signal-origin').textContent).toBe('Teller confirmed')
     const restore = screen.getByTestId('signal-restore')
     expect(restore.getAttribute('aria-label')).toMatch(/Restore/)

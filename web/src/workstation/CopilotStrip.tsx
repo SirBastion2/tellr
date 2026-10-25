@@ -1,12 +1,13 @@
-import type { CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { listedChipIds, notesOnlyChip, originText, sourceForChip } from '../feed'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { DENSITY } from '../theme/tokens'
 import { CheckIcon, DismissIcon } from '../ui/icons'
 import { LEVEL_WORD, LevelIcon } from '../ui/LevelIcon'
-import type { Library, SessionState } from '../types'
+import type { ActivityRow, Library, SessionState } from '../types'
 import { Fact, FactGrid } from '../ui/facts'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
+import { ExplanationPanel } from './ExplanationPanel'
 
 const controlHeight = `var(--tc-control-h, ${DENSITY.controlHeight})`
 
@@ -45,10 +46,6 @@ export function suggestedAction(session: SessionState): string {
   return session.talk_track.lines[0] ?? ''
 }
 
-export function readAloud(session: SessionState): string {
-  return session.talk_track.lines.join(' ')
-}
-
 function rowState(confirmed: boolean, dismissed: boolean, teller: boolean): 'dismissed' | 'confirmed' | 'auto' {
   if (dismissed) {
     return 'dismissed'
@@ -74,6 +71,7 @@ export function CopilotStrip({
   onEscalate,
   onUndo,
   closed = false,
+  activity = null,
 }: {
   library: Library | null
   session: SessionState | null
@@ -89,7 +87,46 @@ export function CopilotStrip({
   onEscalate: () => void
   onUndo?: () => void
   closed?: boolean
+  activity?: readonly ActivityRow[] | null
 }) {
+  const [open, setOpen] = useState(false)
+  const [wasIdle, setWasIdle] = useState(idle)
+  const toggleRef = useRef<HTMLButtonElement>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  if (idle !== wasIdle) {
+    setWasIdle(idle)
+    if (idle) {
+      setOpen(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setOpen(false)
+      }
+    }
+    function onClick(event: MouseEvent) {
+      const target = event.target
+      if (!(target instanceof Node)) {
+        return
+      }
+      if (toggleRef.current?.contains(target) || overlayRef.current?.contains(target)) {
+        return
+      }
+      setOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    document.addEventListener('click', onClick)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.removeEventListener('click', onClick)
+    }
+  }, [open])
+
   if (idle) {
     return (
       <aside aria-label="Copilot" data-testid="copilot-strip" className="tc-strip" data-idle="true">
@@ -119,7 +156,6 @@ export function CopilotStrip({
   const level = session.risk.level
   const reason = session.risk.reasons[0]?.label ?? session.risk.counterpoint?.label ?? 'No concern flagged'
   const action = suggestedAction(session)
-  const script = readAloud(session)
   const tellerChips = listedChipIds(postedChipIds, session.context_chips, dismissed, chipOrder).filter(
     (chipId) => !notesOnlyChip(library, chipId),
   )
@@ -146,14 +182,56 @@ export function CopilotStrip({
         </p>
         <FactGrid label={URGENCY_SCORE_TERM}>
           <Fact term={URGENCY_SCORE_TERM}>
-            <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
-              {formatUrgencyScore(session.risk.score)}
+            <span className="tc-score-line">
+              <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
+                {formatUrgencyScore(session.risk.score)}
+              </span>
+              <button
+                type="button"
+                ref={toggleRef}
+                className="tc-btn"
+                data-variant="secondary"
+                data-testid="score-explanation"
+                aria-expanded={open}
+                aria-controls="score-explanation-overlay"
+                style={{
+                  ...controlStyle,
+                  ...secondaryStyle,
+                  minHeight: 0,
+                  minWidth: 0,
+                  height: 'auto',
+                  padding: 'var(--tc-space-1, 4px) var(--tc-space-2, 8px)',
+                  whiteSpace: 'nowrap',
+                }}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setOpen((value) => !value)
+                }}
+              >
+                Score explanation
+              </button>
             </span>
           </Fact>
         </FactGrid>
         <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
           {reason}
         </p>
+        <div className="tc-explain-anchor">
+          <div
+            id="score-explanation-overlay"
+            data-testid="score-explanation-overlay"
+            className="tc-explain-overlay"
+            hidden={!open}
+            ref={overlayRef}
+          >
+            <ExplanationPanel
+              library={library}
+              session={session}
+              postedChipIds={postedChipIds}
+              activity={activity}
+            />
+          </div>
+        </div>
       </div>
       <div
         className="tc-block"
@@ -171,24 +249,6 @@ export function CopilotStrip({
           {action}
         </p>
       </div>
-      <details
-        open
-        className="tc-block"
-        data-testid="read-aloud-block"
-        style={{
-          background: 'var(--tc-quote-bg)',
-          color: 'var(--tc-quote-fg)',
-          borderLeft: '4px solid var(--tc-quote-border)',
-          borderRadius: 'var(--tc-radius-card, 16px)',
-        }}
-      >
-        <summary>
-          <span className="tc-kicker">Read-aloud script</span>
-        </summary>
-        <blockquote data-testid="read-aloud" className="tc-prose">
-          {script}
-        </blockquote>
-      </details>
       <ul aria-label="Signals" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 'var(--tc-space-2, 8px)' }}>
         {tellerChips.map((chipId) => {
           const source = sourceForChip(session.context_chips, chipId)
@@ -206,10 +266,12 @@ export function CopilotStrip({
               className="tc-signal-row"
             >
               <span className="tc-signal-meta">
-                <span>{label}</span>
-                <span data-testid="signal-origin" className="tc-badge">
-                  {origin}
-                </span>
+                <span className="tc-signal-label">{label}</span>
+                {origin === 'Observed' ? null : (
+                  <span data-testid="signal-origin" className="tc-badge">
+                    {origin}
+                  </span>
+                )}
               </span>
               {actions ? (
                 wasDismissed ? (

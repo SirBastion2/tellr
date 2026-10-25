@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { customerById } from '../demo/customers'
 import type { DemoView } from '../demo/types'
 import { CopilotStrip } from '../workstation/CopilotStrip'
-import { ExplanationPanel } from '../workstation/ExplanationPanel'
 import { SimulationToolbar } from '../workstation/Toolbar'
 import { TransactionPanel } from '../workstation/TransactionPanel'
 import type { ActivityRow, Library, SessionState } from '../types'
@@ -51,14 +50,17 @@ export function HomeScreen({
     <section data-testid="home-screen" className="tc-screen tc-home">
       {demo && customer ? (
         <>
-          <SimulationToolbar demo={demo} />
           <div className="tc-workstation">
-            <TransactionPanel
-              customer={customer}
-              fired={demo.index}
-              showCase={demo.showCase}
-              presenter={demo.presenter}
-            />
+            <div className="tc-home-column">
+              <SimulationToolbar demo={demo} />
+              <TransactionPanel
+                customer={customer}
+                fired={demo.index}
+                showCase={demo.showCase}
+                presenter={demo.presenter}
+                onToggleCase={demo.onToggleCase}
+              />
+            </div>
             <CopilotStrip
               library={library}
               session={shownSession}
@@ -74,16 +76,9 @@ export function HomeScreen({
               onEscalate={demo.onEscalate}
               onUndo={live ? onUndo : undefined}
               closed={closed}
-            />
-          </div>
-          {idle ? null : (
-            <ExplanationPanel
-              library={library}
-              session={shownSession}
-              postedChipIds={shownPosted}
               activity={shownActivity}
             />
-          )}
+          </div>
         </>
       ) : null}
     </section>

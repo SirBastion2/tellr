@@ -1,3 +1,6 @@
+// Vitest runs this file on Node. The web tsconfig does not load @types/node.
+// @ts-expect-error node:fs is provided by the test runner
+import { readFileSync } from 'node:fs'
 import libraryJson from '../../contract/library.json'
 import t1 from '../../contract/fixtures/T1.json'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
@@ -57,6 +60,14 @@ function demo(overrides: Partial<DemoView> = {}): DemoView {
     onEscalate: () => undefined,
     ...overrides,
   }
+}
+
+function cssRule(source: string, selector: string): string {
+  const match = source.match(new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`))
+  if (!match?.[1]) {
+    throw new Error(`missing ${selector} rule`)
+  }
+  return match[1]
 }
 
 function strip(overrides: Partial<Parameters<typeof CopilotStrip>[0]> = {}) {
@@ -190,7 +201,7 @@ describe('Copilot card on latest main', () => {
     expect(screen.getByTestId('copilot-level').textContent).toBe('Clear')
     expect(screen.getByTestId('copilot-action').textContent).toBe('Complete the withdrawal.')
     expect(screen.getByTestId('copilot-action').textContent).not.toBe(phoneVisit.question?.text)
-    expect(screen.getByTestId('read-aloud')).toBeTruthy()
+    expect(screen.queryByTestId('read-aloud')).toBeNull()
   })
 
   it('holds the last server snapshot on Home while a write is in flight', () => {
@@ -255,16 +266,15 @@ describe('Copilot card on latest main', () => {
     expect(emptyVisit.talk_track.action).toBe('Complete the withdrawal.')
     expect(screen.getByTestId('copilot-action').textContent).toBe('Complete the withdrawal.')
     expect(screen.getByTestId('copilot-action').textContent).not.toBe(emptyVisit.question?.text)
-    expect(screen.getByTestId('read-aloud').textContent).toBe(emptyVisit.talk_track.lines.join(' '))
-    expect(screen.getByTestId('read-aloud').textContent).not.toContain('Complete the withdrawal.')
+    expect(screen.queryByTestId('read-aloud')).toBeNull()
+    expect(screen.queryByTestId('read-aloud-block')).toBeNull()
   })
 
-  it('keeps the read-aloud card to the label and talk-track script only', () => {
+  it('keeps the branch threshold on the transaction type', () => {
     const threshold = library.context_chips.find((chip) => chip.id === 'chip.above_threshold')
     expect(threshold?.label).toBe('Cash withdrawal above the branch threshold')
     const customer = CUSTOMERS[0]
     expect(customer).toBeTruthy()
-    const script = phoneVisit.talk_track.lines.join(' ')
     render(
       <HomeScreen
         library={library}
@@ -280,16 +290,14 @@ describe('Copilot card on latest main', () => {
       />,
     )
 
-    const block = screen.getByTestId('read-aloud-block')
-    expect(within(block).getByText(/read-aloud script/i)).toBeTruthy()
-    expect(within(block).getByTestId('read-aloud').textContent).toBe(script)
-    expect((block.textContent ?? '').replace(/Read-aloud script/i, '').replace(script, '').replace(/\s+/g, '')).toBe('')
-    expect(within(block).queryByTestId('teller-notes')).toBeNull()
-    expect(block.textContent).not.toContain(threshold?.label)
+    expect(screen.queryByTestId('read-aloud-block')).toBeNull()
+    expect(screen.queryByTestId('read-aloud')).toBeNull()
+    expect(screen.queryByText(/read-aloud script/i)).toBeNull()
+    expect(screen.queryByTestId('teller-notes')).toBeNull()
     expect(customer?.transaction.type).toBe(threshold?.label)
     expect(screen.getByTestId('txn-type').textContent).toBe(threshold?.label)
     expect(screen.getByTestId('txn-type').closest('dl')?.className).toContain('tc-kv')
-    expect(screen.getByTestId('read-aloud-block').contains(screen.getByTestId('txn-type'))).toBe(false)
+    expect(screen.getByTestId('copilot-strip').contains(screen.getByTestId('txn-type'))).toBe(false)
     expect(screen.getByTestId('txn-amount').className).toContain('tc-amount')
     expect(screen.queryByTestId('answer-panel')).toBeNull()
     expect(screen.queryByTestId('question-card')).toBeNull()
@@ -328,7 +336,43 @@ describe('Copilot card on latest main', () => {
     expect(screen.queryByTestId('escalate')).toBeNull()
   })
 
-  it('places the origin badge as a compact pill beside the factor label', () => {
+  it('places the origin badge on its own line below the signal text', () => {
+    render(
+      <HomeScreen
+        library={library}
+        session={phoneVisit}
+        postedChipIds={['chip.on_phone']}
+        demo={demo({ index: 2, confirmed: ['chip.on_phone'] })}
+      />,
+    )
+    const row = screen.getByTestId('signal-row')
+    const badge = within(row).getByTestId('signal-origin')
+    const label = within(row).getByText(/On the phone/)
+    expect(badge.textContent).toBe('Teller confirmed')
+    expect(badge.className).toContain('tc-badge')
+    expect(label.className).toContain('tc-signal-label')
+    expect(label.nextElementSibling).toBe(badge)
+    expect(badge.parentElement?.className).toContain('tc-signal-meta')
+    expect(row.querySelector('.tc-signal-actions')).toBeTruthy()
+
+    const source = readFileSync('src/index.css', 'utf8')
+    const meta = cssRule(source, '.tc-signal-meta')
+    expect(meta).toMatch(/flex-direction:\s*column/)
+    expect(meta).toMatch(/flex-wrap:\s*nowrap/)
+    expect(meta).toMatch(/align-items:\s*flex-start/)
+    expect(meta).toMatch(/gap:\s*var\(--tc-space-1,\s*4px\)/)
+    expect(meta).not.toMatch(/flex-wrap:\s*wrap/)
+    const rowRule = cssRule(source, '.tc-signal-row')
+    expect(rowRule).toMatch(/display:\s*flex/)
+    expect(rowRule).toMatch(/flex-wrap:\s*nowrap/)
+    expect(rowRule).toMatch(/align-items:\s*center/)
+    expect(rowRule).toMatch(/gap:\s*var\(--tc-space-2,\s*8px\)/)
+    const actions = cssRule(source, '.tc-signal-actions')
+    expect(actions).toMatch(/flex:\s*0\s+0\s+auto/)
+    expect(cssRule(source, '.tc-signal-label')).toMatch(/align-self:\s*stretch/)
+  })
+
+  it('omits the Observed badge on a signal row and keeps the name and actions', () => {
     render(
       <HomeScreen
         library={library}
@@ -338,13 +382,11 @@ describe('Copilot card on latest main', () => {
       />,
     )
     const row = screen.getByTestId('signal-row')
-    const badge = within(row).getByTestId('signal-origin')
     const label = within(row).getByText(/On the phone/)
-    expect(badge.textContent).toBe('Observed')
-    expect(badge.className).toContain('tc-badge')
-    expect(badge.parentElement).toBe(label.parentElement)
+    expect(within(row).queryByTestId('signal-origin')).toBeNull()
+    expect(row.textContent).not.toMatch(/Observed/)
     expect(row.className).toContain('tc-signal-row')
-    expect(row.querySelector('.tc-signal-meta')?.contains(badge)).toBe(true)
+    expect(row.querySelector('.tc-signal-meta')?.contains(label)).toBe(true)
     expect(row.querySelector('.tc-signal-actions')).toBeTruthy()
   })
 

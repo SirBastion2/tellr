@@ -30,6 +30,44 @@ const iconButton: CSSProperties = {
 
 const speeds = [1, 2, 4] as const
 
+export function CaseFileLink({
+  showCase,
+  onToggleCase,
+}: {
+  showCase: boolean
+  onToggleCase: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className="tc-btn tc-case-link"
+      data-variant="link"
+      data-testid="case-file-toggle"
+      aria-pressed={showCase}
+      style={{
+        ...control,
+        marginLeft: 'auto',
+        background: 'transparent',
+        color: 'var(--tc-link, var(--tc-text))',
+        borderColor: 'transparent',
+        textDecoration: 'underline',
+        textUnderlineOffset: '3px',
+        minWidth: 'var(--tc-case-link-min, 9.5rem)',
+      }}
+      onClick={() => onToggleCase()}
+    >
+      <span className="tc-case-label">
+        <span data-show={showCase ? 'false' : 'true'} aria-hidden={showCase}>
+          Show case file
+        </span>
+        <span data-show={showCase ? 'true' : 'false'} aria-hidden={!showCase}>
+          Hide case file
+        </span>
+      </span>
+    </button>
+  )
+}
+
 export function SimulationToolbar({ demo }: { demo: DemoView }) {
   return (
     <div className="tc-toolbar" role="toolbar" aria-label="Simulation" data-testid="demo-toolbar">
@@ -128,33 +166,6 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
         <p data-testid="elapsed-timer" aria-label="Elapsed time" className="tc-timer">
           {formatElapsed(demo.elapsedMs)}
         </p>
-        <button
-          type="button"
-          className="tc-btn tc-case-link"
-          data-variant="link"
-          data-testid="case-file-toggle"
-          aria-pressed={demo.showCase}
-          style={{
-            ...control,
-            marginLeft: 'auto',
-            background: 'transparent',
-            color: 'var(--tc-link, var(--tc-text))',
-            borderColor: 'transparent',
-            textDecoration: 'underline',
-            textUnderlineOffset: '3px',
-            minWidth: 'var(--tc-case-link-min, 9.5rem)',
-          }}
-          onClick={() => demo.onToggleCase()}
-        >
-          <span className="tc-case-label">
-            <span data-show={demo.showCase ? 'false' : 'true'} aria-hidden={demo.showCase}>
-              Show case file
-            </span>
-            <span data-show={demo.showCase ? 'true' : 'false'} aria-hidden={!demo.showCase}>
-              Hide case file
-            </span>
-          </span>
-        </button>
       </div>
     </div>
   )
