@@ -688,21 +688,67 @@ button[data-loading='true'],
 
 .tc-segment {
   display: inline-flex;
+  align-items: stretch;
+  box-sizing: border-box;
   border: 1px solid var(--tc-secondary-border, #1c1917);
   border-radius: var(--tc-radius-control, 999px);
+  background: var(--tc-secondary-bg, #f8fafc);
+  padding: var(--tc-space-1, 4px);
   overflow: hidden;
 }
 
 .tc-header .tc-scheme-full {
   box-sizing: border-box;
   padding: var(--tc-space-1, 4px);
+  background: var(--tc-secondary-bg, #f8fafc);
   overflow: visible;
 }
 
-/* Segment buttons set an inline radius of 0. The shared pill token wins for the selected bubble, and for every scheme segment so the first and last do not grow square corners. */
+/*
+  Segment buttons used to keep a square inline radius. Every painted layer of
+  the selected segment uses the same pill token: the button, its generated
+  boxes, and the focused and pressed states. The track fill is the existing
+  secondary surface, so the scheme control is one solid pill and the speed
+  bubble sits in an even inset instead of a square corner.
+*/
+.tc-segment > button,
+.tc-segment > button:hover,
+.tc-segment > button:focus,
+.tc-segment > button:focus-visible,
+.tc-segment > button:active,
 .tc-segment > button[aria-pressed='true'],
-.tc-header .tc-scheme-full > button {
+.tc-segment > button[aria-pressed='false'] {
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
   border-radius: var(--tc-radius-control, 999px) !important;
+  background-clip: padding-box;
+  overflow: hidden;
+  align-self: stretch;
+  box-sizing: border-box;
+}
+
+.tc-segment > button::before,
+.tc-segment > button::after,
+.tc-segment > button:hover::before,
+.tc-segment > button:hover::after,
+.tc-segment > button:focus::before,
+.tc-segment > button:focus::after,
+.tc-segment > button:focus-visible::before,
+.tc-segment > button:focus-visible::after,
+.tc-segment > button:active::before,
+.tc-segment > button:active::after,
+.tc-segment > button[aria-pressed='true']::before,
+.tc-segment > button[aria-pressed='true']::after,
+.tc-segment > button[aria-pressed='false']::before,
+.tc-segment > button[aria-pressed='false']::after {
+  border-radius: var(--tc-radius-control, 999px) !important;
+}
+
+.tc-toolbar .tc-segment > button {
+  height: auto !important;
+  min-height: 0 !important;
+  padding-block: 0 !important;
 }
 
 .tc-header-help {

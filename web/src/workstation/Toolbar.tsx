@@ -147,8 +147,11 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
                 aria-pressed={selected}
                 style={{
                   ...control,
-                  borderRadius: 0,
                   borderWidth: 0,
+                  alignSelf: 'stretch',
+                  height: '100%',
+                  minHeight: 0,
+                  padding: '0 var(--tc-space-control-pad-x, 12px)',
                   minWidth: 'var(--tc-speed-min, 2.75rem)',
                   fontVariantNumeric: 'tabular-nums',
                   backgroundColor: selected ? 'var(--tc-button)' : 'var(--tc-secondary-bg)',

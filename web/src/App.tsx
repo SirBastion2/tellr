@@ -75,7 +75,6 @@ function SchemeToggle() {
             style={{
               ...headerTap,
               borderWidth: 0,
-              borderRadius: 0,
               height: '100%',
               minHeight: '100%',
               padding: 'var(--tc-scheme-pad-block, 7px) var(--tc-scheme-pad-inline, 14px)',
