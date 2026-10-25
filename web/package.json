@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "vite --mode api",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest"
