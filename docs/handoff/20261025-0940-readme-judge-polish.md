@@ -1,0 +1,12 @@
+### README judge polish — Agent R — 2026-10-25 09:40
+- **Status:** done
+- **Gate:** not run. The task was README-only and said to run no tests.
+- **Changed:** `README.md`, this file. Did not edit `docs/HANDOFF.md`.
+- **Decisions I made, and the section that justified each:**
+  - Kept sources [1]–[9] verbatim. Body is 121 lines, under the 125-line cap. Sources are extra.
+  - First sentence states what Tellr is, that the local model sees visit ids and library labels, and that it never sees name, age, words, memo, or account details. The full split is `## What goes in, and why it's safe for a bank`, traced from `engine/prompt.py`, `engine/reduce.py`, `api/main.py`, `store/sqlite.py`, `recommenders/local_llm.py`, `recommenders/select.py`, `web/src/teller.tsx`, `web/src/workstation/TransactionPanel.tsx`, and `web/src/privacy.test.tsx`.
+  - Amount band is stored and is not in the prompt or the score. Name, age band, tenure, typical withdrawal, channels, account activity, memo, transaction type, the dollar string, and the customer's words are not posted. The case-file claim matches the Home privacy test with the file open. The typed teller name is stored and is listed under Open items.
+  - Did not claim encryption at rest, a security review, or an audit or data-retention policy. `purge` exists and the API does not call it.
+  - Hosted calls exist only when `HOSTED_LLM_URL` is set. The default recommender is rules. The 8B path posts to `127.0.0.1:8080`.
+- **Questions logged:** none
+- **The next agent needs to know:** The customer's own words do not reach the model today. Whether they should is still an open spec item (`docs/architecture.md` §19). Do not describe that as already undecided in the code.
