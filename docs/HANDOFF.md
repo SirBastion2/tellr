@@ -2010,3 +2010,54 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/101. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
 
+---
+
+### [B] Merge main #95–#99 into UI stress-test fixes — Agent B1 — 2026-10-25 05:12
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 152 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  43 passed (43)
+      Tests  152 passed (152)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merged `origin/main` (`d5fcf16`, #95–#99) into `cursor/web-ui-stress-fixes-e50e`; `web/src/feed.ts`; `web/src/feed.test.ts`; `web/src/App.tsx`; `web/src/App.test.tsx`; `web/src/screens/HomeScreen.tsx`; `web/src/screens/HandoffScreen.tsx`; `web/src/workstation/ExplanationPanel.tsx`; `web/src/ui/ShortcutHelp.tsx`; `web/src/index.css`; tests; `ARCHITECTURE.md`; `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Kept both sides. #98’s `mergeSignalRows` list is the source of truth (architecture §12; UI_REFERENCE “each fact once”). Dropped #94’s CopilotStrip signal rows and Recent activity memory because those lists are gone.
+  - First-seen `chipOrder` still feeds `mergeSignalRows` so dismiss/restore/confirm do not jump. Handoff `flaggedSignals` uses the same merged rows and marks dismissed/confirmed from state. Display only; no risk math (§9, §12).
+  - Floating Undo stays off Customer file, Outcome, and Handoff. Context and Session still get the top Undo. `tc-shell` keeps the header gap. Shortcut help is a two-column grid including `T`, with a space after the keys.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/94. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots.
+
+---
+
+### [B] Merge main #100 + #101 into UI stress-test fixes — Agent B1 — 2026-10-25 05:16
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 164 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  45 passed (45)
+      Tests  164 passed (164)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** merged `origin/main` (`5512be9`, #100 header/spacing, #101 shared theme tokens) into `cursor/web-ui-stress-fixes-e50e`; `ARCHITECTURE.md`; `docs/HANDOFF.md`; `web/src/App.tsx`; `web/src/index.css`; `web/src/screens/HandoffScreen.tsx`; `web/src/ui/ShortcutHelp.tsx`; `web/src/theme.test.tsx`
+- **Decisions I made, and the section that justified each:**
+  - Header, spacing, and theme structure stay on main’s shared tokens (`--tc-space-*`, `--tc-radius-*`, even tabs, logo pill). Dropped #94’s hardcoded `tc-shell` clamp gap and grid display.
+  - Kept only #94’s non-duplicate behavior: first-seen `chipOrder` into `mergeSignalRows`, Handoff merged rows with dismissed/confirmed marks, floating Undo off Customer file, shortcut help two-column grid including `T`. Display only; no risk math (§9, §12).
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/94. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots.
+

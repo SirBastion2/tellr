@@ -22,6 +22,7 @@ export function HomeScreen({
   session,
   postedChipIds = EMPTY_IDS,
   dismissed = [],
+  chipOrder = [],
   activity = null,
   demo = null,
   closed = false,
@@ -32,6 +33,7 @@ export function HomeScreen({
   session: SessionState | null
   postedChipIds?: readonly string[]
   dismissed?: readonly string[]
+  chipOrder?: readonly string[]
   activity?: readonly ActivityRow[] | null
   demo?: DemoView | null
   closed?: boolean
@@ -92,6 +94,7 @@ export function HomeScreen({
               postedChipIds={shownPosted}
               confirmed={demo.confirmed}
               dismissed={dismissed}
+              chipOrder={chipOrder}
               activity={shownActivity}
               onConfirm={demo.onConfirmSignal}
               onDismiss={demo.onDismissSignal}

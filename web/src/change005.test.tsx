@@ -36,6 +36,7 @@ function demo(): DemoView {
     onToggleCase: () => undefined,
     onConfirmSignal: () => undefined,
     onDismissSignal: () => undefined,
+    onRestoreSignal: () => undefined,
     onEscalate: () => undefined,
   }
 }
@@ -188,5 +189,44 @@ describe('CHANGE-005 fields', () => {
     expect(screen.queryByRole('heading', { name: 'Recent activity' })).toBeNull()
     expect(screen.queryByRole('heading', { name: 'This withdrawal' })).toBeNull()
     expect(screen.queryByRole('heading', { name: 'What was noted' })).toBeNull()
+  })
+
+  it('keeps merged Why this level rows in first-seen order after dismiss and confirm', () => {
+    const posted = ['chip.on_phone', 'chip.cash_only', 'chip.rushed']
+    const session = {
+      ...base,
+      context_chips: posted.map((id) => ({ id, source: 'observed' as const })),
+    }
+    const { rerender } = render(
+      <ExplanationPanel
+        library={library}
+        session={session}
+        postedChipIds={posted}
+        confirmed={[]}
+        dismissed={[]}
+        chipOrder={posted}
+      />,
+    )
+    const ids = () => screen.getAllByTestId('signal-row').map((row) => row.getAttribute('data-chip'))
+    expect(ids()).toEqual(posted)
+    rerender(
+      <ExplanationPanel
+        library={library}
+        session={{
+          ...session,
+          context_chips: session.context_chips.filter((chip) => chip.id !== 'chip.cash_only'),
+        }}
+        postedChipIds={['chip.on_phone', 'chip.rushed']}
+        confirmed={['chip.rushed']}
+        dismissed={['chip.cash_only']}
+        chipOrder={posted}
+        onConfirm={() => undefined}
+        onDismiss={() => undefined}
+        onRestore={() => undefined}
+      />,
+    )
+    expect(ids()).toEqual(posted)
+    expect(screen.getAllByTestId('signal-row')[1]?.getAttribute('data-state')).toBe('dismissed')
+    expect(screen.getByTestId('signal-restore')).toBeTruthy()
   })
 })

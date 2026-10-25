@@ -1,16 +1,16 @@
-import { useEffect, useRef } from 'react'
+import { Fragment, useEffect, useRef } from 'react'
 import { controlStyle } from '../theme/controls'
 
-const ROWS: readonly { keys: string; what: string }[] = [
-  { keys: '?', what: 'Show or hide this list' },
-  { keys: 'P', what: 'Play or pause the simulation' },
-  { keys: 'N', what: 'Step one customer event' },
-  { keys: 'R', what: 'Restart the simulation' },
-  { keys: 'C', what: 'Confirm the latest signal' },
-  { keys: 'D', what: 'Dismiss the latest signal' },
-  { keys: 'E', what: 'Escalate to the supervisor' },
-  { keys: '[ and ]', what: 'Switch simulated customer' },
-  { keys: 'T', what: 'Switch bank theme' },
+const ROWS: readonly { keys: readonly string[]; what: string }[] = [
+  { keys: ['?'], what: 'Show or hide this list' },
+  { keys: ['P'], what: 'Play or pause the simulation' },
+  { keys: ['N'], what: 'Step one customer event' },
+  { keys: ['R'], what: 'Restart the simulation' },
+  { keys: ['C'], what: 'Confirm the latest signal' },
+  { keys: ['D'], what: 'Dismiss the latest signal' },
+  { keys: ['E'], what: 'Escalate to the supervisor' },
+  { keys: ['[', ']'], what: 'Switch simulated customer' },
+  { keys: ['T'], what: 'Switch bank theme' },
 ]
 
 export function ShortcutHelp({ onClose }: { onClose: () => void }) {
@@ -32,7 +32,7 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
         display: 'grid',
         placeItems: 'center',
         zIndex: 20,
-        padding: 16,
+        padding: 'var(--tc-space-4)',
       }}
     >
       <div
@@ -40,20 +40,46 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
           background: 'var(--tc-glass-fallback, #1e1b4b)',
           color: 'var(--tc-text, #fff)',
           borderRadius: 'var(--tc-radius-card, 16px)',
-          padding: 16,
+          padding: 'var(--tc-space-4)',
           maxWidth: 480,
           width: 'min(480px, 100%)',
           display: 'grid',
-          gap: 12,
+          gap: 'var(--tc-space-3)',
         }}
       >
         <h2 id="shortcut-title" style={{ margin: 0, fontSize: 20 }}>
           Keyboard shortcuts
         </h2>
-        <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+        <ul
+          data-testid="shortcut-list"
+          style={{
+            listStyle: 'none',
+            margin: 0,
+            padding: 0,
+            display: 'grid',
+            gap: 'var(--tc-space-2)',
+          }}
+        >
           {ROWS.map((row) => (
-            <li key={row.keys}>
-              <kbd>{row.keys}</kbd> {row.what}
+            <li
+              key={row.keys.join('-')}
+              data-testid="shortcut-row"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '7.5rem minmax(0, 1fr)',
+                columnGap: 'var(--tc-space-3)',
+                alignItems: 'baseline',
+              }}
+            >
+              <span>
+                {row.keys.map((key, index) => (
+                  <Fragment key={key}>
+                    {index > 0 ? ' and ' : null}
+                    <kbd>{key}</kbd>
+                  </Fragment>
+                ))}{' '}
+              </span>
+              <span>{row.what}</span>
             </li>
           ))}
         </ul>

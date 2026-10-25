@@ -29,6 +29,7 @@ function demo(overrides: Partial<DemoView> = {}): DemoView {
     onToggleCase: () => undefined,
     onConfirmSignal: () => undefined,
     onDismissSignal: () => undefined,
+    onRestoreSignal: () => undefined,
     onEscalate: () => undefined,
     ...overrides,
   }

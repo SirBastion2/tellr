@@ -6,7 +6,7 @@ import { CUSTOMERS, customerById } from './demo/customers'
 import type { ConfirmKind, DemoSpeed, DemoView } from './demo/types'
 import { connectionLabel, connectionState, subscribeConnection, type ConnectionState } from './connection'
 import { friendlyApiError } from './errors'
-import { notesOnlyChip, sourceForChip } from './feed'
+import { notesOnlyChip, rememberChipOrder, sourceForChip } from './feed'
 import { LiveBadge } from './LiveBadge'
 import { PRESENTER_HIDDEN_ROUTES, PresenterProvider, usePresenter } from './presenter'
 import { SchemaBanner } from './SchemaBanner'
@@ -135,12 +135,14 @@ function routePath(route: (typeof APP_ROUTES)[number], session: SessionState | n
   return route.path
 }
 
+const EMPTY_IDS: readonly string[] = []
+
 export function AppShell({
   library,
   session,
   issues,
-  postedChipIds = [],
-  dismissed = [],
+  postedChipIds = EMPTY_IDS,
+  dismissed = EMPTY_IDS,
   activity = null,
   onPostContext,
   onAnswer,
@@ -187,6 +189,21 @@ export function AppShell({
   const headerRef = useRef<HTMLElement | null>(null)
   const schemeCompact = useSchemeCompact(headerRef)
   const workstation = location.pathname === '/' && Boolean(demo)
+  const sessionId = session?.session_id ?? null
+  const chipOrderSession = useRef<string | null>(sessionId)
+  const [chipOrder, setChipOrder] = useState<string[]>([])
+  useEffect(() => {
+    const incoming = [...postedChipIds, ...(session?.context_chips ?? []).map((chip) => chip.id), ...dismissed]
+    setChipOrder((prev) => {
+      const next =
+        chipOrderSession.current === sessionId ? rememberChipOrder(prev, incoming) : rememberChipOrder([], incoming)
+      if (next.length === prev.length && next.every((id, index) => id === prev[index])) {
+        return prev
+      }
+      return next
+    })
+    chipOrderSession.current = sessionId
+  }, [postedChipIds, session?.context_chips, dismissed, sessionId])
   const routes = presenter.on ? APP_ROUTES.filter((route) => !PRESENTER_HIDDEN_ROUTES.has(route.id)) : APP_ROUTES
   const simulationTitle = demo ? (customerById(demo.customerId)?.title ?? null) : null
   useEffect(() => {
@@ -351,8 +368,8 @@ export function AppShell({
           </div>
         ) : null}
         <main id="main">
-          {session && !workstation && !closed && !location.pathname.endsWith('/outcome') && !location.pathname.endsWith('/handoff') ? (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          {session && !workstation && !closed && !location.pathname.endsWith('/outcome') && !location.pathname.endsWith('/handoff') && location.pathname !== '/customer' ? (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 'var(--tc-space-2)' }}>
               <button
                 type="button"
                 className="tc-btn"
@@ -375,6 +392,7 @@ export function AppShell({
                   session={session}
                   postedChipIds={postedChipIds}
                   dismissed={dismissed}
+                  chipOrder={chipOrder}
                   activity={activity}
                   demo={demo}
                   closed={closed}
@@ -420,7 +438,14 @@ export function AppShell({
               path="/sessions/:id/handoff"
               element={
                 session ? (
-                  <HandoffScreen library={library} projection={handoff} />
+                  <HandoffScreen
+                    library={library}
+                    projection={handoff}
+                    session={session}
+                    dismissed={dismissed}
+                    confirmed={demo?.confirmed ?? []}
+                    postedChipIds={postedChipIds}
+                  />
                 ) : (
                   <NotFoundScreen kind="session" />
                 )

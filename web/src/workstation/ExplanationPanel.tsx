@@ -60,7 +60,7 @@ function FactorList({
             data-direction={item.direction}
             style={{ display: 'grid', gap: 6, alignItems: 'start' }}
           >
-            <div data-testid="signal-row" data-state={item.state} className="tc-signal-row" style={{ display: 'grid', gap: 6 }}>
+            <div data-testid="signal-row" data-chip={item.chipId ?? item.id} data-state={item.state} className="tc-signal-row" style={{ display: 'grid', gap: 6 }}>
               <div className="tc-signal-meta">
                 <div className="tc-factor-head">
                   <strong>{item.label}</strong>
@@ -151,6 +151,7 @@ export function ExplanationPanel({
   postedChipIds,
   confirmed = [],
   dismissed = [],
+  chipOrder = [],
   activity = null,
   idle = false,
   closed = false,
@@ -164,6 +165,7 @@ export function ExplanationPanel({
   postedChipIds: readonly string[]
   confirmed?: readonly string[]
   dismissed?: readonly string[]
+  chipOrder?: readonly string[]
   activity?: readonly ActivityRow[] | null
   idle?: boolean
   closed?: boolean
@@ -199,7 +201,7 @@ export function ExplanationPanel({
   }
 
   const grouped = groupFactors(session, library)
-  const merged = mergeSignalRows(library, session, postedChipIds, confirmed, dismissed)
+  const merged = mergeSignalRows(library, session, postedChipIds, confirmed, dismissed, chipOrder)
   const factors = [...grouped.raises, ...grouped.lowers]
   const total = responseWeightTotal(factors)
   const debug = session.debug

@@ -163,5 +163,6 @@ describe('theme selection', () => {
     expect(getComputedStyle(screen.getByTestId('theme-page')).flexDirection).toBe('column')
     expect(screen.getByTestId('theme-card')).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Teller Copilot' })).toBeTruthy()
+    expect(screen.getByTestId('app-shell').className).toContain('tc-shell')
   })
 })
