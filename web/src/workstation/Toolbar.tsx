@@ -173,22 +173,10 @@ export function MiniTransport({ demo }: { demo: DemoView }) {
   )
 }
 
-/** Current beat first (left). Older beats follow to the right. Later beats stay dim after those. */
-function timelineOrder(count: number, index: number): number[] {
-  const steps = Array.from({ length: count }, (_, i) => i + 1)
-  if (index <= 0) {
-    return steps
-  }
-  const older = steps.filter((step) => step < index).reverse()
-  const future = steps.filter((step) => step > index)
-  return [index, ...older, ...future]
-}
-
 export function PlaybackBar({ demo }: { demo: DemoView }) {
   const customer = customerById(demo.customerId)
   const events = customer?.events ?? []
   const shown = events.length > 0 ? Math.max(demo.index, 1) : 0
-  const order = timelineOrder(events.length, shown)
   const dot = (step: number) => {
     const event = events[step - 1]
     if (!event) {
@@ -209,15 +197,13 @@ export function PlaybackBar({ demo }: { demo: DemoView }) {
       />
     )
   }
-  const currentStep = shown > 0 ? order[0] : null
-  const following = currentStep == null ? order : order.slice(1)
+  const chronological = Array.from({ length: events.length }, (_, i) => i + 1)
   return (
     <div className="tc-playback" data-testid="playback-bar">
       <div className="tc-timeline-row">
         <div className="tc-dots" role="group" aria-label="Timeline steps" data-testid="step-dots">
-          {currentStep != null ? dot(currentStep) : null}
           <MiniTransport demo={demo} />
-          {following.map((step) => dot(step))}
+          {chronological.map((step) => dot(step))}
         </div>
       </div>
       <div className="tc-footer-utilities" aria-label="Playback extras">
