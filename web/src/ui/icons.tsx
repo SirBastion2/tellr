@@ -26,6 +26,35 @@ export function PauseIcon({ size }: IconProps) {
   )
 }
 
+export function UndoIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path
+        d="M8 8H5V5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5.5 8.5A7 7 0 1 1 6 16"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </Svg>
+  )
+}
+
+export function BackIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M19 5v14l-9-7z" fill="currentColor" />
+      <path d="M5 5h3v14H5z" fill="currentColor" />
+    </Svg>
+  )
+}
+
 export function StepIcon({ size }: IconProps) {
   return (
     <Svg size={size}>

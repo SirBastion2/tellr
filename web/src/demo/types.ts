@@ -23,6 +23,10 @@ export type DemoView = {
   onPlay: () => void
   onPause: () => void
   onStep: () => void
+  /** Show the previous timeline step. Does not recompute a score. */
+  onBack?: () => void
+  /** Show the step at this 1-based index. Forward past unposted steps still posts them. */
+  onSeek?: (index: number) => void
   onRestart: () => void
   onSpeed: (speed: DemoSpeed) => void
   onToggleCase: () => void

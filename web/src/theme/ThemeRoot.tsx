@@ -4,7 +4,7 @@ import { DENSITY } from './tokens'
 import { useColorScheme, useTheme } from './ThemeProvider'
 import { themeVars } from './vars'
 
-export function ThemeRoot({ children }: { children: ReactNode }) {
+export function ThemeRoot({ children, footer = null }: { children: ReactNode; footer?: ReactNode }) {
   const theme = useTheme()
   const { scheme } = useColorScheme()
   const presenter = usePresenter()
@@ -83,18 +83,22 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
         >
           {children}
         </div>
-        <p
-          data-testid="theme-footer"
-          className="tc-footer"
-          style={{
-            width: '100%',
-            margin: '0 auto',
-            color: 'var(--tc-muted)',
-            ...footerPosition,
-          }}
-        >
-          {theme.footerText}
-        </p>
+        <div className="tc-footer-row">
+          <div id="tc-playback-slot" className="tc-playback-slot">
+            {footer}
+          </div>
+          <p
+            data-testid="theme-footer"
+            className="tc-footer"
+            style={{
+              margin: '0 auto',
+              color: 'var(--tc-muted)',
+              ...footerPosition,
+            }}
+          >
+            {theme.footerText}
+          </p>
+        </div>
       </div>
     </div>
   )

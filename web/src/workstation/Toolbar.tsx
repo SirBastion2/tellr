@@ -1,9 +1,12 @@
 import type { CSSProperties } from 'react'
 import { formatElapsed } from '../demo/clock'
+import { customerById } from '../demo/customers'
 import type { DemoSpeed, DemoView } from '../demo/types'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { DENSITY } from '../theme/tokens'
-import { PauseIcon, PlayIcon, RestartIcon, StepIcon } from '../ui/icons'
+import { BackIcon, PauseIcon, PlayIcon, RestartIcon, StepIcon } from '../ui/icons'
+import { personalNamesFrom, redactPersonalCopy } from '../ui/privacy'
+import { StepSwap, useStepDirection } from './StepSwap'
 
 const controlHeight = `var(--tc-control-h, ${DENSITY.controlHeight})`
 
@@ -87,8 +90,60 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
           ))}
         </select>
       </label>
+    </div>
+  )
+}
+
+export function PlaybackBar({ demo }: { demo: DemoView }) {
+  const customer = customerById(demo.customerId)
+  const events = customer?.events ?? []
+  const direction = useStepDirection(demo.index, demo.customerId)
+  const names = personalNamesFrom(customer?.profile.name ?? '')
+  const current = demo.index > 0 ? events[demo.index - 1] : null
+  const title = current ? redactPersonalCopy(current.text, names) : 'Customer File'
+  return (
+    <div className="tc-playback" data-testid="playback-bar">
+      <div className="tc-dot-track" data-testid="step-dots">
+        <StepSwap
+          stepKey={`${demo.customerId}:${demo.index}`}
+          direction={direction}
+          title={title}
+          titleClassName="tc-prose tc-footer-step-line"
+          testId="footer-step"
+        />
+        <div className="tc-dots" role="group" aria-label="Timeline steps">
+          {events.map((event, index) => {
+            const step = index + 1
+            const on = demo.index === step
+            return (
+              <button
+                key={event.id}
+                type="button"
+                className="tc-step-dot"
+                data-testid="step-dot"
+                data-step={step}
+                aria-current={on ? 'step' : undefined}
+                aria-label={`Step ${step}`}
+                onClick={() => demo.onSeek?.(step)}
+              />
+            )
+          })}
+        </div>
+      </div>
       <div className="tc-toolbar-controls">
         <div className="tc-toolbar-group" role="group" aria-label="Playback">
+          <button
+            type="button"
+            className="tc-btn"
+            data-variant="secondary"
+            data-testid="demo-back"
+            aria-label="Back"
+            title="Previous step"
+            style={iconButton}
+            onClick={() => demo.onBack?.()}
+          >
+            <BackIcon />
+          </button>
           <button
             type="button"
             className="tc-btn"

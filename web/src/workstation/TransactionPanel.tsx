@@ -4,6 +4,7 @@ import type { CustomerEvent, CustomerFile } from '../demo/customers'
 import { Emphasis } from '../ui/emphasis'
 import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { displaySpeaker, personalNamesFrom, redactPersonalCopy } from '../ui/privacy'
+import { StepSwap, useStepDirection } from './StepSwap'
 import { CaseFileLink } from './Toolbar'
 
 function eventSpeaker(event: CustomerEvent, names: readonly string[]): string {
@@ -41,7 +42,11 @@ export function TransactionPanel({
 }) {
   const visible = customer.events.slice(0, fired)
   const current = fired > 0 ? customer.events[fired - 1] : null
+  const previous = fired > 1 ? customer.events[fired - 2] : null
   const names = personalNamesFrom(customer.profile.name)
+  const direction = useStepDirection(fired, customer.id)
+  const stepTitle = current ? redactPersonalCopy(current.text, names) : 'Customer File'
+  const stepSubtitle = previous ? redactPersonalCopy(previous.text, names) : ''
   const shown = Math.min(fired, customer.events.length)
   const total = customer.events.length
   const pct = total === 0 ? 0 : Math.round((shown / total) * 100)
@@ -62,16 +67,15 @@ export function TransactionPanel({
           <CaseFileLink showCase={showCase} onToggleCase={onToggleCase} />
         </div>
       </div>
-      <p
-        data-testid="event-caption"
-        className={presenter ? 'tc-prose tc-display' : 'tc-prose tc-text-base'}
-        style={{
-          margin: 0,
-          maxWidth: '70ch',
-        }}
-      >
-        <Emphasis text={current ? redactPersonalCopy(current.text, names) : 'Customer File'} />
-      </p>
+      <StepSwap
+        stepKey={`${customer.id}:${fired}`}
+        direction={direction}
+        title={stepTitle}
+        subtitle={stepSubtitle}
+        titleTestId="event-caption"
+        titleClassName={presenter ? 'tc-prose tc-display tc-step-title' : 'tc-prose tc-text-base tc-step-title'}
+        testId="step-viewport"
+      />
       <FactGrid className="tc-kv" label="Transaction">
         <Fact term="Type">
           <span data-testid="txn-type">{customer.transaction.type}</span>
@@ -88,7 +92,13 @@ export function TransactionPanel({
         </Fact>
       </FactGrid>
       <SectionHeading>Timeline</SectionHeading>
-      <ol ref={timelineRef} data-testid="demo-timeline" className="tc-timeline" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid' }}>
+      <ol
+        ref={timelineRef}
+        data-testid="demo-timeline"
+        className="tc-timeline"
+        data-motion={direction}
+        style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid' }}
+      >
         {visible.map((event, index) => {
           const isCurrent = index === visible.length - 1
           const isPast = index < shown - 1

@@ -3,7 +3,7 @@ import { ANSWER_ORIGIN, answerSignalRows } from '../answerSignals'
 import { listedChipIds, notesOnlyChip, originText, sourceForChip } from '../feed'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { DENSITY } from '../theme/tokens'
-import { CheckIcon, DismissIcon } from '../ui/icons'
+import { CheckIcon, DismissIcon, UndoIcon } from '../ui/icons'
 import { LEVEL_WORD, LevelIcon } from '../ui/LevelIcon'
 import type { ActivityRow, Library, SessionState } from '../types'
 import { Fact, FactGrid } from '../ui/facts'
@@ -231,17 +231,19 @@ export function CopilotStrip({
         <FactGrid label={URGENCY_SCORE_TERM}>
           <Fact term={URGENCY_SCORE_TERM}>
             <span className="tc-score-line">
+              <span className="tc-urgency-dot" data-level={level} aria-hidden="true" />
               <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
                 {formatUrgencyScore(session.risk.score)}
               </span>
               <button
                 type="button"
                 ref={toggleRef}
-                className="tc-btn"
+                className="tc-btn tc-score-help"
                 data-variant="secondary"
                 data-testid="score-explanation"
                 aria-expanded={open}
                 aria-controls="score-explanation-overlay"
+                aria-label="Score explanation"
                 style={{
                   ...controlStyle,
                   ...secondaryStyle,
@@ -256,7 +258,7 @@ export function CopilotStrip({
                   setOpen((value) => !value)
                 }}
               >
-                Score explanation
+                ?
               </button>
             </span>
           </Fact>
@@ -356,6 +358,11 @@ export function CopilotStrip({
             </li>
           )
         })}
+        {answerRows.length > 0 ? (
+          <li className="tc-answer-label">
+            <span className="tc-kicker">{ANSWER_ORIGIN}</span>
+          </li>
+        ) : null}
         {answerRows.map((row) => (
           <li
             key={row.signal_id}
@@ -379,19 +386,20 @@ export function CopilotStrip({
           This visit is closed.
         </p>
       ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--tc-space-2, 8px)' }}>
+        <div className="tc-copilot-actions" style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--tc-space-2, 8px)' }}>
           {onUndo ? (
             <button
               type="button"
-              className="tc-btn"
+              className="tc-btn tc-undo"
               data-variant="secondary"
               data-testid="undo"
               title="Undo the last signal"
-              style={{ ...controlStyle, ...secondaryStyle }}
+              style={roundIconButton(secondaryStyle)}
               disabled={pending}
               onClick={() => onUndo()}
             >
-              Undo
+              <UndoIcon />
+              <span className="tc-sr">Undo</span>
             </button>
           ) : null}
           <button
