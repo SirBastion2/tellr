@@ -213,7 +213,11 @@ button[data-loading='true'],
   justify-content: flex-end;
 }
 
-.tc-play-label,
+.tc-play-label {
+  display: grid;
+  justify-items: start;
+}
+
 .tc-case-label {
   display: grid;
   justify-items: start;

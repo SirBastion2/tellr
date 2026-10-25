@@ -161,7 +161,8 @@ describe('simulation pill stays the same size before and during play', () => {
     expect(connection).toMatch(/min-height:\s*var\(--tc-header-control-h/)
     expect(timer).toMatch(/font-variant-numeric:\s*tabular-nums/)
     expect(timer).toMatch(/min-width:\s*var\(--tc-timer-min/)
-    expect(source).toMatch(/\.tc-play-label\s*\{[^}]*display:\s*grid/)
+    expect(headerRule(source, '.tc-play-label')).toMatch(/display:\s*grid/)
+    expect(headerRule(source, '.tc-case-label')).toMatch(/display:\s*grid/)
     expect(headerRule(source, '.tc-header')).toMatch(/flex-wrap:\s*wrap/)
     expect(headerRule(source, '.tc-header-nav')).toMatch(/flex:\s*1 1 auto/)
     for (const id of BANKS) {
@@ -240,8 +241,11 @@ describe('simulation pill stays the same size before and during play', () => {
           expect(badge.textContent, `${customer.id} ${state} @ ${width}`).toBe(label)
           expect(badge.getAttribute('title'), `${customer.id} ${state} @ ${width}`).toBe(label)
           expect(badge.textContent, `${customer.id} ${state} @ ${width}`).not.toMatch(/…|\.\.\.$/)
-          expect(getComputedStyle(badge).flexShrink, `${customer.id} ${state} @ ${width}`).toBe('0')
-          expect(getComputedStyle(nav).flexGrow, `${customer.id} ${state} @ ${width}`).toBe('1')
+          expect(badge.className, `${customer.id} ${state} @ ${width}`).toBe('tc-live-badge')
+          expect(headerRule(css(), '.tc-live-badge')).toMatch(/flex:\s*0 0 auto/)
+          expect(headerRule(css(), '.tc-live-badge')).toMatch(/flex-shrink:\s*0/)
+          expect(nav.className, `${customer.id} ${state} @ ${width}`).toBe('tc-header-nav')
+          expect(headerRule(css(), '.tc-header-nav')).toMatch(/flex:\s*1 1 auto/)
           for (const tabLabel of ['Home', 'Customer file', 'Outcome', 'Handoff']) {
             expect(screen.getByText(tabLabel).textContent, `${tabLabel} ${state} @ ${width}`).toBe(tabLabel)
           }
@@ -259,7 +263,9 @@ describe('simulation pill stays the same size before and during play', () => {
     const idleSpeed = chromeOf(screen.getByTestId('speed-control'))
     expect(screen.getByTestId('demo-play').querySelector('[data-show="true"]')?.textContent).toBe('Play')
     expect(screen.getByTestId('demo-play').querySelector('.tc-play-label')).toBeTruthy()
-    expect(getComputedStyle(screen.getByTestId('elapsed-timer')).fontVariantNumeric).toMatch(/tabular-nums/)
+    expect(screen.getByTestId('elapsed-timer').className).toBe('tc-timer')
+    expect(headerRule(css(), '.tc-timer')).toMatch(/font-variant-numeric:\s*tabular-nums/)
+    expect(headerRule(css(), '.tc-timer')).toMatch(/min-width:\s*var\(--tc-timer-min/)
     idleUnmount()
 
     const { unmount } = renderState('tellr', 'running')
