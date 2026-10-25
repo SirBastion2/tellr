@@ -3523,3 +3523,8 @@ body {
 .tc-explain-overlay .tc-title {
   position: static;
 }
+
+/* Close button sits inside the rounded corner instead of being clipped by it. */
+.tc-stage .tc-home .tc-strip .tc-explain-overlay .tc-explain-overlay-bar {
+  padding: calc(14 * var(--u)) calc(30 * var(--u)) 0 calc(30 * var(--u));
+}

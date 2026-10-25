@@ -572,6 +572,14 @@ function ConnectedShell() {
   const tellerRef = useRef(teller)
   const actionsRef = useRef<SignalAction[]>([])
   const dismissedSource = useRef(new Map<string, ChipSource>())
+  // What the server returned at each posted step, so rewinding shows that step's own result.
+  const snapshotsRef = useRef(new Map<number, { session: typeof teller.session; posted: typeof teller.postedChipIds }>())
+
+  useEffect(() => {
+    if (index > 0 && index === postedRef.current && teller.session) {
+      snapshotsRef.current.set(index, { session: teller.session, posted: teller.postedChipIds })
+    }
+  }, [index, teller.session, teller.postedChipIds])
 
   const engageClock = useCallback((on: boolean) => {
     if (clockOnRef.current === on) {
@@ -794,6 +802,7 @@ function ConnectedShell() {
       setDismissed([])
       setActions([])
       dismissedSource.current.clear()
+      snapshotsRef.current.clear()
       elapsedRef.current = 0
       setElapsedMs(0)
       setPending(true)
@@ -1049,12 +1058,14 @@ function ConnectedShell() {
     },
   }
 
+  const snapshot = index > 0 && index < postedRef.current ? snapshotsRef.current.get(index) : undefined
+
   return (
     <AppShell
       library={teller.library}
-      session={teller.session}
+      session={snapshot?.session ?? teller.session}
       issues={import.meta.env.DEV ? teller.issues : []}
-      postedChipIds={teller.postedChipIds}
+      postedChipIds={snapshot?.posted ?? teller.postedChipIds}
       dismissed={dismissed}
       activity={teller.activity?.rows ?? null}
       httpStatus={teller.httpStatus}
