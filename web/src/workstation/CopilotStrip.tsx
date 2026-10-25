@@ -44,10 +44,6 @@ export function suggestedAction(session: SessionState): string {
   return session.talk_track.lines[0] ?? ''
 }
 
-export function readAloud(session: SessionState): string {
-  return session.talk_track.lines.join(' ')
-}
-
 function rowState(confirmed: boolean, dismissed: boolean, teller: boolean): 'dismissed' | 'confirmed' | 'auto' {
   if (dismissed) {
     return 'dismissed'
@@ -158,7 +154,6 @@ export function CopilotStrip({
   const level = session.risk.level
   const reason = session.risk.reasons[0]?.label ?? session.risk.counterpoint?.label ?? 'No concern flagged'
   const action = suggestedAction(session)
-  const script = readAloud(session)
   const tellerChips = listedChipIds(postedChipIds, session.context_chips, dismissed, chipOrder).filter(
     (chipId) => !notesOnlyChip(library, chipId),
   )
@@ -252,24 +247,6 @@ export function CopilotStrip({
           {action}
         </p>
       </div>
-      <details
-        open
-        className="tc-block"
-        data-testid="read-aloud-block"
-        style={{
-          background: 'var(--tc-quote-bg)',
-          color: 'var(--tc-quote-fg)',
-          borderLeft: '4px solid var(--tc-quote-border)',
-          borderRadius: 'var(--tc-radius-card, 16px)',
-        }}
-      >
-        <summary>
-          <span className="tc-kicker">Read-aloud script</span>
-        </summary>
-        <blockquote data-testid="read-aloud" className="tc-prose">
-          {script}
-        </blockquote>
-      </details>
       <ul aria-label="Signals" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
         {tellerChips.map((chipId) => {
           const source = sourceForChip(session.context_chips, chipId)
