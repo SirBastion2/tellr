@@ -6,7 +6,11 @@ import { describe, expect, it } from 'vitest'
 import { App } from './App'
 import { THEMES } from './theme/registry'
 import { schemeNeedsCompact } from './theme/scheme'
-import { COLOR_STORAGE_KEY } from './theme/tokens'
+import { COLOR_STORAGE_KEY, THEME_STORAGE_KEY } from './theme/tokens'
+
+function isPillRadius(value: string): boolean {
+  return value === 'var(--tc-radius-control, 999px)' || value === '999px'
+}
 
 describe('color scheme', () => {
   it('collapses the scheme segment from measured content width, not a 1280px breakpoint', () => {
@@ -64,56 +68,109 @@ describe('color scheme', () => {
     expect(window.localStorage.getItem(COLOR_STORAGE_KEY)).toBe('system')
   })
 
-  it('draws the selected segment as a shared pill inside the track', () => {
+  it('draws every segment layer as one inset pill and fills the track', () => {
     const css = readFileSync('src/index.css', 'utf8')
-    const pill = css.match(
-      /\.tc-segment > button\[aria-pressed='true'\],\s*\.tc-header \.tc-scheme-full > button\s*\{[^}]*\}/,
-    )
-    const track = css.match(/\.tc-header \.tc-scheme-full\s*\{[^}]*\}/)
     const segment = css.match(/\.tc-segment\s*\{[^}]*\}/)
-    expect(pill?.[0]).toMatch(/border-radius:\s*var\(--tc-radius-control,\s*999px\)\s*!important/)
-    expect(pill?.[0]).not.toMatch(/:first-child|:last-child|nth-child/)
+    const track = css.match(/\.tc-header \.tc-scheme-full\s*\{[^}]*\}/)
+    const layers = css.match(
+      /\.tc-segment > button,\s*\.tc-segment > button:hover,[\s\S]*?\.tc-segment > button\[aria-pressed='false'\]\s*\{[^}]*\}/,
+    )
+    const generated = css.match(
+      /\.tc-segment > button::before,[\s\S]*?\.tc-segment > button\[aria-pressed='false'\]::after\s*\{[^}]*\}/,
+    )
+    const radius = /border-radius:\s*var\(--tc-radius-control,\s*999px\)\s*!important/
+    expect(segment?.[0]).toMatch(/border-radius:\s*var\(--tc-radius-control,\s*999px\)/)
+    expect(segment?.[0]).toMatch(/background:\s*var\(--tc-secondary-bg,\s*#f8fafc\)/)
+    expect(segment?.[0]).toMatch(/padding:\s*var\(--tc-space-1,\s*4px\)/)
+    expect(segment?.[0]).toMatch(/overflow:\s*hidden/)
     expect(track?.[0]).toMatch(/padding:\s*var\(--tc-space-1,\s*4px\)/)
+    expect(track?.[0]).toMatch(/background:\s*var\(--tc-secondary-bg,\s*#f8fafc\)/)
     expect(track?.[0]).toMatch(/overflow:\s*visible/)
     expect(track?.[0]).not.toMatch(/overflow:\s*hidden/)
-    expect(segment?.[0]).toMatch(/border-radius:\s*var\(--tc-radius-control,\s*999px\)/)
+    expect(layers?.[0]).toMatch(/:focus/)
+    expect(layers?.[0]).toMatch(/:focus-visible/)
+    expect(layers?.[0]).toMatch(/:active/)
+    expect(layers?.[0]).toMatch(/appearance:\s*none/)
+    expect(layers?.[0]).toMatch(radius)
+    expect(layers?.[0]).not.toMatch(/clip-path/)
+    expect(layers?.[0]).not.toMatch(/:first-child|:last-child|nth-child/)
+    expect(generated?.[0]).toMatch(/::before/)
+    expect(generated?.[0]).toMatch(/::after/)
+    expect(generated?.[0]).toMatch(radius)
     expect(css).toMatch(/--tc-space-1:\s*4px/)
     expect(css).toMatch(/--tc-radius-control:\s*999px/)
     expect(css).not.toMatch(/\[data-theme=(?:tellr|pnc|mtb|fnb)\][^{]*tc-segment/)
+    expect(css).not.toMatch(/border-radius:\s*0/)
 
     const style = document.createElement('style')
-    style.textContent = `:root{--tc-space-1:4px;--tc-radius-control:999px}${segment?.[0] ?? ''}${track?.[0] ?? ''}${pill?.[0] ?? ''}`
+    style.textContent = `:root{--tc-space-1:4px;--tc-radius-control:999px;--tc-header-radius:999px}${segment?.[0] ?? ''}${track?.[0] ?? ''}${layers?.[0] ?? ''}${generated?.[0] ?? ''}`
     document.head.appendChild(style)
     try {
-      window.localStorage.clear()
-      render(<App />)
-      const trackEl = screen.getByTestId('color-scheme')
-      const trackStyle = getComputedStyle(trackEl)
-      expect(trackStyle.overflow).toBe('visible')
-      expect(trackStyle.borderRadius).toBe('var(--tc-radius-control, 999px)')
+      for (const themeId of ['tellr', 'pnc', 'mtb', 'fnb'] as const) {
+        window.localStorage.clear()
+        window.localStorage.setItem(THEME_STORAGE_KEY, themeId)
+        window.history.replaceState({}, '', `/?theme=${themeId}`)
+        const { unmount } = render(<App />)
+        const root = screen.getByTestId('theme-root')
+        const trackEl = screen.getByTestId('color-scheme')
+        const speedEl = screen.getByTestId('speed-control')
+        const trackStyle = getComputedStyle(trackEl)
+        const speedStyle = getComputedStyle(speedEl)
+        expect(root.style.getPropertyValue('--tc-secondary-bg'), themeId).toBe(THEMES[themeId]?.secondaryBg)
+        expect(root.style.getPropertyValue('--tc-secondary-border'), themeId).toBe(THEMES[themeId]?.secondaryBorder)
+        expect(trackStyle.overflow, themeId).toBe('visible')
+        expect(isPillRadius(trackStyle.borderRadius), themeId).toBe(true)
+        expect(isPillRadius(speedStyle.borderRadius), themeId).toBe(true)
+        expect(speedStyle.paddingTop, themeId).toBe(trackStyle.paddingTop)
+        expect(speedStyle.paddingRight, themeId).toBe(trackStyle.paddingRight)
 
-      for (const id of ['dark', 'light', 'system'] as const) {
-        fireEvent.click(screen.getByTestId(`scheme-${id}`))
-        for (const option of ['light', 'dark', 'system']) {
-          const button = screen.getByTestId(`scheme-${option}`)
-          expect(button.getAttribute('aria-pressed')).toBe(option === id ? 'true' : 'false')
-          expect(button.textContent).toBe(option === 'light' ? 'Light' : option === 'dark' ? 'Dark' : 'System')
-          expect(button.style.borderRadius, `${option} inline`).toBe('0px')
-          expect(getComputedStyle(button).borderRadius, `${id} selected, ${option}`).toBe(
-            'var(--tc-radius-control, 999px)',
-          )
+        fireEvent.click(screen.getByTestId('scheme-light'))
+        expect(root.style.getPropertyValue('--tc-secondary-bg'), `${themeId} light`).toBe(
+          THEMES[themeId]?.light.secondaryBg,
+        )
+        expect(root.style.getPropertyValue('--tc-secondary-border'), `${themeId} light`).toBe(
+          THEMES[themeId]?.light.secondaryBorder,
+        )
+
+        for (const id of ['dark', 'light', 'system'] as const) {
+          fireEvent.click(screen.getByTestId(`scheme-${id}`))
+          for (const option of ['light', 'dark', 'system']) {
+            const button = screen.getByTestId(`scheme-${option}`)
+            const label = option === 'light' ? 'Light' : option === 'dark' ? 'Dark' : 'System'
+            expect(button.getAttribute('aria-pressed'), `${themeId} ${option}`).toBe(option === id ? 'true' : 'false')
+            expect(button.textContent, `${themeId} ${option}`).toBe(label)
+            expect(button.style.borderRadius, `${themeId} ${option} inline`).toContain('999px')
+            expect(button.style.backgroundColor, `${themeId} ${option}`).toBe(
+              option === id ? 'var(--tc-button)' : 'var(--tc-secondary-bg)',
+            )
+            const painted = getComputedStyle(button)
+            expect(isPillRadius(painted.borderRadius), `${themeId} ${id} ${option}`).toBe(true)
+            button.focus()
+            expect(isPillRadius(getComputedStyle(button).borderRadius), `${themeId} ${option} focus`).toBe(true)
+          }
         }
-      }
 
-      const selectedSpeed = screen.getByTestId('demo-speed-1')
-      const unselectedSpeed = screen.getByTestId('demo-speed-2')
-      expect(selectedSpeed.getAttribute('aria-pressed')).toBe('true')
-      expect(unselectedSpeed.getAttribute('aria-pressed')).toBe('false')
-      expect(selectedSpeed.style.borderRadius).toBe('0px')
-      expect(getComputedStyle(selectedSpeed).borderRadius).toBe('var(--tc-radius-control, 999px)')
-      expect(getComputedStyle(unselectedSpeed).borderRadius).toBe('0px')
+        for (const speed of [1, 2, 4] as const) {
+          fireEvent.click(screen.getByTestId(`demo-speed-${speed}`))
+          for (const option of [1, 2, 4]) {
+            const button = screen.getByTestId(`demo-speed-${option}`)
+            expect(button.getAttribute('aria-pressed'), `${themeId} ${speed}x ${option}`).toBe(
+              option === speed ? 'true' : 'false',
+            )
+            expect(button.textContent, `${themeId} speed ${option}`).toBe(`${option}×`)
+            expect(button.style.borderRadius, `${themeId} speed ${option} inline`).toContain('999px')
+            expect(button.style.backgroundColor, `${themeId} speed ${option}`).toBe(
+              option === speed ? 'var(--tc-button)' : 'var(--tc-secondary-bg)',
+            )
+            const painted = getComputedStyle(button)
+            expect(isPillRadius(painted.borderRadius), `${themeId} speed ${speed} ${option}`).toBe(true)
+          }
+        }
+        unmount()
+      }
     } finally {
       style.remove()
+      window.history.replaceState({}, '', '/')
     }
   })
 
