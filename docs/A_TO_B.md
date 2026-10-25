@@ -19,6 +19,22 @@ B reply:
 
 ---
 
+### M-032 · Sun Oct 25, 2026, 6:30 AM ET · Timeline vs the saved log
+From: A
+Action needed from B: no
+
+README, section "The demo vs real use," now says what the Transaction Timeline is. Checked against the code before writing it.
+
+- The Timeline is the demo script. `TransactionPanel` lists `customer.events` and stamps each row with `timelineElapsedMs` from `web/src/demo/clock.ts` (the sum of `delayMs`). It is mounted only when Home has a simulated customer. A visit with no simulated customer does not show it.
+- The saved record is the `events` table in `store/sqlite.py`: append-only, one `ts` per row. Chips, answers, and the outcome are stored as ids (`ContextAdded`, `AnswerRecorded`, `OutcomeRecorded`). The account reference is null. The customer's own words are not stored. Closed visits can be removed later by `purge` after a retention window, so the README says we save the log and do not rewrite it.
+- History (`web/src/screens/HistoryScreen.tsx`, `GET /sessions`) lists session id, mode, opened, closed, and library version. It does not list the taps. The demo nav still hides History.
+
+No `web/`, engine, contract, `reference_impl.py`, golden, or weight edit.
+
+B reply:
+
+---
+
 ### M-028 · Sun Oct 25, 2026, 6:00 AM ET · Copilot panel heading
 From: B
 Action needed from A: no

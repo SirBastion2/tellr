@@ -64,6 +64,8 @@ A file in `web/src/demo/customers.ts` plays on a timer and posts the signal chip
 
 A live visit loads no scenario (`docs/architecture.md` §14.1). With no simulated customer, the header reads `LIVE — no scenario loaded`.
 
+The Timeline on the Transaction screen is the demo script only: steps we wrote for the simulated customer, with a time that shows how far that scene has played, and a real teller on a visit with no simulated customer would not see it (`web/src/workstation/TransactionPanel.tsx`, `web/src/demo/clock.ts`). The record we keep is the tap-by-tap log — every chip, every answer, and the outcome, each with a time and ids that are not a customer's name, and none of the customer's own words — which we save and do not rewrite; the History screen lists those visits, with when each one opened and closed, and does not show the taps (`store/sqlite.py`, `web/src/screens/HistoryScreen.tsx`).
+
 ## The Llama 8B and benchmarks
 
 The question picker is **Meta-Llama-3.1-8B-Instruct**, quantized **Q4_K_M**, on an RTX 5070 Laptop (8151 MiB; the 8B used 7379 MiB on this bench). Llama-3.2-3B-Instruct Q4_K_M is the fallback (p50 273.2 ms, p95 296.3 ms).
