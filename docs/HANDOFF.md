@@ -2420,4 +2420,16 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/112. Do not open a new PR. No contract / engine / library / golden / `reference_impl.py` edits. No new dependency. No screenshots or videos.
 
+---
+
+### [B] Memo fact value weight — Agent B1 — 2026-10-25 06:52
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 191 tests, contract OK)
+- **Changed:** `web/src/index.css`, `web/src/typeHierarchy.test.tsx`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Transaction Memo is a fact value (`tc-fact-value`) wrapped in `tc-prose`, which set body weight 400 over the bold value weight. `.tc-fact-value > .tc-prose` now uses `font-weight: inherit` so Memo matches Type and Amount. Size, color, and line-height stay on `tc-prose` (architecture fact grid: bold values).
+  - Other fact grids (customer file, case file, Outcome, Handoff, Health, History, Why this level, shortcuts) do not put body prose inside the value cell. Level badges and the Copy control are not the same kind of label/value text, so they stay as they are.
+- **Questions logged:** none
+- **The next agent needs to know:** No contract / engine / library / golden edits. No new dependency. No screenshots or videos.
+
 
