@@ -1500,3 +1500,45 @@ GATE PASS (contract)
   - T1–T7 fixtures were not edited. `scripts/gate.sh contract` still hashes them.
   - No new dependency.
 
+---
+
+### [CHANGE-005] (a) SessionState explanation — Agent A — 2026-10-25 01:30
+- **Status:** done (part (a) only; (b) context source and (c) GET /activity not in this PR)
+- **Gate:** `scripts/gate.sh a` → PASS; `scripts/gate.sh contract` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+180 passed, 1 warning in 23.18s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+```
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (contract)
+```
+- **Changed:** `engine/score.py` (`contributions`); `api/main.py` (attach `explanation` on every SessionState); `tests/engine/test_contributions.py` (new); `tests/api/test_explanation.py` (new); `tests/api/conftest.py` (`comparable` ignores `explanation`); `ARCHITECTURE.md` (new test files); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Weights/labels from the live `Library` the API loaded (`library/signals.yaml`), never `reference_impl.py` / `reference_weights.yaml` (CHANGE-005 (a)).
+  - Contributions are §6.2 `effective()` signals with non-zero weight, sorted by `|weight|` desc then `signal_id`. Direction is `raises` / `lowers` from the sign. UI-agnostic: id, label, weight, direction only.
+  - `confidence` is always `null` (rules recommender; no stored model confidence to emit).
+  - `used_fallback` is derived from this turn's stored `ValidationRejected` / `RecommendationIssued.source == "rules"` when the process recommender is a model or fake. No new write. Rules path is always `false`.
+  - `explanation` is attached in the API after `public_state`, so `project()` and goldens stay unchanged. `comparable` ignores the new optional field so T1–T7 fixtures still match.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - Every SessionState response now includes `explanation`. T1–T7 fixtures still omit it; they remain valid. B can render contributions / fallback; do not compute weights in `web/`.
+  - Parts (b) `context_chips` / `ContextAdded.source` and (c) `GET /sessions/{id}/activity` are not implemented.
+  - No new dependency. Did not edit `reference_impl.py`, goldens, `contract/`, or `web/`.
+

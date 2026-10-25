@@ -27,6 +27,7 @@ from engine import (
     rule_choice,
     stop,
 )
+from engine.score import contributions
 from recommenders import DEFAULT_MODEL_ID, FakeRecommender, HostedLLM, LocalLLM, Metrics
 from recommenders.select import (
     apply_recommendation,
@@ -42,6 +43,10 @@ _FAKE_KINDS = frozenset({"fake", "fake_llm"})
 _REPO = Path(__file__).resolve().parents[1]
 _DEFAULT_LIBRARY = _REPO / "library"
 _TELLER = frozenset({"ContextAdded", "AnswerRecorded"})
+_MODEL_OR_FAKE = _MODEL_KINDS | _FAKE_KINDS
+_TELLER_TURN = frozenset(
+    {"SessionOpened", "ContextAdded", "AnswerRecorded", "Truncated"}
+)
 
 
 def default_db_path() -> Path:
@@ -101,6 +106,27 @@ def _undo_to_seq(events: list[dict[str, Any]]) -> int | None:
     if not teller:
         return None
     return teller[-1] - 1
+
+
+def _used_fallback(events: list[dict[str, Any]], recommender: str) -> bool:
+    """CHANGE-005 (a): model timed out or was rejected on this turn.
+
+    Derived from stored ValidationRejected / RecommendationIssued markers and
+    the process recommender (debug.recommender). No new event is written.
+    """
+    if recommender not in _MODEL_OR_FAKE:
+        return False
+    rejected = False
+    issued_source: str | None = None
+    for event in reversed(events):
+        kind = event.get("type")
+        if kind == "ValidationRejected":
+            rejected = True
+        elif kind == "RecommendationIssued":
+            issued_source = event.get("source")
+        elif kind in _TELLER_TURN:
+            break
+    return rejected or issued_source == "rules"
 
 
 def create_app(
@@ -210,6 +236,19 @@ def create_app(
         }
         return out
 
+    def attach_explanation(
+        out: dict[str, Any],
+        state: dict[str, Any],
+        events: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        evidence = (state.get("_engine") or {}).get("evidence") or []
+        out["explanation"] = {
+            "confidence": None,
+            "used_fallback": _used_fallback(events, rec),
+            "contributions": contributions(evidence, library),
+        }
+        return out
+
     def render(session_id: str) -> dict[str, Any]:
         events = store.load_events(conn, session_id)
         state = project(events, library)
@@ -219,7 +258,9 @@ def create_app(
         if impl is None:
             if rec == "rules" and cands:
                 rule_choice(cands)
-            return stamp(public_state(state), session_id)
+            return attach_explanation(
+                stamp(public_state(state), session_id), state, events
+            )
 
         if needs_recommendation(events):
             selection = select_question(
@@ -247,7 +288,7 @@ def create_app(
         issued = last_recommendation(events)
         if issued and issued.get("latency_ms") is not None:
             out["debug"]["latency_ms"] = int(issued["latency_ms"])
-        return out
+        return attach_explanation(out, state, events)
 
     def require_session(session_id: str) -> dict[str, Any]:
         row = store.get_session(conn, session_id)
