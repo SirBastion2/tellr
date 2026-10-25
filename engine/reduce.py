@@ -36,6 +36,11 @@ _SUGGEST = {"clear": "proceed", "caution": "slow_down", "high": "escalate"}
 _STORY_FAIL = frozenset({"sig.specificity_gap", "sig.story_drift"})
 
 
+def _context_source(raw: object) -> str:
+    """CHANGE-005 (b): absent or unknown source folds as teller."""
+    return "observed" if raw == "observed" else "teller"
+
+
 def project(events: list, lib: Library) -> dict:
     """§4, §6, §7.1: the fold. Derives signals from live facts; stores nothing derived."""
     tables = tables_from_library(lib)
@@ -76,6 +81,7 @@ def _fold_facts(
     asked: list[str] = []
     story_failed = False
     context: list[str] = []
+    context_chips: list[dict[str, str]] = []
 
     for _seq, event in live:
         changed = False
@@ -85,7 +91,9 @@ def _fold_facts(
             if event.library_version:
                 library_version = event.library_version
         elif isinstance(event, ContextAdded):
+            source = _context_source(event.source)
             for chip_id in event.chips:
+                context_chips.append({"id": chip_id, "source": source})
                 signal_id = chip_signal.get(chip_id)
                 if signal_id:
                     evidence.append(signal_id)
@@ -119,6 +127,7 @@ def _fold_facts(
         "asked": asked,
         "story_failed": story_failed,
         "context": context,
+        "context_chips": context_chips,
     }
 
 
@@ -168,7 +177,7 @@ def _session_state(
         question = question_view(rule_choice(cands), stage, lib)
     else:
         question = None
-    return {
+    state = {
         "session_id": "",
         "mode": facts["mode"],
         "answers": facts["answers"],
@@ -190,6 +199,10 @@ def _session_state(
         "available_outcomes": ["proceed", "slow_down", "escalate", "report"],
         "_engine": interview,
     }
+    chips = facts.get("context_chips") or []
+    if chips:
+        state["context_chips"] = list(chips)
+    return state
 
 
 def _pattern_view(display: str, lib: Library) -> tuple[dict | None, str]:
