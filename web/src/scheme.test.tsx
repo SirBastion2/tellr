@@ -64,6 +64,59 @@ describe('color scheme', () => {
     expect(window.localStorage.getItem(COLOR_STORAGE_KEY)).toBe('system')
   })
 
+  it('draws the selected segment as a shared pill inside the track', () => {
+    const css = readFileSync('src/index.css', 'utf8')
+    const pill = css.match(
+      /\.tc-segment > button\[aria-pressed='true'\],\s*\.tc-header \.tc-scheme-full > button\s*\{[^}]*\}/,
+    )
+    const track = css.match(/\.tc-header \.tc-scheme-full\s*\{[^}]*\}/)
+    const segment = css.match(/\.tc-segment\s*\{[^}]*\}/)
+    expect(pill?.[0]).toMatch(/border-radius:\s*var\(--tc-radius-control,\s*999px\)\s*!important/)
+    expect(pill?.[0]).not.toMatch(/:first-child|:last-child|nth-child/)
+    expect(track?.[0]).toMatch(/padding:\s*var\(--tc-space-1,\s*4px\)/)
+    expect(track?.[0]).toMatch(/overflow:\s*visible/)
+    expect(track?.[0]).not.toMatch(/overflow:\s*hidden/)
+    expect(segment?.[0]).toMatch(/border-radius:\s*var\(--tc-radius-control,\s*999px\)/)
+    expect(css).toMatch(/--tc-space-1:\s*4px/)
+    expect(css).toMatch(/--tc-radius-control:\s*999px/)
+    expect(css).not.toMatch(/\[data-theme=(?:tellr|pnc|mtb|fnb)\][^{]*tc-segment/)
+
+    const style = document.createElement('style')
+    style.textContent = `:root{--tc-space-1:4px;--tc-radius-control:999px}${segment?.[0] ?? ''}${track?.[0] ?? ''}${pill?.[0] ?? ''}`
+    document.head.appendChild(style)
+    try {
+      window.localStorage.clear()
+      render(<App />)
+      const trackEl = screen.getByTestId('color-scheme')
+      const trackStyle = getComputedStyle(trackEl)
+      expect(trackStyle.overflow).toBe('visible')
+      expect(trackStyle.borderRadius).toBe('var(--tc-radius-control, 999px)')
+
+      for (const id of ['dark', 'light', 'system'] as const) {
+        fireEvent.click(screen.getByTestId(`scheme-${id}`))
+        for (const option of ['light', 'dark', 'system']) {
+          const button = screen.getByTestId(`scheme-${option}`)
+          expect(button.getAttribute('aria-pressed')).toBe(option === id ? 'true' : 'false')
+          expect(button.textContent).toBe(option === 'light' ? 'Light' : option === 'dark' ? 'Dark' : 'System')
+          expect(button.style.borderRadius, `${option} inline`).toBe('0px')
+          expect(getComputedStyle(button).borderRadius, `${id} selected, ${option}`).toBe(
+            'var(--tc-radius-control, 999px)',
+          )
+        }
+      }
+
+      const selectedSpeed = screen.getByTestId('demo-speed-1')
+      const unselectedSpeed = screen.getByTestId('demo-speed-2')
+      expect(selectedSpeed.getAttribute('aria-pressed')).toBe('true')
+      expect(unselectedSpeed.getAttribute('aria-pressed')).toBe('false')
+      expect(selectedSpeed.style.borderRadius).toBe('0px')
+      expect(getComputedStyle(selectedSpeed).borderRadius).toBe('var(--tc-radius-control, 999px)')
+      expect(getComputedStyle(unselectedSpeed).borderRadius).toBe('0px')
+    } finally {
+      style.remove()
+    }
+  })
+
   it('paints every select popup from theme tokens in both schemes and forced colors', () => {
     const css = readFileSync('src/index.css', 'utf8')
     expect(css).toContain("html[data-color-scheme='dark'] select")

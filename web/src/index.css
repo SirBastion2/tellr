@@ -695,7 +695,14 @@ button[data-loading='true'],
 
 .tc-header .tc-scheme-full {
   box-sizing: border-box;
-  padding: var(--tc-scheme-inset, 2px);
+  padding: var(--tc-space-1, 4px);
+  overflow: visible;
+}
+
+/* Segment buttons set an inline radius of 0. The shared pill token wins for the selected bubble, and for every scheme segment so the first and last do not grow square corners. */
+.tc-segment > button[aria-pressed='true'],
+.tc-header .tc-scheme-full > button {
+  border-radius: var(--tc-radius-control, 999px) !important;
 }
 
 .tc-header-help {
