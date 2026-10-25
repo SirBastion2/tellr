@@ -624,6 +624,9 @@ function ConnectedShell() {
       if (event.chips.length > 0) {
         await tellerRef.current.postContext(event.chips, 'observed')
       }
+      if (event.answer && !tellerRef.current.closed) {
+        await tellerRef.current.postAnswer(event.answer)
+      }
       if (tellerRef.current.closed) {
         autoPlayRef.current = false
         playingRef.current = false
