@@ -120,11 +120,9 @@ export function CopilotStrip({
         </p>
       ) : null}
       <div className="tc-strip-body" data-dimmed={pending ? 'true' : 'false'}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: 8, alignItems: 'center' }}>
-        <LevelIcon level={level} />
-        <div style={{ minWidth: 0 }}>
+      <div style={{ minWidth: 0 }}>
           <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0 }}>
-            {LEVEL_WORD[level]}
+            <LevelIcon level={level} />{LEVEL_WORD[level]}
           </p>
           <p className="tc-prose" style={{ margin: 0 }}>
             <span className="tc-kicker">{URGENCY_SCORE_TERM}</span>{' '}
@@ -135,7 +133,6 @@ export function CopilotStrip({
           <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
             {reason}
           </p>
-        </div>
       </div>
       <div
         style={{
