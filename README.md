@@ -1,5 +1,10 @@
 <p align="center"><img src="docs/assets/tellr-logo.png" alt="Tellr" width="260"></p>
 
+<p align="center">
+New here? Watch the demo video on our <a href="https://devpost.com/software/tellr">Devpost page</a> first, then try it yourself:<br>
+<a href="https://tellr-olive.vercel.app">Try the demo</a>. It runs on sample customers already included, so no setup is needed.
+</p>
+
 # Tellr
 
 Tellr is a copilot beside the teller at the counter. It helps them spot a customer who may have been coached through elder fraud during a cash withdrawal.

@@ -1,0 +1,13 @@
+### README Devpost and demo links — docs — 2026-10-25 16:12
+- **Status:** done
+- **Gate:** skipped. `scripts/gate.sh` (`a`, `b`, and `contract`) does not read `README.md`. It runs ruff, pytest, import-linter, the web typecheck/lint/test scripts, and `scripts/check_contract.py`.
+- **Changed:** `README.md`, `docs/handoff/20261025-1612-readme-devpost-demo.md`
+- **Decisions I made, and the section that justified each:**
+  - Put one centered HTML block directly under the logo image and above `# Tellr`. Every other README line is unchanged, including `Demo video: link to be added` under "Try it in two minutes".
+  - The video link is the Devpost project page (`https://devpost.com/software/tellr`). Judges receive that page, and it carries the demo video. No TODO comment and no "when posted" wording. No other URL was added.
+  - The try-it link is `https://tellr-olive.vercel.app`. A request to that URL returned HTTP 200. The page is the static deploy that uses sample data when no live API is configured (`ARCHITECTURE.md`, `web/` dev modes; `docs/handoff/20261025-1045-vercel-static-deploy.md`).
+  - Link text is "Try the demo", not "Try the live demo". "Live" can be read as a real bank connection. The sentence says the visits are samples.
+  - "built-in sample data" is now "sample customers already included". The block sits above the product definition, so "visit" and "data" are not used. "Sample" still says these are not real customers. "no setup is needed" stays.
+  - Did not edit code, `reference_impl.py`, golden tests, `contract/`, frozen weights, `docs/HANDOFF.md`, or PR #163's branch (`cursor/readme-demo-link-49d7`).
+- **Questions logged:** none
+- **The next agent needs to know:** This note supersedes the README block on open PR #163. Do not edit that branch. The line `Demo video: link to be added` is still under "Try it in two minutes" because this change was limited to the block under the logo.
