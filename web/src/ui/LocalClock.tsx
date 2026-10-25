@@ -8,15 +8,13 @@ export function LocalClock({
   now?: Date
   timeZone?: string
 }) {
-  const [current, setCurrent] = useState(() => now ?? new Date())
+  const [live, setLive] = useState(() => new Date())
 
   useEffect(() => {
     if (now) {
-      setCurrent(now)
       return
     }
-    const sync = () => setCurrent(new Date())
-    sync()
+    const sync = () => setLive(new Date())
     let interval = 0
     const timeout = window.setTimeout(() => {
       sync()
@@ -30,7 +28,7 @@ export function LocalClock({
 
   return (
     <p data-testid="local-clock" aria-label="Local time of day" className="tc-timer">
-      {formatTimeOfDay(current, timeZone)}
+      {formatTimeOfDay(now ?? live, timeZone)}
     </p>
   )
 }

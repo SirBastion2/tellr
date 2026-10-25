@@ -9,7 +9,7 @@ _NAIVE_MSG = "cannot derive local hour from naive UTC"
 
 
 def parse_instant(ts: str) -> datetime:
-    return datetime.fromisoformat(ts.strip().replace("Z", "+00:00"))
+    return datetime.fromisoformat(ts.strip())
 
 
 def iso_now(timezone: str | None = None) -> str:

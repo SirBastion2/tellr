@@ -2113,3 +2113,38 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/103. Do not merge. No contract / api / engine / library / golden edits. No new npm dependency. No screenshots. Gate `b` only.
 
+---
+
+### [B/A2] Client local time of day — Agent B1 — 2026-10-25 05:28
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS (ruff, 210 pytest, import-linter, contract). `scripts/gate.sh b` → PASS (typecheck, lint, 175 tests, contract OK)
+
+```
+── ruff
+All checks passed!
+── pytest
+210 passed, 1 warning in 24.27s
+── import-linter
+Contracts: 1 kept, 0 broken.
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (a)
+
+── typecheck
+── lint
+── test
+ Test Files  48 passed (48)
+      Tests  175 passed (175)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/ui/localTime.ts`, `web/src/ui/localTime.test.tsx`, `web/src/ui/LocalClock.tsx`, `web/src/ui/plain.ts`, `web/src/workstation/Toolbar.tsx`, `web/src/screens/HistoryScreen.tsx`, `web/src/teller.tsx`, `web/mock/replay.ts`, `web/src/modes.test.tsx`, `web/src/history.test.tsx`, `api/time.py`, `api/main.py`, `tests/api/test_local_hour.py`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Display uses `Intl` / local `Date` (architecture §12). Naive ISO stamps are UTC, then shown in the client zone. UTC 05:17 on America/New_York (EDT, UTC-4) renders 1:17. Live clock ticks each minute. Elapsed timer stays simulated `delayMs`.
+  - Reused existing `opened_at` (optional on POST /sessions) plus IANA `timezone`. No contract schema change (WORKFLOW §5). API `local_hour` never uses `datetime.utcnow()` / naive UTC. Engine fold unchanged; web still computes no risk/level/question (§9).
+  - Merged `origin/main` `086587c` (#102, #103). `ARCHITECTURE.md` keeps local-clock files and privacy / simulation-pill rows.
+- **Questions logged:** none
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/104. Do not merge. No contract / engine / library / golden edits. No new dependency. No screenshots.
+
