@@ -1,44 +1,32 @@
 import { useEffect, useState } from 'react'
 import { apiSend } from '../api'
-import { latestActivityTs, mergeSignalRows, type MergedSignalRow } from '../feed'
+import { factorOrigin, latestActivityTs } from '../feed'
 import { readHealth, type HealthReport } from '../screens/HealthScreen'
-import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { Fact, FactGrid, SectionHeading } from '../ui/facts'
-import { CheckIcon, DismissIcon } from '../ui/icons'
 import { LEVEL_WORD } from '../ui/LevelIcon'
 import { levelLabel, notedAtLocal, patternValue, recommenderPhrase, suggestedLabel } from '../ui/plain'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import type { ActivityRow, Library, SessionState } from '../types'
-import { groupFactors, responseWeightTotal, strengthShare, strengthWord } from './explain'
-
-const primary = { ...controlStyle, ...primaryStyle }
-const iconButton = {
-  ...controlStyle,
-  ...secondaryStyle,
-  width: 48,
-  padding: 0,
-}
+import {
+  groupFactors,
+  responseWeightTotal,
+  strengthShare,
+  strengthWord,
+  type LevelFactor,
+} from './explain'
 
 function FactorList({
   items,
   total,
   testId,
   empty,
-  closed,
-  pending = false,
-  onConfirm,
-  onDismiss,
-  onRestore,
+  originFor,
 }: {
-  items: readonly MergedSignalRow[]
+  items: readonly LevelFactor[]
   total: number
   testId: string
   empty: string
-  closed: boolean
-  pending?: boolean
-  onConfirm?: (chipId: string) => void
-  onDismiss?: (chipId: string) => void
-  onRestore?: (chipId: string) => void
+  originFor: (item: LevelFactor) => 'Observed' | 'Teller confirmed' | null
 }) {
   if (items.length === 0) {
     return (
@@ -48,96 +36,39 @@ function FactorList({
     )
   }
   return (
-    <ul className="tc-factor-list" aria-label="Signals">
+    <ul className="tc-factor-list">
       {items.map((item) => {
         const share = item.weight == null ? null : strengthShare(item.weight, total)
         const word = item.weight == null ? null : strengthWord(item.weight, total)
-        const actions = Boolean(item.chipId && !closed && onConfirm && onDismiss)
+        const origin = originFor(item)
         return (
-          <li
-            key={`${item.id}-${item.direction}-${item.chipId ?? 'factor'}`}
-            data-testid={testId}
-            data-direction={item.direction}
-            style={{ display: 'grid', gap: 6, alignItems: 'start' }}
-          >
-            <div data-testid="signal-row" data-chip={item.chipId ?? item.id} data-state={item.state} className="tc-signal-row" style={{ display: 'grid', gap: 6 }}>
-              <div className="tc-signal-meta">
-                <div className="tc-factor-head">
-                  <strong>{item.label}</strong>
-                  {item.origin ? (
-                    <span data-testid="signal-origin" className="tc-badge">
-                      {item.origin}
-                    </span>
-                  ) : null}
-                  {word ? (
-                    <span className="tc-factor-strength">
-                      <span aria-hidden="true">{item.direction === 'raises' ? '↑' : '↓'}</span> {word}
-                    </span>
-                  ) : null}
-                </div>
-                {actions ? (
-                  <span className="tc-signal-actions">
-                    {item.state === 'dismissed' ? (
-                    <button
-                      type="button"
-                      className="tc-btn"
-                      data-variant="secondary"
-                      data-testid="signal-restore"
-                      aria-label={`Restore ${item.label}`}
-                      title="Restore signal"
-                      style={{ ...controlStyle, ...secondaryStyle }}
-                      disabled={pending}
-                      onClick={() => item.chipId && onRestore?.(item.chipId)}
-                    >
-                        Restore
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          className="tc-btn"
-                          data-variant="primary"
-                          data-testid="signal-confirm"
-                          aria-label={`Confirm ${item.label}`}
-                        title="Confirm signal (C)"
-                        style={primary}
-                        disabled={pending}
-                        onClick={() => item.chipId && onConfirm?.(item.chipId)}
-                      >
-                        <CheckIcon />
-                      </button>
-                      <button
-                        type="button"
-                        className="tc-btn"
-                        data-variant="dismiss"
-                        data-testid="signal-dismiss"
-                        aria-label={`Dismiss ${item.label}`}
-                        title="Dismiss signal (D)"
-                        style={iconButton}
-                        disabled={pending}
-                        onClick={() => item.chipId && onDismiss?.(item.chipId)}
-                      >
-                          <DismissIcon />
-                        </button>
-                      </>
-                    )}
-                  </span>
-                ) : null}
-              </div>
-              {share != null && word ? (
-                <span
-                  className="tc-meter"
-                  role="meter"
-                  aria-label={word}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.round(share * 100)}
-                >
-                  <span style={{ width: `${Math.round(share * 100)}%` }} />
+          <li key={`${item.id}-${item.direction}`} data-testid={testId} data-direction={item.direction}>
+            <div className="tc-factor-head">
+              <strong>{item.label}</strong>
+              {origin ? (
+                <span data-testid="signal-origin" className="tc-badge">
+                  {origin}
                 </span>
               ) : null}
-              {item.rationale ? <p className="tc-factor-why">{item.rationale}</p> : null}
+              {word ? (
+                <span className="tc-factor-strength">
+                  <span aria-hidden="true">{item.direction === 'raises' ? '↑' : '↓'}</span> {word}
+                </span>
+              ) : null}
             </div>
+            {share != null && word ? (
+              <span
+                className="tc-meter"
+                role="meter"
+                aria-label={word}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(share * 100)}
+              >
+                <span style={{ width: `${Math.round(share * 100)}%` }} />
+              </span>
+            ) : null}
+            {item.rationale ? <p className="tc-factor-why">{item.rationale}</p> : null}
           </li>
         )
       })}
@@ -149,30 +80,14 @@ export function ExplanationPanel({
   library,
   session,
   postedChipIds,
-  confirmed = [],
-  dismissed = [],
-  chipOrder = [],
   activity = null,
   idle = false,
-  closed = false,
-  pending = false,
-  onConfirm,
-  onDismiss,
-  onRestore,
 }: {
   library: Library | null
   session: SessionState | null
   postedChipIds: readonly string[]
-  confirmed?: readonly string[]
-  dismissed?: readonly string[]
-  chipOrder?: readonly string[]
   activity?: readonly ActivityRow[] | null
   idle?: boolean
-  closed?: boolean
-  pending?: boolean
-  onConfirm?: (chipId: string) => void
-  onDismiss?: (chipId: string) => void
-  onRestore?: (chipId: string) => void
 }) {
   const [health, setHealth] = useState<HealthReport | null>(null)
 
@@ -201,11 +116,13 @@ export function ExplanationPanel({
   }
 
   const grouped = groupFactors(session, library)
-  const merged = mergeSignalRows(library, session, postedChipIds, confirmed, dismissed, chipOrder)
   const factors = [...grouped.raises, ...grouped.lowers]
   const total = responseWeightTotal(factors)
   const debug = session.debug
   const noted = latestActivityTs(activity)
+  const originFor = (item: LevelFactor) =>
+    factorOrigin(library, item.id, item.label, postedChipIds, session.context_chips)
+  const rawDiffers = session.risk.raw_level !== session.risk.level
 
   return (
     <section data-testid="explain-panel" aria-label="Why this level" className="tc-explain">
@@ -216,10 +133,14 @@ export function ExplanationPanel({
         </p>
       ) : null}
       <FactGrid label="Level summary">
-        <Fact term="Shown level" testId="explain-level">
+        <Fact term="Level" testId="explain-level">
           {levelLabel(session.risk.level)}
         </Fact>
-        <Fact term="Raw level">{LEVEL_WORD[session.risk.raw_level]}</Fact>
+        {rawDiffers ? (
+          <Fact term="Raw level (before display rules)" testId="explain-raw-level">
+            {LEVEL_WORD[session.risk.raw_level]}
+          </Fact>
+        ) : null}
         <Fact term={URGENCY_SCORE_TERM} testId="explain-score">
           {formatUrgencyScore(session.risk.score)}
         </Fact>
@@ -229,28 +150,20 @@ export function ExplanationPanel({
 
       <SectionHeading>What raised it</SectionHeading>
       <FactorList
-        items={merged.raises}
+        items={grouped.raises}
         total={total}
         testId="explain-reason"
         empty="Nothing in this visit raised the level."
-        closed={closed}
-        pending={pending}
-        onConfirm={onConfirm}
-        onDismiss={onDismiss}
-        onRestore={onRestore}
+        originFor={originFor}
       />
 
       <SectionHeading>What would lower it</SectionHeading>
       <FactorList
-        items={merged.lowers}
+        items={grouped.lowers}
         total={total}
         testId="explain-counter"
         empty="Nothing in this visit points toward it being safe."
-        closed={closed}
-        pending={pending}
-        onConfirm={onConfirm}
-        onDismiss={onDismiss}
-        onRestore={onRestore}
+        originFor={originFor}
       />
 
       <details className="tc-tech" data-testid="technical-details">

@@ -90,17 +90,15 @@ describe('merged workstation signals', () => {
     expect(screen.queryByRole('columnheader', { name: 'Record' })).toBeNull()
 
     const panel = screen.getByTestId('explain-panel')
-    const rows = within(panel).getAllByTestId('signal-row')
-    expect(rows).toHaveLength(2)
-    const phone = rows.find((row) => row.textContent?.includes('On the phone'))
-    const cash = rows.find((row) => row.textContent?.includes('Insists on cash'))
-    expect(phone?.textContent).toMatch(/stay on the line/)
-    expect(cash?.textContent).toMatch(/can't be traced/)
-    expect(phone?.textContent).not.toMatch(/Noted at the window/)
-    expect(cash?.textContent).not.toMatch(/Noted at the window/)
+    const raised = within(panel).getAllByTestId('explain-reason').map((row) => row.textContent ?? '')
+    expect(raised.some((text) => text.includes('On the phone') && /stay on the line/.test(text))).toBe(true)
+    expect(raised.some((text) => text.includes('Insists on cash') && /can't be traced/.test(text))).toBe(true)
+    expect(raised.join('\n')).not.toMatch(/Noted at the window/)
     expect(panel.textContent).not.toMatch(/Oct 25, 2026, 8:08 AM UTC/)
     expect(within(panel).queryByTestId('activity-technical')).toBeNull()
     expect(within(panel).getAllByTestId('technical-details')).toHaveLength(1)
+    expect(within(panel).queryByTestId('signal-confirm')).toBeNull()
+    expect(within(panel).queryByTestId('signal-dismiss')).toBeNull()
   })
 
   it('moves the timeline up to the old Recent activity slot and shows amount once', () => {
@@ -128,43 +126,19 @@ describe('merged workstation signals', () => {
     const notes = screen.getByTestId('teller-notes')
     expect(notes.textContent).toContain(thresholdChip.label)
     expect(signalTexts().join('\n')).not.toContain(thresholdChip.label)
-    expect(screen.getByTestId('copilot-strip').querySelector('[data-testid="signal-row"]')).toBeNull()
-    expect(screen.getByTestId('answer-panel')).toBeTruthy()
+    expect(screen.getByTestId('copilot-strip').querySelector('[data-testid="signal-row"]')).toBeTruthy()
+    expect(screen.queryByTestId('answer-panel')).toBeNull()
     expect(screen.getByTestId('copilot-action').textContent).toBe(liveVisit.question?.text)
   })
 
-  it('keeps the copilot answer panel working beside the merged signal list', () => {
-    const onAnswer = vi.fn()
-    render(workstation({ onAnswer }))
-    expect(screen.getByTestId('answer-panel')).toBeTruthy()
-    expect(within(screen.getByTestId('explain-panel')).getAllByTestId('signal-row')).toHaveLength(2)
-    expect(screen.getByTestId('copilot-strip').querySelector('[data-testid="signal-row"]')).toBeNull()
-
-    const firstChipId = liveVisit.question?.chips[0]
-    const firstChip = library.chips.find((chip) => chip.id === firstChipId)
-    expect(firstChip).toBeTruthy()
-    if (liveVisit.question?.stage === 'opener') {
-      fireEvent.click(screen.getByRole('button', { name: firstChip?.label ?? firstChipId }))
-      expect(onAnswer).not.toHaveBeenCalled()
-      const purpose = library.purposes[0]
-      if (!purpose) {
-        throw new Error('missing purpose')
-      }
-      fireEvent.click(screen.getByRole('button', { name: purpose.label }))
-      fireEvent.click(screen.getByRole('button', { name: firstChip?.label ?? firstChipId }))
-      expect(onAnswer).toHaveBeenCalledWith({
-        question_id: liveVisit.question.id,
-        chip: firstChipId,
-        purpose: purpose.id,
-      })
-    } else {
-      fireEvent.click(screen.getByRole('button', { name: firstChip?.label ?? firstChipId }))
-      expect(onAnswer).toHaveBeenCalledWith({
-        question_id: liveVisit.question?.id,
-        chip: firstChipId,
-      })
-    }
-    expect(within(screen.getByTestId('explain-panel')).getAllByTestId('signal-row')).toHaveLength(2)
+  it('keeps teller confirm and deny on the copilot chips beside the read-only model list', () => {
+    render(workstation())
+    expect(screen.queryByTestId('answer-panel')).toBeNull()
+    expect(within(screen.getByTestId('explain-panel')).queryByTestId('signal-confirm')).toBeNull()
+    expect(within(screen.getByTestId('explain-panel')).queryByTestId('signal-dismiss')).toBeNull()
+    expect(screen.getByTestId('copilot-strip').querySelectorAll('[data-testid="signal-row"]').length).toBeGreaterThan(0)
+    expect(screen.getByTestId('copilot-action').textContent).toBe(liveVisit.question?.text)
+    expect(screen.getByTestId('explain-score').textContent).toMatch(/\d+\/100/)
   })
 
   it('keeps dismissed and confirmed marks plus keyboard labels on the merged rows', () => {
@@ -219,7 +193,9 @@ describe('merged workstation signals', () => {
     )
     fireEvent.click(screen.getByRole('link', { name: 'Customer file' }))
     const file = screen.getByTestId('customer-screen')
-    expect(within(file).getByTestId('profile-name').textContent).toMatch(/Marcus/)
+    expect(within(file).getByTestId('profile-name').textContent).toBe('Customer')
+    expect(within(file).queryByTestId('profile-age')).toBeNull()
+    expect(file.textContent).not.toMatch(/Marcus/)
     expect(within(file).queryByRole('heading', { name: 'Recent activity' })).toBeNull()
     expect(within(file).queryByRole('heading', { name: 'This withdrawal' })).toBeNull()
     expect(within(file).queryByRole('heading', { name: 'What was noted' })).toBeNull()
@@ -233,7 +209,9 @@ describe('merged workstation signals', () => {
 
   it('still shows the synthetic profile when no visit activity is loaded', () => {
     render(<CustomerFileScreen demo={demo({ customerId: 'contractor-cash', index: 0 })} />)
-    expect(screen.getByTestId('profile-name').textContent).toBe('Helen Ruiz')
+    expect(screen.getByTestId('profile-name').textContent).toBe('Customer')
+    expect(screen.queryByTestId('profile-age')).toBeNull()
+    expect(screen.queryByText('Helen Ruiz')).toBeNull()
     expect(screen.queryByTestId('activity-row')).toBeNull()
     expect(screen.queryByTestId('file-signal')).toBeNull()
     expect(screen.queryByRole('heading', { name: 'Recent activity' })).toBeNull()

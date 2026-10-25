@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import { customerById } from '../demo/customers'
 import type { DemoView } from '../demo/types'
 import { PageTitle, SectionHeading } from '../ui/facts'
+import { displayCustomerLabel, personalNamesFrom, redactPersonalCopy } from '../ui/privacy'
 import { controlStyle } from '../theme/controls'
 
 const card: CSSProperties = {
@@ -34,7 +35,7 @@ export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) 
       <div className="tc-stack-heading">
         <PageTitle>Customer file</PageTitle>
         <p data-testid="synthetic-banner" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-          Practice data. The name and age band stay on this screen. They are not sent to the copilot.
+          Practice data.
         </p>
       </div>
       {demo ? (
@@ -62,22 +63,16 @@ export function CustomerFileScreen({ demo = null }: { demo?: DemoView | null }) 
       {customer ? (
         <>
           <p className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-            {customer.summary}
+            {redactPersonalCopy(customer.summary, personalNamesFrom(customer.profile.name))}
           </p>
           <section style={card} aria-labelledby="profile-heading">
             <SectionHeading id="profile-heading">Profile</SectionHeading>
             <dl style={kv}>
               <dt className="tc-fact-term" style={term}>
-                Name
+                Customer
               </dt>
               <dd className="tc-fact-value" data-testid="profile-name" style={{ margin: 0 }}>
-                {customer.profile.name}
-              </dd>
-              <dt className="tc-fact-term" style={term}>
-                Age band
-              </dt>
-              <dd className="tc-fact-value" data-testid="profile-age" style={{ margin: 0 }}>
-                {customer.profile.ageBand}
+                {displayCustomerLabel()}
               </dd>
               <dt className="tc-fact-term" style={term}>
                 Tenure

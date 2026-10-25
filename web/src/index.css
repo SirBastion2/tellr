@@ -205,12 +205,35 @@ button[data-loading='true'],
   display: inline-flex;
   align-items: center;
   height: var(--tc-control-h, 48px);
+  min-height: var(--tc-control-h, 48px);
   margin: 0;
   font-variant-numeric: tabular-nums;
-  font-size: var(--tc-text-base);
+  font-size: var(--tc-text-sm);
   font-weight: var(--tc-heading-weight);
   line-height: var(--tc-type-line-ui);
-  min-width: 4ch;
+  min-width: var(--tc-timer-min, 5ch);
+  width: var(--tc-timer-min, 5ch);
+  justify-content: flex-end;
+}
+
+.tc-play-label {
+  display: grid;
+  justify-items: start;
+}
+
+.tc-case-label {
+  display: grid;
+  justify-items: start;
+}
+
+.tc-play-label > *,
+.tc-case-label > * {
+  grid-area: 1 / 1;
+}
+
+.tc-play-label > [data-show='false'],
+.tc-case-label > [data-show='false'] {
+  visibility: hidden;
 }
 
 .tc-btn svg {
@@ -380,18 +403,22 @@ button[data-loading='true'],
 }
 
 .tc-connection {
+  display: inline-flex;
+  align-items: center;
   box-sizing: border-box;
   margin: 0;
   white-space: nowrap;
-  flex: 0 1 auto;
-  min-width: 0;
-  width: max-content;
-  max-width: 100%;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-width: var(--tc-conn-pill-min, 14rem);
+  width: var(--tc-conn-pill-min, 14rem);
+  max-width: min(var(--tc-conn-pill-min, 14rem), 100%);
   overflow: hidden;
   text-overflow: ellipsis;
   border: var(--tc-border-width, 1px) solid var(--tc-glass-border, #1c1917);
   border-radius: var(--tc-radius-control, 999px);
   padding: var(--tc-space-2, 8px) var(--tc-space-3, 12px);
+  height: var(--tc-header-control-h, 48px);
   min-height: var(--tc-header-control-h, 48px);
   line-height: var(--tc-type-line-ui);
   font-weight: var(--tc-strong-weight);
@@ -432,13 +459,16 @@ button[data-loading='true'],
 }
 
 .tc-live-badge {
+  display: inline-flex;
+  align-items: center;
   box-sizing: border-box;
   margin: 0;
   white-space: nowrap;
-  flex: 0 1 auto;
-  min-width: 0;
-  width: max-content;
-  max-width: 100%;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-width: var(--tc-sim-pill-min, 22rem);
+  width: var(--tc-sim-pill-min, 22rem);
+  max-width: min(var(--tc-sim-pill-max, 22rem), 100%);
   overflow: hidden;
   text-overflow: ellipsis;
   border: 1px solid var(--tc-accent, #1c1917);
@@ -446,10 +476,18 @@ button[data-loading='true'],
   background-color: var(--tc-glass-fallback, transparent);
   border-radius: var(--tc-radius-control, 999px);
   padding: var(--tc-space-2, 8px) var(--tc-space-3, 12px);
+  height: var(--tc-header-control-h, 48px);
   min-height: var(--tc-header-control-h, 48px);
   line-height: var(--tc-type-line-ui);
   font-weight: var(--tc-heading-weight);
   font-size: var(--tc-text-sm);
+}
+
+.tc-live-badge-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tc-header-nav {
@@ -483,7 +521,7 @@ button[data-loading='true'],
 }
 
 .tc-nav-hint {
-  min-height: 48px;
+  min-height: var(--tc-header-control-h, 48px);
   color: var(--tc-muted, #44403c);
   border-bottom: 3px solid transparent;
   cursor: default;
@@ -805,6 +843,13 @@ html[data-color-scheme='light'] select option:checked,
   --tc-type-level: var(--tc-text-lg);
   --tc-type-action: var(--tc-text-xl);
   --tc-type-pill: var(--tc-text-sm);
+  --tc-sim-pill-min: 22rem;
+  --tc-sim-pill-max: 22rem;
+  --tc-conn-pill-min: 14rem;
+  --tc-play-min: 7.5rem;
+  --tc-timer-min: 5ch;
+  --tc-speed-min: 2.75rem;
+  --tc-case-link-min: 9.5rem;
   --tc-type-line-body: 1.5;
   --tc-type-line-heading: 1.2;
   --tc-type-line-ui: 1.2;
