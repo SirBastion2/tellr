@@ -52,7 +52,7 @@ export function TransactionPanel({
   const pct = total === 0 ? 0 : Math.round((shown / total) * 100)
 
   return (
-    <section aria-label="Core banking" data-testid="transaction-panel" className="tc-transaction" style={{ display: 'grid', gap: 'clamp(12px, 1.2vw, 16px)', alignContent: 'start' }}>
+    <section aria-label="Core banking" data-testid="transaction-panel" className="tc-transaction" style={{ display: 'grid', gap: 'var(--tc-space-strip, 12px)', alignContent: 'start' }}>
       <h2 className="tc-title">Transaction</h2>
       <p data-testid="synthetic-banner" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
         Practice data. The name and age band stay on this screen. They are not sent to the copilot.
@@ -62,7 +62,7 @@ export function TransactionPanel({
         className="tc-prose"
         style={{
           margin: 0,
-          fontSize: presenter ? 'clamp(1.5rem, 2vw, 2rem)' : 'clamp(1.05rem, 1vw, 1.25rem)',
+          fontSize: presenter ? 'var(--tc-type-display)' : 'var(--tc-type-section)',
           lineHeight: 1.25,
           fontWeight: 700,
           maxWidth: '70ch',
@@ -70,12 +70,12 @@ export function TransactionPanel({
       >
         <Emphasis text={current?.text ?? 'Press play to start the simulation.'} />
       </p>
-      <dl className="tc-kv" style={{ display: 'grid', gridTemplateColumns: '9.5rem minmax(0, 1fr)', gap: '8px 16px', margin: 0, alignItems: 'baseline' }}>
+      <dl className="tc-kv">
         <Row term="Type">
           <span data-testid="txn-type">{customer.transaction.type}</span>
         </Row>
         <Row term="Amount">
-          <span data-testid="txn-amount" style={{ fontSize: 'clamp(1.5rem, 1.6vw, 1.85rem)', fontWeight: 700, lineHeight: 1.2 }}>
+          <span data-testid="txn-amount" className="tc-amount" style={{ fontWeight: 700, lineHeight: 1.2 }}>
             {customer.transaction.amount}
           </span>
         </Row>

@@ -32,7 +32,7 @@ export const theme: BankTheme = {
   border: { width: '1px', style: 'solid' },
   shadow: { card: '0 16px 40px rgba(0, 20, 60, 0.45)' },
   density: 'comfortable',
-  space: { gap: '16px', cardPadding: '20px' },
+  space: { gap: '13px', cardPadding: '16px' },
   background: {
     color: '#24303A',
     image:
