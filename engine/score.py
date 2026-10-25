@@ -97,6 +97,17 @@ def level(s: int, tables: Tables | None = None) -> str:
     return "High concern" if s >= high else "Caution" if s >= caution else "Clear"
 
 
+def level_bands(tables: Tables | None = None) -> list[dict[str, Any]]:
+    """Inclusive 0–100 bands that match `level()` (architecture §6.3)."""
+    high = tables.high if tables is not None else HIGH
+    caution = tables.caution if tables is not None else CAUTION
+    return [
+        {"level": "clear", "label": "Clear", "min": 0, "max": caution - 1},
+        {"level": "caution", "label": "Caution", "min": caution, "max": high - 1},
+        {"level": "high", "label": "High concern", "min": high, "max": 100},
+    ]
+
+
 def shown(prev: str | None, s: int, tables: Tables | None = None) -> str:
     """§6.3: per-boundary hysteresis, display only."""
     high = tables.high if tables is not None else HIGH

@@ -16,7 +16,7 @@ Every response that returns a session returns a full `SessionState`
 | `GET` | `/sessions/{id}/handoff` | — | Manager summary projection (`handoff.schema.json`, CHANGE-004 applied) |
 | `GET` | `/sessions/{id}/activity` | — | `{ session_id, rows: [{ ts, channel, amount_band, type }] }` (`activity.schema.json`, CHANGE-005 applied) |
 | `GET` | `/sessions` | filters; excludes `practice` by default | list |
-| `GET` | `/health` | — | recommender, model ID, last p95, fallback rate, agreement rate (read-only; set at boot) |
+| `GET` | `/health` | — | recommender, model ID, last p95, fallback rate, agreement rate, optional `level_bands` (CHANGE-006; read-only; set at boot) |
 
 ## Clarifications (see CHANGES.md)
 
@@ -66,6 +66,15 @@ Every response that returns a session returns a full `SessionState`
   nothing to project → `200` and `rows: []`. Activity is not fed to the model
   or the scorer. A Figma-based UI does not change this: the API stays
   UI-agnostic.
+- **Level score bands (CHANGE-006, applied; additive).** `GET /health` may
+  include optional `level_bands`: `[{ level, label, min, max }, …]` in engine
+  order (`Clear`, `Caution`, `High concern`). Inclusive 0–100 ranges that
+  match `engine.score.level()` / architecture §6.3 (`score ≥ high` → High
+  concern, `score ≥ caution` → Caution, else Clear). Values come from the
+  engine constants the fold already uses (`CAUTION`, `HIGH`, clamp +100), not
+  from `web/` and not from live weights. Absent on older health payloads.
+  Health stays untyped (CHANGE-003 / Q-006 still deferred). T1–T7 fixtures,
+  SessionState, goldens, and `reference_impl.py` are unchanged.
 - **Outcome and handoff appends (CHANGE-003 / Q-009, Q-011).** A valid
   `POST /sessions/{id}/outcome` appends `OutcomeRecorded` then `SessionClosed`.
   `GET /sessions/{id}/handoff` appends `ManagerRequested` and returns the manager

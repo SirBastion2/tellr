@@ -207,7 +207,7 @@ When a factor matches a context chip that was posted or echoed, that row carries
 
 The gap sentence ("not in this response") shows only when `explanation` is absent or null. Confidence stays hidden from the summary when it is null; Technical details say "Not applicable (rules engine)." `used_fallback` is one sentence in Technical details. Raw weights and ids stay there too.
 
-`GET /health` inside the panel is service-wide agreement and fallback. The copy says those rates are not this decision.
+`GET /health` inside the panel is service-wide agreement and fallback. The copy says those rates are not this decision. Optional `level_bands` from that same response render in Technical details as `Clear: 0–N`, `Caution: N–M`, `High concern: M–100` (engine labels and inclusive bounds). The panel does not compute the ranges.
 
 ## Keyboard
 
