@@ -57,5 +57,82 @@ stay deferred. SessionState still omits `outcome` and `actor` (Q-005 / Q-010 /
 Q-011).
 Approved: Driver A ☑ · Driver B ☑ · Rejected ☐
 
+### CHANGE-005 · Explanation, context source, activity feed · proposed
+Bundles the three optional, additive B-025 asks into **one** change. WORKFLOW.md
+§5 allows at most two changes after hour 4; CHANGE-004 already used one slot, so
+this is the remaining change. Both agents rebase once. All three parts are
+optional and backward compatible: existing T1–T7 fixtures and golden tests stay
+valid (`explanation` absent or null; `source` defaults to `"teller"` when
+absent; the new GET is unused by fixtures). Q-013. None of the schemas,
+fixtures, or `CONTRACT_VERSION` are edited in this request PR.
+
+**Reason:** B-025's workstation UI can already render level, score, reasons,
+pattern, talk track, and debug from today's SessionState + `GET /library` +
+`GET /health`. It cannot show per-signal weights, confidence, fallback-for-this-
+turn, observed-vs-teller context after reload, or a session-scoped structured
+feed. Inventing those in `web/` would break §9 / §12 (no client-side risk
+logic). The three fields close that gap without feeding free text to the model
+or scorer.
+
+**(a) `explanation` on SessionState and every SessionState response.** Add an
+optional object to `contract/session_state.schema.json` (not required; old
+fixtures omit it or send null):
+
+```
+explanation?: {
+  confidence: number | null,
+  used_fallback: boolean,
+  contributions: [{
+    signal_id: string,
+    label: string,
+    weight: number,
+    direction: "raises" | "lowers"
+  }]
+} | null
+```
+
+Exact rules: `weight` values come from the **live** library weights
+(`library/signals.yaml` as loaded by the API), not `reference_impl.py` / golden
+`reference_weights.yaml`. The rules recommender always returns `confidence:
+null`. `used_fallback` is `true` when the model timed out or was rejected for
+**that turn**; derive it from the existing `debug` fields (`recommender`,
+`latency_ms`, `rejections`) plus the turn's fallback/reject markers already
+stored — do not add a new write. Absent or null on old fixtures.
+
+**(b) `source` on `ContextAdded`, echoed on SessionState context chips.** In
+`contract/events.md`, `ContextAdded` becomes `ContextAdded(ts, chips, source?)`
+with `source: "observed" | "teller"`. When `source` is absent, the fold treats
+it as `"teller"`. `POST /sessions/{id}/context` may send the same optional
+`source` on the request (one value for that additive batch); omit it and the
+event is teller-sourced. SessionState grows an optional `context_chips` array
+echoing live chips, each `{ id, source }`, so the copilot strip survives
+reload. Absent / empty on old fixtures. Score, reasons, and eligibility ignore
+`source` (observed and teller chips assert the same signals).
+
+**(c) Read-only `GET /sessions/{id}/activity`.** Add this row to
+`contract/api.md` (architecture §11.1 table stays the source; api.md is the
+clarification):
+
+| Method | Path | Request | Response |
+|---|---|---|---|
+| `GET` | `/sessions/{id}/activity` | — | `{ session_id, rows: [{ ts, channel, amount_band, type }] }` |
+
+Read-only. No new write route. `rows` are derived **only** from that session's
+stored events: `amount_band` from `SessionOpened`; `channel` and `type` from
+context chips and other stored events. No free text. Unknown session → `404`.
+Known session with nothing to project → `200` and `rows: []`. **Not** fed to
+the model or the scorer (prompt allowlist and fold stay unchanged).
+
+**On apply, R must:** bump `CONTRACT_VERSION`; regenerate fixtures with
+`python scripts/gen_fixtures.py` (they should hash-match today's T1–T7 because
+the new fields are optional and `reference_impl.py` does not emit them); run
+`scripts/gate.sh contract`; tag the commit. A-lane implementation (API/engine
+fields, `GET /activity`, tests) follows in a **separate PR after apply**. Do
+not implement in the request PR. Do not edit goldens or `reference_impl.py`.
+
+Status: proposed; Driver A approved 2026-10-24 8:45 PM ET; Driver B approval pending
+
+Approved: Driver A ☑ · Driver B ☐ · Rejected ☐
+
 ### Approval of contract-v1
 Driver A ☑ · Driver B ☑

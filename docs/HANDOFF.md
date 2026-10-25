@@ -1400,3 +1400,16 @@ GATE PASS (a)
 - **Questions logged:** none
 - **The next agent needs to know:** B must restart uvicorn after pulling #71. No `web/` change. Two-tap opener is by design. Re-check live-API screens that were only verified against the mock. No new dependency.
 
+---
+
+### [CHANGE-005] B-025 explanation / source / activity (request only) — Agent A — 2026-10-25 01:05
+- **Status:** done (proposal only; not applied)
+- **Gate:** not run (`scripts/gate.sh a` is ruff/pytest/import-linter/contract; this PR is docs only and does not edit those surfaces)
+- **Changed:** `docs/QUESTIONS.md` (Q-013); `contract/CHANGES.md` (CHANGE-005); `docs/A_TO_B.md` (M-019); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - WORKFLOW.md §5 steps 1–3 only: request in QUESTIONS, CHANGE entry with reason + exact diff, Driver A already approved. Did not apply (no schema, fixture, `CONTRACT_VERSION`, `api.md`, `events.md`, `api/`, `engine/`, `web/`, `reference_impl.py`, or golden edits). Did not run `scripts/gen_fixtures.py`.
+  - Bundled B-025's three optional additive asks as **one** CHANGE-005. Budget: at most two changes after hour 4; CHANGE-004 used the first slot. One rebase for both agents.
+  - Kept every new field optional / defaulted so T1–T7 fixtures and goldens stay valid. Weights for `explanation.contributions` are live library weights, not the reference oracle. `used_fallback` is derived from existing debug / turn fallback markers. Activity rows are stored events only and are not fed to the model or scorer.
+- **Questions logged:** Q-013
+- **The next agent needs to know:** Driver B must tick CHANGE-005 in `contract/CHANGES.md` (or reply in `docs/B_TO_A.md`). Implementation is blocked until then. After both approve, R applies on main (bump `CONTRACT_VERSION`, `python scripts/gen_fixtures.py`, `scripts/gate.sh contract`, tag). A-lane API/engine fields and tests are a **separate PR after apply**. `web/` must keep working when the fields are absent (mock mode). No new dependency. `ARCHITECTURE.md` unchanged (no files added, removed, or moved).
+

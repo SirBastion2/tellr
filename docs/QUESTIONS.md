@@ -188,4 +188,23 @@ Agents append; drivers answer. An open question blocks only the work that depend
   makes no API calls (CHANGE-001 rejected; PR #5); flagged for Driver B to confirm
   that page.
 
+### Q-013 · B-025 optional explanation, context source, and activity feed
+- **Raised by:** B1 · [B-025](B_TO_A.md) · **Sections:** architecture §4, §11.1, §11.2, §14.2; contract/session_state.schema.json; contract/events.md; contract/api.md; WORKFLOW.md §5
+- **Detail:** B-025 (workstation UI) asks for three optional, additive contract
+  pieces so the copilot strip and core-banking panel can survive reload without
+  inventing fields in `web/`: (a) optional `explanation` on SessionState
+  (`confidence`, `used_fallback`, per-signal `contributions`); (b) optional
+  `source: "observed"|"teller"` on `ContextAdded`, echoed on SessionState context
+  chips; (c) read-only `GET /sessions/{id}/activity` of structured rows (no free
+  text, not fed to the model or scorer). None of the three are implemented. All
+  three are backward compatible (absent/null on old fixtures; `source` defaults
+  to `"teller"`). WORKFLOW.md §5 allows at most two changes after hour 4;
+  CHANGE-004 already used one slot, so the three B-025 items are bundled as a
+  single CHANGE-005 (one rebase for both agents). Driver A (Sebastian) accepted
+  all three on Sat Oct 24, 2026, 8:45 PM ET. This is WORKFLOW.md §5 steps 1–3
+  (request + CHANGE entry). Driver B approval is still pending; R applies only
+  after both approve. Do not edit schemas, fixtures, `CONTRACT_VERSION`,
+  `api/`, `engine/`, `web/`, `reference_impl.py`, or goldens in the request PR.
+- **Status:** answered: accepted by Driver A; CHANGE-005 drafted
+
 ---
