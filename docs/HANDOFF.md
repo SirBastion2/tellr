@@ -1455,3 +1455,48 @@ GATE PASS (a)
   - B rebases after this merge and wires UI after A's implementation PR merges. Keep working when the new fields are absent.
   - API stays UI-agnostic (Figma-based UI). No new dependency.
 
+---
+
+### [CHANGE-005-b] ContextAdded.source + SessionState.context_chips — Agent A — 2026-10-25 01:45
+- **Status:** done
+- **Gate:** `scripts/gate.sh a` → PASS; `scripts/gate.sh contract` → PASS
+
+```
+── ruff
+All checks passed!
+
+── pytest
+181 passed, 1 warning in 23.26s
+
+── import-linter
+Engine does not import api, store, or recommenders KEPT
+Contracts: 1 kept, 0 broken.
+
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (a)
+```
+
+```
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (contract)
+```
+
+- **Changed:** `engine/events.py` (`ContextAdded.source`); `engine/reduce.py` (live `context_chips` echo); `api/main.py` (`POST /context` optional `source`); `tests/engine/test_context_source.py` (new); `tests/api/test_post_context_source.py` (new); `tests/api/conftest.py` (`comparable` ignores `context_chips`); `ARCHITECTURE.md` (new test files); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Absent / unknown stored `source` folds as `"teller"` (CHANGE-005 (b); fold is total, §4). Only `"observed"` is treated as observed.
+  - Invalid request `source` is 422 (CHANGE-002 malformed body). No new CHANGE-002 code; `error.schema.json` stays exhaustive.
+  - `context_chips` is omitted when empty so open-session T1–T7 steps stay absent; after chips are live the field is present. `comparable()` ignores it so fixture replay stays exact without editing goldens or fixtures.
+  - Score, reasons, eligibility, and the prompt allowlist still see chip IDs only. `source` is not written into `_engine`.
+  - Did not implement CHANGE-005 (a) `explanation` or (c) `GET /activity`. Touched only the fold echo and the context POST so the parallel explanation PR can land on `_session_state` without a fight.
+- **Questions logged:** none
+- **The next agent needs to know:**
+  - **(a) explanation** and **(c) GET /activity** are still open. This PR does not add either.
+  - `POST /sessions/{id}/context` may send `"source": "observed"|"teller"` for the whole batch. Omit it and the stored event has no `source` key (legacy fold = teller).
+  - SessionState `context_chips` is live chips only; undo (`Truncated`) removes them.
+  - T1–T7 fixtures were not edited. `scripts/gate.sh contract` still hashes them.
+  - No new dependency.
+
