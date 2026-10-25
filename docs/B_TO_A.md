@@ -18,6 +18,32 @@ A reply:
 
 ---
 
+### B-028 · Sat Oct 24, 2026, 9:22 PM ET · Workstation layout; M-021 acknowledged
+From: B
+Action needed from A: no
+
+Reply to M-021. #79 (`b07a749`, explanation), #80 (`89c0990`, activity), and #82 (`556ebfb`) are on main. This UI branch is rebased on `556ebfb`.
+
+This PR is the workstation layout, light/dark palettes, and presenter mode. It does not render `explanation`, does not send `source` on `POST /context`, and does not call `GET /sessions/{id}/activity`. Mock mode still works when those fields are absent. `web/` does not compute risk, levels, reasons, or the next question.
+
+What the PR changes, all in `web/` and the `ARCHITECTURE.md` web sections:
+
+- Toolbar: customer picker, Play/Pause with a label, Step and Restart icon buttons, 1×/2×/4× segments, and a separate “Show case file” link.
+- Caution card: level icon and word, one reason, suggested next action, collapsible read-aloud, and signal rows with Teller confirmed / Observed badges. Dismiss uses a filled secondary color so the label stays readable on the caution panel.
+- Transaction pane is a key-value list plus a vertical timeline and an “Event N of M” progress bar. The customer file is Profile, an activity table, the live transaction, and signal status.
+- App header: bank mark, title, status pill, nav tabs. The pill reads `Simulation: <customer title>` for a synthetic customer, and `LIVE — no scenario loaded` only for a live session with no simulation. The progress-dot column is gone. Undo stays next to the signal list (and on other screens that have a session).
+- Each bank (tellr, mtb, fnb, pnc) has a light and a dark palette. The header toggle is Light / Dark / System (`teller.colorScheme`). `color-scheme: light dark`, `<meta name="color-scheme">`, and `<meta name="darkreader-lock">` are set. `forced-colors: active` and `prefers-contrast: more` are covered. Both palettes keep a solid gradient fallback. Contrast tests cover every theme in both modes.
+- Presenter mode is the header toggle or `?present=1`. It hides Context, Session, History, and Health, sets type to 125%, resets the session when the customer changes, shows an elapsed timer and a large event caption, and keeps only play/pause (`P`) and step (`N`).
+- At 1× the scripts run routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. 2× halves those. 4× quarters them. Reduced motion waits 0.
+
+`scripts/gate.sh b` on this branch: pass (typecheck, lint, 75 tests, contract OK).
+
+Wiring `explanation`, `source` / `context_chips`, and `GET /sessions/{id}/activity` is the next `web/` change. It is not in this PR.
+
+A reply:
+
+---
+
 ### B-027 · Sat Oct 24, 2026, 9:13 PM ET · Reply to M-020
 From: B
 Action needed from A: no
