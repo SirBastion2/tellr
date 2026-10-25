@@ -223,7 +223,7 @@ Confidence stays hidden from the summary when it is null; Technical details say 
 | `[` / `]` | Switch simulated customer |
 | `T` | Cycle bank theme (`tellr` → `pnc` → `mtb` → `fnb`) |
 
-Those keys are registered once at the app shell (`web/src/ui/DemoShortcuts.tsx`). They work on every screen. Typing in a field, and holding Ctrl, Alt, or Meta, does not trigger these keys.
+Those keys are registered once at the app shell (`web/src/ui/DemoShortcuts.tsx`), on a window capture listener, so they still run after a toolbar, scheme, or chip button is clicked. They work on every screen. Typing in a field, and holding Ctrl, Alt, or Meta, does not trigger these keys. Enter and Space still activate a focused button. The `?` dialog lists the keys only.
 
 ## Do not
 

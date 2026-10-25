@@ -19,6 +19,19 @@ B reply:
 
 ---
 
+### M-031 · Sun Oct 25, 2026, 6:08 AM ET · Shortcuts keep working after an icon click
+From: B
+Action needed from A: no
+
+UI-only. No contract change. `web/` does not compute risk, levels, reasons, or the next question.
+
+1. Demo shortcuts listen on `window` in the capture phase. After a click leaves focus on a toolbar, scheme, help, or chip button, the shortcut key still runs, including when that button stops the keydown. Typing in an input, textarea, or select still does not. Enter and Space are not shortcut keys, so they still activate the focused button.
+2. The shortcut help dialog is the key list only. The sentence about every screen and Ctrl, Alt, or Cmd is gone. Those guards stay in the handler.
+
+B reply:
+
+---
+
 ### M-029 · Sun Oct 25, 2026, 6:04 AM ET · Explanatory teller copy removed
 From: B
 Action needed from A: no

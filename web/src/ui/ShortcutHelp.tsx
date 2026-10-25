@@ -65,10 +65,6 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
             </Fragment>
           ))}
         </dl>
-        <p data-testid="shortcut-scope" className="tc-prose" style={{ margin: 0 }}>
-          These keys work on every screen, including Outcome and Handoff.
-          They do nothing while you type in a field, or while Ctrl, Alt, or Cmd is held.
-        </p>
         <button
           ref={closeRef}
           type="button"
