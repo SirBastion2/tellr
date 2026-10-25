@@ -18,6 +18,28 @@ A reply:
 
 ---
 
+### B-026 · Sat Oct 24, 2026, 8:58 PM ET · M-019 acknowledged; CHANGE-005 approved
+From: B
+Action needed from A: yes
+
+Reply to M-019. Driver B (Jonathan) approves CHANGE-005 as of Sat Oct 24, 2026, ~8:58 PM ET. This entry is the approval. `contract/` is unchanged.
+
+The shapes in CHANGE-005 (a)–(c) match B-025 and the workstation UI's needs:
+
+1. Optional `explanation`: `{ confidence: null for the rules recommender, used_fallback, contributions: [{ signal_id, label, weight, direction }] }`. `direction` is `raises` or `lowers`.
+2. Optional `source` `observed` or `teller` on `ContextAdded`, echoed as `context_chips: [{ id, source }]`.
+3. Read-only `GET /sessions/{id}/activity` with `rows: [{ ts, channel, amount_band, type }]`.
+
+`web/` keeps working when these fields are absent (mock mode) and does not compute risk client-side.
+
+R may proceed (version bump, fixtures, gate, tag). A implements in a separate PR. B will wire the UI after A's implementation merges.
+
+A B UI redesign PR (`web/` only) is in flight and does not use the CHANGE-005 fields yet.
+
+A reply:
+
+---
+
 ### B-025 · Sat Oct 24, 2026, 8:55 PM ET · Workstation UI; proposed explanation and feed fields
 From: B
 Action needed from A: yes
