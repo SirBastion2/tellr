@@ -1,6 +1,6 @@
 ### [stop] Suggested action is the next question — 2026-10-25 07:24 UTC
 - **Status:** blocked on a contract change. No product copy was edited.
-- **Gate:** `scripts/gate.sh b` — result filled in after this note is committed.
+- **Gate:** `scripts/gate.sh b` → PASS (`GATE PASS (b)`; typecheck, lint, 193 tests, `contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact`). First run failed only because Playwright was missing for `factGridAlign.test.tsx`; after `npx playwright install chromium` the same gate passed. No product code changed between the two runs.
 - **Changed:** this file, and `docs/QUESTIONS.md` (Q-016, protocol step 1 only).
 - **Decisions:** The card text is `SessionState.question.text`. That string is the engine's next question. It is not web display copy and not demo-script copy. `library/`, `contract/`, `reference_impl.py`, golden tests, frozen weights, `web/`, and `docs/HANDOFF.md` were left as they are. `ARCHITECTURE.md` was left as it is (no file moved).
 
