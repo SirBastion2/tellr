@@ -74,6 +74,88 @@ describe('demo polish', () => {
     expect(last?.textContent).toMatch(/1:00/)
   })
 
+  it('fires each scripted event when elapsed time reaches it', async () => {
+    vi.useFakeTimers()
+    installFetch()
+    const contractor = CUSTOMERS.find((item) => item.id === 'contractor-cash')
+    if (!contractor) {
+      throw new Error('missing contractor-cash')
+    }
+    const at = (count: number) => timelineElapsedMs(contractor.events, count)
+    try {
+      render(<App />)
+      await act(async () => {
+        await Promise.resolve()
+      })
+      fireEvent.click(screen.getByTestId('demo-play'))
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(at(1) - 1)
+      })
+      expect(screen.queryAllByTestId('demo-event')).toHaveLength(0)
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1)
+      })
+      expect(screen.getAllByTestId('demo-event')).toHaveLength(1)
+      expect(screen.getByTestId('event-marker').textContent).toMatch(/0:04/)
+      const afterFirst = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
+      expect(afterFirst).toBeGreaterThanOrEqual(4)
+
+      fireEvent.click(screen.getByTestId('demo-speed-2'))
+      expect(screen.getByTestId('home-screen')).toBeTruthy()
+      const onHome = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
+      expect(onHome).toBeGreaterThanOrEqual(afterFirst)
+
+      const wallToSecond = (at(2) - at(1)) / 2
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(wallToSecond - 1)
+      })
+      expect(screen.getAllByTestId('demo-event')).toHaveLength(1)
+      const beforeSecond = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
+      expect(beforeSecond).toBeGreaterThanOrEqual(onHome)
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1)
+      })
+      expect(screen.getAllByTestId('demo-event')).toHaveLength(2)
+      expect(screen.getAllByTestId('event-marker').at(-1)?.textContent).toMatch(/0:18/)
+      const afterSecond = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
+      expect(afterSecond).toBeGreaterThanOrEqual(beforeSecond)
+      expect(afterSecond).toBeGreaterThanOrEqual(18)
+
+      const wallToThird = (at(3) - at(2)) / 2
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(wallToThird - 1)
+      })
+      expect(screen.getAllByTestId('demo-event')).toHaveLength(2)
+      const beforeThird = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
+      expect(beforeThird).toBeGreaterThanOrEqual(afterSecond)
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1)
+      })
+      expect(screen.getAllByTestId('demo-event')).toHaveLength(3)
+      expect(screen.getAllByTestId('event-marker').at(-1)?.textContent).toMatch(/0:32/)
+      const afterThird = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
+      expect(afterThird).toBeGreaterThanOrEqual(beforeThird)
+      expect(afterThird).toBeGreaterThanOrEqual(32)
+      expect(afterFirst).toBeLessThanOrEqual(afterSecond)
+      expect(afterSecond).toBeLessThanOrEqual(afterThird)
+
+      expect(screen.getByTestId('demo-play').getAttribute('aria-pressed')).toBe('true')
+      fireEvent.click(screen.getByTestId('demo-play'))
+      const pausedAt = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3_000)
+      })
+      expect(elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)).toBe(pausedAt)
+    } finally {
+      cleanup()
+      vi.useRealTimers()
+    }
+  })
+
   it('keeps the displayed elapsed time increasing while a step advances', async () => {
     vi.useFakeTimers()
     const release: Array<() => void> = []
