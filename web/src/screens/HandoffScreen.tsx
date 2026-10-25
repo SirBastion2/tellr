@@ -3,7 +3,7 @@ import { flaggedSignals, handoffReasonBadge } from '../feed'
 import { controlStyle, secondaryStyle } from '../theme/controls'
 import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
 import { LevelIcon } from '../ui/LevelIcon'
-import { actorLabel, handoffTitle, levelLabel, modeLabel, outcomeLabel, patternValue, shortId, suggestedLabel } from '../ui/plain'
+import { actorLabel, handoffTitle, levelLabel, modeLabel, outcomeLabel, patternValue, shortId, stopReasonLabel, suggestedLabel } from '../ui/plain'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import type { HandoffProjection, Library, SessionState } from '../types'
 
@@ -102,7 +102,7 @@ export function HandoffScreen({
             </Fact>
             {projection.stop ? (
               <Fact term="Stop" testId="handoff-stop" data={{ kind: projection.stop.kind }}>
-                {projection.stop.reason}
+                {stopReasonLabel(projection.stop.reason)}
               </Fact>
             ) : null}
           </FactGrid>

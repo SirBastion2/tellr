@@ -73,7 +73,8 @@ describe('Handoff screen', () => {
     render(<HandoffScreen library={library} projection={projection} />)
     const stop = screen.getByTestId('handoff-stop')
     expect(stop.getAttribute('data-kind')).toBe('hard')
-    expect(stop.textContent).toBe(projection.stop?.reason)
+    expect(projection.stop?.reason).toBe('enough to proceed; nothing left to ask')
+    expect(stop.textContent).toBe('Enough to proceed; nothing left to ask')
   })
 
   it('renders the API projection even when its score differs from another state', () => {

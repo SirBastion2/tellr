@@ -62,6 +62,14 @@ export function shortId(id: string): string {
   return id
 }
 
+/** First letter only. The rest of the engine stop phrase stays as sent. */
+export function stopReasonLabel(reason: string): string {
+  if (reason.length === 0) {
+    return reason
+  }
+  return reason.charAt(0).toUpperCase() + reason.slice(1)
+}
+
 export function actorLabel(actor: string | null): string {
   if (!actor) {
     return 'Not recorded yet'
