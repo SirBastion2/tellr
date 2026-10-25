@@ -3471,3 +3471,13 @@ body {
 .tc-stage .tc-case-half .tc-facts {
   grid-template-columns: calc(120 * var(--u)) minmax(0, 1fr);
 }
+
+/* Timeline is always visible: no hover needed. */
+.tc-stage .tc-dots .tc-step-dot {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tc-stage .tc-dots .tc-step-dot[data-state='future'] {
+  opacity: 0.7;
+}
