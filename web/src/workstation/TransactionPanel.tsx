@@ -5,10 +5,23 @@ import { Emphasis } from '../ui/emphasis'
 import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { displaySpeaker, personalNamesFrom, redactPersonalCopy } from '../ui/privacy'
 import { StepSwap, useStepDirection } from './StepSwap'
-import { CaseFileLink } from './Toolbar'
 
 function eventSpeaker(event: CustomerEvent, names: readonly string[]): string {
   return displaySpeaker(event.kind, event.speaker, names)
+}
+
+/** The card always labels the step on screen as Step 1. Older beats sit to its right on the timeline. */
+function stepStamp(customer: CustomerFile, fired: number): { stamp: string; text: string } {
+  const names = personalNamesFrom(customer.profile.name)
+  const current = customer.events[fired - 1]
+  if (!current) {
+    return { stamp: 'Customer File', text: '' }
+  }
+  const elapsed = timelineElapsedMs(customer.events, fired)
+  return {
+    stamp: `Step 1 · ${formatElapsed(elapsed)} · ${eventSpeaker(current, names)}`,
+    text: redactPersonalCopy(current.text, names),
+  }
 }
 
 /** Move only the timeline list so the highlighted step is fully inside it. */
@@ -29,20 +42,46 @@ export function revealCurrentStep(list: HTMLElement): void {
 
 export function TransactionPanel({
   customer,
-  showCase,
-  onToggleCase,
+  fired,
 }: {
   customer: CustomerFile
   fired: number
-  showCase: boolean
+  showCase?: boolean
   presenter?: boolean
-  onToggleCase: () => void
+  playing?: boolean
+  onToggleCase?: () => void
 }) {
+  const current = fired > 0 ? customer.events[fired - 1] : null
+  const direction = useStepDirection(fired, customer.id)
+  const { stamp, text } = stepStamp(customer, fired)
+
   return (
     <section aria-label="Core banking" data-testid="transaction-panel" className="tc-transaction tc-screen tc-left-scroll">
-      <CaseFileLink showCase={showCase} onToggleCase={onToggleCase} />
-      <div hidden={!showCase}>
-        <FactGrid className="tc-kv" label="Transaction">
+      <div
+        className={current ? 'tc-step-zone tc-step-block' : 'tc-step-zone tc-step-block tc-step-block-idle'}
+        data-testid={current ? 'demo-event' : undefined}
+        data-kind={current?.kind}
+      >
+        {current ? (
+          <StepSwap
+            stepKey={`${customer.id}:${fired}`}
+            direction={direction}
+            title={stamp}
+            subtitle={text}
+            titleTestId="event-caption"
+            markerTestId="event-marker"
+            titleClassName="tc-step-title"
+            subtitleClassName="tc-prose tc-step-caption"
+            testId="step-viewport"
+          />
+        ) : (
+          <p data-testid="event-caption" className="tc-step-title">
+            Customer File
+          </p>
+        )}
+      </div>
+      <div className="tc-case-half">
+        <FactGrid className="tc-kv tc-bottom-facts" label="Transaction">
           <Fact term="Type">
             <span data-testid="txn-type">{customer.transaction.type}</span>
           </Fact>
@@ -52,14 +91,14 @@ export function TransactionPanel({
             </span>
           </Fact>
           <Fact term="Memo">
-            <span className="tc-prose" style={{ display: 'block', maxWidth: '70ch' }}>
+            <span className="tc-prose">
               <Emphasis text={customer.transaction.memo} />
             </span>
           </Fact>
         </FactGrid>
-        <section data-testid="case-file" aria-label="Synthetic case file" className="tc-stack-heading">
+        <section data-testid="case-file" aria-label="Synthetic case file" className="tc-case-file">
           <SectionHeading>Case file</SectionHeading>
-          <FactGrid className="tc-kv" label="Case file">
+          <FactGrid className="tc-kv tc-case-grid" label="Case file">
             <Fact term="Tenure">{customer.profile.tenure}</Fact>
             <Fact term="Typical withdrawal">{customer.profile.typicalWithdrawal}</Fact>
             <Fact term="Channels">{customer.profile.channels}</Fact>
@@ -83,13 +122,9 @@ export function StepCard({
   playing?: boolean
 }) {
   const current = fired > 0 ? customer.events[fired - 1] : null
-  const names = personalNamesFrom(customer.profile.name)
   const direction = useStepDirection(fired, customer.id)
-  const elapsed = current ? timelineElapsedMs(customer.events, fired) : 0
-  const label = current
-    ? `Step ${fired} · ${formatElapsed(elapsed)} · ${eventSpeaker(current, names)}`
-    : 'Customer File'
-  const text = current ? redactPersonalCopy(current.text, names) : ''
+  const { stamp, text } = stepStamp(customer, fired)
+  const label = current ? stamp : 'Customer File'
   const [seen, setSeen] = useState({ customer: customer.id, fired })
   const [pulse, setPulse] = useState(false)
   if (seen.customer !== customer.id) {

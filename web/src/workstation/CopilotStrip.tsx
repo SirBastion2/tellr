@@ -11,27 +11,28 @@ import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import { ExplanationPanel } from './ExplanationPanel'
 import { readExplanation } from './explain'
 
-const controlHeight = `var(--tc-control-h, ${DENSITY.controlHeight})`
+const signalControl = `var(--tc-control-h, ${DENSITY.controlHeight})`
 
-function roundIconButton(fill: CSSProperties): CSSProperties {
+function signalIconButton(kind: 'confirm' | 'dismiss'): CSSProperties {
   return {
     ...controlStyle,
-    ...fill,
-    width: controlHeight,
-    height: controlHeight,
-    minWidth: controlHeight,
-    minHeight: controlHeight,
+    ...(kind === 'confirm' ? primaryStyle : secondaryStyle),
+    width: signalControl,
+    height: signalControl,
+    minWidth: signalControl,
+    minHeight: signalControl,
     padding: 0,
     display: 'grid',
     placeItems: 'center',
     justifyContent: 'center',
     alignContent: 'center',
     lineHeight: 1,
+    borderRadius: 'var(--tc-radius-control, 999px)',
   }
 }
 
-const confirmIconButton = roundIconButton(primaryStyle)
-const dismissIconButton = roundIconButton(secondaryStyle)
+const confirmIconButton = signalIconButton('confirm')
+const dismissIconButton = signalIconButton('dismiss')
 
 function CopilotHeading() {
   return <h2 className="tc-strip-heading">Copilot</h2>
@@ -228,63 +229,54 @@ export function CopilotStrip({
           Updating copilot…
         </p>
       ) : null}
-      <div className="tc-copilot-pin" ref={pinRef}>
-        <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0 }}>
-          <LevelIcon level={level} />{LEVEL_WORD[level]}
-        </p>
-        <FactGrid label={URGENCY_SCORE_TERM}>
-          <Fact term={URGENCY_SCORE_TERM}>
-            <span className="tc-score-line">
-              <span className="tc-urgency-dot" data-level={level} aria-hidden="true" />
-              <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
-                {formatUrgencyScore(session.risk.score)}
-              </span>
-              <button
-                type="button"
-                ref={toggleRef}
-                className="tc-btn tc-score-help"
-                data-variant="secondary"
-                data-testid="score-explanation"
-                aria-expanded={open}
-                aria-controls="score-explanation-overlay"
-                aria-label="Score explanation"
-                style={{
-                  ...controlStyle,
-                  ...secondaryStyle,
-                  minHeight: 0,
-                  minWidth: 0,
-                  height: 'auto',
-                  padding: 'var(--tc-space-1, 4px) var(--tc-space-2, 8px)',
-                  whiteSpace: 'nowrap',
-                }}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  setOpen((value) => !value)
-                }}
-              >
-                ?
-              </button>
-            </span>
-          </Fact>
-        </FactGrid>
-        <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-          {reason}
-        </p>
-      </div>
-      <div
-        className="tc-block"
-        style={{
-          background: 'var(--tc-action-bg)',
-          color: 'var(--tc-action-fg)',
-          borderRadius: 'var(--tc-radius-card, 16px)',
-          padding: 'var(--tc-space-3, 12px)',
-          display: 'grid',
-          gap: 'var(--tc-space-2, 8px)',
-        }}
-      >
+      <div className="tc-copilot-head">
         <p className="tc-kicker">Suggested action</p>
+        <div className="tc-copilot-pin" ref={pinRef}>
+          <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0 }}>
+            <LevelIcon level={level} />{LEVEL_WORD[level]}
+          </p>
+          <FactGrid label={URGENCY_SCORE_TERM}>
+            <Fact term={URGENCY_SCORE_TERM}>
+              <span className="tc-score-line tc-urgency-pill">
+                <span className="tc-urgency-dot" data-level={level} aria-hidden="true" />
+                <span className="tc-urgency-label">Urgency</span>
+                <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
+                  {formatUrgencyScore(session.risk.score)}
+                </span>
+                <button
+                  type="button"
+                  ref={toggleRef}
+                  className="tc-btn tc-score-help"
+                  data-variant="secondary"
+                  data-testid="score-explanation"
+                  aria-expanded={open}
+                  aria-controls="score-explanation-overlay"
+                  aria-label="Score explanation"
+                  style={{
+                    ...controlStyle,
+                    ...secondaryStyle,
+                    minHeight: 0,
+                    minWidth: 0,
+                    height: 'auto',
+                    padding: 'var(--tc-space-1, 4px) var(--tc-space-2, 8px)',
+                    whiteSpace: 'nowrap',
+                  }}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setOpen((value) => !value)
+                  }}
+                >
+                  ?
+                </button>
+              </span>
+            </Fact>
+          </FactGrid>
+        </div>
         <p data-testid="copilot-action" className="tc-prose tc-action-copy" style={{ margin: 0, maxWidth: '70ch' }}>
           {action}
+        </p>
+        <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
+          {reason}
         </p>
       </div>
       <ul aria-label="Signals" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 'var(--tc-space-2, 8px)' }}>
@@ -430,7 +422,7 @@ export function CopilotStrip({
         <div className="tc-explain-overlay-bar">
           <button
             type="button"
-            className="tc-btn"
+            className="tc-btn tc-explain-close"
             data-variant="secondary"
             data-testid="score-explanation-close"
             aria-label="Close score explanation"

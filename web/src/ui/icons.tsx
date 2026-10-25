@@ -32,16 +32,43 @@ export function UndoIcon({ size }: IconProps) {
       <path
         d="M8.2 9.1 5 12.2l3.2 3.1"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.75"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
         d="M6.7 12.2H14.2a3.7 3.7 0 0 1 0 7.4H10.6"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.75"
         strokeLinecap="round"
         strokeLinejoin="round"
+      />
+    </Svg>
+  )
+}
+
+export function MoonIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path
+        d="M16.2 14.2A6.4 6.4 0 0 1 9.6 5.2 6.5 6.5 0 1 0 16.2 14.2z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  )
+}
+
+export function SunIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <circle cx="12" cy="12" r="3.1" stroke="currentColor" strokeWidth="1.7" />
+      <path
+        d="M12 3.4v2.1M12 18.5v2.1M3.4 12h2.1M18.5 12h2.1M5.9 5.9l1.5 1.5M16.6 16.6l1.5 1.5M18.1 5.9l-1.5 1.5M7.4 16.6 5.9 18.1"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
       />
     </Svg>
   )

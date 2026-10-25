@@ -17,7 +17,7 @@ const fixtures = [t1, t2, t3, t4, t5, t6, t7]
 const OUTCOMES: OutcomeId[] = ['proceed', 'slow_down', 'escalate', 'report']
 const LABELS: Record<OutcomeId, string> = {
   proceed: 'Proceed',
-  slow_down: 'Slow Down',
+  slow_down: 'Slow down',
   escalate: 'Escalate',
   report: 'Report',
 }
@@ -51,8 +51,7 @@ describe('Outcome screen', () => {
         for (const outcome of OUTCOMES) {
           const button = screen.getByTestId(`outcome-${outcome}`)
           expect((button as HTMLButtonElement).disabled, where).toBe(false)
-          const visible = (button.textContent ?? '').replace("Copilot's recommendation", '').trim()
-          expect(visible, where).toBe(LABELS[outcome])
+          expect(button.querySelector('.tc-outcome-name')?.textContent, where).toBe(LABELS[outcome])
           const highlighted = outcome === session.suggested_outcome
           expect(button.getAttribute('title'), where).toBe(highlighted ? "Copilot's recommendation" : null)
           expect(button.getAttribute('aria-pressed'), where).toBe('false')

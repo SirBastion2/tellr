@@ -28,6 +28,7 @@ import { ThemeWordmark } from './theme/Wordmark'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 import { useDemoShortcuts } from './ui/DemoShortcuts'
 import { LEVEL_WORD } from './ui/LevelIcon'
+import { MoonIcon, SunIcon } from './ui/icons'
 import { ShortcutHelp } from './ui/ShortcutHelp'
 import type { ActivityRow, AnswerPost, ChipSource, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import type { SchemaIssue } from './validate'
@@ -63,16 +64,35 @@ const SCHEME_OPTIONS: readonly { id: ColorChoice; label: string }[] = [
 
 function SchemeToggle() {
   const { choice, setChoice } = useColorScheme()
+  const hold = useRef<number | null>(null)
+  const held = useRef(false)
+  function startHold() {
+    held.current = false
+    hold.current = window.setTimeout(() => {
+      held.current = true
+      setChoice('system')
+    }, 550)
+  }
+  function endHold() {
+    if (hold.current != null) {
+      window.clearTimeout(hold.current)
+      hold.current = null
+    }
+  }
   return (
     <div className="tc-segment tc-scheme-full" role="group" aria-label="Color scheme" data-testid="color-scheme">
       {SCHEME_OPTIONS.map((option) => {
         const selected = choice === option.id
+        const icon = option.id === 'dark' ? <MoonIcon /> : option.id === 'light' ? <SunIcon /> : null
         return (
           <button
             key={option.id}
             type="button"
             data-testid={`scheme-${option.id}`}
+            className={option.id === 'system' ? 'tc-scheme-system' : undefined}
             aria-pressed={selected}
+            aria-label={option.label}
+            title={option.id === 'system' ? option.label : `${option.label}. Press and hold for System.`}
             style={{
               ...headerTap,
               borderWidth: 0,
@@ -82,9 +102,20 @@ function SchemeToggle() {
               backgroundColor: selected ? 'var(--tc-button)' : 'var(--tc-secondary-bg)',
               color: selected ? 'var(--tc-button-text)' : 'var(--tc-secondary-fg)',
             }}
-            onClick={() => setChoice(option.id)}
+            onPointerDown={option.id === 'system' ? undefined : startHold}
+            onPointerUp={endHold}
+            onPointerLeave={endHold}
+            onPointerCancel={endHold}
+            onClick={() => {
+              if (held.current) {
+                held.current = false
+                return
+              }
+              setChoice(option.id)
+            }}
           >
-            {option.label}
+            {icon}
+            <span className={icon ? 'tc-sr' : undefined}>{option.label}</span>
           </button>
         )
       })}
@@ -598,7 +629,7 @@ function ConnectedShell() {
     if (!sessionId || !location.pathname.endsWith('/handoff')) {
       return
     }
-    void loadHandoff()
+    void loadHandoff().catch(() => undefined)
   }, [location.pathname, sessionId, loadHandoff])
 
   const runCurrent = useCallback(async () => {
@@ -1069,7 +1100,12 @@ function ConnectedShell() {
           return
         }
         setPending(true)
-        void teller.undo().finally(() => setPending(false))
+        void teller.undo().finally(() => {
+          setPending(false)
+          const next = Math.max(0, indexRef.current - 1)
+          postedRef.current = Math.min(postedRef.current, next)
+          placeStep(next)
+        })
       }}
       handoff={teller.handoff}
       onSubmitOutcome={(body) => {
@@ -1077,7 +1113,22 @@ function ConnectedShell() {
         playingRef.current = false
         engageClock(false)
         setPlaying(false)
-        void teller.postOutcome(body.outcome, body.actor)
+        void (async () => {
+          try {
+            const recordedNow = await teller.postOutcome(body.outcome, body.actor)
+            if (!recordedNow) {
+              return
+            }
+            const id = tellerRef.current.session?.session_id
+            if (!id) {
+              return
+            }
+            await tellerRef.current.loadHandoff()
+            navigate(`/sessions/${id}/handoff`)
+          } catch {
+            // A failed handoff read stays on the outcome screen.
+          }
+        })()
       }}
     />
   )
