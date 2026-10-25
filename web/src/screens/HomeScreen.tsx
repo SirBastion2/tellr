@@ -51,14 +51,17 @@ export function HomeScreen({
     <section data-testid="home-screen" className="tc-screen">
       {demo && customer ? (
         <>
-          <SimulationToolbar demo={demo} />
           <div className="tc-workstation">
-            <TransactionPanel
-              customer={customer}
-              fired={demo.index}
-              showCase={demo.showCase}
-              presenter={demo.presenter}
-            />
+            <div className="tc-home-column">
+              <SimulationToolbar demo={demo} />
+              <TransactionPanel
+                customer={customer}
+                fired={demo.index}
+                showCase={demo.showCase}
+                presenter={demo.presenter}
+                onToggleCase={demo.onToggleCase}
+              />
+            </div>
             <CopilotStrip
               library={library}
               session={shownSession}

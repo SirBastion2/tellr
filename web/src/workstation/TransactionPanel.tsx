@@ -3,6 +3,7 @@ import type { CustomerEvent, CustomerFile } from '../demo/customers'
 import { Emphasis } from '../ui/emphasis'
 import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { displaySpeaker, personalNamesFrom, redactPersonalCopy } from '../ui/privacy'
+import { CaseFileLink } from './Toolbar'
 
 function eventSpeaker(event: CustomerEvent, names: readonly string[]): string {
   return displaySpeaker(event.kind, event.speaker, names)
@@ -13,11 +14,13 @@ export function TransactionPanel({
   fired,
   showCase,
   presenter = false,
+  onToggleCase,
 }: {
   customer: CustomerFile
   fired: number
   showCase: boolean
   presenter?: boolean
+  onToggleCase: () => void
 }) {
   const visible = customer.events.slice(0, fired)
   const current = fired > 0 ? customer.events[fired - 1] : null
@@ -29,7 +32,10 @@ export function TransactionPanel({
   return (
     <section aria-label="Core banking" data-testid="transaction-panel" className="tc-transaction tc-screen" style={{ alignContent: 'start' }}>
       <div className="tc-stack-heading">
-        <h2 className="tc-title">Transaction</h2>
+        <div className="tc-txn-head">
+          <h2 className="tc-title">Transaction</h2>
+          <CaseFileLink showCase={showCase} onToggleCase={onToggleCase} />
+        </div>
         <p data-testid="synthetic-banner" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
           Practice data.
         </p>
