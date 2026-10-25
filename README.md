@@ -1,0 +1,220 @@
+# tellr
+
+Teller Copilot (tellr) is a teller-facing interview aid. It keeps an append-only log of what the teller records, folds that log into a score and a level, and may ask a local model for the next question ID. The teller still chooses what happens to the transaction. It was built at HackPSU Fall 2026 by two people and a set of Cursor agents, against a frozen contract between the engine and the screen (`ARCHITECTURE.md`; `docs/architecture.md` §0–§3).
+
+The hard moment is the counter. A customer is standing there, the low-risk path is meant to finish in under 60 seconds, and a multi-second blank screen is dead air the teller has to fill. The screen is built against a 1.5 second p95 from a chip tap to the next question. The product suggests. It does not approve or deny (`docs/architecture.md` §1, §9).
+
+## How a teller uses it
+
+Home is a workstation: the transaction on one side, a copilot card on the other. The card renders one server snapshot. While a save is in flight it keeps that snapshot on screen (`ARCHITECTURE.md`, workstation section).
+
+The copilot shows:
+
+- **Level.** An icon plus a word: Clear, Caution, or High. Colour is not the only cue (`docs/architecture.md` §12; `ARCHITECTURE.md`).
+- **Urgency Score.** The server score over the contract maximum, shown as `<score>/<max>`. The score is clamped at +100 (`ARCHITECTURE.md`; `docs/architecture.md` §6.2). Clear is below 25, Caution starts at 25, and High concern starts at 60 (`docs/architecture.md` §6.3).
+- **Suggested action.** `talk_track.action` when the server sends one: a short imperative, not a question (`contract/api.md`, CHANGE-007; `ARCHITECTURE.md`).
+- **Read-aloud script.** The label plus `talk_track.lines`. That is the wording the teller can say (`ARCHITECTURE.md`).
+- **Signals.** Chips the teller can confirm, dismiss, or restore. A teller-sourced chip can read "Teller confirmed." The copilot row hides an "Observed" badge (`docs/handoff/20261025-0828-signal-rows-no-observed.md`).
+- **Why this level.** The score explanation: what raised it, what would lower it, a strength word, and collapsed technical details. The panel places server fields. It does not rescore them (`ARCHITECTURE.md`).
+- **Timeline.** Step, elapsed time, and speaker. Amounts and phrases such as "on the phone" and "cash" are bold. Speaker is "Customer" (`ARCHITECTURE.md`).
+- **Case file.** The control sits with the Transaction heading. The file omits name, age, and gendered pronouns; those stay off the screen and the customer is labeled Customer (`docs/handoff/20261025-0825-home-panel-up-case-file-link.md`; `ARCHITECTURE.md`).
+
+Four outcomes stay available while the visit is open: proceed, slow down, escalate, and report. After the decision, the visit closes and the teller can start a new customer (`docs/architecture.md` §4; `ARCHITECTURE.md`).
+
+Risk, level, reasons, and the next question are computed by the engine. The web UI renders `SessionState`. It does not compute them (`docs/architecture.md` §12; `ARCHITECTURE.md`; `WORKFLOW.md` §9).
+
+## The demo and a real visit
+
+The demo layout is always on. It is the scripted workstation used for the judging demo: five synthetic customer files play on a timer beside the copilot (`ARCHITECTURE.md`, `web/src/demo/customers.ts`). At 1×, playback targets are routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, and contractor cash 60s. Speed changes wall-clock time only. The on-screen clock is simulated customer time, the sum of each event's `delayMs`. The last two files post no chips (`ARCHITECTURE.md`).
+
+The HackPSU Devpost video is capped at 5 minutes and is meant to cover who, why, how, and future plans (`docs/A_TO_B.md`, M-022). The repo does not include the video file.
+
+**Scripted in that demo**
+
+- The five customer files, their timelines, transaction type, amount, memo, and pacing (`ARCHITECTURE.md`).
+- Chips the simulation posts as the file plays, with source `observed`. A manual post uses source `teller` (`ARCHITECTURE.md`).
+- Sample data when no API is up. `npm run dev` can fall back to the Vite mock. The mock looks up recorded engine bodies in `web/mock/live_answers.json` and `web/mock/live_levels.json`. It does not score (`ARCHITECTURE.md`).
+
+**Real engine behavior behind it**
+
+- With the API up, `npm run dev:api` scores every answer through the engine. Live session opens send `{ mode: "live", amount_band }` (`ARCHITECTURE.md`).
+- The same fold produces the level, the reasons, the pattern, the talk track, and the question. Same events and the same library version produce the same result (`docs/architecture.md` §4).
+- The model, when it is on, returns one question ID from a rules-filtered list. Library text is what the teller reads (`docs/architecture.md` §7.4, §8.2).
+- The benchmark numbers below are separate runs of that engine, not numbers computed in the browser (`docs/architecture.md` §13; `docs/WRITEUP_NUMBERS.md`).
+
+**A real visit**
+
+A live session cannot load a scenario. The API rejects `scenario_id` when `mode` is `live` (`contract/api.md`; `docs/architecture.md` §14.1). The header pill reads `Simulation: <customer title>` for a synthetic file and `LIVE — no scenario loaded` for a live session with no simulation (`ARCHITECTURE.md`). The teller taps chips and records the outcome. If the model is slower than 1500 ms, or the GPU is down, that turn uses the rule engine, which is a complete product on its own (`docs/architecture.md` §7.3, §14.2). The repo does not describe a feed from a bank's core system.
+
+## The Llama 8B
+
+The model is **Meta-Llama-3.1-8B-Instruct**, quantized **Q4_K_M**, served locally with `llama-server`. Drivers picked it at hour 6 because a latency bench on an RTX 5070 Laptop put both the 8B and Llama-3.2-3B-Instruct Q4_K_M under the 1.5 s limit and under the ~0.7 s target. The 8B total p95 was 482.7 ms. The 3B is the fallback if VRAM is tight. Quality was not measured in that bench (`docs/DECISIONS.md`, Hour 6; `docs/handoff/000-archive.md`, [A-03]).
+
+Its job is narrow. The opener is fixed, the score and the level are rules, and hypothesis ranking is rules. In strict mode the model only chooses the next question ID among a short candidate list, under a grammar that lists those IDs. It does not write the level, the reasons, or prose (`docs/architecture.md` §7.4, §8.1–§8.2).
+
+The git tag **`weights-frozen`** is `82b788d` (`82b788d1009fe775c3fc5edb20cb5413ee25068e`). It freezes the scoring weights after card A-07. Those weights stayed at the starting table in `library/signals.yaml`. What changed was the static questionnaire's threshold, from 3 to 4, labeled tuned. The tag is not a fine-tune of the Llama file. The repo does not describe training or fine-tuning that model (`docs/handoff/000-archive.md`, [A-07]; `docs/A_TO_B.md`; `docs/A08_HELDOUT_RUN.md`).
+
+### Latency bench (A-03)
+
+RTX 5070 Laptop, 8151 MiB, `llama-server -ngl 99 -c 4096 -np 1`, temperature 0, 3 warm-up runs, then 50 timed. Total is client wall clock. Both models passed L1b (≤1.5 s) and the ~0.7 s target (`docs/handoff/000-archive.md`, [A-03]).
+
+| Model | Total p50 | Total p95 | Prefill p95 | Decode p95 | VRAM |
+|---|---:|---:|---:|---:|---:|
+| Llama-3.2-3B-Instruct Q4_K_M | 273.2 ms | 296.3 ms | 92.2 ms | 184.0 ms | 4865 MiB |
+| Meta-Llama-3.1-8B-Instruct Q4_K_M | 463.6 ms | 482.7 ms | 171.7 ms | 291.9 ms | 7379 MiB |
+
+A later live-path check on the same laptop, 11 model calls across fixtures T1–T7, warm, fallback 0: 8B p50 663 ms / p95 742 ms / max 765 ms; 3B p50 255 ms / p95 342 ms. Agreement with the rules was 9/11 for both (`docs/handoff/000-archive.md`, [A-05] live p95).
+
+### Development set (30 scenarios)
+
+CP3, library 1.2.0, 8B Q4_K_M on the RTX 5070, before the threshold change. Arm A is a fixed questionnaire. Arm B is the product with the rule engine. Arm C is the product with the live 8B. Counts, not percentages. The docs say not to call a difference significant on 15 scenarios per population (`docs/WRITEUP_NUMBERS.md`; `docs/B_TO_A.md`, B-013; `docs/architecture.md` §13.2–§13.3).
+
+| Arm | Catch | False-flag | Mean questions |
+|---|---|---|---:|
+| A (threshold 3) | 15/15 | 8/15 (95% Wilson 30–75%) | 6.00 |
+| B (rules) | 14/15 (95% Wilson 70–99%) | 0/15 (95% Wilson 0–20%) | 3.07 |
+| C (live 8B) | 14/15 (95% Wilson 70–99%) | 0/15 (95% Wilson 0–20%) | 3.10 |
+
+Arm C on that run: friction 0/15, max 5 questions, scripted time-to-decision mean 40 s, `default_fired` 0/93, validator rejections 0, latency p50 / p95 / max 486 / 576 / 619 ms, no fallbacks. Coached customers finished 1 Clear, 7 Caution, 7 High. All 15 legitimate customers finished Clear. VRAM about 7064/8151 MiB. The shared miss is `scn.coached.bank_perfect_own_account` (`docs/B_TO_A.md`, B-013; `docs/A_TO_B.md`).
+
+A-07 then moved only arm A's threshold from 3 to 4. Scoring weights were not changed (`docs/WRITEUP_NUMBERS.md`; `docs/handoff/000-archive.md`, [A-07]).
+
+| Arm A | Catch | False-flag | Friction | Mean questions |
+|---|---|---|---|---:|
+| Before (threshold 3) | 15/15 | 8/15 | 8/15 | 6.00 |
+| After (threshold 4) | 13/15 | 0/15 | 0/15 | 6.00 |
+
+New arm A misses after the change: `scn.coached.gov_perfect_fine` and `scn.coached.tech_refund_perfect`. Arm B stayed 14/15 catch, 0/15 false-flag, mean 3.07 questions (`docs/handoff/000-archive.md`, [A-07]).
+
+### Held-out (10 scenarios, run once)
+
+Five coached and five legitimate, written in a worktree that could not see the dev scenarios or the weights, then run once on Driver B's GPU laptop. No rerun. Arm C matched arm B on catch rate and false-flag rate on this set and on the dev set (`docs/WRITEUP_NUMBERS.md`; `docs/B_TO_A.md`, B-018; `WORKFLOW.md` §10).
+
+| Arm | Catch | False-flag | Friction | Mean questions | Coached C / Ca / H | Legitimate C / Ca / H |
+|---|---|---|---|---:|---|---|
+| A | 4/5 (Wilson 38–96%) | 1/5 (Wilson 4–62%) | 1/5 | 6.00 | 1 / 0 / 4 | 4 / 0 / 1 |
+| B | 4/5 (Wilson 38–96%) | 0/5 (Wilson 0–43%) | 0/5 | 2.30 | 1 / 0 / 4 | 5 / 0 / 0 |
+| C | 4/5 (Wilson 38–96%) | 0/5 (Wilson 0–43%) | 0/5 | 2.30 | 1 / 0 / 4 | 5 / 0 / 0 |
+
+Wilson intervals are 95%. Arm C latency p50 / p95 / max was 354 / 405 / 410 ms, fallback 0/13, validator rejections 0, VRAM peak 7114/8151 MiB. Every arm missed `scn.coached.ssa_review_rehearsed`. Arm A's false flag was `scn.legitimate.shelter_adoption_fuzzy` (`docs/B_TO_A.md`, B-018; `docs/WRITEUP_NUMBERS.md`).
+
+### Reproduce
+
+Start `llama-server` with the 8B Q4_K_M: `-ngl 99 -c 4096 -np 1`, listening on `127.0.0.1:8080`. One GPU job at a time. On Git Bash or WSL, prefix model jobs with `scripts/with-gpu`. On native Windows, skip that wrapper (`docs/CP3_GPU_RUN.md`; `docs/ROSTER.md` §5.3).
+
+Latency bench, from the script header. Defaults are 50 runs and 3 warm-ups (`scripts/bench_llm.py`):
+
+```bash
+python scripts/bench_llm.py --server http://127.0.0.1:8080 --runs 50 --label 8B
+```
+
+Development eval (`docs/CP3_GPU_RUN.md`):
+
+```bash
+scripts/with-gpu env LLAMA_SERVER=http://127.0.0.1:8080 \
+  MODEL_ID=Meta-Llama-3.1-8B-Instruct-Q4_K_M \
+  python -m eval.run --scenarios eval/scenarios/dev \
+  --out eval/results/$(git rev-parse HEAD) \
+  --arms A,B,C --model local
+```
+
+Held-out eval, once (`docs/A08_HELDOUT_RUN.md`). Confirm `git rev-parse weights-frozen` is `82b788d` first.
+
+```bash
+scripts/with-gpu env LLAMA_SERVER=http://127.0.0.1:8080 \
+  MODEL_ID=Meta-Llama-3.1-8B-Instruct-Q4_K_M \
+  python -m eval.run --scenarios eval/scenarios/heldout \
+  --out eval/results/heldout \
+  --arms A,B,C --model local
+```
+
+## How it's built
+
+The browser draws state. The API appends facts, folds them, and sometimes asks the model for one ID. The eval harness imports the same engine and does not go through HTTP (`docs/architecture.md` §3, §13).
+
+```mermaid
+flowchart LR
+  ui["Web UI<br/>renders SessionState"] --> api["FastAPI<br/>127.0.0.1:8000"]
+  api --> fold["Engine fold<br/>score, level, reasons"]
+  fold --> lib["Library YAML<br/>patterns, questions, signals"]
+  api --> llm["llama-server<br/>question ID only"]
+  llm --> api
+  fold --> eval["Eval harness<br/>arms A, B, C"]
+  api --> db["SQLite<br/>append-only log"]
+```
+
+Four bank themes share one layout. `?theme=` or the `T` key cycles `tellr` → `pnc` → `mtb` → `fnb`. Screens read colour tokens. They do not branch on the bank id. Each theme has a light palette and a dark palette, plus Light / Dark / System (`ARCHITECTURE.md`, themes section).
+
+| Id | Theme |
+|---|---|
+| `tellr` | Default. Poppins, navy-to-indigo |
+| `pnc` | PNC. Arial, orange on slate |
+| `mtb` | M&T. Segoe UI, green |
+| `fnb` | F.N.B. Gold wordmark on the dark field |
+
+The contract in `contract/` is the frozen interface. `CONTRACT_VERSION` is 2.0.0. Every session response is a full `SessionState`. Fixtures T1–T7 are generated from `reference_impl.py`, and both sides test against them. A change is a written `CHANGE-nnn`, approval from both drivers, then an apply on `main` (`contract/api.md`; `WORKFLOW.md` §5).
+
+## How we built it
+
+HackPSU Fall 2026, 24 hours, two drivers. Driver A is Sebastian (engine and evaluation). Driver B is Jonathan (frontend, platform, and the GPU laptop). They coordinate in `docs/A_TO_B.md` and `docs/B_TO_A.md`. A problem in the other lane goes in `docs/CROSS_LANE.md` and is not fixed in the other lane's files (`docs/ROSTER.md` §2; `WORKFLOW.md` §7).
+
+The plan splits the build into lanes with their own directories: A1 engine, A2 platform, A3 evaluation, B1 frontend, plus a reviewer and a one-time held-out writer. Four lanes can build at once. A fifth frontend lane was optional and was not created. Each lane has a worktree. A stuck agent is replaced with a fresh chat that gets the task card and the newest handoff note (`docs/ROSTER.md` §1, §6; `WORKFLOW.md` §2–§3; `ARCHITECTURE.md`).
+
+Each card or fix is its own branch and pull request. `scripts/gate.sh a` (Python) or `scripts/gate.sh b` (web) has to pass, and `scripts/gate.sh contract` checks the fixtures against the reference implementation (`ARCHITECTURE.md`, Gates). `ARCHITECTURE.md` is the map: an agent reads it and opens only the files it names.
+
+Conflicts stay rare because ownership is by directory, shared files have one owner, and the contract changes only through the protocol. Handoff notes are one new file per PR under `docs/handoff/`, so parallel notes do not edit the same log. Model jobs take a single GPU lock (`docs/ROSTER.md` §3, §5.3; `docs/HANDOFF.md`).
+
+Merges are serial. A driver merges. As of `bbbb10e` (2026-10-25 04:30 ET), `main` has 126 commits and no merge commit with two parents. 125 of those commits are merged pull requests; the first commit is the starter kit. Verified with `git rev-list`, `git log`, and `gh pr list --state merged --base main`.
+
+## Entered in
+
+From the HackPSU Fall 2026 Devpost page, as recorded by the drivers: the Grand Prize is $3,500 (1st $2,000, 2nd $1,000, 3rd $500) and is the default entry for non-case submissions. The team is also opting into the FNB Challenge, the Nittany AI Challenge, and MLH SpaceXSI. The submission had to be created by midnight, with a hard deadline of noon Sunday (`docs/A_TO_B.md`, M-022; `docs/B_TO_A.md`, B-030).
+
+**Best use of Cursor.** The build itself is the Cursor entry. Two people kept a frozen contract and a one-page map, and agents took cards on separate branches. Section "How we built it" is that workflow: gates on every PR, a change protocol, and a straight line of merged pull requests.
+
+## Quick start
+
+Python 3.12. Dependencies are listed in `pyproject.toml`. The Makefile starts the API and the web app in tmux (`Makefile`; `pyproject.toml`).
+
+```bash
+make dev-api    # uvicorn on 127.0.0.1:8000
+make dev-web    # Vite on 127.0.0.1:5173, mock installed
+```
+
+The same processes without Make (`ARCHITECTURE.md`):
+
+```bash
+python -m uvicorn api.main:app --port 8000
+```
+
+```bash
+cd web
+npm run dev       # sample data if the API is down
+npm run dev:api   # pins VITE_API_URL to http://127.0.0.1:8000
+```
+
+Gates:
+
+```bash
+scripts/gate.sh a
+scripts/gate.sh b
+scripts/gate.sh contract
+```
+
+## Repo layout
+
+| Path | What it is |
+|---|---|
+| `engine/`, `library/` | Score, questions, signals |
+| `api/`, `store/`, `recommenders/` | HTTP, SQLite, model client |
+| `eval/` | Scenarios and the three arms |
+| `web/` | React workstation and the four themes |
+| `contract/` | Frozen schemas and T1–T7 fixtures |
+| `docs/architecture.md` | Spec v1.2 |
+| `ARCHITECTURE.md` | Map of the repo |
+| `reference_impl.py` | Executable spec of the scoring rules |
+| `scripts/gate.sh` | The PR gate |
+
+## Team
+
+Driver A, Sebastian. Driver B, Jonathan. The roster pairs Sebastian with the engine and the evaluation, and Jonathan with the frontend, the API, and the held-out set (`docs/ROSTER.md` §2; `docs/DECISIONS.md`).
