@@ -31,7 +31,7 @@ const DISPATCH: Readonly<Record<DemoShortcut, keyof DemoShortcutHandlers>> = {
 
 /**
  * One window listener for the demo keys. Mount from the app shell so every
- * route (Home, Customer file, Outcome, Handoff) shares the same handler.
+ * route (Home, Outcome, Handoff) shares the same handler.
  */
 export function useDemoShortcuts(handlers: DemoShortcutHandlers): void {
   const ref = useRef(handlers)

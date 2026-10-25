@@ -134,7 +134,7 @@ describe('workstation laptop fit', () => {
     expect(getComputedStyle(screen.getByTestId('app-nav')).flexWrap).toBe('nowrap')
     expect(getComputedStyle(screen.getByTestId('app-nav')).overflow).toBe('visible')
     expect(screen.getByTestId('app-header').getAttribute('data-scheme-compact')).toBe('false')
-    for (const label of ['Home', 'Customer file', 'Outcome', 'Handoff']) {
+    for (const label of ['Home', 'Outcome', 'Handoff']) {
       const tab = screen.getByText(label)
       expect(tab.textContent).toBe(label)
       expect(tab.getAttribute('style') ?? '').toMatch(/flex:\s*0 0 auto/)

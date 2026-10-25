@@ -41,7 +41,7 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Teller Copilot' })).toBeTruthy()
   })
 
-  it('keeps Undo on the workstation and off the customer file', () => {
+  it('keeps Undo on the workstation', () => {
     const view = demo()
     const home = render(
       <MemoryRouter initialEntries={['/']}>
@@ -56,8 +56,8 @@ describe('App', () => {
         <AppShell library={null} session={session} issues={[]} demo={view} onUndo={() => undefined} />
       </MemoryRouter>,
     )
-    expect(screen.queryByTestId('undo')).toBeNull()
-    expect(screen.getByTestId('customer-screen')).toBeTruthy()
+    expect(screen.getByTestId('not-found-screen')).toBeTruthy()
+    expect(screen.queryByTestId('customer-screen')).toBeNull()
   })
 
   it('leaves a gap between the header and the workstation or outcome heading', () => {

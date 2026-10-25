@@ -120,7 +120,7 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 | `web/src/demoPolish.test.tsx` | Timer matches timeline, shortcut list, Restart confirm, four labeled tabs, full-width card, footer on `--tc-text-xs`. |
 | `web/src/presenter.tsx` | Demo layout, always on. No toggle and no `?present` switch. |
 | `web/src/screens/HomeScreen.tsx` | Toolbar, transaction panel, copilot card, explanation. Holds the last session / posted chips / activity while a write is in flight so the card does not mix snapshots. |
-| `web/src/screens/CustomerFileScreen.tsx` | Profile only: Customer (never a name), tenure, typical withdrawal, channels. No age band. Uses the shared `tc-kv` grid. Visit amount, signals, and activity stay on the workstation. No Undo. |
+| `web/src/screens/CustomerFileScreen.tsx` | Removed. `/customer` is not in `web/src/routes.ts`; it falls through to the catch-all not-found screen. |
 | `web/src/screens/HandoffScreen.tsx` | Handoff card. Fact grid, level badge, Urgency Score `<score>/<max>`, flagged list from the merged SessionState rows (reasons when that list is empty), with dismissed/confirmed marks when that data is in state. |
 | `web/src/ui/facts.tsx` | Shared fact grid (`tc-facts` / `tc-kv`) and `SectionHeading` tag. Soft medium labels, bold values, `--tc-space-4` / `--tc-space-2` gaps, `align-items: center`, and `--tc-line-fact`. |
 | `web/src/ui/plain.ts` | Teller-facing labels: pattern, mode, outcome, short id, amount band, recommender phrase. Activity / noted times use local `formatLocalDateTime`. |

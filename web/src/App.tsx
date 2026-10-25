@@ -11,7 +11,6 @@ import { PRESENTER_HIDDEN_ROUTES, PresenterProvider, usePresenter } from './pres
 import { SchemaBanner } from './SchemaBanner'
 import { APP_ROUTES } from './routes'
 import { ContextScreen } from './screens/ContextScreen'
-import { CustomerFileScreen } from './screens/CustomerFileScreen'
 import { HandoffScreen } from './screens/HandoffScreen'
 import { HealthScreen } from './screens/HealthScreen'
 import { HistoryScreen } from './screens/HistoryScreen'
@@ -400,7 +399,6 @@ export function AppShell({
                 />
               }
             />
-            <Route path="/customer" element={<CustomerFileScreen demo={demo} />} />
             <Route path="/sessions" element={<HistoryScreen />} />
             <Route
               path="/sessions/:id/context"
