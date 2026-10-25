@@ -50,12 +50,27 @@ The HackPSU Devpost video is capped at 5 minutes and is meant to cover who, why,
 
 A live session cannot load a scenario. The API rejects `scenario_id` when `mode` is `live` (`contract/api.md`; `docs/architecture.md` §14.1). The header pill reads `Simulation: <customer title>` for a synthetic file and `LIVE — no scenario loaded` for a live session with no simulation (`ARCHITECTURE.md`). The teller taps chips and records the outcome. If the model is slower than 1500 ms, or the GPU is down, that turn uses the rule engine, which is a complete product on its own (`docs/architecture.md` §7.3, §14.2). The repo does not describe a feed from a bank's core system.
 
+## How it would actually be used
+
+This is the deployment the spec describes. It is separate from the scripted demo above.
+
+1. The teller opens a **live** session and records an amount band. The API refuses a scenario on that session. A feed that pulls the transaction from a bank's core system is **not built yet** (`contract/api.md`; `docs/architecture.md` §14.1).
+2. The teller taps what they see and how the customer answered. Those chips are the inputs (`docs/architecture.md` §4, §5.6–§5.7).
+3. The engine folds that log into an urgency score, a level, reasons, and a pattern. The screen displays that result (`docs/architecture.md` §6, §12).
+4. The copilot shows the suggested action and the read-aloud lines from the library talk track. When another question is needed, the rules choose it, or the local model returns one allowed question ID (`docs/architecture.md` §7.4; `library/talk_tracks.yaml`).
+5. The teller chooses proceed, slow down, escalate, or report. That choice is stored with a human actor, and the visit closes (`docs/architecture.md` §4, §9).
+
+If the model is slower than 1.5 seconds, or the GPU is down, that turn uses the rule engine. The rules-only path was walked end to end (`docs/architecture.md` §14.2; `docs/DECISIONS.md`, Hour 8).
+
 ## Limitations / what's scripted
 
 - The judging demo plays five synthetic files on a timer. With no API, the page shows recorded engine answers and does not score them (`ARCHITECTURE.md`).
 - A live visit loads no scenario. The teller taps the chips. There is no described connection to a bank's core system (`contract/api.md`; `docs/architecture.md` §14.1).
 - On the dev set and the held-out set, the 8B matched the rules on catch and false-flag. The spec says to lead with the adaptive interview in that case, and to report the model as a part that has not yet earned its place (`docs/WRITEUP_NUMBERS.md`; `docs/architecture.md` §19.1).
 - The dev miss `scn.coached.bank_perfect_own_account` was left in place. A weight change that caught only that row was tried and not applied. The held-out run, five scenarios per group, missed `scn.coached.ssa_review_rehearsed` on every arm. Those ranges are wide, and the spec says to treat that run as a check, not the headline (`docs/handoff/000-archive.md`, [A-07]; `docs/B_TO_A.md`, B-018; `docs/architecture.md` §13.4).
+- A completed compliance or regulatory review is not in the repo. Three patterns are marked `review: compliance` and ship with no signals (`library/patterns.yaml`). External legal claims, including a Senior Safe Act paraphrase, are marked remove (`docs/WRITEUP_NUMBERS.md` §6).
+- An in-app editor for scripts, reasons, or themes is not built. There is no settings endpoint (`docs/DECISIONS.md`, Hour 2).
+- How to keep the pattern name off a customer's view is still an open choice. The spec lists screen orientation, a privacy filter, or more neutral wording, and it does not record which one was chosen (`docs/architecture.md` §19.4).
 
 ## The Llama 8B
 
@@ -203,6 +218,28 @@ Four bank themes share one layout. `?theme=` or the `T` key cycles `tellr` → `
 
 The contract in `contract/` is the frozen interface. `CONTRACT_VERSION` is 2.0.0. Every session response is a full `SessionState`. Fixtures T1–T7 are generated from `reference_impl.py`, and both sides test against them. A change is a written `CHANGE-nnn`, approval from both drivers, then an apply on `main` (`contract/api.md`; `WORKFLOW.md` §5).
 
+## Templates
+
+The words on screen, and the bank chrome, are files. The model does not write them. There is no settings screen for editing them. A settings endpoint was rejected (`docs/DECISIONS.md`, Hour 2; `contract/api.md`).
+
+- **Read-aloud scripts.** `library/talk_tracks.yaml` holds a short action, the lines the teller can say, and an avoid list of phrases not to use. The engine uses the track for the suggested outcome, and adds a pattern's lines only while that pattern is displayed (`engine/rules.py`; `docs/architecture.md` §7).
+- **Factor reasons.** Every signal in `library/signals.yaml` has a rationale. The library refuses to boot if that text is blank. The rationale is the only explanation text the product shows (`engine/library.py`; `docs/architecture.md` §5.5).
+- **Questions.** The question text and its one-line why live in the library. The model returns an ID. The screen looks the words up (`docs/architecture.md` §7.4).
+- **Bank themes.** Each bank is one file in `web/src/theme/themes/`. It sets color, font, and the brand mark. Layout and scoring stay the same (`ARCHITECTURE.md`).
+
+Customizing this repo means editing those files. A new theme is a new file. A new reason is a rationale. A new script is a talk track. Score weights are a different matter: they are frozen at `weights-frozen`, and the golden tests keep using `tests/golden/reference_weights.yaml` (`docs/handoff/000-archive.md`, [A-07]; `WORKFLOW.md` §4). An editor inside the app is **not built yet**.
+
+## Safety and bank concerns
+
+- **A person decides.** The outcome requires a human actor. All four choices stay available while the visit is open. The copilot suggests. It does not approve or deny the withdrawal (`docs/architecture.md` §1, §9).
+- **The level is explainable.** Each flag carries a library rationale. Why this level shows what raised the score and what would lower it. The model cannot write that text (`docs/architecture.md` §5.5, §9; `ARCHITECTURE.md`).
+- **What the score is allowed to use.** The engine's library models have no age, appearance, or customer-name field. Stated purpose routes questions and does not enter the score. A prompt test rejects age, appearance, a teller note, the amount band, and an account reference (`engine/library.py`; `tests/recommenders/test_prompt.py`; `docs/architecture.md` §9, §10.2). One chip is about the person, "unusual for this customer," at weight 8, with no probe and no pattern. Context alone cannot reach High (`library/signals.yaml`; `docs/architecture.md` §6.2, §18.9).
+- **What the demo stores and shows.** The five customer files are synthetic. Name and age band may sit in the payload and are not rendered. The screen says Customer (`ARCHITECTURE.md`). A session stores chips, a purpose category, and answers. It does not store a recording of what the customer said. There is no audio. The default model runs on localhost (`docs/architecture.md` §10.1, §10.3, §15).
+- **The log.** Events sit in SQLite. The database rejects an update to an event, and it rejects deleting events while the session is open. Undo adds a marker. The session row pins the library version the fold used (`store/sqlite.py`; `docs/architecture.md` §4, §10.1). A function can delete closed sessions past a retention window, events first. The API does not call it, so a running purge is **not built yet** (`store/sqlite.py`).
+- **Frozen weights, contract, and goldens.** Tag `weights-frozen` freezes the scoring weights. It is not a freeze of a trained Llama file. This repo uses the published Instruct model. Golden tests compare the engine with `reference_impl.py` and a separate reference weight file, and those expected results are not edited to force a pass. The API contract changes only when both drivers approve a written CHANGE (`WORKFLOW.md` §4–§5; `docs/A08_HELDOUT_RUN.md`).
+- **If the model or the engine is unavailable.** A model call past 1.5 seconds uses the rules for that turn. The server can boot with `RECOMMENDER=rules`, and that path was checked end to end (`docs/architecture.md` §14.2; `docs/DECISIONS.md`, Hour 8). If the API is down, the demo page shows recorded sample data and does not score (`ARCHITECTURE.md`). A recorded log can be replayed (`docs/architecture.md` §14.2).
+- **Compliance review a bank would still do.** Government impersonation, family emergency, and tech support are marked `review: compliance` and include no signals, because the spec named them and did not define them (`library/patterns.yaml`). No legal sign-off is in the repo. That review is **not built yet**.
+
 ## How we built it
 
 HackPSU Fall 2026, 24 hours, two drivers. Driver A is Sebastian (engine and evaluation). Driver B is Jonathan (frontend, platform, and the GPU laptop). They coordinate in `docs/A_TO_B.md` and `docs/B_TO_A.md`. A problem in the other lane goes in `docs/CROSS_LANE.md` and is not fixed in the other lane's files (`docs/ROSTER.md` §2; `WORKFLOW.md` §7).
@@ -213,7 +250,7 @@ Each card or fix is its own branch and pull request. `scripts/gate.sh a` (Python
 
 Conflicts stay rare because ownership is by directory, shared files have one owner, and the contract changes only through the protocol. Handoff notes are one new file per PR under `docs/handoff/`, so parallel notes do not edit the same log. Model jobs take a single GPU lock (`docs/ROSTER.md` §3, §5.3; `docs/HANDOFF.md`).
 
-Merges are serial. A driver merges. As of `e3629f5` (2026-10-25 04:34 ET), `main` has 127 commits and no merge commit with two parents. 126 of those commits are merged pull requests. The first commit is the starter kit. Verified with `git rev-list`, `git log`, and `gh pr list --state merged --base main`.
+Merges are serial. A driver merges each branch after its gate. The lanes own different directories, so those merges are meant to land one at a time (`WORKFLOW.md` §7).
 
 ## Entered in
 
