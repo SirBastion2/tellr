@@ -57,11 +57,11 @@ export function StepSwap({
   return (
     <div className="tc-step-viewport" data-testid={testId} data-motion={dir}>
       {exit ? (
-        <div className="tc-step-swap" data-phase="exit" data-dir={dir}>
+        <div key={`exit-${exit.key}`} className="tc-step-swap" data-phase="exit" data-dir={dir}>
           <Slide title={exit.title} subtitle={exit.subtitle} titleClassName={titleClassName} subtitleClassName={subtitleClassName} />
         </div>
       ) : null}
-      <div className="tc-step-swap" data-phase="enter" data-dir={dir === 'none' ? undefined : dir}>
+      <div key={`enter-${frame.key}`} className="tc-step-swap" data-phase="enter" data-dir={dir === 'none' ? undefined : dir}>
         <Slide
           title={frame.title}
           subtitle={frame.subtitle}
