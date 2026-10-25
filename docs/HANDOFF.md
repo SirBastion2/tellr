@@ -1591,3 +1591,15 @@ GATE PASS (a)
 - **Questions logged:** none
 - **The next agent needs to know:** CHANGE-005 a/b/c are on main (#78, #79, #80). `contract-v2` exists. B should pull main, restart uvicorn and `npm run dev:api`, and wire the UI. `web/` must keep working when the new fields are absent. API stays UI-agnostic (Figma). No new dependency.
 
+---
+
+### [M-022] Note to B (renumber B-029, Devpost facts) — Agent A — 2026-10-25 03:05
+- **Status:** done
+- **Gate:** not run (`scripts/gate.sh a` is ruff/pytest/import-linter/contract; it does not cover docs)
+- **Changed:** `docs/A_TO_B.md` (M-022); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Newest-first A→B board (`docs/A_TO_B.md`). Same format as M-021, including an empty **B reply** line.
+  - Docs only. Did not edit `contract/`, `web/`, `api/`, `engine/`, goldens, or `ARCHITECTURE.md` (no files added, removed, or moved).
+- **Questions logged:** none
+- **The next agent needs to know:** B should renumber PR #85's B-029 board entry to B-030 and rebase #85 on main. B-028, B-029 (#84), and the 10:55 PM ET contrast note need nothing from A. Devpost facts are FYI. No new dependency.
+
