@@ -1,6 +1,20 @@
 ### Remove the Transaction banner — Agent B — 2026-10-25 11:58
 - **Status:** done
-- **Gate:** `scripts/gate.sh a` and `scripts/gate.sh b` — results filled after the run on this branch.
+- **Gate:** `scripts/gate.sh a` → PASS
+  ```
+  216 passed, 1 warning in 29.69s
+  Contracts: 1 kept, 0 broken.
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (a)
+  ```
+  `scripts/gate.sh b` → PASS
+  ```
+  Test Files  58 passed (58)
+  Tests  221 passed (221)
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+  GATE PASS (b)
+  ```
+  Also `npx vitest --run src/home.test.tsx src/privacy.test.tsx` (2 files, 3 tests passed).
 - **Changed:** `web/src/workstation/TransactionPanel.tsx`, `web/src/home.test.tsx`, `web/src/privacy.test.tsx`, `docs/UI_REFERENCE.md`, `README.md`, `ARCHITECTURE.md`, `docs/A_TO_B.md`
 - **Decisions I made, and the section that justified each:**
   - Removed the paragraph under the Transaction heading and did not put another control in its place. The one-page map (`ARCHITECTURE.md`, workstation table) named that line on `TransactionPanel.tsx`. The same line no longer names it, so the next agent does not treat the banner as still required. No file was added or moved; this is the path description for the panel this change edits.
