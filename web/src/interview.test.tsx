@@ -12,6 +12,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { AppShell } from './App'
 import { InterviewScreen } from './screens/InterviewScreen'
 import type { Library, SessionState } from './types'
+import { formatUrgencyScore } from './ui/urgencyScore'
 
 const library = libraryJson as Library
 const fixtures = [t1, t2, t3, t4, t5, t6, t7]
@@ -82,7 +83,7 @@ describe('Interview screen', () => {
           parseFloat(getComputedStyle(level).fontSize),
         )
 
-        expect(screen.getByTestId('risk-score').textContent, where).toBe(String(session.risk.score))
+        expect(screen.getByTestId('risk-score').textContent, where).toBe(formatUrgencyScore(session.risk.score))
 
         const reasons = screen.queryAllByTestId('reason')
         expect(reasons.length, where).toBeLessThanOrEqual(3)
@@ -163,7 +164,7 @@ describe('Interview screen', () => {
     const level = screen.getByTestId('risk-level')
     expect(level.textContent).toBe('Caution')
     expect(level.getAttribute('data-level')).toBe('caution')
-    expect(screen.getByTestId('risk-score').textContent).toBe('16')
+    expect(screen.getByTestId('risk-score').textContent).toBe(formatUrgencyScore(16))
     const active = screen.getAllByTestId('level-slot').find((slot) => slot.getAttribute('data-active') === 'true')
     expect(active?.getAttribute('data-level')).toBe('caution')
     expect(active?.textContent).toBe('Caution')
@@ -257,7 +258,7 @@ describe('Interview screen', () => {
     session.risk.counterpoint = { id: 'mit.sentinel', label: 'SENTINEL_COUNTER', rationale: 'unused' }
     render(<InterviewScreen library={library} session={session} />)
     expect(screen.getByTestId('risk-level').textContent).toBe('High')
-    expect(screen.getByTestId('risk-score').textContent).toBe('3')
+    expect(screen.getByTestId('risk-score').textContent).toBe(formatUrgencyScore(3))
     expect(screen.getByTestId('pattern-label').textContent).toBe('SENTINEL_PATTERN')
     expect(screen.getByTestId('reason').textContent).toBe('SENTINEL_REASON')
     expect(screen.getByTestId('counterpoint').textContent).toContain('In their favor:')

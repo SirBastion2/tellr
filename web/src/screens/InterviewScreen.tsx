@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react'
 import { controlStyle, inputFill, mutedColor, textColor } from '../theme/controls'
 import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { LevelIcon } from '../ui/LevelIcon'
+import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import type { AnswerChipId, AnswerPost, Level, Library, QuestionView, SessionState } from '../types'
 
 const LEVELS: readonly { id: Level; label: string; colour: string }[] = [
@@ -265,8 +266,8 @@ export function InterviewScreen({
                 {session.risk.pattern_label}
               </p>
               <FactGrid>
-                <Fact term="Score" testId="risk-score">
-                  {session.risk.score}
+                <Fact term={URGENCY_SCORE_TERM} testId="risk-score">
+                  {formatUrgencyScore(session.risk.score)}
                 </Fact>
               </FactGrid>
               {session.stated_purpose ? (

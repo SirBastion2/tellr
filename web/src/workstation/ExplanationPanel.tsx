@@ -5,6 +5,7 @@ import { readHealth, type HealthReport } from '../screens/HealthScreen'
 import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { LEVEL_WORD } from '../ui/LevelIcon'
 import { levelLabel, patternValue, recommenderPhrase, suggestedLabel } from '../ui/plain'
+import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import type { Library, SessionState } from '../types'
 import {
   groupFactors,
@@ -127,7 +128,9 @@ export function ExplanationPanel({
           {levelLabel(session.risk.level)}
         </Fact>
         <Fact term="Raw level">{LEVEL_WORD[session.risk.raw_level]}</Fact>
-        <Fact term="Score">{session.risk.score}</Fact>
+        <Fact term={URGENCY_SCORE_TERM} testId="explain-score">
+          {formatUrgencyScore(session.risk.score)}
+        </Fact>
         <Fact term="Pattern">{patternValue(session.risk.pattern_label)}</Fact>
         <Fact term="Suggested outcome">{suggestedLabel(session.suggested_outcome)}</Fact>
       </FactGrid>

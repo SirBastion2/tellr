@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react'
 import { buttonFill, buttonText, controlStyle, inputFill } from '../theme/controls'
 import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
 import { outcomeLabel, suggestedLabel } from '../ui/plain'
+import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import type { OutcomeId, SessionState } from '../types'
 import type { RecordedDecision } from '../teller'
 
@@ -71,6 +72,9 @@ export function OutcomeScreen({
         <>
           <FactGrid label="Suggested outcome">
             <Fact term="Suggested outcome">{suggestedLabel(session.suggested_outcome)}</Fact>
+            <Fact term={URGENCY_SCORE_TERM} testId="outcome-score">
+              {formatUrgencyScore(session.risk.score)}
+            </Fact>
             <Fact term="Questions answered">{session.answers}</Fact>
           </FactGrid>
           <SectionHeading>Teller's decision</SectionHeading>
