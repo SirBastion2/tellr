@@ -228,7 +228,7 @@ export function CopilotStrip({
                       title="Confirm signal (C)"
                       style={primary}
                       disabled={pending}
-                      onClick={() => onConfirm(chipId)}
+                      onClick={() => onConfirm?.(chipId)}
                     >
                       <CheckIcon />
                     </button>
@@ -241,7 +241,7 @@ export function CopilotStrip({
                       title="Dismiss signal (D)"
                       style={iconButton}
                       disabled={pending}
-                      onClick={() => onDismiss(chipId)}
+                      onClick={() => onDismiss?.(chipId)}
                     >
                       <DismissIcon />
                     </button>
