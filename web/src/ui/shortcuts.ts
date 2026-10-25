@@ -22,6 +22,19 @@ const KEYS: Readonly<Record<string, Exclude<DemoShortcut, 'escape'>>> = {
   ']': 'next-customer',
 }
 
+function contentEditableValue(el: HTMLElement): string | null {
+  const attr = el.getAttribute('contenteditable')
+  if (attr !== null) {
+    return attr.trim().toLowerCase()
+  }
+  return el.isContentEditable ? 'true' : null
+}
+
+function isContentEditableElement(el: HTMLElement): boolean {
+  const value = contentEditableValue(el)
+  return value === '' || value === 'true' || value === 'plaintext-only'
+}
+
 export function isEditableTarget(target: EventTarget | null): boolean {
   if (
     target instanceof HTMLInputElement ||
@@ -33,12 +46,17 @@ export function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) {
     return false
   }
-  if (target.isContentEditable) {
+  if (isContentEditableElement(target)) {
     return true
   }
-  return Boolean(
-    target.closest('[contenteditable=""], [contenteditable="true"], [contenteditable="plaintext-only"]'),
-  )
+  let parent = target.parentElement
+  while (parent) {
+    if (isContentEditableElement(parent)) {
+      return true
+    }
+    parent = parent.parentElement
+  }
+  return false
 }
 
 export function hasShortcutModifier(event: Pick<KeyboardEvent, 'altKey' | 'ctrlKey' | 'metaKey'>): boolean {
