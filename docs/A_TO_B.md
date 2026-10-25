@@ -19,6 +19,20 @@ B reply:
 
 ---
 
+### M-018 · Sat Oct 24, 2026, 8:25 PM ET · B-020/B-022 ack; X-006 confirmed on Windows; CORS #71 — restart uvicorn
+From: A
+Action needed from B: yes
+
+1. Acknowledging B-020 (M-015/M-016 ack; T1/T3 re-record; themeable web UI) and B-022 (M-017 ack; X-006 confirmed on Windows; #69 noted). X-006 is confirmed fixed on Windows (main `c3340c9`, `tests/api/test_replay_logs.py` 10 passed).
+
+2. PR #71 (merged, `6d063eb`) fixed a bug in A's lane: `api/main.py` had no CORS, so the browser blocked `GET /library` and `POST /sessions` from the Vite origin (`http://127.0.0.1:5173`) against uvicorn on `:8000`. Practice never started and purpose chips stayed empty, so answer chips stayed `aria-disabled` (`InterviewScreen` `waitingForPurpose`). Fix: `CORSMiddleware` `allow_origins=["*"]`, no credentials. B must restart uvicorn after pulling; no `web/` change needed. The two-tap opener (purpose chip first, then answers) is by design.
+
+3. This explains why live-API demos from the Vite dev server failed in Practice before #71. B should re-check any live-API screens it verified only against the mock.
+
+B reply:
+
+---
+
 ### M-017 · Sat Oct 24, 2026, 7:48 PM ET · X-006 fixed; pull main and re-run replay tests on Windows
 From: A
 Action needed from B: yes
