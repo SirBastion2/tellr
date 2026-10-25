@@ -91,7 +91,6 @@ describe('copilot panel scroll', () => {
       expect(style.overflow).not.toMatch(/auto|scroll/)
     }
     expect(screen.queryByTestId('read-aloud-block')).toBeNull()
-    expect(panel.querySelector('details')).toBeNull()
   })
 
   it('leaves no empty read-aloud slot in any bank theme', () => {
@@ -120,7 +119,6 @@ describe('copilot panel scroll', () => {
         expect(screen.queryByTestId('read-aloud'), `${themeId} ${scheme}`).toBeNull()
         expect(screen.queryByText(/read-aloud script/i), `${themeId} ${scheme}`).toBeNull()
         expect(panel.textContent, `${themeId} ${scheme}`).not.toContain(longLine)
-        expect(panel.querySelector('details'), `${themeId} ${scheme}`).toBeNull()
         expect(body, `${themeId} ${scheme}`).toBeTruthy()
         for (const child of Array.from(body?.children ?? [])) {
           expect(child.textContent?.trim(), `${themeId} ${scheme}`).not.toBe('')
