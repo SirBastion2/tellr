@@ -80,6 +80,7 @@ describe('shared type hierarchy', () => {
 
     const value = rule(source, '.tc-fact-value')
     expect(value).toMatch(/font-weight:\s*var\(--tc-strong-weight/)
+    expect(source).toMatch(/\.tc-fact-value > \.tc-prose\s*\{[^}]*font-weight:\s*inherit/)
 
     const kvTerm = rule(source, '.tc-kv dt')
     expect(kvTerm).toMatch(/font-size:\s*var\(--tc-text-sm/)
@@ -116,6 +117,10 @@ describe('shared type hierarchy', () => {
     expect(grid?.querySelector('dt')?.className).toContain('tc-fact-term')
     expect(grid?.querySelector('dd')?.className).toContain('tc-fact-value')
     expect(screen.getByTestId('txn-amount').className).toContain('tc-amount')
+    const memo = screen.getByText('Says a contractor needs cash today')
+    const memoProse = memo.closest('.tc-prose')
+    expect(memoProse?.parentElement?.className).toContain('tc-fact-value')
+    expect(memoProse?.parentElement?.closest('dl')).toBe(grid)
     expect(screen.getByRole('heading', { name: 'Transaction' }).className).toContain('tc-title')
     expect(screen.getByRole('heading', { name: 'Timeline' }).className).toContain('tc-section-heading')
     const eventCaption = screen.getByText(/Event 0 of/)
