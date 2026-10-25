@@ -30,8 +30,11 @@ const DISPATCH: Readonly<Record<DemoShortcut, keyof DemoShortcutHandlers>> = {
 }
 
 /**
- * One window listener for the demo keys. Mount from the app shell so every
- * route (Home, Outcome, Handoff) shares the same handler.
+ * One window listener for the demo keys, on the capture path. Mount from the
+ * app shell so every route shares it. Capture runs before a focused button
+ * can stop the event, so a click on a toolbar, scheme, or chip control does
+ * not silence the keys. Enter and Space are not demo keys, so they are left
+ * alone and still activate that button.
  */
 export function useDemoShortcuts(handlers: DemoShortcutHandlers): void {
   const ref = useRef(handlers)
@@ -50,7 +53,7 @@ export function useDemoShortcuts(handlers: DemoShortcutHandlers): void {
       }
       ref.current[DISPATCH[action]]()
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
   }, [])
 }

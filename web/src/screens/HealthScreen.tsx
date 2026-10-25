@@ -139,9 +139,6 @@ export function HealthScreen() {
   return (
     <section data-testid="health-screen" className="tc-card">
       <PageTitle>Health</PageTitle>
-      <p data-testid="health-config-note" className="tc-prose">
-        The decision engine follows the setup from startup. This screen does not change it.
-      </p>
       {load.kind === 'unavailable' ? (
         <p data-testid="health-unavailable" className="tc-prose">
           Health is unavailable.

@@ -1,0 +1,15 @@
+### [docs] README team voice — Agent — 2026-10-25 10:17
+- **Status:** done
+- **Gate:** not run. `scripts/gate.sh` does not read `README.md`.
+- **Changed:** `README.md`, `docs/handoff/20261025-1017-readme-team-voice.md`
+- **Decisions I made, and the section that justified each:**
+  - Team voice in "How we built it with Cursor". Names stay only in the byline. Benchmarks stay on an RTX 5070 Laptop because that section names that machine.
+  - Cap of 12 is the existing team cap. GitHub (`gh pr list --state all`, 2026-10-25) shows 152 merged pull requests and a peak of 9 open at once. The README says open pull requests peaked at 9, and "more than 150 have merged," so the merged count does not go stale. The check found 152. The clock time and the same-second claim are not. Agent-launch count, a measured peak of 12, and archiving agents after delivery are not in the repo, so they are not claimed. "Merge only at phase ends" is the written plan; the history is continuous, so the README says one pull request at a time.
+  - Roster plan of four builders, a fifth only after shared screen files settle, fresh chat when stuck, and a one-time held-out writer are from `docs/ROSTER.md` and `WORKFLOW.md`.
+  - Heading is `## Why a Teller Copilot`. Jump target is `#why-a-teller-copilot`.
+  - Demo scripts do post answer taps on the three coached files (`web/src/demo/customers.ts`, `web/src/App.tsx`). The README says that. "Told not to discuss with the bank" is a signal name, not a chip label. The chip example used is "Mentions urgency, secrecy, or being told what to say."
+  - The only `<input>` in `web/src` screens is Teller name (`web/src/screens/OutcomeScreen.tsx`). `postOutcome` stores that name and does not send it to the model. `build_prompt` rejects a `note` field (`engine/prompt.py`, `tests/recommenders/test_prompt.py`). This UI never sends a note (`web/src/teller.tsx`).
+  - Outcome buttons render `available_outcomes` with `disabled={false}`. The engine always sends all four (`engine/reduce.py`).
+- **Questions logged:** none
+- **The next agent needs to know:** Do not edit `docs/HANDOFF.md`. Do not put Sebastian or Jonathan back into the README body. The leak sentence is only in "In 30 seconds." "How a teller uses it" links there.
+- **Review pass:** "Told not to discuss with the bank" is the signal name in `library/signals.yaml` (`sig.secrecy_bank`), not a chip label. The chip a teller taps is "Mentions urgency, secrecy, or being told what to say" (`library/chips.yaml`). The README says that. Open pull requests peaked at 9, rechecked with `gh pr list --state all` on 2026-10-25. The README says "more than 150 have merged" instead of the exact count. The third intro sentence now says the model runs on the same computer as Tellr by default, not that it runs on the bank's own computer. The UTC clock time and "no two landed in the same second" were removed. `scripts/gate.sh` was not run.

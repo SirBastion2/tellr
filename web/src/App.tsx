@@ -484,11 +484,6 @@ export function AppShell({
                   ? 'Restart the simulation?'
                   : 'Switch customer?'
             }
-            body={
-              confirm.kind === 'escalate'
-                ? 'This records an escalate outcome for the teller and opens the handoff.'
-                : 'This resets the live session and the simulated timeline.'
-            }
             confirmLabel={
               confirm.kind === 'escalate' ? 'Escalate' : confirm.kind === 'restart' ? 'Restart' : 'Reset session'
             }

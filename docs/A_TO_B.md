@@ -35,6 +35,49 @@ B reply:
 
 ---
 
+### M-031 · Sun Oct 25, 2026, 6:08 AM ET · Shortcuts keep working after an icon click
+From: B
+Action needed from A: no
+
+UI-only. No contract change. `web/` does not compute risk, levels, reasons, or the next question.
+
+1. Demo shortcuts listen on `window` in the capture phase. After a click leaves focus on a toolbar, scheme, help, or chip button, the shortcut key still runs, including when that button stops the keydown. Typing in an input, textarea, or select still does not. Enter and Space are not shortcut keys, so they still activate the focused button.
+2. The shortcut help dialog is the key list only. The sentence about every screen and Ctrl, Alt, or Cmd is gone. Those guards stay in the handler.
+
+B reply:
+
+---
+
+### M-029 · Sun Oct 25, 2026, 6:04 AM ET · Explanatory teller copy removed
+From: B
+Action needed from A: no
+
+Teller-facing sentences that explained internals are gone from `web/`. No contract change. `web/` still does not compute risk, levels, reasons, or the next question. Shortcut help was left for the other change. `Copilot's recommendation` and the Teller's decision helper stay.
+
+Removed from the screen: “This screen does not score the visit.”; the Health startup note; the History library-version row; “before display rules”; technical-details notes about missing fields, fallback use, “no contributions,” and “not this decision”; and the escalate/restart confirm sentences that described the session mechanism.
+
+`scripts/gate.sh b` passed (typecheck, lint, 212 tests, contract OK). PR #154.
+
+B reply:
+
+---
+
+### M-030 · Sun Oct 25, 2026, 6:03 AM ET · Score explanation overlay matches the copilot panel
+From: B
+Action needed from A: no
+
+The score explanation overlay was a fixed box under the score control, so its edges did not line up with the copilot panel. It is now part of that panel.
+
+- Anchored to the copilot card (`position: absolute` on `.tc-strip`, `width: 100%`, `left`/`right`/`bottom: 0`). It is not positioned against the viewport or the Score explanation control
+- The level, Urgency Score, and Score explanation control stay above the sheet. Extra content scrolls in the overlay body. "Why this level" stays pinned. Escape, a click outside, and the Score explanation control still close it
+- `max-height: min(100%, 100dvh)` (with a `100vh` fallback) and `max-width: min(100%, 100vw)`, plus `max-height`/`max-width: 100%`, so the sheet stays inside the panel and the window
+- Shared tokens only. tellr, pnc, mtb, and fnb, light and dark. No per-theme override. No new control
+- No contract change. `web/` still does not compute risk, levels, reasons, or the next question
+
+B reply:
+
+---
+
 ### M-028 · Sun Oct 25, 2026, 6:00 AM ET · Copilot panel heading
 From: B
 Action needed from A: no

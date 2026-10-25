@@ -133,7 +133,8 @@ describe('workstation answers', () => {
     expect(screen.getByTestId('explain-level').textContent).toBe('Caution')
     expect(screen.getByTestId('explain-raw-level').textContent).toBe('High')
     fireEvent.click(screen.getByRole('button', { name: 'Score explanation' }))
-    expect(screen.getByText('Raw level (before display rules)')).toBeTruthy()
+    expect(screen.getByText('Raw level')).toBeTruthy()
+    expect(screen.queryByText(/before display rules/)).toBeNull()
   })
 
   it('keeps teller confirm and deny on the copilot chips, not on Why this level', () => {

@@ -37,26 +37,68 @@ function isContentEditableElement(el: HTMLElement): boolean {
   return value === '' || value === 'true' || value === 'plaintext-only'
 }
 
-export function isEditableTarget(target: EventTarget | null): boolean {
-  if (
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLTextAreaElement ||
-    target instanceof HTMLSelectElement
-  ) {
+/** Button-like inputs activate on Enter/Space. They are not text fields. */
+const BUTTON_INPUT_TYPES = new Set(['button', 'submit', 'reset', 'image'])
+
+function hostElement(target: EventTarget | null): Element | null {
+  if (target instanceof Element) {
+    return target
+  }
+  if (target instanceof Text) {
+    return target.parentElement
+  }
+  return null
+}
+
+function isTextEntry(el: Element): boolean {
+  if (el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) {
     return true
   }
-  if (!(target instanceof HTMLElement)) {
+  if (el instanceof HTMLInputElement) {
+    return !BUTTON_INPUT_TYPES.has(el.type)
+  }
+  return false
+}
+
+function hasEditableAttribute(el: HTMLElement): boolean {
+  if (el.getAttribute('contenteditable') === null) {
     return false
   }
-  if (isContentEditableElement(target)) {
+  return isContentEditableElement(el)
+}
+
+/**
+ * A focused button, link, or summary is not a text field. Stop there so a click
+ * that leaves focus on the control does not look like typing.
+ */
+function isActivationControl(el: Element): boolean {
+  const tag = el.tagName
+  if (tag === 'BUTTON' || tag === 'A' || tag === 'SUMMARY') {
     return true
   }
-  let parent = target.parentElement
-  while (parent) {
-    if (isContentEditableElement(parent)) {
+  if (el instanceof HTMLInputElement && BUTTON_INPUT_TYPES.has(el.type)) {
+    return true
+  }
+  const role = el.getAttribute('role')
+  return role === 'button' || role === 'link'
+}
+
+export function isEditableTarget(target: EventTarget | null): boolean {
+  let current = hostElement(target)
+  while (current) {
+    if (isTextEntry(current)) {
       return true
     }
-    parent = parent.parentElement
+    if (current instanceof HTMLElement && hasEditableAttribute(current)) {
+      return true
+    }
+    if (isActivationControl(current)) {
+      return false
+    }
+    if (current instanceof HTMLElement && current.isContentEditable) {
+      return true
+    }
+    current = current.parentElement
   }
   return false
 }
@@ -65,7 +107,7 @@ export function hasShortcutModifier(event: Pick<KeyboardEvent, 'altKey' | 'ctrlK
   return event.altKey || event.ctrlKey || event.metaKey
 }
 
-/** Map a keydown to a demo action. Escape always wins; typing and Ctrl/Cmd/Alt skip the rest. */
+/** Map a keydown to a demo action. Escape always wins. Typing and Ctrl/Cmd/Alt skip the rest. A focused button does not. */
 export function readDemoShortcut(event: KeyboardEvent): DemoShortcut | null {
   if (event.key === 'Escape') {
     return 'escape'

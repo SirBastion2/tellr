@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { createPortal } from 'react-dom'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { ANSWER_ORIGIN, answerSignalRows } from '../answerSignals'
 import { listedChipIds, notesOnlyChip, originText, sourceForChip } from '../feed'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
@@ -100,6 +99,8 @@ export function CopilotStrip({
   const [wasIdle, setWasIdle] = useState(idle)
   const toggleRef = useRef<HTMLButtonElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
+  const stripRef = useRef<HTMLElement>(null)
+  const pinRef = useRef<HTMLDivElement>(null)
   if (idle !== wasIdle) {
     setWasIdle(idle)
     if (idle) {
@@ -152,24 +153,21 @@ export function CopilotStrip({
     }
   }, [open])
 
-  useEffect(() => {
-    const node = overlayRef.current
-    const theme = document.querySelector<HTMLElement>('[data-testid="theme-root"]')
-    if (!node || !theme) {
+  useLayoutEffect(() => {
+    const strip = stripRef.current
+    const pin = pinRef.current
+    if (!strip || !pin) {
       return
     }
-    const copyTheme = () => {
-      for (let index = 0; index < theme.style.length; index += 1) {
-        const key = theme.style.item(index)
-        if (key.startsWith('--')) {
-          node.style.setProperty(key, theme.style.getPropertyValue(key))
-        }
-      }
+    const sync = () => {
+      const top = pin.getBoundingClientRect().bottom - strip.getBoundingClientRect().top - strip.clientTop
+      strip.style.setProperty('--tc-explain-pin', `${Math.max(0, top)}px`)
     }
-    copyTheme()
-    const observer = new MutationObserver(copyTheme)
-    observer.observe(theme, { attributes: true, attributeFilter: ['style'] })
-    return () => observer.disconnect()
+    sync()
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(sync)
+    observer?.observe(pin)
+    observer?.observe(strip)
+    return () => observer?.disconnect()
   }, [idle, session])
 
   if (idle) {
@@ -210,6 +208,7 @@ export function CopilotStrip({
 
   return (
     <aside
+      ref={stripRef}
       aria-label="Copilot"
       data-testid="copilot-strip"
       className="tc-strip"
@@ -225,7 +224,7 @@ export function CopilotStrip({
       ) : null}
       <div className="tc-strip-body" data-dimmed={pending ? 'true' : 'false'}>
       <CopilotHeading />
-      <div style={{ minWidth: 0 }}>
+      <div className="tc-copilot-pin" ref={pinRef}>
         <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0 }}>
           <LevelIcon level={level} />{LEVEL_WORD[level]}
         </p>
@@ -265,26 +264,6 @@ export function CopilotStrip({
         <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
           {reason}
         </p>
-        <div className="tc-explain-anchor" />
-        {createPortal(
-          <div
-            id="score-explanation-overlay"
-            data-testid="score-explanation-overlay"
-            className="tc-explain-overlay"
-            hidden={!open}
-            ref={overlayRef}
-          >
-            <div className="tc-explain-overlay-body">
-              <ExplanationPanel
-                library={library}
-                session={session}
-                postedChipIds={postedChipIds}
-                activity={activity}
-              />
-            </div>
-          </div>,
-          document.body,
-        )}
       </div>
       <div
         className="tc-block"
@@ -437,6 +416,22 @@ export function CopilotStrip({
           </button>
         </div>
       )}
+      <div
+        id="score-explanation-overlay"
+        data-testid="score-explanation-overlay"
+        className="tc-explain-overlay"
+        hidden={!open}
+        ref={overlayRef}
+      >
+        <div className="tc-explain-overlay-body">
+          <ExplanationPanel
+            library={library}
+            session={session}
+            postedChipIds={postedChipIds}
+            activity={activity}
+          />
+        </div>
+      </div>
       </div>
     </aside>
   )
