@@ -385,7 +385,7 @@ button[data-loading='true'],
   min-height: 32px;
   line-height: 1.2;
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: var(--tc-type-pill, 0.875rem);
   background: var(--tc-chip-bg, #111827);
   color: var(--tc-chip-fg, #f9fafb);
 }
@@ -436,7 +436,7 @@ button[data-loading='true'],
   min-height: 32px;
   line-height: 1.2;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: var(--tc-type-pill, 0.875rem);
 }
 
 .tc-header-nav {
@@ -524,6 +524,13 @@ button[data-loading='true'],
 .tc-page-card {
   width: 100%;
   max-width: 100%;
+}
+
+.tc-theme-page {
+  overflow-x: clip;
+  overflow-clip-margin: var(--tc-space-2, 8px);
+  max-width: 100%;
+  min-width: 0;
 }
 
 .tc-footer {
@@ -751,6 +758,7 @@ html[data-color-scheme='light'] select option:checked,
   --tc-type-amount: clamp(1.22rem, 1.3vw, 1.5rem);
   --tc-type-level: clamp(0.95rem, 0.48vw + 0.82rem, 1.15rem);
   --tc-type-action: clamp(1.1rem, 1.1vw, 1.5rem);
+  --tc-type-pill: 0.875rem;
   --tc-space-workstation: clamp(10px, 1.3vw, 20px);
   --tc-space-card-fluid: clamp(10px, 1vw, 16px);
   --tc-space-strip: clamp(10px, 1vw, 13px);
@@ -761,6 +769,7 @@ html[data-color-scheme='light'] select option:checked,
   --tc-space-3: 12px;
   --tc-space-4: 16px;
   --tc-space-5: 24px;
+  --tc-space-gap: 12px;
   --tc-space-header: 8px;
   --tc-space-header-content: 16px;
   --tc-space-heading-body: 8px;

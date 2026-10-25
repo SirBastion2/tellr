@@ -66,4 +66,10 @@ export const DENSITY = {
   spaceBodyControl: '12px',
   spaceControlPadY: '8px',
   spaceControlPadX: '12px',
+  /** Shared gap after per-bank 13/11/8/13 overrides were removed. */
+  spaceGap: '12px',
+  /** Simulation and connection pills share this size. */
+  typePill: '0.875rem',
+  /** Room for a 2px outline + 2px offset + 3px ring outside the clip edge. */
+  focusClip: '8px',
 } as const

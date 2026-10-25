@@ -27,6 +27,8 @@ export function darkPalette(theme: BankTheme): ThemePalette {
     quoteFg: theme.quoteFg,
     quoteBorder: theme.quoteBorder,
     focus: theme.focus,
+    highlightBg: theme.highlightBg,
+    highlightFg: theme.highlightFg,
   }
 }
 
@@ -63,5 +65,7 @@ export function themeForScheme(theme: BankTheme, scheme: 'light' | 'dark'): Bank
     quoteFg: light.quoteFg,
     quoteBorder: light.quoteBorder,
     focus: light.focus,
+    highlightBg: light.highlightBg,
+    highlightFg: light.highlightFg,
   }
 }

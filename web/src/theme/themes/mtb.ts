@@ -44,7 +44,7 @@ export const theme: BankTheme = {
   border: { width: '1px', style: 'solid' },
   shadow: { card: '0 18px 40px rgba(8, 40, 28, 0.35)' },
   density: 'regular',
-  space: { gap: '11px', cardPadding: '15px' },
+  space: { cardPadding: '15px' },
   background: {
     color: '#0E3B2E',
     image: `${cssUrl(weaveUrl)}, radial-gradient(ellipse at 18% 0%, rgba(214, 240, 220, 0.22) 0%, rgba(214, 240, 220, 0) 48%), linear-gradient(165deg, #0c3329 0%, #124d3b 46%, #1a6b4c 100%)`,
@@ -72,6 +72,8 @@ export const theme: BankTheme = {
   ...DARK_CONTROLS,
   link: '#D1FAE5',
   surface: '#0E3B2E',
+  highlightBg: '#D1FAE5',
+  highlightFg: '#0E3B2E',
   light: {
     wordmarkColor: '#0E3B2E',
     background: {
@@ -98,5 +100,7 @@ export const theme: BankTheme = {
     ...SOLID_CONTROLS,
     link: '#0E3B2E',
     surface: '#F7FFF9',
+    highlightBg: '#D1FAE5',
+    highlightFg: '#0E3B2E',
   },
 }

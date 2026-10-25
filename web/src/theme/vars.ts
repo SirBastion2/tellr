@@ -30,7 +30,7 @@ export function themeVars(theme: BankTheme): Record<string, string> {
     '--tc-border-width': theme.border.width,
     '--tc-border-style': theme.border.style,
     '--tc-shadow-card': theme.shadow.card,
-    '--tc-space-gap': theme.space.gap,
+    '--tc-space-gap': DENSITY.spaceGap,
     '--tc-space-card': theme.space.cardPadding,
     '--tc-type-title': DENSITY.typeTitle,
     '--tc-type-section': DENSITY.typeSection,
@@ -39,6 +39,7 @@ export function themeVars(theme: BankTheme): Record<string, string> {
     '--tc-type-amount': DENSITY.typeAmount,
     '--tc-type-level': DENSITY.typeLevel,
     '--tc-type-action': DENSITY.typeAction,
+    '--tc-type-pill': DENSITY.typePill,
     '--tc-space-workstation': DENSITY.spaceWorkstation,
     '--tc-space-strip': DENSITY.spaceStrip,
     '--tc-space-1': DENSITY.space1,
@@ -73,5 +74,7 @@ export function themeVars(theme: BankTheme): Record<string, string> {
     '--tc-quote-fg': theme.quoteFg,
     '--tc-quote-border': theme.quoteBorder,
     '--tc-focus': theme.focus,
+    '--tc-highlight': theme.highlightBg,
+    '--tc-highlight-fg': theme.highlightFg,
   }
 }

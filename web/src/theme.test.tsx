@@ -45,7 +45,12 @@ describe('theme selection', () => {
       expect(theme?.radius.control.length, id).toBeGreaterThan(0)
       expect(theme?.border.width.length, id).toBeGreaterThan(0)
       expect(theme?.shadow.card.length, id).toBeGreaterThan(0)
-      expect(theme?.space.gap.length, id).toBeGreaterThan(0)
+      expect(theme?.space.cardPadding.length, id).toBeGreaterThan(0)
+      expect(theme?.space, id).not.toHaveProperty('gap')
+      expect(theme?.highlightBg.length, id).toBeGreaterThan(0)
+      expect(theme?.highlightFg.length, id).toBeGreaterThan(0)
+      expect(theme?.light.highlightBg.length, id).toBeGreaterThan(0)
+      expect(theme?.light.highlightFg.length, id).toBeGreaterThan(0)
       expect(theme?.glass.fallback.length, id).toBeGreaterThan(0)
       expect(theme?.risk.clearFg.length, id).toBeGreaterThan(0)
       for (const image of [theme?.background.image ?? '', theme?.light.background.image ?? '']) {

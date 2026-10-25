@@ -45,7 +45,7 @@ export const theme: BankTheme = {
   border: { width: '1px', style: 'solid' },
   shadow: { card: '0 28px 70px rgba(0, 0, 0, 0.28)' },
   density: 'comfortable',
-  space: { gap: '13px', cardPadding: '18px' },
+  space: { cardPadding: '18px' },
   background: {
     color: '#0B1026',
     image:
@@ -74,6 +74,8 @@ export const theme: BankTheme = {
   ...DARK_CONTROLS,
   link: '#E0E7FF',
   surface: '#1E1B4B',
+  highlightBg: '#C7D2FE',
+  highlightFg: '#1E1B4B',
   light: {
     wordmarkColor: '#312E81',
     background: {
@@ -101,5 +103,7 @@ export const theme: BankTheme = {
     ...SOLID_CONTROLS,
     link: '#312E81',
     surface: '#FFFFFF',
+    highlightBg: '#E0E7FF',
+    highlightFg: '#1E1B4B',
   },
 }

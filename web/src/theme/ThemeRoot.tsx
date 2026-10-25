@@ -37,6 +37,7 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
     >
       <div
         data-testid="theme-page"
+        className="tc-theme-page"
         style={{
           minHeight: '100vh',
           boxSizing: 'border-box',
@@ -46,7 +47,8 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
           justifyContent: 'flex-start',
           maxWidth: '100%',
           minWidth: 0,
-          overflowX: 'hidden',
+          overflowX: 'clip',
+          overflowClipMargin: DENSITY.focusClip,
           padding: `${DENSITY.pagePadY} ${DENSITY.pagePadX} ${DENSITY.pagePadBottom}`,
           gap: DENSITY.spaceWorkstation,
         }}

@@ -78,6 +78,7 @@ function checkPalette(label: string, palette: ThemePalette) {
   expect(contrast(palette.risk.clearFg, palette.risk.clearBg), `${label} clear`).toBeGreaterThanOrEqual(4.5)
   expect(contrast(palette.risk.cautionFg, palette.risk.cautionBg), `${label} caution`).toBeGreaterThanOrEqual(4.5)
   expect(contrast(palette.risk.highFg, palette.risk.highBg), `${label} high`).toBeGreaterThanOrEqual(4.5)
+  expect(contrast(palette.highlightFg, palette.highlightBg), `${label} outcome highlight`).toBeGreaterThanOrEqual(4.5)
 }
 
 describe('theme contrast', () => {

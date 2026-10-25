@@ -39,7 +39,6 @@ export type BankTheme = {
   }
   density: ThemeDensity
   space: {
-    gap: string
     cardPadding: string
   }
   background: ThemeBackground
@@ -86,6 +85,9 @@ export type BankTheme = {
   quoteFg: string
   quoteBorder: string
   focus: string
+  /** Suggested-outcome highlight. Paired with `highlightFg` for AA contrast. */
+  highlightBg: string
+  highlightFg: string
   /** Light-mode palette. Top-level color fields are the dark palette. */
   light: ThemePalette
 }
@@ -117,4 +119,6 @@ export type ThemePalette = {
   quoteFg: string
   quoteBorder: string
   focus: string
+  highlightBg: string
+  highlightFg: string
 }

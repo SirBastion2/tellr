@@ -22,7 +22,7 @@ import { NotFoundScreen } from './screens/NotFoundScreen'
 import { OutcomeScreen } from './screens/OutcomeScreen'
 import { TellerProvider, useTeller, type RecordedDecision } from './teller'
 import { controlStyle, secondaryStyle } from './theme/controls'
-import { type ColorChoice } from './theme/scheme'
+import { type ColorChoice, useSchemeCompact } from './theme/scheme'
 import { ThemeProvider, useColorScheme, useThemeActions } from './theme/ThemeProvider'
 import { ThemeRoot } from './theme/ThemeRoot'
 import { ThemeWordmark } from './theme/Wordmark'
@@ -85,7 +85,7 @@ function SchemeToggle() {
 function SchemeMenu() {
   const { choice, setChoice } = useColorScheme()
   return (
-    <label className="tc-scheme-menu">
+    <label className="tc-scheme-menu" style={{ display: 'inline-flex', alignItems: 'center' }}>
       <span className="tc-sr">Color scheme</span>
       <select
         data-testid="scheme-menu"
@@ -173,6 +173,8 @@ export function AppShell({
 }) {
   const location = useLocation()
   const presenter = usePresenter()
+  const [header, setHeader] = useState<HTMLElement | null>(null)
+  const schemeCompact = useSchemeCompact(header)
   const workstation = location.pathname === '/' && Boolean(demo)
   const routes = presenter.on ? APP_ROUTES.filter((route) => !PRESENTER_HIDDEN_ROUTES.has(route.id)) : APP_ROUTES
   const simulationTitle = demo ? (customerById(demo.customerId)?.title ?? null) : null
@@ -201,6 +203,7 @@ export function AppShell({
           Skip to content
         </a>
         <header
+          ref={setHeader}
           className="tc-header"
           data-testid="app-header"
           style={{
@@ -279,8 +282,7 @@ export function AppShell({
               )
             })}
           </nav>
-          <SchemeToggle />
-          <SchemeMenu />
+          {schemeCompact ? <SchemeMenu /> : <SchemeToggle />}
           <button
             type="button"
             className="tc-btn"

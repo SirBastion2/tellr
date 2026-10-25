@@ -14,9 +14,6 @@ const OUTCOME_LABEL: Record<OutcomeId, string> = {
   report: 'Report',
 }
 
-const HIGHLIGHT = '#fef3c7'
-const SUGGESTED_INK = '#1c1917'
-
 const tap: CSSProperties = controlStyle
 
 export function OutcomeScreen({
@@ -97,9 +94,9 @@ export function OutcomeScreen({
                     aria-pressed={chosen === outcome}
                     style={{
                       ...tap,
-                      backgroundColor: highlighted ? HIGHLIGHT : 'transparent',
-                      color: highlighted ? SUGGESTED_INK : tap.color,
-                      borderColor: highlighted ? SUGGESTED_INK : undefined,
+                      backgroundColor: highlighted ? 'var(--tc-highlight)' : 'transparent',
+                      color: highlighted ? 'var(--tc-highlight-fg)' : tap.color,
+                      borderColor: highlighted ? 'var(--tc-highlight-fg)' : undefined,
                     }}
                   >
                     {OUTCOME_LABEL[outcome]}

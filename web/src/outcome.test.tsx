@@ -19,8 +19,6 @@ const LABELS: Record<OutcomeId, string> = {
   escalate: 'Escalate',
   report: 'Report',
 }
-const HIGHLIGHT = 'rgb(254, 243, 199)'
-
 function asSession(response: unknown): SessionState {
   return response as SessionState
 }
@@ -46,15 +44,16 @@ describe('Outcome screen', () => {
           expect(button.getAttribute('data-highlighted'), where).toBe(highlighted ? 'true' : 'false')
           expect(button.getAttribute('data-suggested'), where).toBe(highlighted ? 'true' : 'false')
           if (highlighted) {
-            expect(getComputedStyle(button).backgroundColor, where).toBe(HIGHLIGHT)
+            expect(button.getAttribute('style'), where).toContain('var(--tc-highlight)')
+            expect(button.getAttribute('style'), where).toContain('var(--tc-highlight-fg)')
           } else {
-            expect(getComputedStyle(button).backgroundColor, where).not.toBe(HIGHLIGHT)
+            expect(button.getAttribute('style') ?? '', where).not.toContain('var(--tc-highlight)')
           }
         }
 
         const report = screen.getByTestId('outcome-report')
         expect(report.getAttribute('data-highlighted'), where).toBe('false')
-        expect(getComputedStyle(report).backgroundColor, where).not.toBe(HIGHLIGHT)
+        expect(report.getAttribute('style') ?? '', where).not.toContain('var(--tc-highlight)')
         unmount()
       }
     }
@@ -68,7 +67,7 @@ describe('Outcome screen', () => {
       const button = screen.getByTestId(`outcome-${outcome}`)
       expect((button as HTMLButtonElement).disabled).toBe(false)
       expect(button.getAttribute('data-highlighted')).toBe('false')
-      expect(getComputedStyle(button).backgroundColor).not.toBe(HIGHLIGHT)
+      expect(button.getAttribute('style') ?? '').not.toContain('var(--tc-highlight)')
     }
   })
 
