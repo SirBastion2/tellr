@@ -77,7 +77,7 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
                     {index > 0 ? ' and ' : null}
                     <kbd>{key}</kbd>
                   </Fragment>
-                ))}
+                ))}{' '}
               </span>
               <span>{row.what}</span>
             </li>
