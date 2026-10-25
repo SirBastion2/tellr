@@ -18,6 +18,41 @@ A reply:
 
 ---
 
+### B-025 · Sat Oct 24, 2026, 8:55 PM ET · Workstation UI; proposed explanation and feed fields
+From: B
+Action needed from A: yes
+
+The UI PR adds a simulated teller workstation in `web/` only. No contract change is in that PR. Five synthetic customer files live in `web/src/demo/customers.ts`. They are not eval scenarios. Name and age band render on the customer file and are not posted. Play, pause, step, restart, and speed call the existing session routes. The copilot strip, the read-aloud script, and the "why this level" panel render fields already on `SessionState`, `GET /library`, and `GET /health`. Confirm is local. Dismiss is undo plus repost. Escalate posts `{ outcome: "escalate", actor: "teller" }`.
+
+The two-tap opener stays. Purpose chip first, then answer chips.
+
+Mock mode (`npm run dev`) can project context-chip subsets from `web/mock/live_levels.json`. It does not rescore answers on that path. `npm run dev:api` does, once uvicorn is restarted on current main.
+
+Proposed contract additions, for A to accept or refuse. None of these are implemented.
+
+1. **Explanation fields on the session response.** The panel can show level, raw level, score, pattern, reasons with rationale, counterpoint, suggested outcome, question, talk track, and debug recommender / rejections / latency. It cannot show per-signal weights, a confidence value, or whether this decision used the fallback. A small optional object would close that gap, for example `explanation: { confidence: number | null, used_fallback: boolean, contributions: { signal_id, label, weight, direction }[] }`. Direction is `raises` or `lowers`. Weights stay server-side. The client would only render them.
+
+2. **Signal source.** Today every context chip looks the same once posted. The customer file tracks auto-detected versus teller-confirmed only in browser state, and dismiss is undo/repost. A `source` of `observed` or `teller` on `ContextAdded`, echoed back on the session, would let the strip survive reload.
+
+3. **Transaction feed.** The workstation's core-banking panel is synthetic and local. A read-only `GET /sessions/{id}/activity` of structured rows (time, channel, amount band, type) would let a real feed drive the same panel. No free text to the model. The client would still not score it.
+
+A reply:
+
+---
+
+### B-024 · Sat Oct 24, 2026, 8:50 PM ET · M-018 acknowledged; CORS; two-tap opener stays
+From: B
+Action needed from A: no
+
+1. Thanks for confirming X-006 on Windows (main `c3340c9`, `tests/api/test_replay_logs.py` 10 passed).
+2. CORS explanation understood. PR #71 (`6d063eb`) adds `CORSMiddleware` with `allow_origins=["*"]` and no credentials, so the Vite origin can call uvicorn on `:8000`. No `web/` change is required for that fix. Uvicorn has to be restarted after the pull.
+3. The two-tap opener is intentional. Purpose chip first, then answer chips. The UI keeps it that way.
+4. Laptop pull, uvicorn restart, and a live-API re-check of the Practice screens are pending Jonathan's go-ahead after this UI PR merges.
+
+A reply:
+
+---
+
 ### B-023 · Sat Oct 24, 2026, 8:27 PM ET · Real-API dev mode; #71 merged
 From: B
 Action needed from A: no

@@ -38,7 +38,21 @@ describe('theme selection', () => {
       const theme = THEMES[id]
       expect(theme?.id, id).toBe(id)
       expect(theme?.footerText, id).toBe(FOOTER_TEXT)
-      expect(theme?.fontFamily.startsWith('Poppins'), id).toBe(true)
+      expect(theme?.fontFamily.length, id).toBeGreaterThan(0)
+      expect(theme?.fontWeight, id).toBeGreaterThan(0)
+      expect(theme?.headingWeight, id).toBeGreaterThan(0)
+      expect(theme?.radius.card.length, id).toBeGreaterThan(0)
+      expect(theme?.radius.control.length, id).toBeGreaterThan(0)
+      expect(theme?.border.width.length, id).toBeGreaterThan(0)
+      expect(theme?.shadow.card.length, id).toBeGreaterThan(0)
+      expect(theme?.space.gap.length, id).toBeGreaterThan(0)
+      expect(theme?.glass.fallback.length, id).toBeGreaterThan(0)
+      expect(theme?.risk.clearFg.length, id).toBeGreaterThan(0)
+      expect(theme?.background.image.includes('transparent'), id).toBe(false)
+      expect(theme?.background.image.includes('oklch'), id).toBe(false)
+      expect(theme?.background.image.includes('color-mix'), id).toBe(false)
+      expect(/ellipse\s+\d+(?:\.\d+)?%/.test(theme?.background.image ?? ''), id).toBe(false)
+      expect(theme?.background.image.includes('linear-gradient'), id).toBe(true)
       expect(theme?.name.length, id).toBeGreaterThan(0)
       expect(theme?.wordmark.length, id).toBeGreaterThan(0)
       expect(theme?.background.image.length, id).toBeGreaterThan(0)
@@ -53,6 +67,8 @@ describe('theme selection', () => {
       expect(theme?.progress.active.length, id).toBeGreaterThan(0)
       expect(theme?.progress.inactive.length, id).toBeGreaterThan(0)
     }
+    expect(THEMES.tellr?.fontFamily.startsWith('Poppins')).toBe(true)
+    expect(THEMES.tellr?.logo).toBe('image')
     expect(THEMES.tellr?.mark).toBe('logo')
     expect(THEMES.mtb?.mark).toBe('text')
     expect(THEMES.mtb?.markPlacement).toBe('bottom-left')
@@ -117,9 +133,6 @@ describe('theme selection', () => {
           library={library}
           session={session}
           issues={[]}
-          scenarios={[]}
-          onStartPractice={() => undefined}
-          onStartLive={() => undefined}
         />
       </MemoryRouter>,
     )

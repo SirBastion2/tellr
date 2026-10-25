@@ -28,9 +28,6 @@ function Harness() {
         library={teller.library}
         session={teller.session}
         issues={[]}
-        scenarios={[]}
-        onStartPractice={() => undefined}
-        onStartLive={() => undefined}
         onUndo={() => {
           void teller.undo()
         }}

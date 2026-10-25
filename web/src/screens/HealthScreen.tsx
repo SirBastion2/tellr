@@ -102,7 +102,8 @@ export function HealthScreen() {
   const report = load.kind === 'ready' ? load.report : null
 
   return (
-    <section data-testid="health-screen" className="space-y-2">
+    <section data-testid="health-screen" style={{ display: 'grid', gap: 8 }}>
+      <h2 style={{ margin: 0, fontSize: 22 }}>Health</h2>
       <p data-testid="health-config-note">Recommender follows the process config from startup.</p>
       {load.kind === 'unavailable' ? <p data-testid="health-unavailable">Health is unavailable.</p> : null}
       {load.kind === 'invalid' ? <p data-testid="health-invalid">Health response could not be read.</p> : null}

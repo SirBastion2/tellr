@@ -21,7 +21,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `eval/` except `heldout/` | A3 | Validator, 30 dev scenarios, harness (§13) | `validate.py`, `PREREGISTRATION.md`, `scenarios/dev/`, `run.py`, `arms/` |
 | `eval/scenarios/heldout/` | H | Held-out set, written once (B-07) | created at hour 20 |
 | `tests/eval/` | A3 | Scenario, validator, and harness tests | `test_validate.py`, `test_dev_scenarios.py`, `test_run.py` |
-| `web/` | B1 | React UI, mock, screens, bank themes (§12) | `src/App.tsx`, `src/screens/`, `src/theme/`, `src/assets/tellr-wordmark.png`, `src/index.css`, `src/a11y.test.tsx`, `src/theme.test.tsx`, `src/history.test.tsx`, `src/health.test.tsx`, `mock/`, `src/talkTrack.test.tsx`, `src/undo.test.tsx`, `src/modes.test.tsx`, `vite.config.ts`, `.env.api`, `src/devApi.ts` |
+| `web/` | B1 | React UI, mock, screens, bank themes, simulated workstation (§12) | `src/App.tsx`, `src/screens/`, `src/theme/`, `src/demo/`, `src/workstation/`, `src/ui/`, `src/assets/tellr-wordmark.png`, `src/index.css`, `mock/live_levels.json`, `vite.config.ts`, `.env.api`, `src/devApi.ts` |
 | `web/src/screens/history/` `…/settings/` `web/e2e/` | B2 | Leaf screens + e2e if added at hour 8. Not created. B-06 filled history and health in `web/src/screens/` | — |
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json`, `fixtures/T1–T7.json`, `CHANGES.md` |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |
@@ -53,21 +53,41 @@ Bank chrome is one typed theme plus CSS variables. Screens still render server s
 
 | File | What it is |
 |---|---|
-| `web/src/theme/types.ts` | `BankTheme`: name, wordmark, mark, background, glass fill/border/blur, text, muted text, input fill, accent, button, progress dots, Poppins, footer. |
+| `web/src/theme/types.ts` | `BankTheme`: name, wordmark, logo treatment, placement, footer, font family and weights, wordmark styling, radius, border, shadow, density, spacing, background, glass fill/border/blur plus an opaque fallback, text, muted text, input, accent, button, progress dots, and solid risk colors. |
 | `web/src/theme/tokens.ts` | Default id `tellr`, storage key, footer string, UI font. |
 | `web/src/theme/resolve.ts` | `resolveThemeId` (query, then storage, then `tellr`). |
 | `web/src/theme/registry.ts` | Loads every `web/src/theme/themes/*.ts`. Adding a bank is adding one file that exports `theme`. |
-| `web/src/theme/themes/tellr.ts` | Base. Navy-to-indigo gradient, frosted glass, logo top-left, footer centered. |
-| `web/src/theme/themes/mtb.ts` | M&T example. Green gradient plus `web/src/assets/weave.svg`, green glass, text wordmark bottom-left, footer bottom-right. |
-| `web/src/theme/themes/fnb.ts` | F.N.B. Navy field, gold wordmark, light-blue accent. Text wordmark, no logo file. |
-| `web/src/theme/themes/pnc.ts` | PNC. Orange `#EF7622` on slate `#4D5964` to navy `#002D72`. Text wordmark, no logo file. |
+| `web/src/theme/themes/tellr.ts` | Base. Poppins, comfortable density, pill controls, navy-to-indigo gradient, frosted glass, logo top-left, footer centered. |
+| `web/src/theme/themes/mtb.ts` | M&T example. Segoe UI body, Georgia wordmark, regular density, round controls, green gradient plus `web/src/assets/weave.svg`, text wordmark bottom-left, footer bottom-right. |
+| `web/src/theme/themes/fnb.ts` | F.N.B. Compact density, square corners, hard shadow, gold wordmark, light-blue accent. Text wordmark, no logo file. |
+| `web/src/theme/themes/pnc.ts` | PNC. Arial, comfortable density, medium radius, strong shadow. Orange `#EF7622` on slate `#4D5964` to navy `#002D72`. Text wordmark, no logo file. |
 | `web/src/theme/vars.ts` | Maps a `BankTheme` onto the `--tc-*` custom properties. |
 | `web/src/theme/ThemeProvider.tsx` | Reads `?theme=` and `localStorage`, provides the theme. |
 | `web/src/theme/ThemeRoot.tsx` | Full-bleed background, glass card, wordmark, footer, progress dots. Dots show `session.answers` from the server. |
 | `web/src/theme/controls.ts` | Shared control styles that point at those variables. |
 | `web/src/assets/tellr-wordmark.png` | Tellr wordmark (transparent). `mark: 'logo'` paints it with `--tc-logo` (periwinkle on the tellr theme). |
 | `web/src/theme.test.tsx` | Selection, unknown-id fallback, storage, and the registered theme objects. |
-| `web/index.html` | Loads Poppins. The theme `fontFamily` is Poppins. |
+| `web/index.html` | Loads Poppins for the tellr theme. Other banks set their own font stacks on the theme object. |
+| `web/src/themeContrast.test.ts` | WCAG AA contrast for text, buttons, glass, and clear/caution/high on every registered theme. |
+
+Page gradients are hex and rgba only. Windows Chrome and Edge drop an entire `background-image` when any layer is invalid. Explicit percentage ellipse radii (`ellipse 72% 58%`) were that invalid layer; Safari on Mac still painted the linear layer underneath. The keyword `transparent` is also avoided, because Chromium interpolates it as transparent black. Each theme sets a solid `background.color` as well as the image, and `index.css` swaps the card to `glass.fallback` when `backdrop-filter` is unsupported.
+
+### `web/` workstation
+
+Home is a teller workstation. A synthetic customer timeline plays beside a copilot strip. The strip reads the server level, the first reason, `question.text`, and `talk_track.lines`. It does not choose the next question. Confirm marks a posted chip locally. Dismiss undoes back to that chip and reposts the rest. Escalate records outcome `escalate` with actor `teller` and opens handoff. The two-tap opener on Session stays: purpose chip, then answer chips.
+
+| File | What it is |
+|---|---|
+| `web/src/demo/customers.ts` | Five synthetic files: contractor cash, romance/crypto, government impersonation, car down payment, routine Friday cash. The last two post no chips. Name and age band are display-only. |
+| `web/src/screens/HomeScreen.tsx` | Play, pause, step, restart, speed, customer picker, case file toggle, transaction panel, copilot strip, explanation. |
+| `web/src/screens/CustomerFileScreen.tsx` | Profile, recent activity, the live transaction, and whether each scripted signal is not yet posted, auto-detected, teller-confirmed, or dismissed. |
+| `web/src/workstation/CopilotStrip.tsx` | Quiet strip. Clear, caution, and high each have an icon and a word. One suggested action and the read-aloud script from the response. |
+| `web/src/workstation/ExplanationPanel.tsx` | Why this level, from the session response plus posted chip labels. Names the fields the response does not include. |
+| `web/src/workstation/TransactionPanel.tsx` | Mock core-banking transaction and the events that have already fired. |
+| `web/src/ui/ShortcutHelp.tsx` | `?` lists keyboard shortcuts. |
+| `web/src/ui/ConfirmDialog.tsx` | Confirm before restart, customer switch, and escalate. |
+| `web/mock/live_levels.json` | Recorded engine responses for context-chip subsets. The mock uses these when a live post is not the next fixture step. Answers on that path are scored by the real API (`npm run dev:api`). |
+| `web/src/routes.ts` | Nav labels are Home, Customer file, Context, Session, Outcome, Handoff, History, Health. |
 
 ### `web/` dev modes
 

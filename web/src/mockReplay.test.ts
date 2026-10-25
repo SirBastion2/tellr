@@ -200,4 +200,18 @@ describe('fixture replay', () => {
     expect(health.body).toMatchObject({ recommender: 'rules', model_id: null, fallback_rate: 0 })
     expect(mockRequest('POST', '/health').status).toBe(404)
   })
+
+  it('projects live context chips that are not the next fixture step', () => {
+    const opened = mockRequest('POST', '/sessions', { mode: 'live', amount_band: '5000_9999' })
+    const sessionId = (opened.body as { session_id: string }).session_id
+    const posted = mockRequest('POST', `/sessions/${sessionId}/context`, {
+      chips: ['chip.on_phone', 'chip.someone_directing', 'chip.cash_only'],
+    })
+    expect(posted.status).toBe(200)
+    expect(posted.warnings).toEqual([])
+    expect(validateSessionState(posted.body)).toEqual([])
+    expect(posted.body).toMatchObject({ mode: 'live', session_id: sessionId, risk: { level: 'caution' } })
+    const undone = mockRequest('POST', `/sessions/${sessionId}/undo`)
+    expect(undone.body).toMatchObject({ risk: { level: 'clear', score: 0 } })
+  })
 })

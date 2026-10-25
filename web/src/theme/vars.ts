@@ -4,6 +4,8 @@ import type { BankTheme } from './types'
 export function themeVars(theme: BankTheme): Record<string, string> {
   return {
     '--tc-font': theme.fontFamily,
+    '--tc-font-weight': String(theme.fontWeight),
+    '--tc-heading-weight': String(theme.headingWeight),
     '--tc-bg-color': theme.background.color,
     '--tc-bg-image': theme.background.image,
     '--tc-bg-repeat': theme.background.repeat,
@@ -11,6 +13,7 @@ export function themeVars(theme: BankTheme): Record<string, string> {
     '--tc-glass-fill': theme.glass.fill,
     '--tc-glass-border': theme.glass.border,
     '--tc-glass-blur': theme.glass.blur,
+    '--tc-glass-fallback': theme.glass.fallback,
     '--tc-text': theme.text,
     '--tc-muted': theme.mutedText,
     '--tc-input': theme.inputFill,
@@ -20,5 +23,18 @@ export function themeVars(theme: BankTheme): Record<string, string> {
     '--tc-logo': theme.logoColor,
     '--tc-progress-active': theme.progress.active,
     '--tc-progress-inactive': theme.progress.inactive,
+    '--tc-radius-card': theme.radius.card,
+    '--tc-radius-control': theme.radius.control,
+    '--tc-border-width': theme.border.width,
+    '--tc-border-style': theme.border.style,
+    '--tc-shadow-card': theme.shadow.card,
+    '--tc-space-gap': theme.space.gap,
+    '--tc-space-card': theme.space.cardPadding,
+    '--tc-risk-clear-bg': theme.risk.clearBg,
+    '--tc-risk-clear-fg': theme.risk.clearFg,
+    '--tc-risk-caution-bg': theme.risk.cautionBg,
+    '--tc-risk-caution-fg': theme.risk.cautionFg,
+    '--tc-risk-high-bg': theme.risk.highBg,
+    '--tc-risk-high-fg': theme.risk.highFg,
   }
 }

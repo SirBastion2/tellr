@@ -1,11 +1,13 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Link, BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import { listCases } from '../mock/replay'
+import { CUSTOMERS, customerById } from './demo/customers'
+import type { ConfirmKind, DemoSpeed, DemoView } from './demo/types'
 import { LiveBadge } from './LiveBadge'
 import { SchemaBanner } from './SchemaBanner'
 import { APP_ROUTES } from './routes'
 import { ContextScreen } from './screens/ContextScreen'
+import { CustomerFileScreen } from './screens/CustomerFileScreen'
 import { HandoffScreen } from './screens/HandoffScreen'
 import { HealthScreen } from './screens/HealthScreen'
 import { HistoryScreen } from './screens/HistoryScreen'
@@ -13,11 +15,15 @@ import { HomeScreen } from './screens/HomeScreen'
 import { InterviewScreen } from './screens/InterviewScreen'
 import { OutcomeScreen } from './screens/OutcomeScreen'
 import { TellerProvider, useTeller } from './teller'
-import { buttonFill, buttonText, controlStyle } from './theme/controls'
+import { controlStyle, primaryStyle } from './theme/controls'
 import { ThemeProvider } from './theme/ThemeProvider'
 import { ThemeRoot } from './theme/ThemeRoot'
+import { ConfirmDialog } from './ui/ConfirmDialog'
+import { LEVEL_WORD } from './ui/LevelIcon'
+import { ShortcutHelp } from './ui/ShortcutHelp'
 import type { AnswerPost, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import type { SchemaIssue } from './validate'
+import { suggestedAction } from './workstation/CopilotStrip'
 
 const tap: CSSProperties = {
   ...controlStyle,
@@ -29,19 +35,35 @@ const tap: CSSProperties = {
 
 const actionTap: CSSProperties = {
   ...tap,
-  backgroundColor: buttonFill,
-  color: buttonText,
-  borderColor: 'transparent',
+  ...primaryStyle,
+}
+
+function routeLabel(route: (typeof APP_ROUTES)[number], session: SessionState | null): string | null {
+  if (route.path.includes(':id')) {
+    if (!session) {
+      return null
+    }
+    return route.label
+  }
+  return route.label
+}
+
+function routePath(route: (typeof APP_ROUTES)[number], session: SessionState | null): string | null {
+  if (route.path.includes(':id')) {
+    if (!session) {
+      return null
+    }
+    return route.path.replace(':id', session.session_id)
+  }
+  return route.path
 }
 
 export function AppShell({
   library,
   session,
   issues,
-  scenarios,
-  onStartPractice,
-  onStartLive,
   postedChipIds = [],
+  dismissed = [],
   onPostContext,
   onAnswer,
   onUndo,
@@ -49,14 +71,18 @@ export function AppShell({
   handoff = null,
   httpStatus = null,
   error = null,
+  demo = null,
+  helpOpen = false,
+  confirm = null,
+  onHelp,
+  onConfirmCancel,
+  onConfirmAccept,
 }: {
   library: Library | null
   session: SessionState | null
   issues: readonly SchemaIssue[]
-  scenarios: readonly { id: string; label?: string }[]
-  onStartPractice: (scenarioId: string) => void
-  onStartLive: () => void
   postedChipIds?: readonly string[]
+  dismissed?: readonly string[]
   onPostContext?: (chips: string[]) => void
   onAnswer?: (answer: AnswerPost) => void
   onUndo?: () => void
@@ -64,35 +90,63 @@ export function AppShell({
   handoff?: HandoffProjection | null
   httpStatus?: number | null
   error?: ErrorResponse | null
+  demo?: DemoView | null
+  helpOpen?: boolean
+  confirm?: ConfirmKind
+  onHelp?: (open: boolean) => void
+  onConfirmCancel?: () => void
+  onConfirmAccept?: () => void
 }) {
   const location = useLocation()
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key !== 'Escape') {
+        return
+      }
+      onHelp?.(false)
+      onConfirmCancel?.()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onConfirmCancel, onHelp])
+  const levelWord = session ? LEVEL_WORD[session.risk.level] : ''
+  const action = session ? suggestedAction(session) : ''
+  const announcement = session
+    ? `Level ${levelWord}. ${action ? `Suggested action: ${action}` : 'No suggested action.'}`
+    : ''
+
   return (
     <ThemeRoot answers={session?.answers ?? null}>
       <div style={{ boxSizing: 'border-box', color: 'var(--tc-text, #1c1917)' }}>
-      <header
-        data-testid="app-header"
-        style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: '8px', minHeight: '48px' }}
-      >
-        <h1 style={{ margin: 0, fontSize: '20px', lineHeight: 1.2, flex: '0 0 auto' }}>Teller Copilot</h1>
-        <LiveBadge mode={session?.mode ?? null} />
-        <nav
-          aria-label="Screens"
-          data-testid="app-nav"
-          style={{
-            display: 'flex',
-            flexWrap: 'nowrap',
-            gap: '8px',
-            overflowX: 'auto',
-            minHeight: '48px',
-            flex: '1 1 auto',
-          }}
+        <a href="#main" className="tc-sr" style={{ minHeight: '48px', minWidth: '48px' }}>
+          Skip to content
+        </a>
+        <header
+          data-testid="app-header"
+          style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', minHeight: '48px' }}
         >
-          {APP_ROUTES.map((route) => {
-            if (route.path.includes(':id')) {
-              if (!session) {
+          <h1 style={{ margin: 0, fontSize: '20px', lineHeight: 1.2, flex: '0 0 auto', fontWeight: 'var(--tc-heading-weight, 600)' }}>
+            Teller Copilot
+          </h1>
+          <LiveBadge mode={session?.mode ?? null} />
+          <nav
+            aria-label="Screens"
+            data-testid="app-nav"
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+              overflow: 'visible',
+              minHeight: '48px',
+              flex: '1 1 16rem',
+            }}
+          >
+            {APP_ROUTES.map((route) => {
+              const path = routePath(route, session)
+              const label = routeLabel(route, session)
+              if (!path || !label) {
                 return null
               }
-              const path = route.path.replace(':id', session.session_id)
               return (
                 <Link
                   key={route.id}
@@ -100,76 +154,111 @@ export function AppShell({
                   aria-current={location.pathname === path ? 'page' : undefined}
                   style={{ ...tap, textDecoration: 'none' }}
                 >
-                  {path}
+                  {label}
                 </Link>
               )
-            }
-            return (
-              <Link
-                key={route.id}
-                to={route.path}
-                aria-current={location.pathname === route.path ? 'page' : undefined}
-                style={{ ...tap, textDecoration: 'none' }}
-              >
-                {route.path}
-              </Link>
-            )
-          })}
-        </nav>
-        {session ? (
-          <button type="button" data-testid="undo" style={actionTap} onClick={() => onUndo?.()}>
-            Undo
+            })}
+          </nav>
+          <button
+            type="button"
+            className="tc-btn"
+            data-variant="secondary"
+            data-testid="shortcut-help-button"
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts (?)"
+            style={tap}
+            onClick={() => onHelp?.(!helpOpen)}
+          >
+            ?
           </button>
-        ) : null}
-      </header>
-      {import.meta.env.DEV ? <SchemaBanner issues={issues} /> : null}
-      {httpStatus != null && httpStatus !== 200 ? <p data-testid="http-status">{httpStatus}</p> : null}
-      {error ? (
-        <p data-testid="api-error">
-          {error.error.code} {error.error.message}
+          {session ? (
+            <button type="button" className="tc-btn" data-variant="secondary" data-testid="undo" title="Undo the last signal" style={actionTap} onClick={() => onUndo?.()}>
+              Undo
+            </button>
+          ) : null}
+        </header>
+        <p className="tc-sr" aria-live="polite" data-testid="live-region">
+          {announcement}
         </p>
-      ) : null}
-      <main>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <HomeScreen
-              library={library}
-              scenarios={scenarios}
-              onStartPractice={onStartPractice}
-              onStartLive={onStartLive}
+        {import.meta.env.DEV ? <SchemaBanner issues={issues} /> : null}
+        {httpStatus != null && httpStatus !== 200 ? (
+          <p>
+            Status <span data-testid="http-status">{httpStatus}</span>
+          </p>
+        ) : null}
+        {error ? (
+          <p data-testid="api-error">
+            {error.error.code} {error.error.message}
+          </p>
+        ) : null}
+        <main id="main">
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <HomeScreen library={library} session={session} postedChipIds={postedChipIds} demo={demo} />
+              }
             />
-          }
-        />
-        <Route path="/sessions" element={<HistoryScreen />} />
-        <Route
-          path="/sessions/:id/context"
-          element={
-            <ContextScreen
-              library={library}
-              session={session}
-              postedChipIds={postedChipIds}
-              onPost={onPostContext}
+            <Route
+              path="/customer"
+              element={
+                <CustomerFileScreen
+                  library={library}
+                  postedChipIds={postedChipIds}
+                  dismissed={dismissed}
+                  demo={demo}
+                />
+              }
             />
-          }
-        />
-        <Route
-          path="/sessions/:id/outcome"
-          element={<OutcomeScreen session={session} onSubmit={onSubmitOutcome} />}
-        />
-        <Route
-          path="/sessions/:id/handoff"
-          element={<HandoffScreen library={library} projection={handoff} />}
-        />
-        <Route
-          path="/sessions/:id"
-          element={<InterviewScreen library={library} session={session} onAnswer={onAnswer} />}
-        />
-        <Route path="/health" element={<HealthScreen />} />
-        <Route path="/settings" element={<Navigate to="/health" replace />} />
-      </Routes>
-      </main>
+            <Route path="/sessions" element={<HistoryScreen />} />
+            <Route
+              path="/sessions/:id/context"
+              element={
+                <ContextScreen
+                  library={library}
+                  session={session}
+                  postedChipIds={postedChipIds}
+                  onPost={onPostContext}
+                />
+              }
+            />
+            <Route
+              path="/sessions/:id/outcome"
+              element={<OutcomeScreen session={session} onSubmit={onSubmitOutcome} />}
+            />
+            <Route
+              path="/sessions/:id/handoff"
+              element={<HandoffScreen library={library} projection={handoff} />}
+            />
+            <Route
+              path="/sessions/:id"
+              element={<InterviewScreen library={library} session={session} onAnswer={onAnswer} />}
+            />
+            <Route path="/health" element={<HealthScreen />} />
+            <Route path="/settings" element={<Navigate to="/health" replace />} />
+          </Routes>
+        </main>
+        {helpOpen ? <ShortcutHelp onClose={() => onHelp?.(false)} /> : null}
+        {confirm ? (
+          <ConfirmDialog
+            title={
+              confirm.kind === 'escalate'
+                ? 'Escalate to the supervisor?'
+                : confirm.kind === 'restart'
+                  ? 'Restart the simulation?'
+                  : 'Switch customer?'
+            }
+            body={
+              confirm.kind === 'escalate'
+                ? 'This records an escalate outcome for the teller and opens the handoff.'
+                : 'This resets the live session and the simulated timeline.'
+            }
+            confirmLabel={confirm.kind === 'escalate' ? 'Escalate' : 'Reset session'}
+            pending={demo?.pending ?? false}
+            onCancel={() => onConfirmCancel?.()}
+            onConfirm={() => onConfirmAccept?.()}
+          />
+        ) : null}
       </div>
     </ThemeRoot>
   )
@@ -181,35 +270,281 @@ function ConnectedShell() {
   const location = useLocation()
   const { loadHandoff } = teller
   const sessionId = teller.session?.session_id ?? null
+  const [customerId, setCustomerId] = useState(CUSTOMERS[0]?.id ?? '')
+  const [index, setIndex] = useState(0)
+  const [playing, setPlaying] = useState(false)
+  const [speed, setSpeed] = useState<DemoSpeed>(1)
+  const [pending, setPending] = useState(false)
+  const [showCase, setShowCase] = useState(false)
+  const [confirmed, setConfirmed] = useState<string[]>([])
+  const [dismissed, setDismissed] = useState<string[]>([])
+  const [helpOpen, setHelpOpen] = useState(false)
+  const [confirm, setConfirm] = useState<ConfirmKind>(null)
+  const indexRef = useRef(0)
+  const customerRef = useRef(customerId)
+  const speedRef = useRef(speed)
+  const playingRef = useRef(playing)
+  const lock = useRef(false)
+  const tellerRef = useRef(teller)
+
+  useEffect(() => {
+    indexRef.current = index
+    customerRef.current = customerId
+    speedRef.current = speed
+    playingRef.current = playing
+    tellerRef.current = teller
+  }, [customerId, index, playing, speed, teller])
+
   useEffect(() => {
     if (!sessionId || !location.pathname.endsWith('/handoff')) {
       return
     }
     void loadHandoff()
   }, [location.pathname, sessionId, loadHandoff])
+
+  const runCurrent = useCallback(async () => {
+    if (lock.current) {
+      return
+    }
+    const customer = customerById(customerRef.current)
+    const event = customer?.events[indexRef.current]
+    if (!customer || !event) {
+      setPlaying(false)
+      return
+    }
+    lock.current = true
+    setPending(true)
+    try {
+      if (!tellerRef.current.session) {
+        await tellerRef.current.startLive()
+      }
+      if (event.chips.length > 0) {
+        await tellerRef.current.postContext(event.chips)
+      }
+      setIndex((value) => value + 1)
+    } finally {
+      lock.current = false
+      setPending(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!playing) {
+      return
+    }
+    const customer = customerById(customerRef.current)
+    const event = customer?.events[indexRef.current]
+    if (!event) {
+      setPlaying(false)
+      return
+    }
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const delay = reduced ? 0 : Math.round(event.delayMs / speedRef.current)
+    const timer = window.setTimeout(() => {
+      void runCurrent()
+    }, delay)
+    return () => window.clearTimeout(timer)
+  }, [playing, index, runCurrent])
+
+  const resetSession = useCallback(
+    async (nextCustomerId?: string) => {
+      if (nextCustomerId) {
+        setCustomerId(nextCustomerId)
+      }
+      setPlaying(false)
+      setIndex(0)
+      setConfirmed([])
+      setDismissed([])
+      setPending(true)
+      try {
+        const next = await tellerRef.current.startLive()
+        if (next) {
+          navigate('/')
+        }
+      } finally {
+        setPending(false)
+      }
+    },
+    [navigate],
+  )
+
+  const requestSwitch = useCallback(
+    (id: string) => {
+      if (id === customerRef.current) {
+        return
+      }
+      if (indexRef.current > 0 || tellerRef.current.session) {
+        setPlaying(false)
+        setConfirm({ kind: 'switch', id })
+        return
+      }
+      setCustomerId(id)
+    },
+    [],
+  )
+
+  const acceptConfirm = useCallback(() => {
+    const current = confirm
+    setConfirm(null)
+    if (!current) {
+      return
+    }
+    if (current.kind === 'escalate') {
+      setPending(true)
+      void (async () => {
+        try {
+          await tellerRef.current.postOutcome('escalate', 'teller')
+          await tellerRef.current.loadHandoff()
+          const id = tellerRef.current.session?.session_id
+          if (id) {
+            navigate(`/sessions/${id}/handoff`)
+          }
+        } finally {
+          setPending(false)
+        }
+      })()
+      return
+    }
+    if (current.kind === 'restart') {
+      void resetSession()
+      return
+    }
+    void resetSession(current.id)
+  }, [confirm, navigate, resetSession])
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      const target = event.target
+      const typing =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement
+      if (event.key === 'Escape') {
+        setHelpOpen(false)
+        setConfirm(null)
+        return
+      }
+      if (typing || event.metaKey || event.ctrlKey || event.altKey) {
+        return
+      }
+      const key = event.key.toLowerCase()
+      if (key === '?') {
+        event.preventDefault()
+        setHelpOpen((open) => !open)
+        return
+      }
+      if (key === 'p') {
+        event.preventDefault()
+        setPlaying((value) => !value)
+        return
+      }
+      if (key === 'n') {
+        event.preventDefault()
+        setPlaying(false)
+        void runCurrent()
+        return
+      }
+      if (key === 'r') {
+        event.preventDefault()
+        setPlaying(false)
+        setConfirm({ kind: 'restart' })
+        return
+      }
+      if (key === 'e') {
+        event.preventDefault()
+        if (tellerRef.current.session) {
+          setConfirm({ kind: 'escalate' })
+        }
+        return
+      }
+      if (key === 'c' || key === 'd') {
+        const chips = tellerRef.current.postedChipIds
+        const chipId = chips[chips.length - 1]
+        if (!chipId) {
+          return
+        }
+        event.preventDefault()
+        if (key === 'c') {
+          setConfirmed((current) => (current.includes(chipId) ? current : [...current, chipId]))
+        } else {
+          setDismissed((current) => (current.includes(chipId) ? current : [...current, chipId]))
+          void tellerRef.current.dismissChip(chipId)
+        }
+        return
+      }
+      if (event.key === '[') {
+        event.preventDefault()
+        const at = CUSTOMERS.findIndex((item) => item.id === customerRef.current)
+        const previous = CUSTOMERS[(at - 1 + CUSTOMERS.length) % CUSTOMERS.length]
+        if (previous) {
+          requestSwitch(previous.id)
+        }
+        return
+      }
+      if (event.key === ']') {
+        event.preventDefault()
+        const at = CUSTOMERS.findIndex((item) => item.id === customerRef.current)
+        const next = CUSTOMERS[(at + 1) % CUSTOMERS.length]
+        if (next) {
+          requestSwitch(next.id)
+        }
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [requestSwitch, runCurrent])
+
+  const demo: DemoView = {
+    customers: CUSTOMERS,
+    customerId,
+    index,
+    playing,
+    speed,
+    pending,
+    showCase,
+    confirmed,
+    onSelectCustomer: requestSwitch,
+    onPlay: () => setPlaying(true),
+    onPause: () => setPlaying(false),
+    onStep: () => {
+      setPlaying(false)
+      void runCurrent()
+    },
+    onRestart: () => {
+      setPlaying(false)
+      setConfirm({ kind: 'restart' })
+    },
+    onSpeed: setSpeed,
+    onToggleCase: () => setShowCase((value) => !value),
+    onConfirmSignal: (chipId) => {
+      setConfirmed((current) => (current.includes(chipId) ? current : [...current, chipId]))
+    },
+    onDismissSignal: (chipId) => {
+      setDismissed((current) => (current.includes(chipId) ? current : [...current, chipId]))
+      void teller.dismissChip(chipId)
+    },
+    onEscalate: () => {
+      if (teller.session) {
+        setConfirm({ kind: 'escalate' })
+      }
+    },
+  }
+
   return (
     <AppShell
       library={teller.library}
       session={teller.session}
       issues={import.meta.env.DEV ? teller.issues : []}
-      scenarios={listCases()}
       postedChipIds={teller.postedChipIds}
+      dismissed={dismissed}
       httpStatus={teller.httpStatus}
       error={teller.error}
-      onStartPractice={(scenarioId) => {
-        void teller.startCase(scenarioId).then((next) => {
-          if (next) {
-            void navigate(`/sessions/${next.session_id}/context`)
-          }
-        })
-      }}
-      onStartLive={() => {
-        void teller.startLive().then((next) => {
-          if (next) {
-            void navigate(`/sessions/${next.session_id}/context`)
-          }
-        })
-      }}
+      demo={demo}
+      helpOpen={helpOpen}
+      confirm={confirm}
+      onHelp={setHelpOpen}
+      onConfirmCancel={() => setConfirm(null)}
+      onConfirmAccept={acceptConfirm}
       onPostContext={(chips) => {
         void teller.postContext(chips)
       }}
