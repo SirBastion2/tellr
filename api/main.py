@@ -28,7 +28,7 @@ from engine import (
     rule_choice,
     stop,
 )
-from engine.score import contributions
+from engine.score import contributions, level_bands
 from recommenders import DEFAULT_MODEL_ID, FakeRecommender, HostedLLM, LocalLLM, Metrics
 from recommenders.select import (
     apply_recommendation,
@@ -315,6 +315,7 @@ def create_app(
             "fallback_rate": snap["fallback_rate"],
             "rejection_count": snap["rejection_count"],
             "agreement_rate": snap["agreement_rate"],
+            "level_bands": level_bands(),
         }
 
     @app.post("/sessions")

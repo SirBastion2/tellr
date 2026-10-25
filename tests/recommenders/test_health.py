@@ -5,6 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+
+from engine.score import level_bands
 from tests.recommenders.conftest import FakeRecommender, t2_steps
 
 
@@ -49,6 +51,7 @@ def test_health_fields_on_rules_boot(tmp_path: Path) -> None:
     assert body["fallback_rate"] == 0.0
     assert body["rejection_count"] == 0
     assert body["agreement_rate"] is None
+    assert body["level_bands"] == level_bands()
 
 
 def test_health_counts_rejection_and_agreement(tmp_path: Path) -> None:

@@ -135,5 +135,27 @@ Driver B approved B-026 (PR #76, ~8:58 PM ET)
 
 Approved: Driver A ☑ · Driver B ☑ (B-026) · Rejected ☐
 
+### CHANGE-006 · Level score bands on GET /health · applied additively
+Optional, additive field on the existing untyped `GET /health` (CHANGE-003 /
+Q-006 still deferred; no health schema). Does not bump `CONTRACT_VERSION`.
+T1–T7 fixtures, SessionState, goldens, `reference_impl.py`, and
+`tests/golden/reference_weights.yaml` stay byte-identical.
+
+**Reason:** Technical details must show the 0–100 Urgency Score cutoffs that
+`engine.score.level()` already uses (architecture §6.3: Clear / Caution /
+High concern). Hardcoding 25 / 60 in `web/` would invent risk mapping on the
+client (§9 / §12). SessionState `additionalProperties: false` and the two
+post-hour-4 CHANGE slots are already used; a new required field or fixture
+regen is not needed.
+
+**Shape:** `level_bands?: [{ level: "clear"|"caution"|"high", label: string,
+min: number, max: number }]`. Inclusive ranges matching `level()`:
+High concern if score ≥ `HIGH`, Caution if score ≥ `CAUTION`, else Clear.
+`label` is the engine name (`Clear`, `Caution`, `High concern`). `min`/`max`
+are derived from `engine.score.CAUTION`, `HIGH`, and the §6.2 +100 clamp.
+Absent on older health payloads. Health screen does not render this field.
+
+Approved: Driver A ☑ (task request) · Driver B ☑ (task request) · Rejected ☐
+
 ### Approval of contract-v1
 Driver A ☑ · Driver B ☑

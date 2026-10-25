@@ -17,6 +17,7 @@ from engine.score import (
     Tables,
     effective,
     level,
+    level_bands,
     reasons,
     score,
     shown,
@@ -157,3 +158,15 @@ def test_scoring_functions_match_oracle_on_reference_cases() -> None:
             ), name
             assert pattern_scores(evidence, tables) == ref.pattern_scores(evidence), name
             assert displayed(evidence, row["shown"], tables) == row["display"], name
+
+
+def test_level_bands_match_level_on_urgency_score_range() -> None:
+    tables = reference_tables()
+    bands = level_bands(tables)
+    assert [row["label"] for row in bands] == ORDER
+    assert bands[0]["min"] == 0
+    assert bands[-1]["max"] == 100
+    for value in range(0, 101):
+        matched = [row for row in bands if row["min"] <= value <= row["max"]]
+        assert len(matched) == 1
+        assert matched[0]["label"] == level(value, tables)
