@@ -21,7 +21,7 @@ ACTIVITY_SCHEMA = json.loads(
     (ROOT / "contract" / "activity.schema.json").read_text(encoding="utf-8")
 )
 ERROR_SCHEMA = json.loads((ROOT / "contract" / "error.schema.json").read_text(encoding="utf-8"))
-IGNORE_FIELDS = frozenset({"session_id", "debug"})
+IGNORE_FIELDS = frozenset({"session_id", "debug", "explanation", "context_chips"})
 
 
 def _is_type(value: object, type_name: str) -> bool:

@@ -24,6 +24,7 @@ class SessionOpened:
 class ContextAdded:
     ts: Any = None
     chips: tuple[str, ...] = ()
+    source: str | None = None
 
 
 @dataclass(frozen=True)
