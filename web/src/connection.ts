@@ -57,7 +57,9 @@ export function configuredApiUrl(): string {
 /**
  * Live when GET /health on the configured origin (or 127.0.0.1:8000) returns a health report.
  * Otherwise sample data, when /health answers. In dev that is the Vite mock. In a production
- * build the browser replay is installed first. Otherwise offline.
+ * build the browser replay is installed when that probe fails. A production build on a public
+ * host with no VITE_API_URL skips the 127.0.0.1 probe and uses sample data directly. When
+ * neither health check answers, the result is offline.
  */
 export function connectionFromProbe(options: {
   configured: string
@@ -109,9 +111,31 @@ export async function ensureConnection(): Promise<ConnectionState> {
   return pending
 }
 
-/** `prod` is true for a production build. Dev passes false and keeps the Vite middleware. */
+const LOCAL_PAGE_HOSTS = new Set(['localhost', '127.0.0.1', '::1'])
+
+/** `::1` is also `[::1]` after URL host serialization. */
+function isLocalPageHost(hostname: string): boolean {
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, '')
+  return LOCAL_PAGE_HOSTS.has(host)
+}
+
+function pageHostname(): string {
+  if (typeof window === 'undefined') {
+    return 'localhost'
+  }
+  return window.location.hostname
+}
+
+/**
+ * `prod` is `import.meta.env.PROD`. Dev passes false and keeps the Vite middleware.
+ * A production build with `VITE_API_URL` unset does not probe 127.0.0.1 from a public host.
+ */
 export async function probeConnection(prod: boolean): Promise<ConnectionState> {
   const configured = configuredApiUrl()
+  if (prod && configured === '' && !isLocalPageHost(pageHostname())) {
+    installSampleFetch()
+    return commit({ kind: 'sample', base: '' })
+  }
   const candidate = configured || DEFAULT_LIVE_ORIGIN
   const liveOk = await healthOk(candidate)
   if (!liveOk && prod) {

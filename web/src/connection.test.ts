@@ -10,12 +10,19 @@ import {
   resetConnectionForTests,
 } from './connection'
 
+function pageJsdom(): { reconfigure: (settings: { url: string }) => void } | undefined {
+  const holder = window as unknown as { jsdom?: { reconfigure: (settings: { url: string }) => void } }
+  return holder.jsdom ?? (globalThis as typeof holder).jsdom
+}
+
 describe('API connection choice', () => {
   afterEach(() => {
     resetSampleFetchForTests()
     resetConnectionForTests()
     resetMock()
     vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+    pageJsdom()?.reconfigure({ url: 'http://localhost:3000/' })
   })
 
   it('prefers a healthy live origin and otherwise uses sample data', () => {
@@ -112,6 +119,28 @@ describe('API connection choice', () => {
     expect(connectionLabel(state.kind)).toBe('Live API connected')
     const library = await fetch('/library')
     expect(library.status).toBe(404)
+  })
+
+  it('does not probe 127.0.0.1 from a deployed production host', async () => {
+    vi.stubEnv('VITE_API_URL', '')
+    const native = vi.fn(async () => new Response('offline', { status: 503 }))
+    vi.stubGlobal('fetch', native)
+    const jsdom = pageJsdom()
+    expect(jsdom).toBeDefined()
+    jsdom?.reconfigure({ url: 'https://teller-copilot.example/' })
+    expect(window.location.hostname).toBe('teller-copilot.example')
+
+    const state = await probeConnection(true)
+
+    expect(state).toEqual({ kind: 'sample', base: '' })
+    expect(connectionLabel(state.kind)).toBe('Using sample data')
+    const probed = native.mock.calls.map((call) => String(call[0]))
+    expect(probed.some((url) => url.includes('127.0.0.1'))).toBe(false)
+    expect(probed).toEqual([])
+
+    const health = await fetch('/health')
+    expect(health.status).toBe(mockRequest('GET', '/health').status)
+    expect(native.mock.calls.map((call) => String(call[0])).some((url) => url.includes('127.0.0.1'))).toBe(false)
   })
 
   it('forwards non-sample urls and returns 422 for a bad sample body', async () => {
