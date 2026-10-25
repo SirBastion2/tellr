@@ -1,17 +1,27 @@
 import type { CSSProperties } from 'react'
+import { DENSITY } from './tokens'
 
 /** Shared control surface. Colors come from the active theme's tokens, with a light fallback. */
 export const controlStyle: CSSProperties = {
-  minHeight: '48px',
-  minWidth: '48px',
+  minHeight: DENSITY.controlHeight,
+  minWidth: DENSITY.controlHeight,
   boxSizing: 'border-box',
   color: 'var(--tc-text, #1c1917)',
   backgroundColor: 'transparent',
   border: 'var(--tc-border-width, 1px) var(--tc-border-style, solid) var(--tc-accent, #1c1917)',
   borderRadius: 'var(--tc-radius-control, 999px)',
   fontFamily: 'inherit',
-  fontWeight: 'var(--tc-font-weight, 500)' as CSSProperties['fontWeight'],
-  padding: '0 12px',
+  fontWeight: 'var(--tc-font-weight, 400)' as CSSProperties['fontWeight'],
+  padding: 'var(--tc-space-control-pad-y, 8px) var(--tc-space-control-pad-x, 12px)',
+}
+
+/** Header chrome. Shared height and pill radius; colors stay on the active theme. */
+export const headerControlStyle: CSSProperties = {
+  ...controlStyle,
+  height: DENSITY.headerControlHeight,
+  minHeight: DENSITY.headerControlHeight,
+  minWidth: DENSITY.headerControlHeight,
+  borderRadius: 'var(--tc-header-radius, 999px)',
 }
 
 export const inputFill = 'var(--tc-input, #e7e5e4)'

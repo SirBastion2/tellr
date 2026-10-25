@@ -32,7 +32,7 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
         display: 'grid',
         placeItems: 'center',
         zIndex: 20,
-        padding: 16,
+        padding: 'var(--tc-space-4)',
       }}
     >
       <div
@@ -40,11 +40,11 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
           background: 'var(--tc-glass-fallback, #1e1b4b)',
           color: 'var(--tc-text, #fff)',
           borderRadius: 'var(--tc-radius-card, 16px)',
-          padding: 16,
+          padding: 'var(--tc-space-4)',
           maxWidth: 480,
           width: 'min(480px, 100%)',
           display: 'grid',
-          gap: 12,
+          gap: 'var(--tc-space-3)',
         }}
       >
         <h2 id="shortcut-title" style={{ margin: 0, fontSize: 20 }}>
@@ -57,7 +57,7 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
             margin: 0,
             padding: 0,
             display: 'grid',
-            gap: 8,
+            gap: 'var(--tc-space-2)',
           }}
         >
           {ROWS.map((row) => (
@@ -67,7 +67,7 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
               style={{
                 display: 'grid',
                 gridTemplateColumns: '7.5rem minmax(0, 1fr)',
-                columnGap: 12,
+                columnGap: 'var(--tc-space-3)',
                 alignItems: 'baseline',
               }}
             >

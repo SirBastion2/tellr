@@ -57,7 +57,7 @@ export function HandoffScreen({
 }) {
   const signals = flaggedSignals(session, projection, library, dismissed, confirmed, postedChipIds)
   return (
-    <section data-testid="handoff-screen" className="tc-card">
+    <section data-testid="handoff-screen" className="tc-card tc-screen">
       <PageTitle>{projection ? handoffTitle(projection.outcome, projection.actor) : 'Handoff'}</PageTitle>
       {projection ? (
         <>
@@ -106,14 +106,14 @@ export function HandoffScreen({
           </FactGrid>
           <SectionHeading>Why it was flagged</SectionHeading>
           {signals.length > 0 ? (
-            <ul style={{ margin: 0, paddingLeft: '1.2rem', display: 'grid', gap: 6 }}>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem', display: 'grid', gap: 'var(--tc-space-2)' }}>
               {signals.map((signal) => (
                 <li
                   key={signal.id}
                   data-testid="handoff-reason"
                   data-id={signal.id}
                   data-status={signal.status ?? undefined}
-                  style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'baseline' }}
+                  style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--tc-space-2)', alignItems: 'baseline' }}
                 >
                   <strong>{signal.label}</strong>
                   {signal.status ? <span className="tc-badge">{signal.status}</span> : null}

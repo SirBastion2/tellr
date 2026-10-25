@@ -2,54 +2,85 @@ import type { CSSProperties } from 'react'
 import markUrl from '../assets/tellr-wordmark.png'
 import { useTheme } from './ThemeProvider'
 
-const hiddenText: CSSProperties = {
-  position: 'absolute',
-  width: '1px',
-  height: '1px',
+const logoBox: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  boxSizing: 'border-box',
+  height: 'var(--tc-wordmark-h, 48px)',
+  width: 'auto',
+  aspectRatio: 'var(--tc-wordmark-aspect, 155 / 61)',
   padding: 0,
-  margin: '-1px',
-  overflow: 'hidden',
-  clip: 'rect(0, 0, 0, 0)',
-  whiteSpace: 'nowrap',
-  border: 0,
+  lineHeight: 0,
+  backgroundColor: 'var(--tc-logo)',
+  WebkitMaskImage: `url("${markUrl}")`,
+  maskImage: `url("${markUrl}")`,
+  WebkitMaskRepeat: 'no-repeat',
+  maskRepeat: 'no-repeat',
+  WebkitMaskSize: 'contain',
+  maskSize: 'contain',
+  WebkitMaskPosition: 'center',
+  maskPosition: 'center',
+  objectFit: 'contain',
+}
+
+const logoImg: CSSProperties = {
+  display: 'block',
+  height: '100%',
+  width: 'auto',
+  aspectRatio: 'var(--tc-wordmark-aspect, 155 / 61)',
+  objectFit: 'contain',
+  objectPosition: 'center',
+  lineHeight: 0,
+  opacity: 0,
 }
 
 /** Bank mark. Sits in the app header so it is not clipped by the viewport. */
 export function ThemeWordmark() {
   const theme = useTheme()
   return (
-    <div data-testid="theme-wordmark" data-mark={theme.mark} style={{ display: 'flex', alignItems: 'center', minHeight: 'var(--tc-wordmark-h, 40px)', flex: '0 0 auto' }}>
+    <div
+      data-testid="theme-wordmark"
+      data-mark={theme.mark}
+      className="tc-wordmark"
+      style={
+        {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flex: '0 0 auto',
+          height: 'var(--tc-header-control-h, 48px)',
+          minHeight: 'var(--tc-header-control-h, 48px)',
+          lineHeight: 0,
+          boxSizing: 'border-box',
+          ...(theme.mark === 'logo'
+            ? {
+                '--tc-logo-src': `url("${markUrl}")`,
+                width: 'auto',
+                padding: 'var(--tc-space-1, 4px)',
+                borderRadius: 'var(--tc-radius-control, 999px)',
+              }
+            : {}),
+        } as CSSProperties
+      }
+    >
       {theme.mark === 'logo' ? (
-        <span
-          aria-hidden="true"
-          data-testid="theme-logo"
-          style={{
-            display: 'block',
-            width: 'var(--tc-wordmark-w, 110px)',
-            height: 'var(--tc-wordmark-h, 40px)',
-            backgroundColor: 'var(--tc-logo)',
-            WebkitMaskImage: `url("${markUrl}")`,
-            maskImage: `url("${markUrl}")`,
-            WebkitMaskRepeat: 'no-repeat',
-            maskRepeat: 'no-repeat',
-            WebkitMaskSize: 'contain',
-            maskSize: 'contain',
-            WebkitMaskPosition: 'left center',
-            maskPosition: 'left center',
-          }}
-        />
+        <span className="tc-wordmark-logo" data-testid="theme-logo" aria-hidden="true" style={logoBox}>
+          <img src={markUrl} alt="" className="tc-wordmark-img" style={logoImg} />
+        </span>
       ) : null}
       <span
+        className={theme.mark === 'logo' ? 'tc-sr' : 'tc-wordmark-text'}
         style={
           theme.mark === 'logo'
-            ? hiddenText
+            ? undefined
             : {
                 fontFamily: theme.wordmarkFont,
                 color: 'var(--tc-wordmark)',
-                fontWeight: theme.wordmarkWeight,
-                letterSpacing: theme.wordmarkLetterSpacing,
+                fontWeight: 'var(--tc-wordmark-weight, 600)' as CSSProperties['fontWeight'],
+                letterSpacing: 'var(--tc-wordmark-tracking, 0.02em)',
                 fontSize: 'var(--tc-type-header, 1.05rem)',
-                lineHeight: 1.1,
+                lineHeight: 'var(--tc-type-line-heading, 1.2)',
                 margin: 0,
                 whiteSpace: 'nowrap',
                 overflow: 'visible',

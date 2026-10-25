@@ -113,7 +113,7 @@ export function CopilotStrip({
         style={{
           background: 'var(--tc-action-bg)',
           color: 'var(--tc-action-fg)',
-          borderRadius: 12,
+          borderRadius: 'var(--tc-radius-card, 16px)',
           padding: 12,
           display: 'grid',
           gap: 6,
@@ -144,7 +144,7 @@ export function CopilotStrip({
           background: 'var(--tc-quote-bg)',
           color: 'var(--tc-quote-fg)',
           borderLeft: '4px solid var(--tc-quote-border)',
-          borderRadius: 8,
+          borderRadius: 'var(--tc-radius-card, 16px)',
           padding: '8px 12px',
         }}
       >

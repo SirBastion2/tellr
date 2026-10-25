@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { buttonFill, buttonText, controlStyle, inputFill } from '../theme/controls'
+import { useTheme } from '../theme/ThemeProvider'
 import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
 import { outcomeLabel, suggestedLabel } from '../ui/plain'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
@@ -13,9 +14,6 @@ const OUTCOME_LABEL: Record<OutcomeId, string> = {
   escalate: 'Escalate',
   report: 'Report',
 }
-
-const HIGHLIGHT = '#fef3c7'
-const SUGGESTED_INK = '#1c1917'
 
 const tap: CSSProperties = controlStyle
 
@@ -32,6 +30,7 @@ export function OutcomeScreen({
   onSubmit?: (body: { outcome: OutcomeId; actor: string }) => void
   onStartNew?: () => void
 }) {
+  const theme = useTheme()
   const [actor, setActor] = useState('')
   const [chosen, setChosen] = useState<OutcomeId | null>(null)
   const ready = actor.trim().length > 0 && chosen !== null
@@ -44,7 +43,7 @@ export function OutcomeScreen({
   }
 
   return (
-    <section data-testid="outcome-screen" className="tc-card">
+    <section data-testid="outcome-screen" className="tc-card tc-screen">
       <PageTitle>Outcome</PageTitle>
       {session && closed ? (
         <>
@@ -97,9 +96,9 @@ export function OutcomeScreen({
                     aria-pressed={chosen === outcome}
                     style={{
                       ...tap,
-                      backgroundColor: highlighted ? HIGHLIGHT : 'transparent',
-                      color: highlighted ? SUGGESTED_INK : tap.color,
-                      borderColor: highlighted ? SUGGESTED_INK : undefined,
+                      backgroundColor: highlighted ? theme.highlightBg : 'transparent',
+                      color: highlighted ? theme.highlightFg : tap.color,
+                      borderColor: highlighted ? theme.highlightFg : undefined,
                     }}
                   >
                     {OUTCOME_LABEL[outcome]}
@@ -108,7 +107,7 @@ export function OutcomeScreen({
               )
             })}
           </ul>
-          <label className="block" htmlFor="outcome-actor" style={{ display: 'grid', gap: 4, fontWeight: 700 }}>
+          <label className="tc-stack-heading block" htmlFor="outcome-actor" style={{ fontWeight: 700 }}>
             Teller name
             <input
               id="outcome-actor"

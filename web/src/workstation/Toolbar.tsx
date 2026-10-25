@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import { formatElapsed } from '../demo/clock'
 import type { DemoSpeed, DemoView } from '../demo/types'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
+import { DENSITY } from '../theme/tokens'
 import { PauseIcon, PlayIcon, RestartIcon, StepIcon } from '../ui/icons'
 
 const control: CSSProperties = {
@@ -10,18 +11,18 @@ const control: CSSProperties = {
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'center',
-  height: 40,
-  minHeight: 40,
+  height: DENSITY.controlHeight,
+  minHeight: DENSITY.controlHeight,
   boxSizing: 'border-box',
   gap: 8,
-  padding: '0 12px',
+  padding: 'var(--tc-space-control-pad-y, 8px) var(--tc-space-control-pad-x, 12px)',
 }
 
 const iconButton: CSSProperties = {
   ...control,
   ...secondaryStyle,
-  width: 40,
-  minWidth: 40,
+  width: DENSITY.controlHeight,
+  minWidth: DENSITY.controlHeight,
   padding: 0,
 }
 
