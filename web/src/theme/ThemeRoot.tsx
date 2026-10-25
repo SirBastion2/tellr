@@ -1,35 +1,23 @@
 import type { CSSProperties, ReactNode } from 'react'
-import markUrl from '../assets/tellr-wordmark.png'
-import { useTheme } from './ThemeProvider'
-import { PROGRESS_DOTS } from './tokens'
+import { usePresenter } from '../presenter'
+import { useColorScheme, useTheme } from './ThemeProvider'
 import { themeVars } from './vars'
 
-const hiddenText: CSSProperties = {
-  position: 'absolute',
-  width: '1px',
-  height: '1px',
-  padding: 0,
-  margin: '-1px',
-  overflow: 'hidden',
-  clip: 'rect(0, 0, 0, 0)',
-  whiteSpace: 'nowrap',
-  border: 0,
-}
-
-export function ThemeRoot({ answers, children }: { answers: number | null; children: ReactNode }) {
+export function ThemeRoot({ children }: { children: ReactNode }) {
   const theme = useTheme()
-  const active = Math.min(PROGRESS_DOTS - 1, Math.max(0, answers ?? 0))
-  const markPosition: CSSProperties =
-    theme.markPlacement === 'top-left' ? { top: 28, left: 32 } : { bottom: 24, left: 32 }
+  const { scheme } = useColorScheme()
+  const presenter = usePresenter()
   const footerPosition: CSSProperties =
     theme.footerPlacement === 'center'
-      ? { left: 0, right: 0, textAlign: 'center', bottom: 20 }
-      : { right: 32, bottom: 22, textAlign: 'right', maxWidth: '46%' }
+      ? { textAlign: 'center' }
+      : { textAlign: 'right', marginLeft: 'auto', maxWidth: '46%' }
 
   return (
     <div
       data-testid="theme-root"
       data-theme={theme.id}
+      data-scheme={scheme}
+      data-presenter={presenter.on ? 'true' : 'false'}
       style={{
         ...(themeVars(theme) as CSSProperties),
         minHeight: '100vh',
@@ -37,129 +25,60 @@ export function ThemeRoot({ answers, children }: { answers: number | null; child
         color: 'var(--tc-text)',
         fontFamily: 'var(--tc-font)',
         fontWeight: 'var(--tc-font-weight)' as CSSProperties['fontWeight'],
-        backgroundColor: theme.background.color,
-        backgroundImage: theme.background.image,
+        fontSize: presenter.on ? '125%' : '100%',
+        colorScheme: scheme,
+        backgroundColor: 'var(--tc-bg-color)',
+        backgroundImage: 'var(--tc-bg-image)',
         backgroundRepeat: theme.background.repeat as CSSProperties['backgroundRepeat'],
-        backgroundSize: theme.background.size,
+        backgroundSize: 'var(--tc-bg-size)',
         backgroundPosition: 'center',
       }}
     >
       <div
-        data-testid="theme-wordmark"
-        data-mark={theme.mark}
-        style={{ position: 'absolute', zIndex: 2, ...markPosition }}
-      >
-        {theme.mark === 'logo' ? (
-          <span
-            aria-hidden="true"
-            data-testid="theme-logo"
-            style={{
-              display: 'block',
-              width: 176,
-              height: 72,
-              backgroundColor: 'var(--tc-logo)',
-              WebkitMaskImage: `url("${markUrl}")`,
-              maskImage: `url("${markUrl}")`,
-              WebkitMaskRepeat: 'no-repeat',
-              maskRepeat: 'no-repeat',
-              WebkitMaskSize: 'contain',
-              maskSize: 'contain',
-              WebkitMaskPosition: 'left center',
-              maskPosition: 'left center',
-            }}
-          />
-        ) : null}
-        <span
-          style={
-            theme.mark === 'logo'
-              ? hiddenText
-              : {
-                  fontFamily: theme.wordmarkFont,
-                  color: theme.wordmarkColor,
-                  fontWeight: theme.wordmarkWeight,
-                  letterSpacing: theme.wordmarkLetterSpacing,
-                  fontSize: '28px',
-                  lineHeight: 1.1,
-                  margin: 0,
-                }
-          }
-        >
-          {theme.wordmark}
-        </span>
-      </div>
-      <div
+        data-testid="theme-page"
         style={{
           minHeight: '100vh',
           boxSizing: 'border-box',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: theme.markPlacement === 'top-left' ? '108px 28px 72px' : '48px 28px 108px',
+          flexDirection: 'column',
+          alignItems: 'stretch',
+          justifyContent: 'flex-start',
+          padding: '24px 16px 32px',
+          gap: '16px',
         }}
       >
         <div
           data-testid="theme-card"
           style={{
             position: 'relative',
-            width: 'min(960px, 100%)',
+            width: 'min(1180px, 100%)',
+            margin: '0 auto',
             borderRadius: 'var(--tc-radius-card)',
             background: 'var(--tc-glass-fill)',
             border: 'var(--tc-border-width) var(--tc-border-style) var(--tc-glass-border)',
             backdropFilter: 'blur(var(--tc-glass-blur))',
             WebkitBackdropFilter: 'blur(var(--tc-glass-blur))',
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), var(--tc-shadow-card)',
-            padding: 'var(--tc-space-card) 52px var(--tc-space-card) var(--tc-space-card)',
+            padding: '16px',
             boxSizing: 'border-box',
           }}
         >
           {children}
-          <ol
-            data-testid="theme-progress"
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              right: 18,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 10,
-              margin: 0,
-              padding: 0,
-              listStyle: 'none',
-            }}
-          >
-            {Array.from({ length: PROGRESS_DOTS }, (_, index) => (
-              <li
-                key={index}
-                data-testid="theme-progress-dot"
-                data-active={index === active ? 'true' : 'false'}
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: '50%',
-                  backgroundColor:
-                    index === active ? 'var(--tc-progress-active)' : 'var(--tc-progress-inactive)',
-                }}
-              />
-            ))}
-          </ol>
         </div>
+        <p
+          data-testid="theme-footer"
+          style={{
+            width: 'min(1180px, 100%)',
+            margin: '0 auto',
+            fontSize: '0.8125rem',
+            lineHeight: 1.4,
+            color: 'var(--tc-muted)',
+            ...footerPosition,
+          }}
+        >
+          {theme.footerText}
+        </p>
       </div>
-      <p
-        data-testid="theme-footer"
-        style={{
-          position: 'absolute',
-          zIndex: 2,
-          margin: 0,
-          fontSize: 13,
-          lineHeight: 1.4,
-          color: 'var(--tc-muted)',
-          ...footerPosition,
-        }}
-      >
-        {theme.footerText}
-      </p>
     </div>
   )
 }

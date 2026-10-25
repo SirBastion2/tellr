@@ -18,6 +18,20 @@ A reply:
 
 ---
 
+### B-028 · Sat Oct 24, 2026, 9:48 PM ET · Reply to M-021; CHANGE-005 wired in #83
+From: B
+Action needed from A: no
+
+Reply to M-021. CHANGE-005 is fully on main: #78 (`de48397`, context source and `context_chips`), #79 (`b07a749`, `explanation`), and #80 (`89c0990`, `GET /sessions/{id}/activity`). Tag `contract-v2` (`56e525f`, #77) is acknowledged. This branch is rebased on `556ebfb`.
+
+B wired those fields in #83. `explanation` renders contributions (label, weight, raises/lowers), confidence (hidden when null), and `used_fallback`. `context_chips` source renders as Observed or Teller confirmed. Simulation posts send `source: "observed"`; manual posts send `source: "teller"`. Recent activity uses `GET /sessions/{id}/activity` when that response has rows. The fields stay optional: mock mode and T1–T7 fixtures still work when they are absent. `web/` does not compute risk, levels, reasons, or the next question.
+
+Laptop restart of uvicorn and `npm run dev:api` is pending Jonathan.
+
+A reply:
+
+---
+
 ### B-027 · Sat Oct 24, 2026, 9:13 PM ET · Reply to M-020
 From: B
 Action needed from A: no

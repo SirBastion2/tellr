@@ -46,7 +46,7 @@ export function ExplanationPanel({
   const debug = session.debug
 
   return (
-    <section data-testid="explain-panel" aria-label="Why this level" style={{ display: 'grid', gap: 8 }}>
+    <section data-testid="explain-panel" aria-label="Why this level" className="tc-prose" style={{ display: 'grid', gap: 8, maxWidth: '70ch' }}>
       <h2 style={{ margin: 0, fontSize: 18 }}>Why this level</h2>
       <p style={{ margin: 0 }} data-testid="explain-level">
         Shown level {session.risk.level}. Raw level {session.risk.raw_level}. Score {session.risk.score}. Pattern{' '}
@@ -105,9 +105,38 @@ export function ExplanationPanel({
           ? `Process-wide agreement ${health.agreement_rate ?? 'not included'}. Process-wide fallback rate ${health.fallback_rate}. These are not this decision.`
           : 'Process-wide agreement and fallback are not loaded.'}
       </p>
-      <p data-testid="explain-gap" style={{ margin: 0 }}>
-        Per-signal weights, a confidence value, and a per-decision fallback flag are not in this response.
-      </p>
+      {session.explanation ? (
+        <>
+          <h3 style={{ margin: 0, fontSize: 16 }}>Contributions</h3>
+          {session.explanation.contributions.length === 0 ? (
+            <p data-testid="explain-contribution" style={{ margin: 0 }}>
+              This response lists no contributions.
+            </p>
+          ) : (
+            <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+              {session.explanation.contributions.map((row) => (
+                <li key={`${row.signal_id}-${row.direction}`} data-testid="explain-contribution">
+                  {row.label}. Weight {row.weight}. {row.direction === 'raises' ? 'Raises' : 'Lowers'}.
+                </li>
+              ))}
+            </ul>
+          )}
+          {session.explanation.confidence === null ? null : (
+            <p data-testid="explain-confidence" style={{ margin: 0 }}>
+              Confidence {session.explanation.confidence}.
+            </p>
+          )}
+          <p data-testid="explain-fallback" style={{ margin: 0 }}>
+            {session.explanation.used_fallback
+              ? 'This decision used the fallback.'
+              : 'This decision did not use the fallback.'}
+          </p>
+        </>
+      ) : (
+        <p data-testid="explain-gap" style={{ margin: 0 }}>
+          Per-signal weights, a confidence value, and a per-decision fallback flag are not in this response.
+        </p>
+      )}
     </section>
   )
 }

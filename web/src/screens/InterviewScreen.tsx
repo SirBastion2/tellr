@@ -51,7 +51,7 @@ function TalkTrack({ library, session }: { library: Library | null; session: Ses
   const avoid = stage?.avoid ?? session.talk_track.avoid
 
   return (
-    <section data-testid="talk-track" className="space-y-2">
+    <section data-testid="talk-track" className="space-y-2" style={{ maxWidth: '70ch' }}>
       <ul data-testid="talk-stage-lines">
         {stageLines.map((line, index) => (
           <li key={`stage-${index}`} data-testid="talk-stage-line">

@@ -48,11 +48,17 @@ describe('theme selection', () => {
       expect(theme?.space.gap.length, id).toBeGreaterThan(0)
       expect(theme?.glass.fallback.length, id).toBeGreaterThan(0)
       expect(theme?.risk.clearFg.length, id).toBeGreaterThan(0)
-      expect(theme?.background.image.includes('transparent'), id).toBe(false)
-      expect(theme?.background.image.includes('oklch'), id).toBe(false)
-      expect(theme?.background.image.includes('color-mix'), id).toBe(false)
-      expect(/ellipse\s+\d+(?:\.\d+)?%/.test(theme?.background.image ?? ''), id).toBe(false)
-      expect(theme?.background.image.includes('linear-gradient'), id).toBe(true)
+      for (const image of [theme?.background.image ?? '', theme?.light.background.image ?? '']) {
+        expect(image.includes('transparent'), id).toBe(false)
+        expect(image.includes('oklch'), id).toBe(false)
+        expect(image.includes('color-mix'), id).toBe(false)
+        expect(/ellipse\s+\d+(?:\.\d+)?%/.test(image), id).toBe(false)
+        expect(image.includes('linear-gradient'), id).toBe(true)
+      }
+      expect(theme?.background.color.startsWith('#'), id).toBe(true)
+      expect(theme?.light.background.color.startsWith('#'), id).toBe(true)
+      expect(theme?.light.text.length, id).toBeGreaterThan(0)
+      expect(theme?.secondaryFg.length, id).toBeGreaterThan(0)
       expect(theme?.name.length, id).toBeGreaterThan(0)
       expect(theme?.wordmark.length, id).toBeGreaterThan(0)
       expect(theme?.background.image.length, id).toBeGreaterThan(0)
@@ -125,7 +131,7 @@ describe('theme selection', () => {
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('casino')
   })
 
-  it('marks the progress dot from the server answer count', () => {
+  it('keeps the page in normal flow without an unlabeled dot column', () => {
     const session = { ...opener, answers: 2 }
     render(
       <MemoryRouter>
@@ -136,9 +142,10 @@ describe('theme selection', () => {
         />
       </MemoryRouter>,
     )
-    const dots = screen.getAllByTestId('theme-progress-dot')
-    expect(dots).toHaveLength(5)
-    expect(dots.map((dot) => dot.getAttribute('data-active'))).toEqual(['false', 'false', 'true', 'false', 'false'])
+    expect(screen.queryByTestId('theme-progress')).toBeNull()
+    expect(screen.queryByTestId('theme-progress-dot')).toBeNull()
+    expect(getComputedStyle(screen.getByTestId('theme-page')).alignItems).toBe('stretch')
+    expect(getComputedStyle(screen.getByTestId('theme-page')).flexDirection).toBe('column')
     expect(screen.getByTestId('theme-card')).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Teller Copilot' })).toBeTruthy()
   })

@@ -4,6 +4,7 @@ import { Link, BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate 
 import { CUSTOMERS, customerById } from './demo/customers'
 import type { ConfirmKind, DemoSpeed, DemoView } from './demo/types'
 import { LiveBadge } from './LiveBadge'
+import { PRESENTER_HIDDEN_ROUTES, PresenterProvider, usePresenter } from './presenter'
 import { SchemaBanner } from './SchemaBanner'
 import { APP_ROUTES } from './routes'
 import { ContextScreen } from './screens/ContextScreen'
@@ -15,13 +16,15 @@ import { HomeScreen } from './screens/HomeScreen'
 import { InterviewScreen } from './screens/InterviewScreen'
 import { OutcomeScreen } from './screens/OutcomeScreen'
 import { TellerProvider, useTeller } from './teller'
-import { controlStyle, primaryStyle } from './theme/controls'
-import { ThemeProvider } from './theme/ThemeProvider'
+import { controlStyle, secondaryStyle } from './theme/controls'
+import { type ColorChoice } from './theme/scheme'
+import { ThemeProvider, useColorScheme } from './theme/ThemeProvider'
 import { ThemeRoot } from './theme/ThemeRoot'
+import { ThemeWordmark } from './theme/Wordmark'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 import { LEVEL_WORD } from './ui/LevelIcon'
 import { ShortcutHelp } from './ui/ShortcutHelp'
-import type { AnswerPost, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
+import type { ActivityRow, AnswerPost, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import type { SchemaIssue } from './validate'
 import { suggestedAction } from './workstation/CopilotStrip'
 
@@ -33,9 +36,38 @@ const tap: CSSProperties = {
   flex: '0 0 auto',
 }
 
-const actionTap: CSSProperties = {
-  ...tap,
-  ...primaryStyle,
+function SchemeToggle() {
+  const { choice, setChoice } = useColorScheme()
+  const options: readonly { id: ColorChoice; label: string }[] = [
+    { id: 'light', label: 'Light' },
+    { id: 'dark', label: 'Dark' },
+    { id: 'system', label: 'System' },
+  ]
+  return (
+    <div className="tc-segment" role="group" aria-label="Color scheme" data-testid="color-scheme">
+      {options.map((option) => {
+        const selected = choice === option.id
+        return (
+          <button
+            key={option.id}
+            type="button"
+            data-testid={`scheme-${option.id}`}
+            aria-pressed={selected}
+            style={{
+              ...tap,
+              borderWidth: 0,
+              borderRadius: 0,
+              backgroundColor: selected ? 'var(--tc-button)' : 'var(--tc-secondary-bg)',
+              color: selected ? 'var(--tc-button-text)' : 'var(--tc-secondary-fg)',
+            }}
+            onClick={() => setChoice(option.id)}
+          >
+            {option.label}
+          </button>
+        )
+      })}
+    </div>
+  )
 }
 
 function routeLabel(route: (typeof APP_ROUTES)[number], session: SessionState | null): string | null {
@@ -64,6 +96,7 @@ export function AppShell({
   issues,
   postedChipIds = [],
   dismissed = [],
+  activity = null,
   onPostContext,
   onAnswer,
   onUndo,
@@ -83,6 +116,7 @@ export function AppShell({
   issues: readonly SchemaIssue[]
   postedChipIds?: readonly string[]
   dismissed?: readonly string[]
+  activity?: readonly ActivityRow[] | null
   onPostContext?: (chips: string[]) => void
   onAnswer?: (answer: AnswerPost) => void
   onUndo?: () => void
@@ -98,6 +132,10 @@ export function AppShell({
   onConfirmAccept?: () => void
 }) {
   const location = useLocation()
+  const presenter = usePresenter()
+  const workstation = location.pathname === '/' && Boolean(demo)
+  const routes = presenter.on ? APP_ROUTES.filter((route) => !PRESENTER_HIDDEN_ROUTES.has(route.id)) : APP_ROUTES
+  const simulationTitle = demo ? (customerById(demo.customerId)?.title ?? null) : null
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (event.key !== 'Escape') {
@@ -116,19 +154,29 @@ export function AppShell({
     : ''
 
   return (
-    <ThemeRoot answers={session?.answers ?? null}>
+    <ThemeRoot>
       <div style={{ boxSizing: 'border-box', color: 'var(--tc-text, #1c1917)' }}>
         <a href="#main" className="tc-sr" style={{ minHeight: '48px', minWidth: '48px' }}>
           Skip to content
         </a>
         <header
           data-testid="app-header"
-          style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', minHeight: '48px' }}
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: '8px',
+            minHeight: '48px',
+            background: 'var(--tc-glass-fallback)',
+            borderRadius: 'var(--tc-radius-card)',
+            padding: '8px',
+          }}
         >
-          <h1 style={{ margin: 0, fontSize: '20px', lineHeight: 1.2, flex: '0 0 auto', fontWeight: 'var(--tc-heading-weight, 600)' }}>
+          <ThemeWordmark />
+          <h1 style={{ margin: 0, fontSize: '1.25rem', lineHeight: 1.2, flex: '0 0 auto', fontWeight: 'var(--tc-heading-weight, 600)' }}>
             Teller Copilot
           </h1>
-          <LiveBadge mode={session?.mode ?? null} />
+          <LiveBadge mode={session?.mode ?? null} simulationTitle={simulationTitle} />
           <nav
             aria-label="Screens"
             data-testid="app-nav"
@@ -141,24 +189,50 @@ export function AppShell({
               flex: '1 1 16rem',
             }}
           >
-            {APP_ROUTES.map((route) => {
+            {routes.map((route) => {
               const path = routePath(route, session)
               const label = routeLabel(route, session)
               if (!path || !label) {
                 return null
               }
+              const current = location.pathname === path
               return (
                 <Link
                   key={route.id}
                   to={path}
-                  aria-current={location.pathname === path ? 'page' : undefined}
-                  style={{ ...tap, textDecoration: 'none' }}
+                  aria-current={current ? 'page' : undefined}
+                  style={{
+                    ...tap,
+                    textDecoration: 'none',
+                    backgroundColor: current ? 'var(--tc-input)' : 'transparent',
+                    borderColor: 'transparent',
+                    borderBottom: current ? '3px solid var(--tc-accent)' : '3px solid transparent',
+                    fontWeight: current ? 700 : 500,
+                  }}
                 >
                   {label}
                 </Link>
               )
             })}
           </nav>
+          <SchemeToggle />
+          <button
+            type="button"
+            className="tc-btn"
+            data-variant={presenter.on ? 'primary' : 'secondary'}
+            data-testid="presenter-toggle"
+            aria-pressed={presenter.on}
+            title="Presenter mode"
+            style={{
+              ...tap,
+              ...(presenter.on
+                ? { backgroundColor: 'var(--tc-button)', color: 'var(--tc-button-text)', borderColor: 'transparent' }
+                : secondaryStyle),
+            }}
+            onClick={() => presenter.setOn(!presenter.on)}
+          >
+            Presenter
+          </button>
           <button
             type="button"
             className="tc-btn"
@@ -166,16 +240,11 @@ export function AppShell({
             data-testid="shortcut-help-button"
             aria-label="Keyboard shortcuts"
             title="Keyboard shortcuts (?)"
-            style={tap}
+            style={{ ...tap, ...secondaryStyle }}
             onClick={() => onHelp?.(!helpOpen)}
           >
             ?
           </button>
-          {session ? (
-            <button type="button" className="tc-btn" data-variant="secondary" data-testid="undo" title="Undo the last signal" style={actionTap} onClick={() => onUndo?.()}>
-              Undo
-            </button>
-          ) : null}
         </header>
         <p className="tc-sr" aria-live="polite" data-testid="live-region">
           {announcement}
@@ -192,11 +261,33 @@ export function AppShell({
           </p>
         ) : null}
         <main id="main">
+          {session && !workstation ? (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+              <button
+                type="button"
+                className="tc-btn"
+                data-variant="secondary"
+                data-testid="undo"
+                title="Undo the last signal"
+                style={{ ...tap, ...secondaryStyle }}
+                onClick={() => onUndo?.()}
+              >
+                Undo
+              </button>
+            </div>
+          ) : null}
           <Routes>
             <Route
               path="/"
               element={
-                <HomeScreen library={library} session={session} postedChipIds={postedChipIds} demo={demo} />
+                <HomeScreen
+                  library={library}
+                  session={session}
+                  postedChipIds={postedChipIds}
+                  activity={activity}
+                  demo={demo}
+                  onUndo={onUndo}
+                />
               }
             />
             <Route
@@ -206,6 +297,8 @@ export function AppShell({
                   library={library}
                   postedChipIds={postedChipIds}
                   dismissed={dismissed}
+                  contextChips={session?.context_chips}
+                  activity={activity}
                   demo={demo}
                 />
               }
@@ -238,7 +331,7 @@ export function AppShell({
             <Route path="/settings" element={<Navigate to="/health" replace />} />
           </Routes>
         </main>
-        {helpOpen ? <ShortcutHelp onClose={() => onHelp?.(false)} /> : null}
+        {helpOpen ? <ShortcutHelp presenter={presenter.on} onClose={() => onHelp?.(false)} /> : null}
         {confirm ? (
           <ConfirmDialog
             title={
@@ -268,6 +361,7 @@ function ConnectedShell() {
   const teller = useTeller()
   const navigate = useNavigate()
   const location = useLocation()
+  const presenter = usePresenter()
   const { loadHandoff } = teller
   const sessionId = teller.session?.session_id ?? null
   const [customerId, setCustomerId] = useState(CUSTOMERS[0]?.id ?? '')
@@ -280,10 +374,13 @@ function ConnectedShell() {
   const [dismissed, setDismissed] = useState<string[]>([])
   const [helpOpen, setHelpOpen] = useState(false)
   const [confirm, setConfirm] = useState<ConfirmKind>(null)
+  const [elapsedMs, setElapsedMs] = useState(0)
   const indexRef = useRef(0)
   const customerRef = useRef(customerId)
   const speedRef = useRef(speed)
   const playingRef = useRef(playing)
+  const presenterRef = useRef(presenter.on)
+  const elapsedRef = useRef(0)
   const lock = useRef(false)
   const tellerRef = useRef(teller)
 
@@ -292,8 +389,23 @@ function ConnectedShell() {
     customerRef.current = customerId
     speedRef.current = speed
     playingRef.current = playing
+    presenterRef.current = presenter.on
     tellerRef.current = teller
-  }, [customerId, index, playing, speed, teller])
+  }, [customerId, index, playing, presenter.on, speed, teller])
+
+  useEffect(() => {
+    if (!playing) {
+      return
+    }
+    let last = performance.now()
+    const timer = window.setInterval(() => {
+      const now = performance.now()
+      elapsedRef.current += now - last
+      last = now
+      setElapsedMs(elapsedRef.current)
+    }, 250)
+    return () => window.clearInterval(timer)
+  }, [playing])
 
   useEffect(() => {
     if (!sessionId || !location.pathname.endsWith('/handoff')) {
@@ -319,7 +431,7 @@ function ConnectedShell() {
         await tellerRef.current.startLive()
       }
       if (event.chips.length > 0) {
-        await tellerRef.current.postContext(event.chips)
+        await tellerRef.current.postContext(event.chips, 'observed')
       }
       setIndex((value) => value + 1)
     } finally {
@@ -338,7 +450,12 @@ function ConnectedShell() {
       setPlaying(false)
       return
     }
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    let reduced = false
+    try {
+      reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    } catch {
+      // jsdom has no matchMedia; play on the scripted delay.
+    }
     const delay = reduced ? 0 : Math.round(event.delayMs / speedRef.current)
     const timer = window.setTimeout(() => {
       void runCurrent()
@@ -355,6 +472,8 @@ function ConnectedShell() {
       setIndex(0)
       setConfirmed([])
       setDismissed([])
+      elapsedRef.current = 0
+      setElapsedMs(0)
       setPending(true)
       try {
         const next = await tellerRef.current.startLive()
@@ -373,6 +492,10 @@ function ConnectedShell() {
       if (id === customerRef.current) {
         return
       }
+      if (presenterRef.current) {
+        void resetSession(id)
+        return
+      }
       if (indexRef.current > 0 || tellerRef.current.session) {
         setPlaying(false)
         setConfirm({ kind: 'switch', id })
@@ -380,7 +503,7 @@ function ConnectedShell() {
       }
       setCustomerId(id)
     },
-    [],
+    [resetSession],
   )
 
   const acceptConfirm = useCallback(() => {
@@ -428,6 +551,9 @@ function ConnectedShell() {
         return
       }
       const key = event.key.toLowerCase()
+      if (presenterRef.current && key !== 'p' && key !== 'n') {
+        return
+      }
       if (key === '?') {
         event.preventDefault()
         setHelpOpen((open) => !open)
@@ -503,6 +629,8 @@ function ConnectedShell() {
     pending,
     showCase,
     confirmed,
+    presenter: presenter.on,
+    elapsedMs,
     onSelectCustomer: requestSwitch,
     onPlay: () => setPlaying(true),
     onPause: () => setPlaying(false),
@@ -537,6 +665,7 @@ function ConnectedShell() {
       issues={import.meta.env.DEV ? teller.issues : []}
       postedChipIds={teller.postedChipIds}
       dismissed={dismissed}
+      activity={teller.activity?.rows ?? null}
       httpStatus={teller.httpStatus}
       error={teller.error}
       demo={demo}
@@ -546,7 +675,7 @@ function ConnectedShell() {
       onConfirmCancel={() => setConfirm(null)}
       onConfirmAccept={acceptConfirm}
       onPostContext={(chips) => {
-        void teller.postContext(chips)
+        void teller.postContext(chips, 'teller')
       }}
       onAnswer={(answer) => {
         void teller.postAnswer(answer)
@@ -566,9 +695,11 @@ export function App() {
   return (
     <BrowserRouter>
       <ThemeProvider>
-        <TellerProvider>
-          <ConnectedShell />
-        </TellerProvider>
+        <PresenterProvider>
+          <TellerProvider>
+            <ConnectedShell />
+          </TellerProvider>
+        </PresenterProvider>
       </ThemeProvider>
     </BrowserRouter>
   )

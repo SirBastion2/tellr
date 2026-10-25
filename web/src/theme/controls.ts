@@ -29,3 +29,19 @@ export const primaryStyle: CSSProperties = {
   color: buttonText,
   borderColor: 'transparent',
 }
+
+/** Filled secondary. Text does not inherit a risk-panel color. */
+export const secondaryStyle: CSSProperties = {
+  backgroundColor: 'var(--tc-secondary-bg, #f8fafc)',
+  color: 'var(--tc-secondary-fg, #1c1917)',
+  borderColor: 'var(--tc-secondary-border, #1c1917)',
+}
+
+export const linkStyle: CSSProperties = {
+  ...controlStyle,
+  backgroundColor: 'transparent',
+  color: 'var(--tc-link, #1c1917)',
+  borderColor: 'transparent',
+  textDecoration: 'underline',
+  textUnderlineOffset: '3px',
+}

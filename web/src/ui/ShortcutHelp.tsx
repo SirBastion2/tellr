@@ -12,7 +12,7 @@ const ROWS: readonly { keys: string; what: string }[] = [
   { keys: '[ and ]', what: 'Switch simulated customer' },
 ]
 
-export function ShortcutHelp({ onClose }: { onClose: () => void }) {
+export function ShortcutHelp({ onClose, presenter = false }: { onClose: () => void; presenter?: boolean }) {
   const closeRef = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     closeRef.current?.focus()
@@ -49,6 +49,9 @@ export function ShortcutHelp({ onClose }: { onClose: () => void }) {
         <h2 id="shortcut-title" style={{ margin: 0, fontSize: 20 }}>
           Keyboard shortcuts
         </h2>
+        {presenter ? (
+          <p style={{ margin: 0 }}>Presenter mode keeps play, pause, and step. The other shortcuts are off.</p>
+        ) : null}
         <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
           {ROWS.map((row) => (
             <li key={row.keys}>

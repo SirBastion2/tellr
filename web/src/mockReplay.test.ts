@@ -8,7 +8,7 @@ import t6 from '../../contract/fixtures/T6.json'
 import t7 from '../../contract/fixtures/T7.json'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockRequest, resetMock } from '../mock/replay'
-import { validateError, validateHandoff, validateSessionState } from './validate'
+import { validateActivity, validateError, validateHandoff, validateSessionState } from './validate'
 
 const fixtures = [t1, t2, t3, t4, t5, t6, t7]
 
@@ -213,5 +213,52 @@ describe('fixture replay', () => {
     expect(posted.body).toMatchObject({ mode: 'live', session_id: sessionId, risk: { level: 'caution' } })
     const undone = mockRequest('POST', `/sessions/${sessionId}/undo`)
     expect(undone.body).toMatchObject({ risk: { level: 'clear', score: 0 } })
+  })
+
+  it('echoes context source and serves activity without inventing an explanation', () => {
+    const opened = mockRequest('POST', '/sessions', { mode: 'live', amount_band: '5000_9999' })
+    const sessionId = (opened.body as { session_id: string }).session_id
+    expect(mockRequest('GET', '/sessions/missing/activity').status).toBe(404)
+    const empty = mockRequest('GET', `/sessions/${sessionId}/activity`)
+    expect(empty.status).toBe(200)
+    expect(validateActivity(empty.body)).toEqual([])
+    expect(empty.body).toEqual({ session_id: sessionId, rows: [] })
+    expect(opened.body).not.toHaveProperty('explanation')
+
+    const posted = mockRequest('POST', `/sessions/${sessionId}/context`, {
+      chips: ['chip.on_phone'],
+      source: 'observed',
+    })
+    expect(validateSessionState(posted.body)).toEqual([])
+    expect(posted.body).toMatchObject({
+      context_chips: [{ id: 'chip.on_phone', source: 'observed' }],
+    })
+    expect(posted.body).not.toHaveProperty('explanation')
+    const activity = mockRequest('GET', `/sessions/${sessionId}/activity`)
+    expect(validateActivity(activity.body)).toEqual([])
+    expect(activity.body).toEqual({
+      session_id: sessionId,
+      rows: [
+        {
+          ts: '2026-10-24T00:00:00Z',
+          channel: 'chip.on_phone',
+          amount_band: '5000_9999',
+          type: 'ContextAdded',
+        },
+      ],
+    })
+
+    resetMock()
+    const practice = mockRequest('POST', '/sessions?case=T1', t1.steps[0]?.request)
+    const practiceId = t1.steps[0]?.response.session_id
+    const context = t1.steps[1]
+    const replayed = mockRequest('POST', `/sessions/${practiceId}/context`, context?.request)
+    expect(replayed.body).toEqual(context?.response)
+    expect(replayed.body).not.toHaveProperty('context_chips')
+    const projected = mockRequest('GET', `/sessions/${practiceId}/activity`)
+    expect(validateActivity(projected.body)).toEqual([])
+    expect(projected.body).toMatchObject({ session_id: practiceId })
+    expect((projected.body as { rows: { channel: string; type: string }[] }).rows.length).toBeGreaterThan(0)
+    expect(practice.status).toBe(200)
   })
 })

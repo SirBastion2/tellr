@@ -74,7 +74,7 @@ describe('session modes', () => {
     expect(screen.getByTestId('customer-picker')).toBeTruthy()
     fireEvent.click(screen.getByTestId('demo-step'))
     await waitFor(() => {
-      expect(screen.getByTestId('live-badge').textContent).toBe(LIVE)
+      expect(screen.getByTestId('live-badge').textContent).toBe('Simulation: Contractor cash, coached')
     })
     const live = calls.find((call) => call.method === 'POST' && call.url.endsWith('/sessions'))
     expect(live?.url).toBe('http://api.test/sessions')

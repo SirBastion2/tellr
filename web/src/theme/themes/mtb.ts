@@ -1,8 +1,18 @@
 import weaveUrl from '../../assets/weave.svg'
+import { SOLID_CONTROLS } from '../chrome'
 import type { BankTheme } from '../types'
 import { FOOTER_TEXT } from '../tokens'
 
 /** M&T Bank. Green field, weave texture, serif wordmark, round controls. */
+const risk = {
+  clearBg: '#F4FBF6',
+  clearFg: '#0E3B2E',
+  cautionBg: '#FFEDD5',
+  cautionFg: '#9A3412',
+  highBg: '#7F1D1D',
+  highFg: '#FFFFFF',
+}
+
 export const theme: BankTheme = {
   id: 'mtb',
   name: 'M&T Bank',
@@ -47,12 +57,35 @@ export const theme: BankTheme = {
     active: '#E7F6EC',
     inactive: 'rgba(231, 246, 236, 0.35)',
   },
-  risk: {
-    clearBg: '#F4FBF6',
-    clearFg: '#0E3B2E',
-    cautionBg: '#FFEDD5',
-    cautionFg: '#9A3412',
-    highBg: '#7F1D1D',
-    highFg: '#FFFFFF',
+  risk,
+  ...SOLID_CONTROLS,
+  link: '#D1FAE5',
+  surface: '#0E3B2E',
+  light: {
+    wordmarkColor: '#0E3B2E',
+    background: {
+      color: '#E7F6EC',
+      image: `url("${weaveUrl}"), radial-gradient(ellipse at 18% 0%, rgba(14, 59, 46, 0.08) 0%, rgba(14, 59, 46, 0) 48%), linear-gradient(165deg, #f7fff9 0%, #e7f6ec 46%, #d1fae5 100%)`,
+      repeat: 'repeat, no-repeat, no-repeat',
+      size: '140px 140px, cover, cover',
+    },
+    glass: {
+      fill: 'rgba(255, 255, 255, 0.82)',
+      border: 'rgba(14, 59, 46, 0.28)',
+      blur: '18px',
+      fallback: '#F7FFF9',
+    },
+    text: '#0E3B2E',
+    mutedText: '#0E3B2E',
+    inputFill: '#D1FAE5',
+    accent: '#0F6B4C',
+    button: '#0E3B2E',
+    buttonText: '#F4FBF6',
+    logoColor: '#0E3B2E',
+    progress: { active: '#0E3B2E', inactive: '#9DDCB4' },
+    risk,
+    ...SOLID_CONTROLS,
+    link: '#0E3B2E',
+    surface: '#F7FFF9',
   },
 }
