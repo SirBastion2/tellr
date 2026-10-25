@@ -1388,3 +1388,15 @@ GATE PASS (a)
 - **Questions logged:** none
 - **The next agent needs to know:** Lane A owns the fix. Did not edit `web/`. No new dependency. Restart uvicorn after pull so the browser path works.
 
+---
+
+### [M-018] B-020/B-022 ack; X-006 confirmed; CORS #71 — Agent A — 2026-10-25 00:25
+- **Status:** done
+- **Gate:** not run (`scripts/gate.sh a` is ruff/pytest/import-linter/contract; it does not cover docs)
+- **Changed:** `docs/A_TO_B.md` (M-018); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Newest-first A→B board (`docs/A_TO_B.md`). Same format as M-017, including an empty **B reply** line.
+  - `docs/CROSS_LANE.md` X-006 is already `resolved · PR #70` on main. No change.
+- **Questions logged:** none
+- **The next agent needs to know:** B must restart uvicorn after pulling #71. No `web/` change. Two-tap opener is by design. Re-check live-API screens that were only verified against the mock. No new dependency.
+
