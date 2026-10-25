@@ -1,6 +1,13 @@
 ### Demo score climb — Agent B — 2026-10-25 05:13
 - **Status:** done
-- **Gate:** `scripts/gate.sh b` → pending in this note until the run below is filled in
+- **Gate:** `scripts/gate.sh b` → PASS
+  ```
+  ── contract
+  contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+  GATE PASS (b)
+  ```
+  Contract ran as part of gate b. 199 web tests passed.
 - **Changed:** `web/src/demo/customers.ts`, `web/src/App.tsx`, `web/src/demo/customers.test.ts`, `web/src/mockReplay.test.ts`, `web/src/timelineDim.test.tsx`, `web/mock/live_answers.json`, `scripts/gen_live_answers.py`, `ARCHITECTURE.md`, `docs/A_TO_B.md` (M-024), this file. Did not edit `docs/HANDOFF.md`, `reference_impl.py`, `contract/`, golden tests, weights, `web/src/workstation/CopilotStrip.tsx`, `web/src/index.css`, or `README.md`.
 - **Decisions I made, and the section that justified each:**
   - Context-only evidence stays under the observation cap (architecture §6.2), so the fraud scripts now append `AnswerRecorded` beats. `runCurrent` posts `event.answer` through the existing `POST /answers` path. The client does not score.
