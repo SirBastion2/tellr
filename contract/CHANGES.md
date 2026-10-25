@@ -126,7 +126,7 @@ the model or the scorer (prompt allowlist and fold stay unchanged).
 **Applied.** `CONTRACT_VERSION` is 2.0.0 (`contract-v2`; tag on merge). Fixtures
 regenerated with `python scripts/gen_fixtures.py` (T1–T7 byte-identical except
 the version field; `reference_impl.py` does not emit the new optional fields).
-`scripts/gate.sh contract` and `scripts/gate.sh a` must pass. A-lane
+`scripts/gate.sh contract` and `scripts/gate.sh a` both PASS. A-lane
 implementation (API/engine fields, `GET /activity`, tests) follows in a
 **separate PR after apply**. Do not edit goldens or `reference_impl.py`.
 
