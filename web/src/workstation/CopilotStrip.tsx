@@ -1,12 +1,13 @@
-import type { CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { listedChipIds, notesOnlyChip, originText, sourceForChip } from '../feed'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { DENSITY } from '../theme/tokens'
 import { CheckIcon, DismissIcon } from '../ui/icons'
 import { LEVEL_WORD, LevelIcon } from '../ui/LevelIcon'
-import type { Library, SessionState } from '../types'
+import type { ActivityRow, Library, SessionState } from '../types'
 import { Fact, FactGrid } from '../ui/facts'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
+import { ExplanationPanel } from './ExplanationPanel'
 
 function roundIconButton(fill: CSSProperties): CSSProperties {
   return {
@@ -72,6 +73,7 @@ export function CopilotStrip({
   onEscalate,
   onUndo,
   closed = false,
+  activity = null,
 }: {
   library: Library | null
   session: SessionState | null
@@ -87,7 +89,46 @@ export function CopilotStrip({
   onEscalate: () => void
   onUndo?: () => void
   closed?: boolean
+  activity?: readonly ActivityRow[] | null
 }) {
+  const [open, setOpen] = useState(false)
+  const [wasIdle, setWasIdle] = useState(idle)
+  const toggleRef = useRef<HTMLButtonElement>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  if (idle !== wasIdle) {
+    setWasIdle(idle)
+    if (idle) {
+      setOpen(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setOpen(false)
+      }
+    }
+    function onClick(event: MouseEvent) {
+      const target = event.target
+      if (!(target instanceof Node)) {
+        return
+      }
+      if (toggleRef.current?.contains(target) || overlayRef.current?.contains(target)) {
+        return
+      }
+      setOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    document.addEventListener('click', onClick)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.removeEventListener('click', onClick)
+    }
+  }, [open])
+
   if (idle) {
     return (
       <aside aria-label="Copilot" data-testid="copilot-strip" className="tc-strip" data-idle="true">
@@ -144,14 +185,56 @@ export function CopilotStrip({
         </p>
         <FactGrid label={URGENCY_SCORE_TERM}>
           <Fact term={URGENCY_SCORE_TERM}>
-            <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
-              {formatUrgencyScore(session.risk.score)}
+            <span className="tc-score-line">
+              <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
+                {formatUrgencyScore(session.risk.score)}
+              </span>
+              <button
+                type="button"
+                ref={toggleRef}
+                className="tc-btn"
+                data-variant="secondary"
+                data-testid="score-explanation"
+                aria-expanded={open}
+                aria-controls="score-explanation-overlay"
+                style={{
+                  ...controlStyle,
+                  ...secondaryStyle,
+                  minHeight: 0,
+                  minWidth: 0,
+                  height: 'auto',
+                  padding: 'var(--tc-space-1, 4px) var(--tc-space-2, 8px)',
+                  whiteSpace: 'nowrap',
+                }}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setOpen((value) => !value)
+                }}
+              >
+                Score explanation
+              </button>
             </span>
           </Fact>
         </FactGrid>
         <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
           {reason}
         </p>
+        <div className="tc-explain-anchor">
+          <div
+            id="score-explanation-overlay"
+            data-testid="score-explanation-overlay"
+            className="tc-explain-overlay"
+            hidden={!open}
+            ref={overlayRef}
+          >
+            <ExplanationPanel
+              library={library}
+              session={session}
+              postedChipIds={postedChipIds}
+              activity={activity}
+            />
+          </div>
+        </div>
       </div>
       <div
         className="tc-block"

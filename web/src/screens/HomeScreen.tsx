@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { customerById } from '../demo/customers'
 import type { DemoView } from '../demo/types'
 import { CopilotStrip } from '../workstation/CopilotStrip'
-import { ExplanationPanel } from '../workstation/ExplanationPanel'
 import { SimulationToolbar } from '../workstation/Toolbar'
 import { TransactionPanel } from '../workstation/TransactionPanel'
 import type { ActivityRow, Library, SessionState } from '../types'
@@ -77,16 +76,9 @@ export function HomeScreen({
               onEscalate={demo.onEscalate}
               onUndo={live ? onUndo : undefined}
               closed={closed}
-            />
-          </div>
-          {idle ? null : (
-            <ExplanationPanel
-              library={library}
-              session={shownSession}
-              postedChipIds={shownPosted}
               activity={shownActivity}
             />
-          )}
+          </div>
         </>
       ) : null}
     </section>
