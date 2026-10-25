@@ -2365,6 +2365,6 @@ GATE PASS (b)
   - The existing Clear / Caution / High SVGs in `web/src/ui/LevelIcon.tsx` stay as they are (ARCHITECTURE workstation: level is an icon plus a word). Copilot had the icon in a side grid cell centered on the badge + Urgency Score + reason, so the triangle sat outside the pill, lower-left, in the card text color.
   - The icon now sits inside `.tc-level-badge`, which is already `inline-flex` and `align-items: center` (same placement as Handoff). `.tc-level-badge svg` is `display: block; flex: 0 0 auto; align-self: center` so Clear, Caution, and High share one 20×20 box. Pill padding, type, colors, and min-height are unchanged.
 - **Questions logged:** none
-- **The next agent needs to know:** No contract / engine / library / golden edits. No new dependency. No screenshots or videos. ARCHITECTURE.md unchanged (no files moved).
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/115. Do not merge. No contract / engine / library / golden edits. No new dependency. No screenshots or videos. ARCHITECTURE.md unchanged (no files moved).
 
 
