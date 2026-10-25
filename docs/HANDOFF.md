@@ -1753,3 +1753,16 @@ GATE PASS (b)
 - **Questions logged:** none
 - **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine edits. PR #92. Do not merge from this card.
 
+---
+
+### [stress-test] Scenario-specific read-aloud scripts — Agent A — 2026-10-25 04:00
+- **Status:** blocked (docs-only; no library/engine change)
+- **Gate:** `scripts/gate.sh a` → PASS (ruff; 204 pytest; import-linter; `contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact`)
+- **Changed:** `docs/QUESTIONS.md` (Q-014); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Did not add unused `tt.*` rows or edit `talk_track_for`. Architecture §7.1 only appends pattern lines while a pattern is displayed. The three demo visits are context-only, so the display gate never fires and all three get `tt.slow_down`. Changing that copy or the selector breaks T1–T7 `talk_track` goldens and `scripts/check_contract.py` (WORKFLOW.md §5; do not edit goldens / `contract/` / `reference_impl.py`).
+  - Did not invent signals for `pat.government_impersonation` / `pat.family_emergency` (A-01 stubs, `review: compliance`, `signals: []`). Did not change weights or `observation_cap`.
+  - Government-impersonation Caution / 45 is `min(raw 52, observation_cap 45)` (§6.2). Report-only in the PR body; no protocol applied.
+- **Questions logged:** Q-014
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/89. Drivers own Q-014. Smallest script CHANGE is §7.1 family-from-purpose + fixture regen + an extra post-hour-4 slot (004 and 005 already used) + B posting a purpose on the demo visits. Smallest *protocol* item for a higher observation-only government score is raising `observation_cap` (still Caution at 52) or raising it to ≥60 and dropping the High interview gate. A secrecy `confirmed` already yields High (62) with no protocol. `copy_status` stays DRAFT. `ARCHITECTURE.md` unchanged (no files added/removed/moved). No new dependency.
+
