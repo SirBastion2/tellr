@@ -90,7 +90,6 @@ export function TellerProvider({ children }: { children: ReactNode }) {
   const loadActivity = useCallback(async (sessionId: string) => {
     const token = activityToken.current + 1
     activityToken.current = token
-    setActivity(null)
     try {
       const result = await apiSend('GET', `/sessions/${sessionId}/activity`)
       if (activityToken.current !== token || sessionRef.current?.session_id !== sessionId) {

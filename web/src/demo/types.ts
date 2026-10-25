@@ -28,5 +28,6 @@ export type DemoView = {
   onToggleCase: () => void
   onConfirmSignal: (chipId: string) => void
   onDismissSignal: (chipId: string) => void
+  onRestoreSignal: (chipId: string) => void
   onEscalate: () => void
 }

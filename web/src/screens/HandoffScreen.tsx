@@ -1,9 +1,10 @@
 import { useState } from 'react'
+import { flaggedSignals } from '../feed'
 import { controlStyle, secondaryStyle } from '../theme/controls'
 import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
 import { LevelIcon } from '../ui/LevelIcon'
 import { actorLabel, handoffTitle, levelLabel, modeLabel, outcomeLabel, patternValue, shortId, suggestedLabel } from '../ui/plain'
-import type { HandoffProjection, Library } from '../types'
+import type { HandoffProjection, Library, SessionState } from '../types'
 
 function purposeLabel(library: Library | null, id: string): string {
   return library?.purposes.find((purpose) => purpose.id === id)?.label ?? id
@@ -41,10 +42,17 @@ function CopyId({ id }: { id: string }) {
 export function HandoffScreen({
   library,
   projection,
+  session = null,
+  dismissed = [],
+  confirmed = [],
 }: {
   library: Library | null
   projection: HandoffProjection | null
+  session?: SessionState | null
+  dismissed?: readonly string[]
+  confirmed?: readonly string[]
 }) {
+  const signals = flaggedSignals(session, projection, library, dismissed, confirmed)
   return (
     <section data-testid="handoff-screen" className="tc-card">
       <PageTitle>{projection ? handoffTitle(projection.outcome, projection.actor) : 'Handoff'}</PageTitle>
@@ -94,11 +102,18 @@ export function HandoffScreen({
             ) : null}
           </FactGrid>
           <SectionHeading>Why it was flagged</SectionHeading>
-          {projection.risk.reasons.length > 0 ? (
+          {signals.length > 0 ? (
             <ul style={{ margin: 0, paddingLeft: '1.2rem', display: 'grid', gap: 6 }}>
-              {projection.risk.reasons.map((reason) => (
-                <li key={reason.id} data-testid="handoff-reason">
-                  <strong>{reason.label}</strong>
+              {signals.map((signal) => (
+                <li
+                  key={signal.id}
+                  data-testid="handoff-reason"
+                  data-id={signal.id}
+                  data-status={signal.status ?? undefined}
+                  style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'baseline' }}
+                >
+                  <strong>{signal.label}</strong>
+                  {signal.status ? <span className="tc-badge">{signal.status}</span> : null}
                 </li>
               ))}
             </ul>

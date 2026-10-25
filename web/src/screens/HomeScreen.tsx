@@ -10,6 +10,8 @@ export function HomeScreen({
   library,
   session,
   postedChipIds = [],
+  dismissed = [],
+  chipOrder = [],
   activity = null,
   demo = null,
   onUndo,
@@ -17,6 +19,8 @@ export function HomeScreen({
   library: Library | null
   session: SessionState | null
   postedChipIds?: readonly string[]
+  dismissed?: readonly string[]
+  chipOrder?: readonly string[]
   activity?: readonly ActivityRow[] | null
   demo?: DemoView | null
   onUndo?: () => void
@@ -52,14 +56,23 @@ export function HomeScreen({
               session={session}
               postedChipIds={postedChipIds}
               confirmed={demo.confirmed}
+              dismissed={dismissed}
+              chipOrder={chipOrder}
               pending={demo.pending}
               onConfirm={demo.onConfirmSignal}
               onDismiss={demo.onDismissSignal}
+              onRestore={demo.onRestoreSignal}
               onEscalate={demo.onEscalate}
               onUndo={session ? onUndo : undefined}
             />
           </div>
-          <ExplanationPanel library={library} session={session} postedChipIds={postedChipIds} />
+          <ExplanationPanel
+            library={library}
+            session={session}
+            postedChipIds={postedChipIds}
+            dismissed={dismissed}
+            chipOrder={chipOrder}
+          />
         </>
       ) : null}
     </section>

@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { CheckIcon, DismissIcon } from '../ui/icons'
 import { LEVEL_WORD, LevelIcon } from '../ui/LevelIcon'
-import { listedChipIds, originText, sourceForChip } from '../feed'
+import { fileSignalStatus, listedChipIds, sourceForChip } from '../feed'
 import type { Library, SessionState } from '../types'
 
 const primary = { ...controlStyle, ...primaryStyle }
@@ -49,8 +49,11 @@ export function CopilotStrip({
   pending,
   onConfirm,
   onDismiss,
+  onRestore,
   onEscalate,
   onUndo,
+  dismissed = [],
+  chipOrder = [],
 }: {
   library: Library | null
   session: SessionState | null
@@ -59,8 +62,11 @@ export function CopilotStrip({
   pending: boolean
   onConfirm: (chipId: string) => void
   onDismiss: (chipId: string) => void
+  onRestore?: (chipId: string) => void
   onEscalate: () => void
   onUndo?: () => void
+  dismissed?: readonly string[]
+  chipOrder?: readonly string[]
 }) {
   const level = session?.risk.level ?? 'clear'
   const reason =
@@ -117,11 +123,21 @@ export function CopilotStrip({
             </blockquote>
           </details>
           <ul aria-label="Signals" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
-            {listedChipIds(postedChipIds, session.context_chips).map((chipId) => {
+            {listedChipIds(postedChipIds, session.context_chips, dismissed, chipOrder).map((chipId) => {
               const source = sourceForChip(session.context_chips, chipId)
-              const state = confirmed.includes(chipId) || source === 'teller' ? 'confirmed' : 'auto'
+              const wasDismissed = dismissed.includes(chipId)
+              const state = wasDismissed
+                ? 'dismissed'
+                : confirmed.includes(chipId) || source === 'teller'
+                  ? 'confirmed'
+                  : 'auto'
               const label = chipLabel(library, chipId)
-              const origin = originText(source, confirmed.includes(chipId))
+              const origin = fileSignalStatus(
+                postedChipIds.includes(chipId) || source !== undefined,
+                confirmed.includes(chipId),
+                wasDismissed,
+                source,
+              )
               return (
                 <li
                   key={chipId}
@@ -141,30 +157,47 @@ export function CopilotStrip({
                     </span>
                   </span>
                   <span style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      type="button"
-                      className="tc-btn"
-                      data-variant="primary"
-                      data-testid="signal-confirm"
-                      aria-label={`Confirm ${label}`}
-                      title="Confirm signal (C)"
-                      style={primary}
-                      onClick={() => onConfirm(chipId)}
-                    >
-                      <CheckIcon />
-                    </button>
-                    <button
-                      type="button"
-                      className="tc-btn"
-                      data-variant="dismiss"
-                      data-testid="signal-dismiss"
-                      aria-label={`Dismiss ${label}`}
-                      title="Dismiss signal (D)"
-                      style={iconButton}
-                      onClick={() => onDismiss(chipId)}
-                    >
-                      <DismissIcon />
-                    </button>
+                    {wasDismissed ? (
+                      <button
+                        type="button"
+                        className="tc-btn"
+                        data-variant="secondary"
+                        data-testid="signal-restore"
+                        aria-label={`Restore ${label}`}
+                        title="Restore signal"
+                        style={{ ...controlStyle, ...secondaryStyle }}
+                        onClick={() => onRestore?.(chipId)}
+                      >
+                        Restore
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className="tc-btn"
+                          data-variant="primary"
+                          data-testid="signal-confirm"
+                          aria-label={`Confirm ${label}`}
+                          title="Confirm signal (C)"
+                          style={primary}
+                          onClick={() => onConfirm(chipId)}
+                        >
+                          <CheckIcon />
+                        </button>
+                        <button
+                          type="button"
+                          className="tc-btn"
+                          data-variant="dismiss"
+                          data-testid="signal-dismiss"
+                          aria-label={`Dismiss ${label}`}
+                          title="Dismiss signal (D)"
+                          style={iconButton}
+                          onClick={() => onDismiss(chipId)}
+                        >
+                          <DismissIcon />
+                        </button>
+                      </>
+                    )}
                   </span>
                 </li>
               )

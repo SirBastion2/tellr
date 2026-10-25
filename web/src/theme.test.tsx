@@ -148,5 +148,7 @@ describe('theme selection', () => {
     expect(getComputedStyle(screen.getByTestId('theme-page')).flexDirection).toBe('column')
     expect(screen.getByTestId('theme-card')).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Teller Copilot' })).toBeTruthy()
+    expect(getComputedStyle(screen.getByTestId('app-shell')).display).toBe('grid')
+    expect(getComputedStyle(screen.getByTestId('app-shell')).gap).not.toBe('0px')
   })
 })

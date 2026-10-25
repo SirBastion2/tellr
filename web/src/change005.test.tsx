@@ -37,6 +37,7 @@ function demo(): DemoView {
     onToggleCase: () => undefined,
     onConfirmSignal: () => undefined,
     onDismissSignal: () => undefined,
+    onRestoreSignal: () => undefined,
     onEscalate: () => undefined,
   }
 }
@@ -209,5 +210,68 @@ describe('CHANGE-005 fields', () => {
     expect(screen.getByTestId('activity-technical').textContent).toMatch(/chip\.on_phone/)
     const confirmed = screen.getAllByTestId('file-signal').find((row) => row.textContent?.includes('phone'))
     expect(confirmed?.getAttribute('data-status')).toBe('Teller confirmed')
+  })
+
+  it('keeps signal rows in first-seen order after dismiss, restore, and confirm', () => {
+    const posted = ['chip.on_phone', 'chip.cash_only', 'chip.rushed']
+    const session = {
+      ...base,
+      context_chips: posted.map((id) => ({ id, source: 'observed' as const })),
+    }
+    const { rerender } = render(
+      <CopilotStrip
+        library={library}
+        session={session}
+        postedChipIds={posted}
+        confirmed={[]}
+        dismissed={[]}
+        chipOrder={posted}
+        pending={false}
+        onConfirm={() => undefined}
+        onDismiss={() => undefined}
+        onRestore={() => undefined}
+        onEscalate={() => undefined}
+      />,
+    )
+    expect(screen.getAllByTestId('signal-row').map((row) => row.textContent)).toEqual(
+      screen.getAllByTestId('signal-row').map((row) => row.textContent),
+    )
+    const before = screen.getAllByTestId('signal-row').map((row) => row.querySelector('span')?.textContent)
+    rerender(
+      <CopilotStrip
+        library={library}
+        session={{ ...session, context_chips: session.context_chips.filter((chip) => chip.id !== 'chip.cash_only') }}
+        postedChipIds={['chip.on_phone', 'chip.rushed']}
+        confirmed={['chip.rushed']}
+        dismissed={['chip.cash_only']}
+        chipOrder={posted}
+        pending={false}
+        onConfirm={() => undefined}
+        onDismiss={() => undefined}
+        onRestore={() => undefined}
+        onEscalate={() => undefined}
+      />,
+    )
+    const afterDismiss = screen.getAllByTestId('signal-row')
+    expect(afterDismiss.map((row) => row.querySelector('span')?.textContent)).toEqual(before)
+    expect(afterDismiss[1]?.getAttribute('data-state')).toBe('dismissed')
+    expect(afterDismiss[2]?.getAttribute('data-state')).toBe('confirmed')
+    expect(screen.getByTestId('signal-restore')).toBeTruthy()
+    rerender(
+      <CopilotStrip
+        library={library}
+        session={session}
+        postedChipIds={posted}
+        confirmed={['chip.rushed']}
+        dismissed={[]}
+        chipOrder={posted}
+        pending={false}
+        onConfirm={() => undefined}
+        onDismiss={() => undefined}
+        onRestore={() => undefined}
+        onEscalate={() => undefined}
+      />,
+    )
+    expect(screen.getAllByTestId('signal-row').map((row) => row.querySelector('span')?.textContent)).toEqual(before)
   })
 })

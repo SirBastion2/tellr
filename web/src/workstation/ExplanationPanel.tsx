@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiSend } from '../api'
-import { listedChipIds, originText, sourceForChip } from '../feed'
+import { fileSignalStatus, listedChipIds, sourceForChip } from '../feed'
 import { readHealth, type HealthReport } from '../screens/HealthScreen'
 import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { LEVEL_WORD } from '../ui/LevelIcon'
@@ -72,10 +72,14 @@ export function ExplanationPanel({
   library,
   session,
   postedChipIds,
+  dismissed = [],
+  chipOrder = [],
 }: {
   library: Library | null
   session: SessionState | null
   postedChipIds: readonly string[]
+  dismissed?: readonly string[]
+  chipOrder?: readonly string[]
 }) {
   const [health, setHealth] = useState<HealthReport | null>(null)
 
@@ -107,7 +111,7 @@ export function ExplanationPanel({
   const factors = [...grouped.raises, ...grouped.lowers]
   const total = responseWeightTotal(factors)
   const debug = session.debug
-  const noted = listedChipIds(postedChipIds, session.context_chips)
+  const noted = listedChipIds(postedChipIds, session.context_chips, dismissed, chipOrder)
 
   return (
     <section data-testid="explain-panel" aria-label="Why this level" className="tc-explain">
@@ -147,10 +151,16 @@ export function ExplanationPanel({
             const chip = library?.context_chips.find((item) => item.id === chipId)
             const label = humanLabel(library, chip?.signal ?? chipId, chip?.label ?? chipId)
             const source = sourceForChip(session.context_chips, chipId)
+            const status = fileSignalStatus(
+              postedChipIds.includes(chipId) || source !== undefined,
+              false,
+              dismissed.includes(chipId),
+              source,
+            )
             return (
               <li key={chipId} data-testid="explain-input" className="tc-note-row">
                 <span>{label}</span>
-                <span className="tc-badge">{originText(source, false)}</span>
+                <span className="tc-badge">{status}</span>
               </li>
             )
           })}

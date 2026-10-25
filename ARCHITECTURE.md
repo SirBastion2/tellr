@@ -89,7 +89,7 @@ CHANGE-005 fields are optional. `readExplanation` accepts `explanation` or `Expl
 
 Every screen uses a two-column fact grid: bold labels, normal values, bold section headings. Handoff is a card titled from the recorded outcome (`Handoff — Escalated by teller` when the teller escalated). The level is an icon plus a word. A UUID session id shows its first eight characters, with the full id on the tooltip and the copy button. Suggested outcome and the teller's decision are separate rows.
 
-The header is one row: bank mark, title, status pill, tabs, Light/Dark/System, Presenter, and `?`. It does not wrap. The nav scrolls. Under a 1120px header, the theme segment collapses into a menu. The pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. Undo sits with the signal list on the workstation, and at the top of other screens that have a session. Dev tabs stay available unless presenter mode is on.
+The header is one row: bank mark, title, status pill, tabs, Light/Dark/System, Presenter, and `?`. It does not wrap. The nav scrolls. Under a 1120px header, the theme segment collapses into a menu. The pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. Undo sits with the signal list on the workstation only. Dev tabs stay available unless presenter mode is on. The header and the page body have a normal gap (`tc-shell`), so the Workstation heading and the Outcome card do not sit against the header.
 
 The toolbar controls share a 40px height. Play keeps the icon and the word on one line. The customer select matches that height. Show case file sits on the same row. The elapsed timer is always on that row.
 
@@ -103,17 +103,19 @@ Presenter mode is the header toggle or `?present=1` (stored in `teller.presenter
 | `web/src/demo/clock.ts` | `m:ss` elapsed label. |
 | `web/src/presenter.tsx` | Presenter flag from `?present=` or `localStorage`. |
 | `web/src/screens/HomeScreen.tsx` | Toolbar, transaction panel, copilot card, explanation. |
-| `web/src/screens/CustomerFileScreen.tsx` | Profile, activity table, this withdrawal, and what was noted. Session activity replaces the synthetic table when `GET /activity` returns rows. Source badges prefer `context_chips` and otherwise stay Not yet, Observed, Teller confirmed, or Dismissed. |
-| `web/src/screens/HandoffScreen.tsx` | Handoff card. Fact grid, level badge, flagged list, suggested outcome versus the teller's decision. |
+| `web/src/screens/CustomerFileScreen.tsx` | Profile, activity table, this withdrawal, and what was noted. No Undo. Session activity replaces the synthetic table when `GET /activity` returns rows, and dismissed chips stay in that table. Source badges prefer `context_chips` and otherwise stay Not yet, Observed, Teller confirmed, or Dismissed. |
+| `web/src/screens/HandoffScreen.tsx` | Handoff card. Fact grid, level badge, flagged list from the final SessionState chips (reasons when chips are absent), with dismissed/confirmed marks when that data is in state. |
 | `web/src/ui/facts.tsx` | Bold-label fact grid and section headings shared by the screens. |
 | `web/src/ui/plain.ts` | Teller-facing labels: pattern, mode, outcome, short id, amount band, recommender phrase. |
 | `web/src/ui/emphasis.tsx` | Bolds amounts and phrases such as "on the phone" in timeline copy. |
 | `web/src/workstation/Toolbar.tsx` | 40px customer picker, Play/Pause, Step, Restart, speed segments, timer, case-file link. |
-| `web/src/workstation/CopilotStrip.tsx` | Sticky card that fills the column. Level icon and word, one reason, suggested action, collapsible read-aloud quote, noted rows with badges and icon buttons. |
+| `web/src/workstation/CopilotStrip.tsx` | Sticky card that fills the column. Level icon and word, one reason, suggested action, collapsible read-aloud quote, noted rows with badges and icon buttons. Dismissed rows stay in first-seen order and offer Restore. Undo lives here. |
+| `web/src/feed.ts` | Chip order, activity memory, source badges, and the handoff flagged list. Display only; no risk math. |
+| `web/src/feed.test.ts` | Stable chip order, dismissed activity rows, and handoff chip listing. |
 | `web/src/workstation/explain.ts` | Reads `explanation` and groups raises and lowers. Strength words from the response's own weights. |
 | `web/src/workstation/ExplanationPanel.tsx` | Why this level. Fact grid, two contribution lists, noted items, collapsed technical details. |
 | `web/src/workstation/TransactionPanel.tsx` | Key-value transaction, timeline with step and speaker, event progress. Session activity appears when `GET /activity` returns rows. |
-| `web/src/ui/ShortcutHelp.tsx` | `?` lists keyboard shortcuts. Presenter mode notes the reduced set. |
+| `web/src/ui/ShortcutHelp.tsx` | `?` lists keyboard shortcuts in a two-column grid so `[` and `]` align with the other keys. Presenter mode notes the reduced set. |
 | `web/src/ui/icons.tsx` | Play, pause, step, restart, confirm, and dismiss icons. |
 | `web/src/ui/ConfirmDialog.tsx` | Confirm before restart, customer switch (off in presenter mode), and escalate. |
 | `web/src/presenter.test.tsx` | Presenter query, hidden dev tabs, type size, and customer switch without a confirm dialog. |

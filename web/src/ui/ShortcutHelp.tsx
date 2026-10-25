@@ -1,15 +1,15 @@
-import { useEffect, useRef } from 'react'
+import { Fragment, useEffect, useRef } from 'react'
 import { controlStyle } from '../theme/controls'
 
-const ROWS: readonly { keys: string; what: string }[] = [
-  { keys: '?', what: 'Show or hide this list' },
-  { keys: 'P', what: 'Play or pause the simulation' },
-  { keys: 'N', what: 'Step one customer event' },
-  { keys: 'R', what: 'Restart the simulation' },
-  { keys: 'C', what: 'Confirm the latest signal' },
-  { keys: 'D', what: 'Dismiss the latest signal' },
-  { keys: 'E', what: 'Escalate to the supervisor' },
-  { keys: '[ and ]', what: 'Switch simulated customer' },
+const ROWS: readonly { keys: readonly string[]; what: string }[] = [
+  { keys: ['?'], what: 'Show or hide this list' },
+  { keys: ['P'], what: 'Play or pause the simulation' },
+  { keys: ['N'], what: 'Step one customer event' },
+  { keys: ['R'], what: 'Restart the simulation' },
+  { keys: ['C'], what: 'Confirm the latest signal' },
+  { keys: ['D'], what: 'Dismiss the latest signal' },
+  { keys: ['E'], what: 'Escalate to the supervisor' },
+  { keys: ['[', ']'], what: 'Switch simulated customer' },
 ]
 
 export function ShortcutHelp({ onClose, presenter = false }: { onClose: () => void; presenter?: boolean }) {
@@ -52,10 +52,36 @@ export function ShortcutHelp({ onClose, presenter = false }: { onClose: () => vo
         {presenter ? (
           <p style={{ margin: 0 }}>Presenter mode keeps play, pause, and step. The other shortcuts are off.</p>
         ) : null}
-        <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+        <ul
+          data-testid="shortcut-list"
+          style={{
+            listStyle: 'none',
+            margin: 0,
+            padding: 0,
+            display: 'grid',
+            gap: 8,
+          }}
+        >
           {ROWS.map((row) => (
-            <li key={row.keys}>
-              <kbd>{row.keys}</kbd> {row.what}
+            <li
+              key={row.keys.join('-')}
+              data-testid="shortcut-row"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '7.5rem minmax(0, 1fr)',
+                columnGap: 12,
+                alignItems: 'baseline',
+              }}
+            >
+              <span>
+                {row.keys.map((key, index) => (
+                  <Fragment key={key}>
+                    {index > 0 ? ' and ' : null}
+                    <kbd>{key}</kbd>
+                  </Fragment>
+                ))}
+              </span>
+              <span>{row.what}</span>
             </li>
           ))}
         </ul>

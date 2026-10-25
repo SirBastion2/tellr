@@ -278,6 +278,11 @@ button[data-loading='true'],
   font-size: clamp(1.15rem, 0.6vw + 1rem, 1.4rem);
 }
 
+.tc-shell {
+  display: grid;
+  gap: clamp(12px, 1.5vw, 24px);
+}
+
 .tc-header {
   container-type: inline-size;
   container-name: header;

@@ -35,6 +35,13 @@ describe('shortcuts and landmarks', () => {
     expect(screen.getByTestId('live-region').textContent).toMatch(/Suggested action/)
     fireEvent.click(screen.getByTestId('shortcut-help-button'))
     expect(screen.getByTestId('shortcut-help')).toBeTruthy()
+    const rows = screen.getAllByTestId('shortcut-row')
+    expect(rows.length).toBeGreaterThan(1)
+    const columns = rows.map((row) => getComputedStyle(row).gridTemplateColumns)
+    expect(new Set(columns).size).toBe(1)
+    expect(columns[0]).toMatch(/7\.5rem/)
+    expect(screen.getByText('[')).toBeTruthy()
+    expect(screen.getByText(']')).toBeTruthy()
     fireEvent.keyDown(window, { key: 'Escape' })
     expect(screen.queryByTestId('shortcut-help')).toBeNull()
     for (const link of screen.getAllByRole('link')) {
