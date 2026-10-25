@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import { apiSend } from './api'
 import { ensureConnection } from './connection'
 import { openingRequest } from '../mock/replay'
+import { clientTimeZone, formatOffsetIso } from './ui/localTime'
 import type { ActivityFeed, AnswerPost, ChipSource, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import { validateActivity, validateError, validateHandoff, validateLibrary, validateSessionState, type SchemaIssue } from './validate'
 
@@ -186,7 +187,13 @@ export function TellerProvider({ children }: { children: ReactNode }) {
     const opened = request as Record<string, unknown>
     const mode = opened.mode === 'live' || opened.mode === 'practice' ? opened.mode : 'practice'
     const amountBand = typeof opened.amount_band === 'string' && opened.amount_band.length > 0 ? opened.amount_band : '5000_9999'
-    const body = { mode, amount_band: amountBand, scenario_id: caseId }
+    const body = {
+      mode,
+      amount_band: amountBand,
+      scenario_id: caseId,
+      opened_at: formatOffsetIso(new Date()),
+      timezone: clientTimeZone(),
+    }
     const result = await apiSend('POST', `/sessions?case=${encodeURIComponent(caseId)}`, body)
     return acceptOpened(takeSession(result, gen))
   }
@@ -198,7 +205,12 @@ export function TellerProvider({ children }: { children: ReactNode }) {
         ? (sample as { amount_band: string }).amount_band
         : '5000_9999'
     const gen = openGeneration()
-    const result = await apiSend('POST', '/sessions', { mode: 'live', amount_band: amountBand })
+    const result = await apiSend('POST', '/sessions', {
+      mode: 'live',
+      amount_band: amountBand,
+      opened_at: formatOffsetIso(new Date()),
+      timezone: clientTimeZone(),
+    })
     return acceptOpened(takeSession(result, gen))
   }
 

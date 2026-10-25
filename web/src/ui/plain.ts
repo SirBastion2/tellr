@@ -1,4 +1,5 @@
 import type { Level, OutcomeId, SuggestedOutcome } from '../types'
+import { formatLocalDateTime } from './localTime'
 
 /** Drop a leading "Pattern " so the label column does not read "Pattern Pattern unclear". */
 export function patternValue(label: string): string {
@@ -147,33 +148,12 @@ export function eventTypeLabel(type: string): string {
   return named[type] ?? 'Recorded event'
 }
 
-/** Stable clock label. Not the teller's local zone, so tests do not drift. */
-export function activityTime(ts: string): string {
-  const date = new Date(ts)
-  if (Number.isNaN(date.getTime())) {
-    return 'Time on file'
-  }
-  return `${new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZone: 'UTC',
-  }).format(date)} UTC`
+/** Clock label in the teller's local zone. Naive UTC stamps convert first. */
+export function activityTime(ts: string, timeZone?: string): string {
+  return formatLocalDateTime(ts, timeZone)
 }
 
 /** One local-time stamp for the merged explanation. */
-export function notedAtLocal(ts: string): string {
-  const date = new Date(ts)
-  if (Number.isNaN(date.getTime())) {
-    return 'Time on file'
-  }
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(date)
+export function notedAtLocal(ts: string, timeZone?: string): string {
+  return formatLocalDateTime(ts, timeZone)
 }

@@ -13,11 +13,11 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `engine/` | A1 | Fold, eligibility, stop, rules (§4–§8.4) | `__init__.py`, `reduce.py`, `score.py`, `eligibility.py`, `stop.py`, `rules.py`, `testing.py` |
 | `library/` | A1 | YAML bank (patterns, questions, chips, signals) | `questions.yaml`, `signals.yaml`, `patterns.yaml`, `chips.yaml`, `purposes.yaml` |
 | `tests/engine/` `tests/golden/` `tests/library/` | A1 | Properties, T1–T7 goldens, boot | `test_properties.py`, `test_traces.py`, `test_context_source.py`, `test_contributions.py`, `reference_weights.yaml` |
-| `api/` | A2 | FastAPI turn order (§3, §11); J-01 `--replay` | `main.py`, `errors.py`, `replay.py`, `activity.py` |
+| `api/` | A2 | FastAPI turn order (§3, §11); J-01 `--replay` | `main.py`, `errors.py`, `replay.py`, `activity.py`, `time.py` |
 | `api/replays/` | A2 | Practice replay logs (§14.2; web `--replay` `steps`) | `t1_legitimate.json`, `t3_coached.json` |
 | `store/` | A2 | SQLite append-only log (§10.1) | `sqlite.py` |
 | `recommenders/` | A2 | Model path: grammar, validator, LLMs (§7.4–§8) | `select.py`, `validate.py`, `grammar.py`, `local_llm.py`, `fake.py` |
-| `tests/api/` `tests/store/` `tests/recommenders/` | A2 | Contract, store, §9 recommender tests, Windows live-path | `test_contract.py`, `test_sessions_list.py`, `test_warmup.py`, `test_x003_windows.py`, `test_replay_logs.py`, `test_cors.py`, `test_activity.py`, `test_post_context_source.py`, `test_explanation.py` |
+| `tests/api/` `tests/store/` `tests/recommenders/` | A2 | Contract, store, §9 recommender tests, Windows live-path | `test_contract.py`, `test_sessions_list.py`, `test_warmup.py`, `test_x003_windows.py`, `test_replay_logs.py`, `test_cors.py`, `test_activity.py`, `test_post_context_source.py`, `test_explanation.py`, `test_local_hour.py` |
 | `eval/` except `heldout/` | A3 | Validator, 30 dev scenarios, harness (§13) | `validate.py`, `PREREGISTRATION.md`, `scenarios/dev/`, `run.py`, `arms/` |
 | `eval/scenarios/heldout/` | H | Held-out set, written once (B-07) | created at hour 20 |
 | `tests/eval/` | A3 | Scenario, validator, and harness tests | `test_validate.py`, `test_dev_scenarios.py`, `test_run.py` |
@@ -38,7 +38,7 @@ History and the read-only recommender view live in the existing screen files. Th
 
 | File | What it is |
 |---|---|
-| `web/src/screens/HistoryScreen.tsx` | `GET /sessions` (live only). Practice is a second request, `GET /sessions?mode=practice`. Renders `session_id`, `mode`, `opened_at`, `closed_at`, `library_version`. |
+| `web/src/screens/HistoryScreen.tsx` | `GET /sessions` (live only). Practice is a second request, `GET /sessions?mode=practice`. Renders `session_id`, `mode`, local `opened_at` / `closed_at`, `library_version`. |
 | `web/src/screens/HealthScreen.tsx` | `GET /health` only. Shows recommender, model id, p50, p95, last p95, fallback rate, rejection count, agreement rate. The recommender follows process config from startup. |
 | `web/src/screens/HandoffScreen.tsx` | Outcome and actor come from the typed `GET /sessions/{id}/handoff` body (CHANGE-004). Layout is the fact-grid card in the workstation section. |
 | `web/src/history.test.tsx` | Added. Practice rows stay off the default list and appear after the practice request. |
@@ -101,7 +101,7 @@ Every screen uses a two-column fact grid: bold labels, normal values, bold secti
 
 The header wraps when the first row is tight (1024px, 1180px, 1280px, and 125% / 150% zoom on a 1440px laptop). One gap token (`--tc-space-header`, 8px) sits between the bank mark, title, pills, tabs, scheme control, and `?`. Bank mark, title, tabs, and `?` keep their full labels. Title does not ellipsize. The tab group (`flex: 1 1 auto`) fills the leftover space between the status pills and the scheme control. The four tabs share that row evenly (`flex: 1 1 0`, text centered, `min-width: min-content`) with the same header gap. The active-tab pill keeps the shared radius and equal padding. Tabs stay complete: they wrap to a second row and never clip (`Hand…` is a bug). Tab labels use `--tc-text-sm`. The nav does not use `overflow-x: auto`. There is no Presenter control. At viewports and header containers below 1280px, the theme segment collapses into a menu. Only the active scheme control is mounted. Simulation and connection pills share `--tc-text-sm`. Header controls share `--tc-header-control-h` (48px) and the pill radius token (`999px`). The tellr logo (`mark: 'logo'`) is flex-centered in that same 48px pill (`object-fit: contain`, `line-height: 0`, mask/image centered). Every bank applies `font-size-adjust: 0.52` so Poppins, Arial, and Segoe UI render at the same apparent size. The simulation pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. It keeps one class (`tc-live-badge`) and the shared type/control-height tokens idle, running, paused, and after Play. Width is `--tc-sim-pill-min` / `--tc-sim-pill-max` (`flex: 0 0 auto`) so tab flex after #100/#101 cannot resize it; ellipsis plus a title tooltip is only for a label that still cannot fit. Labels stay complete at 1024 / 1180 / 1280. The connection pill, Play/Pause, speed segment, and timer use the same control height; Play/Pause and Show/Hide share a grid so the longer label reserves the width; the timer uses `tabular-nums`, `--tc-text-sm`, and `--tc-timer-min`. The connection pill says `Live API connected` or `Using sample data` from `GET /health` (`web/src/connection.ts`). Undo sits with the merged Why this level list on Home. Customer file, Outcome, and Handoff do not show a stray Undo above the heading. Context and Session still get the top Undo when those routes are open. Header-to-content uses `--tc-space-header-content`. Context, Session, History, and Health stay off the nav. The four demo tabs stay labeled: Home, Customer file, Outcome, and Handoff. Outcome and Handoff are hint labels until a visit exists; they do not add screens.
 
-The toolbar controls share the 48px control-height token. Play keeps the icon and the word on one line. The customer select matches that height. Show case file sits on the same row. The elapsed timer is always on that row.
+The toolbar controls share the 48px control-height token. Play keeps the icon and the word on one line. The customer select matches that height. Show case file sits on the same row. The elapsed timer and a live local time-of-day clock sit on that row. The clock uses `Intl` / `Date` local time (`web/src/ui/localTime.ts`, `web/src/ui/LocalClock.tsx`) and ticks each minute. History `opened_at` / `closed_at` and noted activity stamps use the same local formatter. Naive API stamps are treated as UTC, then shown in the client zone. Session open may send `opened_at` (ISO with offset) and an IANA `timezone`; the API stores that offset timestamp (`api/time.py`) and does not use naive UTC for local hour. The elapsed timer is still simulated customer time (sum of `delayMs`).
 
 Playback length at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. The on-screen clock and the timeline stamps are the same unit: simulated customer time (the running sum of `delayMs`). Speed changes wall-clock duration only. Timeline rows show step, elapsed time, and speaker, and bold amounts and phrases such as "on the phone" and "cash". The footer uses `--tc-text-xs`.
 
@@ -110,22 +110,25 @@ The demo layout is always on. `?present` and `teller.presenter` are ignored, and
 | File | What it is |
 |---|---|
 | `web/src/demo/customers.ts` | Five synthetic files and `SCRIPT_TARGETS_MS`. The last two post no chips. Name and age band stay in the data and are not rendered. |
-| `web/src/demo/clock.ts` | Simulated `m:ss` elapsed (sum of `delayMs`) for the toolbar clock and timeline. |
-| `web/src/demo/clock.test.ts` | Clock and timeline stay on simulated time at 1× and 4×. |
+| `web/src/demo/clock.ts` | Simulated `m:ss` elapsed (sum of `delayMs`) for the toolbar elapsed timer and timeline. |
+| `web/src/demo/clock.test.ts` | Elapsed timer and timeline stay on simulated time at 1× and 4×. |
+| `web/src/ui/localTime.ts` | Parse session stamps (naive ISO = UTC), format local time of day, emit ISO with the client offset. |
+| `web/src/ui/localTime.test.tsx` | UTC 05:17 on a UTC-4 client renders 1:17; live clock ticks each minute. |
+| `web/src/ui/LocalClock.tsx` | Live local time-of-day on the toolbar. Ticks at the next minute. Display only. Type from `--tc-text-sm` (`typeScale.ts`). |
 | `web/src/demoPolish.test.tsx` | Timer matches timeline, shortcut list, Restart confirm, four labeled tabs, full-width card, footer on `--tc-text-xs`. |
 | `web/src/presenter.tsx` | Demo layout, always on. No toggle and no `?present` switch. |
 | `web/src/screens/HomeScreen.tsx` | Toolbar, transaction panel, copilot card, explanation. Holds the last session / posted chips / activity while a write is in flight so the card does not mix snapshots. |
 | `web/src/screens/CustomerFileScreen.tsx` | Profile only: Customer (never a name), tenure, typical withdrawal, channels. No age band. Visit amount, signals, and activity stay on the workstation. No Undo. |
 | `web/src/screens/HandoffScreen.tsx` | Handoff card. Fact grid, level badge, Urgency Score `<score>/<max>`, flagged list from the merged SessionState rows (reasons when that list is empty), with dismissed/confirmed marks when that data is in state. |
 | `web/src/ui/facts.tsx` | Bold-label fact grid and section headings shared by the screens. |
-| `web/src/ui/plain.ts` | Teller-facing labels: pattern, mode, outcome, short id, amount band, recommender phrase. |
+| `web/src/ui/plain.ts` | Teller-facing labels: pattern, mode, outcome, short id, amount band, recommender phrase. Activity / noted times use local `formatLocalDateTime`. |
 | `web/src/ui/privacy.ts` | Display-only Customer label and name/pronoun redaction. Does not change API or demo payloads. |
 | `web/src/privacy.test.tsx` | Home, Customer file, Outcome, and Handoff render no name, age band, or gendered pronouns. Timeline speaker is Customer. |
 | `web/src/ui/urgencyScore.ts` | `URGENCY_SCORE_MAX` from the contract `risk.score.maximum` (architecture §6.2 clamp +100). Label and `<score>/<max>` formatter. Does not compute the score. |
 | `web/src/ui/urgencyScore.test.ts` | Max matches both session and handoff schemas. Display does not clamp a server value. |
 | `web/src/ui/emphasis.tsx` | Bolds amounts and phrases such as "on the phone" in timeline copy. |
 | `web/src/LiveBadge.tsx` | Header simulation pill. Label from `liveBadgeText`. Same class and tokens whether the demo is idle or playing. |
-| `web/src/workstation/Toolbar.tsx` | Shared 48px customer picker, Play/Pause (stable grid width), Step, Restart, speed segments, timer (`tabular-nums`), case-file link. |
+| `web/src/workstation/Toolbar.tsx` | Shared 48px customer picker, Play/Pause (stable grid width), Step, Restart, speed segments, elapsed timer (`tabular-nums`), live local clock, case-file link. |
 | `web/src/workstation/CopilotStrip.tsx` | Sticky card that fills the column. Surface/text tokens for the card; risk color on the level badge. Idle placeholder before play. Last snapshot stays mounted while a write is in flight (dim + inline updating chip). Level icon and word, Urgency Score `<score>/<max>`, one reason, suggested action, collapsible read-aloud quote. Notes-only chips (no mapped signal) append their library label to the teller notes. Teller confirm / dismiss / restore sit on the signal chips (stable `chipOrder`). No predefined-answer chip panel. |
 | `web/src/workstation/QuestionCard.tsx` | Two-tap opener and answer chips on Session (`InterviewScreen`) only. |
 | `web/src/workstation.test.tsx` | Home has no answer-chip panel, keeps suggested action from the server question, one Level row, teller confirm/deny on the copilot chips, and Urgency Score. |

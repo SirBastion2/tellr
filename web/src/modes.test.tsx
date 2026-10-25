@@ -82,10 +82,12 @@ describe('session modes', () => {
     const live = calls.find((call) => call.method === 'POST' && call.url.endsWith('/sessions'))
     expect(live?.url).toBe('http://api.test/sessions')
     const posted = JSON.parse(live?.body ?? '{}') as Record<string, unknown>
-    expect(posted).toEqual({
-      mode: 'live',
-      amount_band: (t1.steps[0]?.request as { amount_band: string }).amount_band,
-    })
+    expect(posted.mode).toBe('live')
+    expect(posted.amount_band).toBe((t1.steps[0]?.request as { amount_band: string }).amount_band)
+    expect(typeof posted.opened_at).toBe('string')
+    expect(posted.opened_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/)
+    expect(typeof posted.timezone).toBe('string')
+    expect(String(posted.timezone).length).toBeGreaterThan(0)
     expect(live?.body ?? '').not.toContain('scenario_id')
     expect(live?.body ?? '').not.toContain('name')
     expect(live?.body ?? '').not.toContain('age')

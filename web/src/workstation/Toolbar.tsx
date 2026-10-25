@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { formatElapsed } from '../demo/clock'
 import type { DemoSpeed, DemoView } from '../demo/types'
+import { LocalClock } from '../ui/LocalClock'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { DENSITY } from '../theme/tokens'
 import { PauseIcon, PlayIcon, RestartIcon, StepIcon } from '../ui/icons'
@@ -126,6 +127,7 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
         <p data-testid="elapsed-timer" aria-label="Elapsed time" className="tc-timer">
           {formatElapsed(demo.elapsedMs)}
         </p>
+        <LocalClock />
         <button
           type="button"
           className="tc-btn tc-case-link"
