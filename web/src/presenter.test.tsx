@@ -42,7 +42,7 @@ describe('presenter mode', () => {
     expect(screen.getByTestId('nav-hint-outcome').textContent).toBe('Outcome')
     expect(screen.getByTestId('nav-hint-handoff').textContent).toBe('Handoff')
     expect(screen.getByTestId('elapsed-timer').textContent).toBe('0:00')
-    expect(screen.getByTestId('event-caption').textContent).toMatch(/Press play/)
+    expect(screen.getByTestId('event-caption').textContent).toBe('Customer File')
     expect(window.localStorage.getItem(PRESENTER_STORAGE_KEY)).toBe('0')
     expect(window.location.search).toContain('present=0')
 
