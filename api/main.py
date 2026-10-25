@@ -60,6 +60,7 @@ class OpenBody(BaseModel):
 
 class ContextBody(BaseModel):
     chips: list[str]
+    source: Literal["observed", "teller"] | None = None
 
 
 class AnswerBody(BaseModel):
@@ -314,11 +315,14 @@ def create_app(
         require_session(session_id)
         events = store.load_events(conn, session_id)
         check_command(events, {"type": "context", "chips": list(body.chips)}, library)
-        store.append_event(
-            conn,
-            session_id,
-            {"type": "ContextAdded", "ts": _timestamp(), "chips": list(body.chips)},
-        )
+        event: dict[str, Any] = {
+            "type": "ContextAdded",
+            "ts": _timestamp(),
+            "chips": list(body.chips),
+        }
+        if body.source is not None:
+            event["source"] = body.source
+        store.append_event(conn, session_id, event)
         return render(session_id)
 
     @app.post("/sessions/{session_id}/answers")
