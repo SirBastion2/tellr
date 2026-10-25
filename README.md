@@ -2,148 +2,122 @@
 
 # Tellr
 
-Tellr is a real-time copilot that helps a bank teller make quick decisions when an older customer may be being scammed at the counter.
+Tellr is a copilot for a teller at the counter: the local model sees visit ids and library labels, and never the customer's name, age, words, memo, or account details, so the prompt does not carry a person's identity.
 
 Built by Team KotR for HackPSU Fall 2026: Sebastian ([@SirBastion2](https://github.com/SirBastion2)) and Jonathan Zheng ([@jonathanzheng2020-eng](https://github.com/jonathanzheng2020-eng)).
 
-**Jump to:** [The problem](#the-problem) · [Why a teller](#why-a-teller) · [What we built](#what-we-built) · [How we built it with Cursor](#how-we-built-it-with-cursor) · [The demo vs real use](#the-demo-vs-real-use) · [The Llama 8B and benchmarks](#the-llama-8b-and-benchmarks) · [How a teller uses it](#how-a-teller-uses-it) · [Safety and limitations](#safety-and-limitations) · [Specs and tech stack](#specs-and-tech-stack) · [Quick start](#quick-start) · [Sources](#sources)
+**Jump to:** [What goes in](#what-goes-in-and-why-its-safe-for-a-bank) · [The problem](#the-problem) · [Why a teller](#why-a-teller) · [What we built](#what-we-built) · [Try it in two minutes](#try-it-in-two-minutes) · [How we built it with Cursor](#how-we-built-it-with-cursor) · [The demo vs real use](#the-demo-vs-real-use) · [The Llama 8B and benchmarks](#the-llama-8b-and-benchmarks) · [Templates](#templates) · [How a teller uses it](#how-a-teller-uses-it) · [Safety and limitations](#safety-and-limitations) · [Specs and tech stack](#specs-and-tech-stack) · [Sources](#sources)
+
+## What goes in, and why it's safe for a bank
+
+**Model sees** (`engine/prompt.py`): context-chip ids, the purpose id, each answer as a question id plus a chip id, evidence ids, the pattern id, the candidate question ids with their library lines, and the library's chip and purpose labels. **Model never sees** the name, age band, tenure, typical withdrawal, channels, account activity, memo, transaction type, dollar amount, amount band, or the customer's own words.
+
+**Rules** (`engine/reduce.py`) score the chip ids and the answer chips. The purpose id chooses questions and is not passed into the score. The fields the model never sees stay out of the rules too. **Stored** (`store/sqlite.py`, `api/main.py`): mode, time, library version, the amount band, the chip ids, and each answer's question id and chip. A note is stored only if a client sends one; this demo does not. `account_ref` is written null. The Outcome screen stores the typed teller name and does not send it to the model (`web/src/screens/OutcomeScreen.tsx`). The case file shows tenure, typical withdrawal, and channels. With it open, Home renders no name, age band, or gendered pronoun (`web/src/workstation/TransactionPanel.tsx`, `web/src/privacy.test.tsx`). Account activity stays in the demo file and is neither shown nor sent. The memo and the on-screen dollar amount are not posted.
+
+The model returns one question id. It does not set the score, the level, or the action (`recommenders/validate.py`, `engine/rules.py`). The API defaults to the rules. The 8B posts to `llama-server` at `127.0.0.1:8080`, and a hosted call runs only if `HOSTED_LLM_URL` is set (`api/main.py`). If that call is slow or the server is down, the rules pick the question (`recommenders/select.py`). The teller decides.
 
 ## The problem
 
-In the FBI IC3 2025 Annual Report, people 60 and older reported $7.748 billion in losses, up 59% from 2024, average loss $38,500 [[1]](#source-1). The FTC puts the total cost of fraud to older adults in 2025 between $13.3 billion and $119.5 billion, depending on methodology [[2]](#source-2). That upper bound is as much as $119.5 billion (FTC upper estimate) [[2]](#source-2). Losses reported to the FTC are only the "tip of the iceberg" [[2]](#source-2). Scammers "coach people on what to say to bank employees" [[2]](#source-2).
+In the FBI IC3 2025 Annual Report, people 60 and older reported $7.748 billion in losses, up 59% from 2024, average loss $38,500 [[1]](#source-1). The FTC puts the total cost of fraud to older adults in 2025 between $13.3 billion and $119.5 billion, depending on methodology [[2]](#source-2). Losses reported to the FTC are only the "tip of the iceberg" [[2]](#source-2). Scammers "coach people on what to say to bank employees" [[2]](#source-2).
 
 FinCEN's 2024 analysis counted 155,415 suspicious-activity reports covering more than $27 billion, and it describes in-person victims who "may have been on the phone with someone directing their activities" [[3]](#source-3).
 
-In the CFPB's 2019 elder exploitation report, fewer than a third of these suspicious-activity reports were also sent to the authorities [[4]](#source-4). In 2024, cash was the payment method in 16% of reports from adults 60+ who lost $10K or more to business or government imposter scams (crypto 33%, bank transfer 20%) [[5]](#source-5).
+In the CFPB's 2019 elder exploitation report, fewer than a third of the suspicious-activity reports were also sent to the authorities [[4]](#source-4). In 2024, cash was the payment method in 16% of reports from adults 60+ who lost $10K or more to business or government imposter scams (crypto 33%, bank transfer 20%) [[5]](#source-5).
 
 ## Why a teller
 
-Staff at the counter have stopped losses in published bank programs. A 2019 AARP and Virginia Tech BankSafe pilot covered more than 1,800 employees from nearly 500 branches in 11 states over six months [[6]](#source-6). Trained staff stopped $900,915 vs $54,384 (16 times) [[6]](#source-6). It was a pilot, not a controlled trial. BankSafe saved $137 million in 2024, a record up 53%, as reported by AARP itself [[7]](#source-7).
-
-Tellr is built to put that kind of prompt beside every transaction.
+Staff at the counter have stopped losses in published bank programs. A 2019 AARP and Virginia Tech BankSafe pilot covered more than 1,800 employees from nearly 500 branches in 11 states over six months [[6]](#source-6). Trained staff stopped $900,915, compared with $54,384 (16 times) [[6]](#source-6). It was a pilot, not a controlled trial. BankSafe saved $137 million in 2024, a record up 53%, as reported by AARP itself [[7]](#source-7).
 
 ## What we built
 
-We built a teller-side screen for the counter. It shows a risk level, a suggested action, the signals the teller can confirm, and one next question. The teller always decides. Rules on the teller's taps set the level, and a local model only picks the next question.
+We built a teller-side screen for the counter.
 
 ### At a glance
 
 | Question | Answer |
 |---|---|
-| Who is it for? | A bank teller at the counter, when an older customer may be being scammed during a transaction. |
-| What problem? | Elder fraud at the window. In 2025, people 60 and older reported $7.748 billion in losses, up 59% from 2024, average loss $38,500 [[1]](#source-1). Scammers "coach people on what to say to bank employees" [[2]](#source-2). |
-| What does it do? | It shows a risk level (Clear, Caution, or High), a suggested action, the signals the teller can confirm, and one next question. |
-| Who decides? | The teller. Proceed, slow down, escalate, and report all stay available until the teller chooses. The screen suggests a level and a next action. |
-| How does it pick the next question? | Llama 3.1 8B returns one question ID from the short list the rules allow. The score and the level stay with the rules. |
-| How fast? | p50 463.6 ms is the typical reply and p95 482.7 ms is the slow end of our 50-run bench. Both are under the 1.5 second budget. |
-| How accurate on our dev set? | 14/15 coached visits caught (they finished Caution or High) and 0/15 genuine visits falsely flagged (none marked High), on 30 dev scenarios with the live 8B. |
-| What can you try now? | A scripted demo of 5 synthetic customers, with the real engine behind it when the API is up. |
+| Who is it for? | A bank teller at the counter during a withdrawal. |
+| What problem? | Elder fraud at the window, while the customer is standing there. |
+| What does it do? | A level, a suggested action, signal chips, and one next question. |
+| What does the model see? | See [What goes in](#what-goes-in-and-why-its-safe-for-a-bank). |
+| How fast? | The latency bench below. |
+| How accurate on our dev set? | Catch and false-flag on the dev set, in the table below. |
+| What can you try now? | The counter screen. The steps are next. |
+
+## Try it in two minutes
+
+```bash
+make dev-api
+make dev-web
+```
+
+Open http://127.0.0.1:5173 (API on port 8000). Under Simulated customer, choose Government impersonation and press Play. Let the file finish (about 45 seconds at 1×). The level climbs to High (`web/src/demo/customers.ts`).
+
+Demo video: link to be added
 
 ## How we built it with Cursor
 
-We two steered while agents wrote the code. Sebastian steered the engine and the evaluation. Jonathan steered the screen, the API, and the GPU laptop. One fresh agent took each card or fix, on its own branch and pull request. `scripts/gate.sh` had to pass before we merged. The engine and the screen share a frozen contract, and it changes only when both of us approve a written change. `ARCHITECTURE.md` is the one-page map of who owns which files. We ran up to 12 agents in parallel.
-
-| Step | What happened |
-|---|---|
-| Fresh agent | One new agent for each card or fix. |
-| Branch and PR | That work sat on its own branch and pull request. |
-| Gate | `scripts/gate.sh` had to pass before we merged. |
-| Frozen contract | The engine and the screen share one contract. It changes only when both of us approve a written change. |
-| In parallel | Up to 12 agents in parallel. |
-
-Three examples from this repo:
-
-- We ran the held-out set once, on card A-08 (`docs/A08_HELDOUT_RUN.md`).
-- We added History and the read-only health screen on card B-06.
-- We used the same path for screen fixes. One of them dropped the Observed badge on the signal rows (`docs/handoff/20261025-0828-signal-rows-no-observed.md`).
+Sebastian ran the engine and the evaluation. Jonathan ran the screen, the API, and the GPU laptop. Agents wrote the code. We ran up to 12 agents in parallel, adding an agent when the work split into its own card or fix and scaling back when it did not. Each agent took one card or one fix, on its own branch and pull request. `scripts/gate.sh` had to pass before we merged. The engine and the screen share a frozen contract, and it changes only when both of us approve a written change (`WORKFLOW.md` §3, §5; `ARCHITECTURE.md`). That path covered roster cards, including the A-08 held-out run (`docs/A08_HELDOUT_RUN.md`) and the B screen cards, and UI fixes such as dropping the Observed badge (`docs/handoff/20261025-0828-signal-rows-no-observed.md`).
 
 ## The demo vs real use
 
-Our demo is scripted on purpose. Five synthetic customers play on a timer beside the screen. The last two post no chips. With no API, the page shows recorded engine answers and does not score them.
-
-The real engine and the benchmarks are behind that demo. With the API up, the same events and the same library version produce the same level, reasons, pattern, and question. When the model is on, it returns one question ID. If that call is slower than 1.5 seconds, or the GPU is down, the rules answer that turn.
-
-Live use is not loaded with a scenario. The teller taps what they see, and the engine scores that log. The header reads `Simulation: <customer title>` for a synthetic file and `LIVE — no scenario loaded` for a live session. A feed from a bank's core system is not built.
+The demo is scripted. Five synthetic customers play on a timer. The two benign files post no chips and no answers. With no API, the page shows recorded answers and does not score them. With the API up, the same taps and the same library version produce the same level, reasons, pattern, and question (`docs/architecture.md` §4). A live visit loads no scenario. The teller taps what they see, and the engine scores that log. The header reads `Simulation: <customer title>` for a synthetic file and `LIVE — no scenario loaded` for a live session. A feed from a bank's core system is not built (`docs/architecture.md` §14.1).
 
 ## The Llama 8B and benchmarks
 
-The question picker is **Meta-Llama-3.1-8B-Instruct**, quantized **Q4_K_M**, on an RTX 5070 Laptop. It returns a question ID only. The score and the level are rules. Llama-3.2-3B-Instruct Q4_K_M is the fallback (p50 273.2 ms, p95 296.3 ms on the same bench).
+The question picker is **Meta-Llama-3.1-8B-Instruct**, quantized **Q4_K_M**, on an RTX 5070 Laptop (8151 MiB; the 8B used 7379 MiB on this bench). Llama-3.2-3B-Instruct Q4_K_M is the fallback (p50 273.2 ms, p95 296.3 ms).
 
-| Metric | Figure | In one line |
-|---|---|---|
-| 8B total p50 | 463.6 ms | Typical reply on the 50-run latency bench. |
-| 8B total p95 | 482.7 ms | Slow end of that bench. The budget is 1.5 s. |
-| Catch | 14/15 | Coached dev visits that finished Caution or High. |
-| False-flag | 0/15 | Genuine dev visits marked High. |
-| Mean questions | 3.10 | Average questions before that dev interview stopped. |
+| Metric | Figure |
+|---|---|
+| 8B total p50 | 463.6 ms |
+| 8B total p95 | 482.7 ms |
+| Catch | 14/15 |
+| False-flag | 0/15 |
+| Mean questions | 3.10 |
 
-Catch, false-flag, and mean questions are the live 8B on the 30-scenario dev set. The rules matched that run: catch 14/15, false-flag 0/15, mean 3.07 questions. On the held-out check (5 coached and 5 legitimate, run once) both finished at catch 4/5 and false-flag 0/5.
+Catch, false-flag, and mean questions are the live 8B on 30 dev scenarios (15 coached, 15 legitimate). p50 and p95 are a 50-run bench of one reply.
 
-Latency bench:
+- **p50.** The midpoint of those 50 replies: the typical wait. The spec sets no p50 cutoff. A lower number is a faster typical reply for the teller.
+- **p95.** The slow end of that bench. The budget we build against is 1.5 s p95, from a chip tap to the next question (`docs/architecture.md` §1). About 0.7 s is our own sum of stage targets, not that cutoff (`docs/architecture.md` §8.3). For the teller, this is the pause in front of the customer.
+- **Catch.** Coached visits that finish Caution or High. The spec sets no minimum. Good, for us, is a coached visit not left at Clear. On its own, catch is weak: marking every customer Caution would catch them all (`docs/architecture.md` §13.3).
+- **False-flag.** Genuine visits marked High. The spec sets no maximum. Good, for us, is none. That is the number that stops "flag everyone" from looking perfect.
+- **Mean questions.** The average number of questions before the interview stopped. The spec turns that into time at about 13 seconds each, and the low-risk path is under 60 seconds (`docs/architecture.md` §1). For the teller, this is how long the customer stands at the window.
 
-```bash
-python scripts/bench_llm.py --server http://127.0.0.1:8080 --runs 50 --label 8B
-```
+The rules on that dev set matched this catch and false-flag, at mean 3.07 questions, so the 8B did not beat them. Held-out, five and five, run once: the rules and the 8B were each catch 4/5 and false-flag 0/5 (`docs/A08_HELDOUT_RUN.md`). On 15 scenarios the spec says not to call a gap significant (`docs/architecture.md` §13.3).
 
-Development set:
+Dev-set command: `docs/CP3_GPU_RUN.md`. Held-out command: `docs/A08_HELDOUT_RUN.md`. Latency bench: `python scripts/bench_llm.py --server http://127.0.0.1:8080 --runs 50 --label 8B`.
 
-```bash
-scripts/with-gpu env LLAMA_SERVER=http://127.0.0.1:8080 \
-  MODEL_ID=Meta-Llama-3.1-8B-Instruct-Q4_K_M \
-  python -m eval.run --scenarios eval/scenarios/dev \
-  --out eval/results/$(git rev-parse HEAD) \
-  --arms A,B,C --model local
+## Templates
+
+Talk tracks in `library/talk_tracks.yaml` are the teller-facing wording. `stage` is the level's track: `tt.proceed`, `tt.slow_down`, or `tt.escalate`. `lines` are lines to say. `avoid` is lines to avoid. `action` is the short instruction. `pattern` is a second track id, or empty. `library/patterns.yaml` points at one (`talk_track: tt.bank_impersonation`). Those lines are added only while that pattern is displayed, and they do not replace `action` or `avoid` (`engine/rules.py`). This is the High track, verbatim:
+
+```yaml
+  - id: tt.escalate
+    action: Ask the customer to step aside and get a manager.
+    lines:
+      - I'd like my manager to take a quick look. It's routine for larger cash withdrawals.
+    avoid:
+      - Anything accusatory
+      - Anything the caller warned them the bank would say
 ```
 
 ## How a teller uses it
 
-Home puts the transaction on one side and the screen on the other. The screen shows one server snapshot. The engine computes the score, the level, and the next question.
-
-- **Suggested action.** A short instruction from the server.
-- **Urgency Score.** The server score over the contract maximum (`<score>/<max>`, clamped at +100). Clear is below 25, Caution starts at 25, and High starts at 60.
-- **Score explanation.** What raised the score and what would lower it. The panel shows those server fields and leaves the score as the server sent it.
-- **Signals.** Chips the teller can confirm, dismiss, or restore.
-- **Case file.** No name, age, or gendered pronouns. The customer is labeled Customer.
-- **Timeline.** Step, elapsed time, and speaker. The speaker is Customer.
-
-Four outcomes stay available while the visit is open: proceed, slow down, escalate, and report.
+Home puts the transaction beside the copilot. The copilot shows one server snapshot and does not compute the score, the level, or the next question (`docs/architecture.md` §12). Clear is below 25, Caution starts at 25, and High starts at 60, as an icon plus the word (`docs/architecture.md` §6.3). Urgency Score is `<score>/<max>`, clamped at +100. Suggested action is the talk track's `action`. The explanation shows what raised the score and what would lower it. Signal chips can be confirmed, dismissed, or restored. Proceed, slow down, escalate, and report stay available for the whole visit (`docs/architecture.md` §9).
 
 ## Safety and limitations
-
-The teller makes the final call. The screen suggests a level and a next action. The teller approves or denies the withdrawal.
 
 The Senior Safe Act (12 U.S.C. 3423) covers a person who has received the training and served as a supervisor or in a compliance or legal function (including a BSA officer) [[8]](#source-8). It gives no power to hold funds and does not cover a teller acting alone. A bank deploying this needs its compliance review.
 
 Cuyahoga County's Scam Squad is related teller-based work. At a participating credit union, tellers use the handout for withdrawals of $5,000 or more [[9]](#source-9). The program is in beta. A research team will study results. There is no outcome data yet.
 
-Our demo is scripted. A live visit loads no scenario, and a feed from a bank's core system is not built. On our dev set the model matched the rules. It has not beaten the rules.
+Three patterns are marked `review: compliance` and ship with no signals (`library/patterns.yaml`).
 
-Three patterns are marked `review: compliance` and ship with no signals. No legal sign-off is in the repo. The store can delete closed sessions, and the API does not call that.
-
-Still open: Spanish wording, whether the customer's own words should reach the model, how to keep the pattern name off a customer's view, and more than one teller at a time.
+Open items: training recipe for the 8B is not in the repo; no real bank pilot; no compliance sign-off; no encryption at rest, security review, audit-retention policy, or data-retention policy (`store/sqlite.py` can delete closed sessions, and the API does not call it). The Outcome screen stores a typed teller name. Still open in the spec: Spanish wording, whether the customer's words should reach the model, the pattern name on the customer's side of the screen, and more than one teller (`docs/architecture.md` §19).
 
 ## Specs and tech stack
 
-| Piece | What the repo records |
-|---|---|
-| Training | Sebastian states: we trained the Llama 8B on an RTX 5070. |
-| Inference | NVIDIA GeForce RTX 5070 Laptop, 8151 MiB. The 8B used 7379 MiB in the latency bench. |
-| Model | Meta-Llama-3.1-8B-Instruct, Q4_K_M. It picks one question ID. It does not write the score. |
-| Engine | Python >= 3.12, FastAPI, Pydantic >= 2. `reference_impl.py` is the scoring oracle. |
-| Screen | React 19.3.1, Vite 8.3.5, TypeScript 6.0.3, Tailwind CSS 4.3.3. Four themes share one layout: `tellr`, `pnc`, `mtb`, `fnb`. |
-| Store | SQLite. Events reject updates. |
-| Contract | `CONTRACT_VERSION` 2.0.0. Every session response is a `SessionState`. |
-
-The training recipe is not written in the repo.
-
-## Quick start
-
-```bash
-make dev-api    # uvicorn on 127.0.0.1:8000
-make dev-web    # Vite on 127.0.0.1:5173
-python -m uvicorn api.main:app --port 8000
-cd web && npm run dev:api   # pins VITE_API_URL to http://127.0.0.1:8000
-```
+Sebastian states an RTX 5070 was used to train the Llama 8B. The engine is Python >= 3.12, FastAPI, and Pydantic >= 2, and `reference_impl.py` is the scoring oracle. The screen is React 19.3.1, Vite 8.3.5, TypeScript 6.0.3, and Tailwind CSS 4.3.3. Theme ids `tellr`, `pnc`, `mtb`, `fnb` share one layout. The store is SQLite, and events reject updates. `CONTRACT_VERSION` is 2.0.0. Every session response is a `SessionState`.
 
 ## Sources
 
