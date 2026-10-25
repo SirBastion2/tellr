@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Activity",
+  "description": "GET /sessions/{id}/activity read-only projection. CHANGE-005 (c), applied. Rows are derived only from that session's stored events: amount_band from SessionOpened; channel and type from context chips and other stored events. Structured identifiers only — no free text. Unknown session → 404. Known session with nothing to project → 200 and rows: []. Not fed to the model or the scorer (prompt allowlist and fold stay unchanged). CONTRACT_VERSION 2.0.0 (contract-v2).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "session_id",
+    "rows"
+  ],
+  "properties": {
+    "session_id": {
+      "type": "string"
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ts",
+          "channel",
+          "amount_band",
+          "type"
+        ],
+        "properties": {
+          "ts": {
+            "description": "Event timestamp from the session log. Structured; no free text.",
+            "type": "string"
+          },
+          "channel": {
+            "description": "Structured channel identifier derived from context chips or other stored events. No free text.",
+            "type": "string"
+          },
+          "amount_band": {
+            "description": "amount_band from SessionOpened. Structured identifier; POST-enum schema stays deferred (Q-006).",
+            "type": "string"
+          },
+          "type": {
+            "description": "Structured activity type derived from context chips or other stored events. No free text.",
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

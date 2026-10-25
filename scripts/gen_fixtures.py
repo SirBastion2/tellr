@@ -16,7 +16,7 @@ sys.pycache_prefix = tempfile.mkdtemp(prefix="tc-")
 sys.path.insert(0, str(ROOT))
 import reference_impl as R  # noqa: E402
 
-CONTRACT_VERSION = "1.0.0"
+CONTRACT_VERSION = "2.0.0"
 LIBRARY_VERSION = "1.2.0"
 OPEN_CHIPS = ["specific", "vague", "no_answer", "changed", "relayed_by_caller"]
 YESNO_CHIPS = ["confirmed", "denied", "no_answer", "changed", "relayed_by_caller"]
