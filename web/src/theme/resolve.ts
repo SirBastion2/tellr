@@ -10,7 +10,9 @@ export function normalizeThemeId(value: string | null | undefined): string | nul
 
 /**
  * `?theme=` wins when it names a registered bank. An unknown id falls back to the
- * stored choice, then to `tellr`. A missing query uses storage, then `tellr`.
+ * stored choice, then to `tellr`. A missing query is always `tellr` so a leftover
+ * `teller.theme` does not surprise the demo. Storage is still written when a valid
+ * query or a T-cycle selects a bank.
  */
 export function resolveThemeId(
   query: string | null,
@@ -22,9 +24,11 @@ export function resolveThemeId(
   if (fromQuery && names.has(fromQuery)) {
     return fromQuery
   }
-  const fromStore = normalizeThemeId(stored)
-  if (fromStore && names.has(fromStore)) {
-    return fromStore
+  if (fromQuery) {
+    const fromStore = normalizeThemeId(stored)
+    if (fromStore && names.has(fromStore)) {
+      return fromStore
+    }
   }
   return DEFAULT_THEME_ID
 }

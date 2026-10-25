@@ -143,7 +143,7 @@ describe('merged workstation signals', () => {
     const firstChipId = liveVisit.question?.chips[0]
     const firstChip = library.chips.find((chip) => chip.id === firstChipId)
     expect(firstChip).toBeTruthy()
-    if (liveVisit.question?.id === 'q.opener.who_are_you_helping') {
+    if (liveVisit.question?.stage === 'opener') {
       fireEvent.click(screen.getByRole('button', { name: firstChip?.label ?? firstChipId }))
       expect(onAnswer).not.toHaveBeenCalled()
       const purpose = library.purposes[0]

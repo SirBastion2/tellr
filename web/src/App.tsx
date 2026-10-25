@@ -23,7 +23,7 @@ import { OutcomeScreen } from './screens/OutcomeScreen'
 import { TellerProvider, useTeller, type RecordedDecision } from './teller'
 import { controlStyle, secondaryStyle } from './theme/controls'
 import { type ColorChoice } from './theme/scheme'
-import { ThemeProvider, useColorScheme } from './theme/ThemeProvider'
+import { ThemeProvider, useColorScheme, useThemeActions } from './theme/ThemeProvider'
 import { ThemeRoot } from './theme/ThemeRoot'
 import { ThemeWordmark } from './theme/Wordmark'
 import { ConfirmDialog } from './ui/ConfirmDialog'
@@ -447,6 +447,7 @@ function ConnectedShell() {
   const navigate = useNavigate()
   const location = useLocation()
   const presenter = usePresenter()
+  const { cycleTheme } = useThemeActions()
   const { loadHandoff } = teller
   const sessionId = teller.session?.session_id ?? null
   const [customerId, setCustomerId] = useState(CUSTOMERS[0]?.id ?? '')
@@ -704,6 +705,9 @@ function ConnectedShell() {
       if (next) {
         requestSwitch(next.id)
       }
+    },
+    onTheme: () => {
+      cycleTheme()
     },
   })
 

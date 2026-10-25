@@ -10,6 +10,7 @@ const ROWS: readonly { keys: string; what: string }[] = [
   { keys: 'D', what: 'Dismiss the latest signal' },
   { keys: 'E', what: 'Escalate to the supervisor' },
   { keys: '[ and ]', what: 'Switch simulated customer' },
+  { keys: 'T', what: 'Switch bank theme' },
 ]
 
 export function ShortcutHelp({ onClose }: { onClose: () => void }) {

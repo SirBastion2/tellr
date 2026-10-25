@@ -51,6 +51,8 @@ export function ThemeWordmark() {
                 fontSize: 'var(--tc-type-header, 1.05rem)',
                 lineHeight: 1.1,
                 margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'visible',
               }
         }
       >
