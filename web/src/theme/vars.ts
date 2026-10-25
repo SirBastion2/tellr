@@ -1,4 +1,5 @@
 import type { BankTheme } from './types'
+import { DENSITY } from './tokens'
 
 /** CSS custom properties driven by one bank theme object. */
 export function themeVars(theme: BankTheme): Record<string, string> {
@@ -31,6 +32,17 @@ export function themeVars(theme: BankTheme): Record<string, string> {
     '--tc-shadow-card': theme.shadow.card,
     '--tc-space-gap': theme.space.gap,
     '--tc-space-card': theme.space.cardPadding,
+    '--tc-type-title': DENSITY.typeTitle,
+    '--tc-type-section': DENSITY.typeSection,
+    '--tc-type-header': DENSITY.typeHeader,
+    '--tc-type-display': DENSITY.typeDisplay,
+    '--tc-type-amount': DENSITY.typeAmount,
+    '--tc-type-level': DENSITY.typeLevel,
+    '--tc-type-action': DENSITY.typeAction,
+    '--tc-space-workstation': DENSITY.spaceWorkstation,
+    '--tc-space-strip': DENSITY.spaceStrip,
+    '--tc-wordmark-w': DENSITY.wordmarkWidth,
+    '--tc-wordmark-h': DENSITY.wordmarkHeight,
     '--tc-risk-clear-bg': theme.risk.clearBg,
     '--tc-risk-clear-fg': theme.risk.clearFg,
     '--tc-risk-caution-bg': theme.risk.cautionBg,

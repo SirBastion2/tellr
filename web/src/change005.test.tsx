@@ -107,7 +107,12 @@ describe('CHANGE-005 fields', () => {
     const technical = screen.getByTestId('technical-details')
     expect(technical.textContent).toMatch(/sig\.third_party_call/)
     expect(technical.textContent).toMatch(/Weight 14/)
-    expect(screen.getByTestId('explain-input').textContent).not.toMatch(/sig\.|chip\./)
+    expect(screen.queryByRole('heading', { name: 'What the teller and system noted' })).toBeNull()
+    const raisedRow = screen.getAllByTestId('explain-reason').find((row) => row.textContent?.includes('On the phone'))
+    expect(raisedRow?.querySelector('[data-testid="explain-input"]')?.textContent).toBe('Observed')
+    expect(raisedRow?.textContent ?? '').not.toMatch(/sig\.|chip\./)
+    const loweredRow = screen.getAllByTestId('explain-counter').find((row) => row.textContent?.includes('Known customer'))
+    expect(loweredRow?.querySelector('[data-testid="explain-input"]')).toBeNull()
   })
 
   it('puts a raising counterpoint under what raised it when explanation is absent at Clear', () => {

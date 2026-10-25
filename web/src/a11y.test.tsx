@@ -135,7 +135,7 @@ describe('counter polish', () => {
     expect(purposes.compareDocumentPosition(chips) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0)
 
     const header = screen.getByTestId('app-header')
-    expect(getComputedStyle(header).flexWrap).toBe('nowrap')
+    expect(getComputedStyle(header).flexWrap).toBe('wrap')
     const purposeHeight = parseFloat(getComputedStyle(purposes).height)
     const chipHeight = parseFloat(getComputedStyle(chips).height)
     const headerHeight = parseFloat(getComputedStyle(header).minHeight)

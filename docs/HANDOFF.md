@@ -1605,6 +1605,169 @@ GATE PASS (a)
 
 ---
 
+### [B] Live sessions, one fact list, demo layout — Agent B — 2026-10-24 23:05
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 90 tests, contract OK) on `7d6d2eb`
+
+```
+── typecheck
+── lint
+── test
+ Test Files  29 passed (29)
+      Tests  90 passed (90)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/` (explanation panel, closed visits, health probe, demo layout always on); `ARCHITECTURE.md` (web section); `docs/UI_REFERENCE.md` (new); `docs/B_TO_A.md` (B-031); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Each factor is shown once. Observed or Teller confirmed sits on that row. The separate "What the teller and system noted" list repeated the same facts (workstation copy; `docs/UI_REFERENCE.md`).
+  - SessionState does not carry `closed` (CHANGE-003). The client remembers a 200 outcome and a `session_closed` response, hides the decision controls, and offers Start new customer. The four outcomes stay available while the visit is open (architecture §9: do not disable an outcome button by level).
+  - Live opens send `mode` and `amount_band` (contract `POST /sessions`). `GET /health` chooses the API origin when it answers, otherwise the Vite mock. The mock plugin stays installed so that fallback works for `npm run dev:api`.
+  - The demo layout is always on. `?present` is ignored and the header has no control for it.
+  - Errors are one plain sentence. The page does not show an HTTP status or an error code.
+- **Questions logged:** none
+- **The next agent needs to know:** Follow `docs/UI_REFERENCE.md`, including the native select contrast rule from #85. No new dependency. Did not edit `contract/`, `api/`, `engine/`, goldens, or `docs/DECISIONS.md`. No new cross-lane item. `web/` still does not compute risk, levels, reasons, or the next question. Board id is B-031. B-030 is the select-contrast note on main (#85). Rebased on `7d6d2eb`.
+
+---
+
+### [B] Fit workstation to laptop screens — Agent B (Sebastian / Driver A UI lane) — 2026-10-25 03:40
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 93 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  30 passed (30)
+      Tests  93 passed (93)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+Headless Chrome (`web/scripts/measure-fit.mjs`, live-API mode, F.N.B. theme, contractor-cash stepped once), all 6 cells pass. `document.documentElement.scrollWidth <= innerWidth`. Header children stayed inside the row. Transaction and copilot had no horizontal scroll. Title stayed `Teller Copilot`.
+
+| Viewport | Scheme | scrollWidth | innerWidth | Result |
+|---|---|---|---|---|
+| 1024×700 | light | 1024 | 1024 | pass |
+| 1024×700 | dark | 1024 | 1024 | pass |
+| 1280×720 | light | 1280 | 1280 | pass |
+| 1280×720 | dark | 1280 | 1280 | pass |
+| 1440×800 | light | 1440 | 1440 | pass |
+| 1440×800 | dark | 1440 | 1440 | pass |
+
+- **Changed:** `web/src/index.css`, `web/src/theme/tokens.ts` (`DENSITY`, demo root 105%), `web/src/theme/vars.ts`, theme space tokens, `ThemeRoot`, header/badge/wordmark, workstation panels, `web/src/workstationFit.test.tsx`, `web/scripts/measure-fit.mjs`, `web/eslint.config.js` (ignore `scripts/**`), `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Scaled type and spacing from shared `clamp()` tokens and theme space (~15–20%), not per-component hacks (`ARCHITECTURE.md` workstation; user card).
+  - Raised the Light/Dark/System collapse from 1120px to 1280px (container + viewport) so the 1280 laptop header no longer clips System / Handoff.
+  - Title, simulation pill, and connection pill ellipsize; nav still scrolls inside the row. Header `overflow: hidden` no longer cuts mid-glyph because children shrink first.
+  - Demo root font 125% → 105%. That 125% was the main reason a 1280×720 fold overflowed. 3fr/2fr from 1280 and stack below 900 unchanged.
+  - Playwright is not a package.json dependency. The measure script is optional local evidence. Lightweight overflow coverage is `workstationFit.test.tsx`.
+- **Questions logged:** none
+- **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine edits. No new npm dependency. Do not attach screenshots. Re-run `node web/scripts/measure-fit.mjs http://127.0.0.1:5173` after `npm run dev:api` if the header grows again.
+
+---
+
+### [B] Copilot card reversible actions and idle state — Agent B (Sebastian / Driver A UI lane) — 2026-10-25 03:50
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 101 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  31 passed (31)
+      Tests  101 passed (101)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/workstation/CopilotStrip.tsx`, `web/src/screens/HomeScreen.tsx`, `web/src/App.tsx`, `web/src/feed.ts`, `web/src/index.css`, `web/src/demo/types.ts`, `web/src/workstation/ExplanationPanel.tsx`, `web/src/copilotCard.test.tsx` (new), `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - All five stress-test bugs still reproduced on `c1b9d00` (#88). None were already fixed.
+  - Dismissed rows stay on Signals with Restore. Confirm/dismiss stay reversible; Undo reverses the last teller action, else posts `/undo` (architecture §12: render server state; workstation card).
+  - In-flight writes show “Updating copilot…” so the card never mixes two snapshots. After the last chip is gone, the mock/API still returns T1-open Clear plus the opener question and proceed talk track. That is one response; web does not rewrite it.
+  - Idle placeholder until Play or Step (`index === 0` and not playing), including after Start new customer. Undo/Escalate stay off.
+  - Origin badge is an inline pill on the factor row. Outcome and Handoff no longer show a stray Undo above the heading.
+- **Questions logged:** none
+- **The next agent needs to know:** PR is https://github.com/SirBastion2/tellr/pull/90. Do not merge. `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine / library edits. No new npm dependency. No screenshots.
+
+---
+
+### [B] Demo polish: timer units, shortcuts, footer, width — Agent B (Sebastian / Driver A UI lane) — 2026-10-25 03:50
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 99 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  32 passed (32)
+      Tests  99 passed (99)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/demo/clock.ts`, `web/src/demo/clock.test.ts`, `web/src/demoPolish.test.tsx`, `web/src/App.tsx`, `web/src/ui/ShortcutHelp.tsx`, `web/src/theme/ThemeRoot.tsx`, `web/src/theme/tokens.ts`, `web/src/index.css`, `web/src/workstation/TransactionPanel.tsx`, tests, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Clock and timeline share simulated customer time (sum of `delayMs`). Speed still only changes wall-clock playback length (`ARCHITECTURE.md` workstation; stress-test finding 1).
+  - Demo layout is always on, so the old `?`/`P`/`N` filter hid working keys. Help and the handler now include Restart (`R`, confirm button reads Restart) plus Confirm, Dismiss, Escalate, and `[` / `]`.
+  - Footer was already `0.8125rem` (~13px) after #84/#88. Locked to explicit `13px` so the 105% demo root cannot shrink it.
+  - #88 raised the card cap to 1440px, so the ~770px card did not reproduce. A wide screen still letterboxed that cap. The card is now `width: 100%` of the padded page. 3fr/2fr from 1280 and the no-clip header stay.
+  - Outcome and Handoff stay labeled as hint tabs until a visit exists. No new screens.
+- **Questions logged:** none
+- **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine edits. No new npm dependency. Do not merge. Do not attach screenshots.
+
+---
+
+### [B] Dark copilot panel, empty routes, favicon — Agent B (Sebastian / Driver A UI lane) — 2026-10-25 03:55
+- **Status:** done
+- **Gate:** `scripts/gate.sh b` → PASS (typecheck, lint, 100 tests, contract OK)
+
+```
+── typecheck
+── lint
+── test
+ Test Files  33 passed (33)
+      Tests  100 passed (100)
+── contract
+contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact
+
+GATE PASS (b)
+```
+
+- **Changed:** `web/src/theme/chrome.ts` (`DARK_CONTROLS`, `DARK_RISK`), bank themes, `web/src/index.css`, `web/src/workstation/CopilotStrip.tsx`, `web/src/screens/NotFoundScreen.tsx`, `web/src/App.tsx`, `web/public/favicon.svg`, `web/index.html`, `web/src/copilotTheme.test.tsx`, `web/src/emptyRoutes.test.tsx`, `web/src/favicon.test.ts`, `ARCHITECTURE.md`, `docs/UI_REFERENCE.md`, `docs/HANDOFF.md`
+- **Decisions I made, and the section that justified each:**
+  - Confirmed all three stress findings still reproduced on `c1b9d00` (#88). `/health` already rendered without a session, so it was left alone (architecture §12 one-screen-one-endpoint).
+  - Copilot card uses `--tc-surface` / `--tc-text`. Clear / Caution / High color stays on the level badge so the meaning is still an icon plus a word (architecture §12). Dark palettes get their own control and risk pairs; `themeContrast` still requires WCAG AA.
+  - Unknown paths and session routes with no visit show a short “start a customer first” / not-found card with a Home link. No redirect, so the teller can see why the screen is empty.
+  - Favicon is a small SVG in `web/public`. No new npm dependency.
+- **Questions logged:** none
+- **The next agent needs to know:** `web/` still does not compute risk, levels, reasons, or the next question. No contract / api / engine edits. PR #92. Do not merge from this card.
+
+---
+
+### [stress-test] Scenario-specific read-aloud scripts — Agent A — 2026-10-25 04:00
+- **Status:** blocked (docs-only; no library/engine change)
+- **Gate:** `scripts/gate.sh a` → PASS (ruff; 204 pytest; import-linter; `contract OK: library + 7 fixtures (42 steps) valid and current; oracles intact`)
+- **Changed:** `docs/QUESTIONS.md` (Q-014); `docs/HANDOFF.md` (this entry)
+- **Decisions I made, and the section that justified each:**
+  - Did not add unused `tt.*` rows or edit `talk_track_for`. Architecture §7.1 only appends pattern lines while a pattern is displayed. The three demo visits are context-only, so the display gate never fires and all three get `tt.slow_down`. Changing that copy or the selector breaks T1–T7 `talk_track` goldens and `scripts/check_contract.py` (WORKFLOW.md §5; do not edit goldens / `contract/` / `reference_impl.py`).
+  - Did not invent signals for `pat.government_impersonation` / `pat.family_emergency` (A-01 stubs, `review: compliance`, `signals: []`). Did not change weights or `observation_cap`.
+  - Government-impersonation Caution / 45 is `min(raw 52, observation_cap 45)` (§6.2). Report-only in the PR body; no protocol applied.
+- **Questions logged:** Q-014
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/89. Drivers own Q-014. Smallest script CHANGE is §7.1 family-from-purpose + fixture regen + an extra post-hour-4 slot (004 and 005 already used) + B posting a purpose on the demo visits. Smallest *protocol* item for a higher observation-only government score is raising `observation_cap` (still Caution at 52) or raising it to ≥60 and dropping the High interview gate. A secrecy `confirmed` already yields High (62) with no protocol. `copy_status` stays DRAFT. `ARCHITECTURE.md` unchanged (no files added/removed/moved). No new dependency.
+
+---
+
 ### [B1] Workstation answer control — Agent B1 — 2026-10-25 04:15
 - **Status:** done
 - **Gate:** `scripts/gate.sh b` → PASS

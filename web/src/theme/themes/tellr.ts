@@ -1,4 +1,4 @@
-import { SOLID_CONTROLS } from '../chrome'
+import { DARK_CONTROLS, DARK_RISK, SOLID_CONTROLS } from '../chrome'
 import type { BankTheme } from '../types'
 import { FOOTER_TEXT, UI_FONT } from '../tokens'
 
@@ -10,13 +10,19 @@ import { FOOTER_TEXT, UI_FONT } from '../tokens'
  * avoided: Chromium interpolates it as transparent black.
  * `background.color` is the solid fallback if a gradient layer is dropped.
  */
-const risk = {
+const riskLight = {
   clearBg: '#F5F5F4',
   clearFg: '#1C1917',
   cautionBg: '#FFEDD5',
   cautionFg: '#9A3412',
   highBg: '#7F1D1D',
   highFg: '#FFFFFF',
+}
+
+const riskDark = {
+  clearBg: '#14532D',
+  clearFg: '#D1FAE5',
+  ...DARK_RISK,
 }
 
 export const theme: BankTheme = {
@@ -39,7 +45,7 @@ export const theme: BankTheme = {
   border: { width: '1px', style: 'solid' },
   shadow: { card: '0 28px 70px rgba(0, 0, 0, 0.28)' },
   density: 'comfortable',
-  space: { gap: '16px', cardPadding: '22px' },
+  space: { gap: '13px', cardPadding: '18px' },
   background: {
     color: '#0B1026',
     image:
@@ -64,8 +70,8 @@ export const theme: BankTheme = {
     active: '#FFFFFF',
     inactive: 'rgba(255, 255, 255, 0.38)',
   },
-  risk,
-  ...SOLID_CONTROLS,
+  risk: riskDark,
+  ...DARK_CONTROLS,
   link: '#E0E7FF',
   surface: '#1E1B4B',
   light: {
@@ -91,7 +97,7 @@ export const theme: BankTheme = {
     buttonText: '#FFFFFF',
     logoColor: '#312E81',
     progress: { active: '#312E81', inactive: '#A5B4FC' },
-    risk,
+    risk: riskLight,
     ...SOLID_CONTROLS,
     link: '#312E81',
     surface: '#FFFFFF',

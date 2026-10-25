@@ -21,7 +21,7 @@ Teller Copilot is a teller-facing interview aid: it scores structured chips thro
 | `eval/` except `heldout/` | A3 | Validator, 30 dev scenarios, harness (§13) | `validate.py`, `PREREGISTRATION.md`, `scenarios/dev/`, `run.py`, `arms/` |
 | `eval/scenarios/heldout/` | H | Held-out set, written once (B-07) | created at hour 20 |
 | `tests/eval/` | A3 | Scenario, validator, and harness tests | `test_validate.py`, `test_dev_scenarios.py`, `test_run.py` |
-| `web/` | B1 | React UI, mock, screens, bank themes, simulated workstation (§12) | `src/App.tsx`, `src/screens/`, `src/theme/`, `src/demo/`, `src/presenter.tsx`, `src/workstation/`, `src/ui/`, `src/assets/tellr-wordmark.png`, `src/index.css`, `index.html`, `mock/live_levels.json`, `mock/live_answers.json`, `vite.config.ts`, `.env.api`, `src/devApi.ts` |
+| `web/` | B1 | React UI, mock, screens, bank themes, simulated workstation (§12) | `src/App.tsx`, `src/screens/`, `src/theme/`, `src/demo/`, `src/presenter.tsx`, `src/workstation/`, `src/ui/`, `src/assets/tellr-wordmark.png`, `src/index.css`, `index.html`, `public/favicon.svg`, `mock/live_levels.json`, `mock/live_answers.json`, `vite.config.ts`, `.env.api`, `src/devApi.ts` |
 | `web/src/screens/history/` `…/settings/` `web/e2e/` | B2 | Leaf screens + e2e if added at hour 8. Not created. B-06 filled history and health in `web/src/screens/` | — |
 | `contract/` | — | Frozen A/B interface | `api.md`, `*.schema.json` (incl. `activity.schema.json`, CHANGE-005), `fixtures/T1–T7.json`, `CHANGES.md` |
 | `prompts/` | — | Task cards (see below) | `A-01`–`A-08`, `B-01`–`B-07`, `P0-contract`, `R-review`, `J-01` |
@@ -44,6 +44,7 @@ History and the read-only recommender view live in the existing screen files. Th
 | `web/src/history.test.tsx` | Added. Practice rows stay off the default list and appear after the practice request. |
 | `web/src/health.test.tsx` | Added. Health is a GET of `/health` with no recommender control and no `/settings` call. |
 | `web/src/screens/SettingsScreen.tsx` | Removed. `/settings` redirects to `/health` (`web/src/App.tsx`). It is not in `web/src/routes.ts`. |
+| `web/src/screens/NotFoundScreen.tsx` | Catch-all and session routes with no visit. Link back to Home. |
 | `web/mock/replay.ts` | Also serves `GET /sessions` (live by default, `mode=practice`, `mode=all`) and `GET /health`. Live answers look up `live_answers.json`. |
 | `web/mock/plugin.ts` | Installed by `npm run dev`. Answers `/library`, `/health`, and `/sessions`. Not installed when `VITE_API_URL` is set. |
 
@@ -51,15 +52,15 @@ History and the read-only recommender view live in the existing screen files. Th
 
 Bank chrome is one typed theme plus CSS variables. Screens still render server state only; they read tokens (`--tc-text`, `--tc-muted`, `--tc-input`, `--tc-accent`, `--tc-button`, `--tc-button-text`, `--tc-secondary-bg`, `--tc-secondary-fg`, `--tc-link`) and do not branch on the bank id. `?theme=<id>` selects a registered id and stores it in `localStorage` (`teller.theme`). An unknown id falls back to the stored id, then to `tellr`.
 
-Each bank has a dark palette (the top-level color fields) and a `light` palette. The header toggle is Light / Dark / System, stored as `teller.colorScheme`. System follows `prefers-color-scheme` (dark when that query is missing). `web/index.html` sets `<meta name="color-scheme" content="light dark">` and `<meta name="darkreader-lock">`. `:root` sets `color-scheme: light dark`. The active scheme is also set on the theme root so form controls match. `forced-colors: active` uses system colors (`Canvas`, `ButtonFace`, `ButtonText`, `Highlight`) and keeps borders and focus; the level is still an icon plus a word. `prefers-contrast: more` thickens borders. Both palettes keep a solid `background.color` under the gradient.
+Each bank has a dark palette (the top-level color fields) and a `light` palette. The header toggle is Light / Dark / System, stored as `teller.colorScheme`. System follows `prefers-color-scheme` (dark when that query is missing). `web/index.html` sets `<meta name="color-scheme" content="light dark">` and `<meta name="darkreader-lock">`. `:root` sets `color-scheme: light dark`. The active scheme is also set on the theme root and on every `<select>` (`color-scheme: dark` or `light`, matching `data-scheme` / `data-color-scheme`) so Windows Chrome and Edge paint a dark option list in dark mode, including System after it resolves. Option rows use `--tc-surface` and `--tc-text`. Hover, focus, and selected rows use `--tc-button` and `--tc-button-text`. Those fills are opaque and meet WCAG AA. `prefers-contrast: more` keeps those pairs and thickens borders. `forced-colors: active` uses system colors (`Canvas`, `ButtonFace`, `ButtonText`, `Field`, `FieldText`, `Highlight`, `HighlightText`) and keeps borders and focus; the level is still an icon plus a word. Both palettes keep a solid `background.color` under the gradient.
 
 | File | What it is |
 |---|---|
 | `web/src/theme/types.ts` | `BankTheme` plus `ThemePalette`. Dark colors sit on the theme. `light` is the other palette. Includes solid secondary, chip, action, and quote pairs. |
-| `web/src/theme/chrome.ts` | Shared solid control colors so dismiss text does not inherit a risk-panel color. |
+| `web/src/theme/chrome.ts` | Light `SOLID_CONTROLS` and dark `DARK_CONTROLS` plus `DARK_RISK`. Nested action, quote, chip, and secondary pairs follow the active scheme. |
 | `web/src/theme/palette.ts` | `darkPalette` and `themeForScheme`. Does not mutate the registered theme. |
 | `web/src/theme/scheme.ts` | `light` / `dark` / `system`, and `readSystemScheme`. |
-| `web/src/theme/tokens.ts` | Default id `tellr`, theme key, color-scheme key, presenter key, footer string, UI font. |
+| `web/src/theme/tokens.ts` | Default id `tellr`, theme key, color-scheme key, presenter key, footer string, 13px footer size, UI font, workstation `DENSITY` (type, space, demo root 105%). |
 | `web/src/theme/resolve.ts` | `resolveThemeId` (query, then storage, then `tellr`). |
 | `web/src/theme/registry.ts` | Loads every `web/src/theme/themes/*.ts`. Adding a bank is adding one file that exports `theme`. |
 | `web/src/theme/themes/tellr.ts` | Base. Poppins, comfortable density, pill controls, navy-to-indigo gradient and a light indigo field. Logo in the header. Footer centered. |
@@ -68,40 +69,47 @@ Each bank has a dark palette (the top-level color fields) and a `light` palette.
 | `web/src/theme/themes/pnc.ts` | PNC. Arial, comfortable density, medium radius, strong shadow. Orange `#EF7622` on slate-to-navy, and a warm light field. |
 | `web/src/theme/vars.ts` | Maps a `BankTheme` onto the `--tc-*` custom properties. |
 | `web/src/theme/ThemeProvider.tsx` | Reads `?theme=` and `localStorage`, resolves the color scheme, provides the theme. |
-| `web/src/theme/ThemeRoot.tsx` | Full-bleed background with a solid color under the image. The card starts at the top of the page so the header is not clipped. No progress-dot column. |
+| `web/src/theme/ThemeRoot.tsx` | Full-bleed background with a solid color under the image. The card fills the padded page so a wide screen does not letterbox a 1440px column. The header is not clipped. No progress-dot column. Footer is 13px. |
 | `web/src/theme/Wordmark.tsx` | Bank mark inside the app header. |
 | `web/src/theme/controls.ts` | Shared control styles, including filled secondary and link styles. |
 | `web/src/assets/tellr-wordmark.png` | Tellr wordmark (transparent). `mark: 'logo'` paints it with `--tc-logo` (periwinkle on the tellr dark theme). |
 | `web/src/theme.test.tsx` | Selection, unknown-id fallback, storage, both palettes, and the flow layout. |
-| `web/src/scheme.test.tsx` | Light/dark toggle, storage, and the color-scheme / forced-colors / contrast CSS. |
-| `web/index.html` | Poppins, `color-scheme`, and `darkreader-lock`. |
-| `web/src/themeContrast.test.ts` | WCAG AA for text, buttons, glass, links, badges, and clear/caution/high on every bank in light and dark. |
+| `web/src/scheme.test.tsx` | Light/dark/system toggle, storage, native select popup tokens, and the color-scheme / forced-colors / contrast CSS. |
+| `web/index.html` | Poppins, `color-scheme`, `darkreader-lock`, and `/favicon.svg`. |
+| `web/public/favicon.svg` | Small app icon (navy tile, clear-level mark). |
+| `web/src/favicon.test.ts` | `index.html` links `public/favicon.svg`. |
+| `web/src/themeContrast.test.ts` | WCAG AA for text, buttons, glass, links, badges, select options (surface/text and button/button-text), and clear/caution/high on every bank in light and dark. |
+| `web/src/copilotTheme.test.tsx` | Dark copilot uses surface/text; level badge keeps risk colors; quote/action/chip follow Light/Dark. |
 
 Page gradients are hex and rgba only. Windows Chrome and Edge drop an entire `background-image` when any layer is invalid. Explicit percentage ellipse radii (`ellipse 72% 58%`) were that invalid layer; Safari on Mac still painted the linear layer underneath. The keyword `transparent` is also avoided, because Chromium interpolates it as transparent black. Each palette sets a solid `background.color` as well as the image, and `index.css` swaps the card to `glass.fallback` when `backdrop-filter` is unsupported.
 
 ### `web/` workstation
 
-Home is a teller workstation. A synthetic customer timeline plays beside a copilot card. The page card is `min(1440px, 100%)`. At 1280px and up the workstation is `3fr` / `2fr`. At 1024px the columns tighten. Below 900px they stack. The copilot card stretches to the column and stays sticky. Type and spacing use `clamp()`. The card reads the server level, the first reason or the counterpoint when reasons are empty, `question.text`, and `talk_track.lines`. Suggested action is `question.text` when the server has a question, otherwise the first talk-track line. Under that prompt the teller records the customer's answer: purpose chips on the opener, then the question's answer chips, posted to `POST /sessions/{id}/answers`. The card renders the returned `SessionState`. It does not choose the next question, and it does not compute risk, level, reasons, or the next question.
+Home is a teller workstation. A synthetic customer timeline plays beside a copilot card. The page card fills the padded page (`width: 100%`). At 1280px and up the workstation is `3fr` / `2fr`. At 1024px the columns tighten. Below 900px they stack. The copilot card stretches to the column and stays sticky. Type and spacing use `clamp()`. The card itself uses `--tc-surface` and `--tc-text`. Clear / Caution / High color sits on the level badge (`--tc-risk-*`), not as a full-card fill. Action, quote, chip, and secondary pairs follow the active Light/Dark tokens. The card reads the server level, the first reason or the counterpoint when reasons are empty, `question.text`, and `talk_track.lines`. Suggested action is `question.text` when the server has a question, otherwise the first talk-track line. Under that prompt the teller records the customer's answer: purpose chips on the opener, then the question's answer chips, posted to `POST /sessions/{id}/answers`. The card renders the returned `SessionState`. It does not choose the next question, and it does not compute risk, level, reasons, or the next question.
 
 CHANGE-005 fields are optional. `readExplanation` accepts `explanation` or `Explanation`, and `used_fallback` / `usedFallback`, `signal_id` / `signalId`. Contributions with `direction: "raises"` render under What raised it. `direction: "lowers"` render under What would lower it. There is no second contributions list. A strength word (Strong / Moderate / Minor factor) is the item's `|weight|` divided by the sum of `|weight|` in that response (`>= 1/3` strong, `>= 1/6` moderate, otherwise minor). The raw weight and any `sig.*` / `chip.*` id stay inside the collapsed Technical details. Confidence `null` reads "Not applicable (rules engine)". The gap sentence shows only when explanation is absent or null. Without an explanation, Clear puts `counterpoint` under What raised it and `reasons` under What would lower it, matching architecture §6.5. That is placement of server fields, not a new score.
 
-`context_chips` source renders as Observed or Teller confirmed. Simulation posts send `source: "observed"`; manual context posts send `source: "teller"`. `GET /sessions/{id}/activity` fills the recent-activity table when it returns rows, with plain labels in the table and the raw ids in Technical details. Absent fields, mock mode, and T1–T7 fixtures keep working. Confirm still marks a chip locally and does not post it again. Dismiss undoes back to that chip and reposts the rest with the same source. Escalate records outcome `escalate` with actor `teller` and opens handoff. The two-tap opener stays on Session and on the workstation card: purpose chip, then answer chips.
+`context_chips` source renders as Observed or Teller confirmed on the same row as the factor in What raised it or What would lower it. There is no second list titled "What the teller and system noted". A noted chip that is not a factor stays on the copilot row, which is the confirm/dismiss/restore control, and on the customer file. Simulation posts send `source: "observed"`; manual context posts send `source: "teller"`. `GET /sessions/{id}/activity` fills the recent-activity table when it returns rows, with plain labels in the table and the raw ids in Technical details. Absent fields, mock mode, and T1–T7 fixtures keep working. Confirm still marks a chip locally and does not post it again. Dismiss undoes back to that chip and reposts the rest with the same source; the dismissed row stays on the list, dimmed, with Restore. Restore re-posts that chip with the same source. Undo reverses the last teller confirm, dismiss, or restore; otherwise it posts `/undo` and renders the returned state. Escalate records outcome `escalate` with actor `teller` and opens handoff. The two-tap opener stays on Session and on the workstation card: purpose chip, then answer chips. The card renders one server snapshot. While a write is in flight it shows an updating state instead of mixing fields. Before Play and after Start new customer (`index === 0` and not playing) the card is an idle placeholder; Undo and Escalate stay off until a visit is live.
+
+A successful `POST /outcome` closes the visit on the server. SessionState does not carry `closed`, so the client remembers it. The four outcome choices stay enabled while the visit is open. After the decision, or after a `session_closed` response, those controls and undo, confirm, dismiss, and escalate are hidden. The screen offers Start new customer, which opens another live session with `mode` and `amount_band`. Errors are one plain sentence. The page does not show `Status 409` or `session_closed`.
 
 Every screen uses a two-column fact grid: bold labels, normal values, bold section headings. Handoff is a card titled from the recorded outcome (`Handoff — Escalated by teller` when the teller escalated). The level is an icon plus a word. A UUID session id shows its first eight characters, with the full id on the tooltip and the copy button. Suggested outcome and the teller's decision are separate rows.
 
-The header is one row: bank mark, title, status pill, tabs, Light/Dark/System, Presenter, and `?`. It does not wrap. The nav scrolls. Under a 1120px header, the theme segment collapses into a menu. The pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. Undo sits with the signal list on the workstation, and at the top of other screens that have a session. Dev tabs stay available unless presenter mode is on.
+The header wraps when the first row is tight (1280px, and 125% / 150% zoom on a 1440px laptop). Bank mark, title, tabs, and `?` keep their full labels. Title does not ellipsize. Tabs stay complete; the nav moves to the next row or scrolls inside the row. There is no Presenter control. At viewports and header containers below 1280px, the theme segment collapses into a menu. The simulation pill says `Simulation: <customer title>` while a synthetic customer is selected, and `LIVE — no scenario loaded` for a live session with no simulation. When the pill cannot fit it uses text-overflow ellipsis and a title tooltip with the full label. The connection pill says `Live API connected` or `Using sample data` from `GET /health` (`web/src/connection.ts`). Undo sits with the signal list on the workstation. Outcome and Handoff do not show a stray Undo above the heading. Context and Session still get the top Undo when those routes are open. Context, Session, History, and Health stay off the nav. The four demo tabs stay labeled: Home, Customer file, Outcome, and Handoff. Outcome and Handoff are hint labels until a visit exists; they do not add screens.
 
 The toolbar controls share a 40px height. Play keeps the icon and the word on one line. The customer select matches that height. Show case file sits on the same row. The elapsed timer is always on that row.
 
-Playback length at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. Timeline rows show step, elapsed time, and speaker, and bold amounts and phrases such as "on the phone" and "cash".
+Playback length at 1× is the sum of each event's `delayMs`. 2× halves it and 4× quarters it. Reduced motion uses a 0 wait. Targets: routine Friday 20s, car down payment 32s, government impersonation and romance/crypto 45s, contractor cash 60s. The on-screen clock and the timeline stamps are the same unit: simulated customer time (the running sum of `delayMs`). Speed changes wall-clock duration only. Timeline rows show step, elapsed time, and speaker, and bold amounts and phrases such as "on the phone" and "cash". The footer is 13px.
 
-Presenter mode is the header toggle or `?present=1` (stored in `teller.presenter` when toggled). It hides Context, Session, History, and Health; sets the root font size to 125%; resets the session when the customer changes; enlarges the current-event caption; and keeps only play/pause (`P`) and step (`N`).
+The demo layout is always on. `?present` and `teller.presenter` are ignored, and nothing in the UI names that layout. It hides Context, Session, History, and Health; sets the root font size to 105%; resets the session when the customer changes; enlarges the current-event caption; and keeps the working keys: help (`?`), play/pause (`P`), step (`N`), restart (`R`, confirm button reads Restart), confirm (`C`), dismiss (`D`), escalate (`E`), and customer switch (`[` / `]`). Type, gaps, and card padding come from `DENSITY` in `web/src/theme/tokens.ts` plus the matching `clamp()` tokens in `web/src/index.css` (~15–20% tighter than the first workstation pass) so a 1280×720 laptop sees the header, toolbar, transaction, and copilot without horizontal clip. The full UI reference is `docs/UI_REFERENCE.md`.
 
 | File | What it is |
 |---|---|
 | `web/src/demo/customers.ts` | Five synthetic files and `SCRIPT_TARGETS_MS`. The last two post no chips. Name and age band are display-only. Activity rows have date, description, and amount for the customer-file table. |
-| `web/src/demo/clock.ts` | `m:ss` elapsed label. |
-| `web/src/presenter.tsx` | Presenter flag from `?present=` or `localStorage`. |
+| `web/src/demo/clock.ts` | Simulated `m:ss` elapsed (sum of `delayMs`) for the toolbar clock and timeline. |
+| `web/src/demo/clock.test.ts` | Clock and timeline stay on simulated time at 1× and 4×. |
+| `web/src/demoPolish.test.tsx` | Timer matches timeline, shortcut list, Restart confirm, four labeled tabs, full-width card, 13px footer. |
+| `web/src/presenter.tsx` | Demo layout, always on. No toggle and no `?present` switch. |
 | `web/src/screens/HomeScreen.tsx` | Toolbar, transaction panel, copilot card, explanation. |
 | `web/src/screens/CustomerFileScreen.tsx` | Profile, activity table, this withdrawal, and what was noted. Session activity replaces the synthetic table when `GET /activity` returns rows. Source badges prefer `context_chips` and otherwise stay Not yet, Observed, Teller confirmed, or Dismissed. |
 | `web/src/screens/HandoffScreen.tsx` | Handoff card. Fact grid, level badge, flagged list, suggested outcome versus the teller's decision. |
@@ -109,53 +117,60 @@ Presenter mode is the header toggle or `?present=1` (stored in `teller.presenter
 | `web/src/ui/plain.ts` | Teller-facing labels: pattern, mode, outcome, short id, amount band, recommender phrase. |
 | `web/src/ui/emphasis.tsx` | Bolds amounts and phrases such as "on the phone" in timeline copy. |
 | `web/src/workstation/Toolbar.tsx` | 40px customer picker, Play/Pause, Step, Restart, speed segments, timer, case-file link. |
-| `web/src/workstation/CopilotStrip.tsx` | Sticky card that fills the column. Level icon and word, one reason, suggested action, answer panel for `SessionState.question`, collapsible read-aloud quote, noted rows with badges and icon buttons. |
+| `web/src/workstation/CopilotStrip.tsx` | Sticky card that fills the column. Surface/text tokens for the card; risk color on the level badge. Idle placeholder before play. Updating state while a write is in flight. Level icon and word, one reason, suggested action, answer panel for `SessionState.question`, collapsible read-aloud quote, noted rows with an inline origin pill and confirm / dismiss / restore. |
 | `web/src/workstation/QuestionCard.tsx` | Shared two-tap opener and answer chips. Interview keeps the prompt; the workstation hides it because suggested action already shows `question.text`. |
 | `web/src/workstation.test.tsx` | Workstation posts purpose then chip on the opener, chip alone on a follow-up, updates suggested action from the returned question, and hides chips on a hard stop. |
+| `web/src/screens/NotFoundScreen.tsx` | Unknown paths and session routes with no visit. Short “start a customer” copy and a Home link. |
+| `web/src/emptyRoutes.test.tsx` | `/outcome`, `/handoff`, `/history`, `/session`, `/context` and session URLs without a visit. `/health` already has content. |
 | `web/src/workstation/explain.ts` | Reads `explanation` and groups raises and lowers. Strength words from the response's own weights. |
-| `web/src/workstation/ExplanationPanel.tsx` | Why this level. Fact grid, two contribution lists, noted items, collapsed technical details. |
+| `web/src/workstation/ExplanationPanel.tsx` | Why this level. Fact grid, two contribution lists with the Observed or Teller confirmed badge on the matching row, collapsed technical details. |
 | `web/src/workstation/TransactionPanel.tsx` | Key-value transaction, timeline with step and speaker, event progress. Session activity appears when `GET /activity` returns rows. |
-| `web/src/ui/ShortcutHelp.tsx` | `?` lists keyboard shortcuts. Presenter mode notes the reduced set. |
+| `web/src/ui/ShortcutHelp.tsx` | `?` lists the working keys: `?`, `P`, `N`, `R`, `C`, `D`, `E`, `[` / `]`. |
 | `web/src/ui/icons.tsx` | Play, pause, step, restart, confirm, and dismiss icons. |
-| `web/src/ui/ConfirmDialog.tsx` | Confirm before restart, customer switch (off in presenter mode), and escalate. |
-| `web/src/presenter.test.tsx` | Presenter query, hidden dev tabs, type size, and customer switch without a confirm dialog. |
+| `web/src/ui/ConfirmDialog.tsx` | Confirm before restart and escalate. Customer switch resets without a dialog. |
+| `web/src/connection.ts` | Probes `GET /health` and chooses the live origin or the sample-data fallback. |
+| `web/src/errors.ts` | Plain sentences for API errors. No status code and no error code on screen. |
+| `web/src/presenter.test.tsx` | Demo layout stays on when `?present=0` is set. Hidden dev tabs, type size 105%, no Presenter button, four labeled tabs, Restart key. |
+| `web/src/workstationFit.test.tsx` | Laptop fit: 3fr/2fr at 1280, stack below 900, scheme collapse at 1280, header wrap, simulation pill ellipsis+tooltip, scaled clamps. |
+| `web/src/copilotCard.test.tsx` | Reversible dismiss/undo, idle placeholder, in-flight updating state, inline origin pill, no Outcome/Handoff Undo. |
+| `web/scripts/measure-fit.mjs` | Headless Chrome measures scrollWidth and header clip at 1024/1280/1440 in light and dark. Not part of `gate.sh b`. |
 | `web/mock/live_levels.json` | Recorded engine responses for context-chip subsets. The mock uses these when a live post is not the next fixture step. The mock echoes `context_chips` from the live log and serves `GET /activity`. It leaves `explanation` off unless the recorded body already has it. |
 | `web/mock/live_answers.json` | Recorded engine responses for live answers on the demo chip sets (empty, government impersonation prefixes, contractor cash, romance/crypto). The mock looks them up after `POST /answers`; it does not score. Unrecorded combinations keep the last recorded answer state or the context projection and warn. `npm run dev:api` scores every answer through the API. |
 | `web/src/routes.ts` | Nav labels are Home, Customer file, Context, Session, Outcome, Handoff, History, Health. |
 
 ### `web/` dev modes
 
-Two local runs. Neither script starts the API. `web/src/api.ts` keeps `apiBase()` as `import.meta.env.VITE_API_URL ?? ''`, so a set value is the request origin and an unset value stays on the Vite origin.
+Two local runs. Neither script starts the API. On load, `web/src/connection.ts` calls `GET /health` on `VITE_API_URL` when that is set, otherwise on `http://127.0.0.1:8000`. A health report selects that origin (`Live API connected`) and `setApiBase` points later requests there. If that probe fails and the Vite origin answers `/health`, requests stay on the page origin (`Using sample data`). If neither answers, the pill says `API not connected`. Vitest skips the probe and uses `VITE_API_URL` or the page origin. See `docs/UI_REFERENCE.md`.
 
-Real-API mode uses the CORS middleware from #71, merged at `6d063eb` (8:24 PM ET). `api/main.py` allows any origin and sends no credentials, so a page on `http://127.0.0.1:5173` can call `http://127.0.0.1:8000`. That merge needed no further `web/` edits. Restart uvicorn if it was started before the pull.
+Real-API mode uses the CORS middleware from #71, merged at `6d063eb` (8:24 PM ET). `api/main.py` allows any origin and sends no credentials, so a page on `http://127.0.0.1:5173` can call `http://127.0.0.1:8000`. Restart uvicorn if it was started before the pull.
 
 | File | What it is |
 |---|---|
-| `web/package.json` | `dev` is `vite` (mock). `dev:api` is `vite --mode api`. The script has no `VAR=value` prefix, so Windows PowerShell can run it. |
+| `web/package.json` | `dev` is `vite`. `dev:api` is `vite --mode api`. The script has no `VAR=value` prefix, so Windows PowerShell can run it. |
 | `web/.env.api` | Loaded only for mode `api`. Sets `VITE_API_URL=http://127.0.0.1:8000`. |
-| `web/vite.config.ts` | Reads `VITE_API_URL` with `loadEnv`. A non-empty value skips `mockApiPlugin`. |
-| `web/src/devApi.ts` | `useMockApi` (mock only when the URL is blank) and `directoryFromFileUrl` (config directory, including `C:/...`). |
-| `web/src/devApi.test.ts` | Scripts, `.env.api`, and mock on/off. |
-| `web/src/api.ts` | Unchanged. Sends browser requests to `VITE_API_URL` when it is set. |
+| `web/vite.config.ts` | Always installs `mockApiPlugin`, including when `VITE_API_URL` is set, so a failed health probe can fall back. |
+| `web/src/devApi.ts` | `useMockApi` (true when the URL is blank) and `directoryFromFileUrl` (config directory, including `C:/...`). |
+| `web/src/devApi.test.ts` | Scripts, `.env.api`, and the mock plugin staying installed. |
+| `web/src/api.ts` | `apiBase()` is the probed origin when set, otherwise `VITE_API_URL`. |
 | `web/.gitignore` | Ignores `.env.local` and `.env.*.local` so a machine can override the origin. |
 
 Windows PowerShell, from the repo:
 
-Mock (default). Same data as before. `VITE_API_URL` stays unset, and the mock plugin answers `/library`, `/health`, and `/sessions`.
+Either script. If the API is already on port 8000, the page uses it. If it is not, the page uses sample data.
 
 ```
 cd web
 npm run dev
 ```
 
-Real API. Start the API on port 8000 from current main (`python -m uvicorn api.main:app --port 8000`). Then:
+Real API, with the origin pinned in `web/.env.api`. Start the API on port 8000 from current main (`python -m uvicorn api.main:app --port 8000`). Then:
 
 ```
 cd web
 npm run dev:api
 ```
 
-The browser calls `http://127.0.0.1:8000`. The mock plugin is not installed, so it cannot answer those paths.
+The browser calls `http://127.0.0.1:8000` when `GET /health` succeeds. The mock plugin remains installed for the fallback. Live session opens send `{ mode: "live", amount_band }`.
 
 To point at another origin, set the variable in that PowerShell window and then start the script:
 
@@ -164,7 +179,7 @@ $env:VITE_API_URL = "http://127.0.0.1:9000"
 npm run dev:api
 ```
 
-Or put `VITE_API_URL=http://127.0.0.1:9000` in `web/.env.api.local`. A set `VITE_API_URL` also turns the mock off for `npm run dev`.
+Or put `VITE_API_URL=http://127.0.0.1:9000` in `web/.env.api.local`. The probe uses that origin when its `/health` succeeds, and sample data when it does not.
 
 ## Task cards (`prompts/`)
 
@@ -186,7 +201,7 @@ Or put `VITE_API_URL=http://127.0.0.1:9000` in `web/.env.api.local`. A set `VITE
 | Scoring, fold, domain, eligibility, stop | `docs/architecture.md` §4–§8 |
 | Safety / fairness promises | `docs/architecture.md` §9 |
 | API / SessionState | `docs/architecture.md` §11; `contract/api.md` |
-| Frontend screens | `docs/architecture.md` §12 |
+| Frontend screens | `docs/architecture.md` §12; UI decisions in `docs/UI_REFERENCE.md` |
 | Eval, scenarios, metrics | `docs/architecture.md` §13 |
 | Storage, demo, fallbacks | `docs/architecture.md` §10, §14 |
 | Driver decisions already made | `docs/DECISIONS.md` |

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiSend } from '../api'
-import { listedChipIds, originText, sourceForChip } from '../feed'
+import { factorOrigin } from '../feed'
 import { readHealth, type HealthReport } from '../screens/HealthScreen'
 import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { LEVEL_WORD } from '../ui/LevelIcon'
@@ -8,7 +8,6 @@ import { levelLabel, patternValue, recommenderPhrase, suggestedLabel } from '../
 import type { Library, SessionState } from '../types'
 import {
   groupFactors,
-  humanLabel,
   responseWeightTotal,
   strengthShare,
   strengthWord,
@@ -20,11 +19,13 @@ function FactorList({
   total,
   testId,
   empty,
+  originFor,
 }: {
   items: readonly LevelFactor[]
   total: number
   testId: string
   empty: string
+  originFor: (item: LevelFactor) => 'Observed' | 'Teller confirmed' | null
 }) {
   if (items.length === 0) {
     return (
@@ -38,10 +39,16 @@ function FactorList({
       {items.map((item) => {
         const share = item.weight == null ? null : strengthShare(item.weight, total)
         const word = item.weight == null ? null : strengthWord(item.weight, total)
+        const origin = originFor(item)
         return (
           <li key={`${item.id}-${item.direction}`} data-testid={testId} data-direction={item.direction}>
             <div className="tc-factor-head">
               <strong>{item.label}</strong>
+              {origin ? (
+                <span data-testid="explain-input" className="tc-badge">
+                  {origin}
+                </span>
+              ) : null}
               {word ? (
                 <span className="tc-factor-strength">
                   <span aria-hidden="true">{item.direction === 'raises' ? '↑' : '↓'}</span> {word}
@@ -72,10 +79,12 @@ export function ExplanationPanel({
   library,
   session,
   postedChipIds,
+  idle = false,
 }: {
   library: Library | null
   session: SessionState | null
   postedChipIds: readonly string[]
+  idle?: boolean
 }) {
   const [health, setHealth] = useState<HealthReport | null>(null)
 
@@ -99,7 +108,7 @@ export function ExplanationPanel({
     }
   }, [])
 
-  if (!session) {
+  if (!session || idle) {
     return null
   }
 
@@ -107,7 +116,8 @@ export function ExplanationPanel({
   const factors = [...grouped.raises, ...grouped.lowers]
   const total = responseWeightTotal(factors)
   const debug = session.debug
-  const noted = listedChipIds(postedChipIds, session.context_chips)
+  const originFor = (item: LevelFactor) =>
+    factorOrigin(library, item.id, item.label, postedChipIds, session.context_chips)
 
   return (
     <section data-testid="explain-panel" aria-label="Why this level" className="tc-explain">
@@ -128,6 +138,7 @@ export function ExplanationPanel({
         total={total}
         testId="explain-reason"
         empty="Nothing in this visit raised the level."
+        originFor={originFor}
       />
 
       <SectionHeading>What would lower it</SectionHeading>
@@ -136,26 +147,8 @@ export function ExplanationPanel({
         total={total}
         testId="explain-counter"
         empty="Nothing in this visit points toward it being safe."
+        originFor={originFor}
       />
-
-      <SectionHeading>What the teller and system noted</SectionHeading>
-      {noted.length === 0 ? (
-        <p style={{ margin: 0 }}>Nothing has been noted yet.</p>
-      ) : (
-        <ul className="tc-factor-list">
-          {noted.map((chipId) => {
-            const chip = library?.context_chips.find((item) => item.id === chipId)
-            const label = humanLabel(library, chip?.signal ?? chipId, chip?.label ?? chipId)
-            const source = sourceForChip(session.context_chips, chipId)
-            return (
-              <li key={chipId} data-testid="explain-input" className="tc-note-row">
-                <span>{label}</span>
-                <span className="tc-badge">{originText(source, false)}</span>
-              </li>
-            )
-          })}
-        </ul>
-      )}
 
       <details className="tc-tech" data-testid="technical-details">
         <summary>Technical details</summary>

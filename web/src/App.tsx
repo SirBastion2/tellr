@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Link, BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { advanceSimulatedMs, simulatedCapMs, timelineElapsedMs } from './demo/clock'
 import { CUSTOMERS, customerById } from './demo/customers'
 import type { ConfirmKind, DemoSpeed, DemoView } from './demo/types'
+import { connectionLabel, connectionState, subscribeConnection, type ConnectionState } from './connection'
+import { friendlyApiError } from './errors'
+import { sourceForChip } from './feed'
 import { LiveBadge } from './LiveBadge'
 import { PRESENTER_HIDDEN_ROUTES, PresenterProvider, usePresenter } from './presenter'
 import { SchemaBanner } from './SchemaBanner'
@@ -14,8 +18,9 @@ import { HealthScreen } from './screens/HealthScreen'
 import { HistoryScreen } from './screens/HistoryScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { InterviewScreen } from './screens/InterviewScreen'
+import { NotFoundScreen } from './screens/NotFoundScreen'
 import { OutcomeScreen } from './screens/OutcomeScreen'
-import { TellerProvider, useTeller } from './teller'
+import { TellerProvider, useTeller, type RecordedDecision } from './teller'
 import { controlStyle, secondaryStyle } from './theme/controls'
 import { type ColorChoice } from './theme/scheme'
 import { ThemeProvider, useColorScheme } from './theme/ThemeProvider'
@@ -24,9 +29,14 @@ import { ThemeWordmark } from './theme/Wordmark'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 import { LEVEL_WORD } from './ui/LevelIcon'
 import { ShortcutHelp } from './ui/ShortcutHelp'
-import type { ActivityRow, AnswerPost, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
+import type { ActivityRow, AnswerPost, ChipSource, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import type { SchemaIssue } from './validate'
 import { suggestedAction } from './workstation/CopilotStrip'
+
+type SignalAction =
+  | { kind: 'confirm'; chipId: string }
+  | { kind: 'dismiss'; chipId: string; source: ChipSource }
+  | { kind: 'restore'; chipId: string; source: ChipSource }
 
 const tap: CSSProperties = {
   ...controlStyle,
@@ -93,14 +103,14 @@ function SchemeMenu() {
   )
 }
 
-function routeLabel(route: (typeof APP_ROUTES)[number], session: SessionState | null): string | null {
-  if (route.path.includes(':id')) {
-    if (!session) {
-      return null
-    }
-    return route.label
-  }
-  return route.label
+function ConnectionBadge() {
+  const [link, setLink] = useState<ConnectionState>(connectionState)
+  useEffect(() => subscribeConnection(setLink), [])
+  return (
+    <p data-testid="connection-status" data-kind={link.kind} className="tc-connection" title={connectionLabel(link.kind)}>
+      {connectionLabel(link.kind)}
+    </p>
+  )
 }
 
 function routePath(route: (typeof APP_ROUTES)[number], session: SessionState | null): string | null {
@@ -124,6 +134,9 @@ export function AppShell({
   onAnswer,
   onUndo,
   onSubmitOutcome,
+  onStartNew,
+  closed = false,
+  recorded = null,
   handoff = null,
   httpStatus = null,
   error = null,
@@ -144,6 +157,9 @@ export function AppShell({
   onAnswer?: (answer: AnswerPost) => void
   onUndo?: () => void
   onSubmitOutcome?: (body: { outcome: OutcomeId; actor: string }) => void
+  onStartNew?: () => void
+  closed?: boolean
+  recorded?: RecordedDecision | null
   handoff?: HandoffProjection | null
   httpStatus?: number | null
   error?: ErrorResponse | null
@@ -170,9 +186,10 @@ export function AppShell({
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onConfirmCancel, onHelp])
+  const visitIdle = Boolean(demo && demo.index === 0 && !demo.playing)
   const levelWord = session ? LEVEL_WORD[session.risk.level] : ''
   const action = session ? suggestedAction(session) : ''
-  const announcement = session
+  const announcement = session && !visitIdle
     ? `Level ${levelWord}. ${action ? `Suggested action: ${action}` : 'No suggested action.'}`
     : ''
 
@@ -187,30 +204,55 @@ export function AppShell({
           data-testid="app-header"
           style={{
             display: 'flex',
-            flexWrap: 'nowrap',
+            flexWrap: 'wrap',
             alignItems: 'center',
             gap: '8px',
             minHeight: '48px',
-            overflow: 'hidden',
+            overflow: 'visible',
+            minWidth: 0,
+            maxWidth: '100%',
             background: 'var(--tc-glass-fallback)',
             borderRadius: 'var(--tc-radius-card)',
             padding: '8px',
           }}
         >
           <ThemeWordmark />
-          <h1 className="tc-header-title">Teller Copilot</h1>
+          <h1 className="tc-header-title" title="Teller Copilot">
+            Teller Copilot
+          </h1>
           <LiveBadge mode={session?.mode ?? null} simulationTitle={simulationTitle} />
+          <ConnectionBadge />
           <nav
             aria-label="Screens"
             data-testid="app-nav"
             className="tc-header-nav"
-            style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', minWidth: 0, flex: '1 1 auto', minHeight: 48, gap: 8 }}
+            style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto', minWidth: 0, flex: '1 1 20rem', minHeight: 48, gap: 8 }}
           >
             {routes.map((route) => {
               const path = routePath(route, session)
-              const label = routeLabel(route, session)
-              if (!path || !label) {
-                return null
+              const label = route.label
+              if (!path) {
+                return (
+                  <span
+                    key={route.id}
+                    data-testid={`nav-hint-${route.id}`}
+                    className="tc-nav-hint"
+                    aria-disabled="true"
+                    title="Available after a visit starts"
+                    style={{
+                      ...tap,
+                      flex: '0 0 auto',
+                      color: 'var(--tc-muted)',
+                      borderColor: 'transparent',
+                      borderBottom: '3px solid transparent',
+                      fontWeight: 500,
+                      whiteSpace: 'nowrap',
+                      cursor: 'default',
+                    }}
+                  >
+                    {label}
+                  </span>
+                )
               }
               const current = location.pathname === path
               return (
@@ -239,24 +281,6 @@ export function AppShell({
           <button
             type="button"
             className="tc-btn"
-            data-variant={presenter.on ? 'primary' : 'secondary'}
-            data-testid="presenter-toggle"
-            aria-pressed={presenter.on}
-            title="Presenter mode"
-            style={{
-              ...tap,
-              flex: '0 0 auto',
-              ...(presenter.on
-                ? { backgroundColor: 'var(--tc-button)', color: 'var(--tc-button-text)', borderColor: 'transparent' }
-                : secondaryStyle),
-            }}
-            onClick={() => presenter.setOn(!presenter.on)}
-          >
-            Presenter
-          </button>
-          <button
-            type="button"
-            className="tc-btn"
             data-variant="secondary"
             data-testid="shortcut-help-button"
             aria-label="Keyboard shortcuts"
@@ -271,18 +295,35 @@ export function AppShell({
           {announcement}
         </p>
         {import.meta.env.DEV ? <SchemaBanner issues={issues} /> : null}
-        {httpStatus != null && httpStatus !== 200 ? (
-          <p>
-            Status <span data-testid="http-status">{httpStatus}</span>
-          </p>
-        ) : null}
-        {error ? (
-          <p data-testid="api-error">
-            {error.error.code} {error.error.message}
-          </p>
+        {(() => {
+          const notice = friendlyApiError(error ?? null, httpStatus ?? null)
+          const closedNotice = closed && error?.error.code === 'session_closed'
+          if (!notice || closedNotice) {
+            return null
+          }
+          return (
+            <p data-testid="api-error" role="alert">
+              {notice}
+            </p>
+          )
+        })()}
+        {session && closed && !location.pathname.endsWith('/outcome') ? (
+          <div className="tc-closed" data-testid="session-closed" role="status">
+            <p style={{ margin: 0 }}>This visit is closed.</p>
+            <button
+              type="button"
+              className="tc-btn"
+              data-variant="primary"
+              data-testid="start-new-customer"
+              style={{ ...tap, flex: '0 0 auto' }}
+              onClick={() => onStartNew?.()}
+            >
+              Start new customer
+            </button>
+          </div>
         ) : null}
         <main id="main">
-          {session && !workstation ? (
+          {session && !workstation && !closed && !location.pathname.endsWith('/outcome') && !location.pathname.endsWith('/handoff') ? (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
               <button
                 type="button"
@@ -305,8 +346,10 @@ export function AppShell({
                   library={library}
                   session={session}
                   postedChipIds={postedChipIds}
+                  dismissed={dismissed}
                   activity={activity}
                   demo={demo}
+                  closed={closed}
                   onUndo={onUndo}
                   onAnswer={onAnswer}
                 />
@@ -329,31 +372,60 @@ export function AppShell({
             <Route
               path="/sessions/:id/context"
               element={
-                <ContextScreen
-                  library={library}
-                  session={session}
-                  postedChipIds={postedChipIds}
-                  onPost={onPostContext}
-                />
+                session ? (
+                  <ContextScreen
+                    library={library}
+                    session={session}
+                    postedChipIds={postedChipIds}
+                    onPost={onPostContext}
+                  />
+                ) : (
+                  <NotFoundScreen kind="session" />
+                )
               }
             />
             <Route
               path="/sessions/:id/outcome"
-              element={<OutcomeScreen session={session} onSubmit={onSubmitOutcome} />}
+              element={
+                session ? (
+                  <OutcomeScreen
+                    session={session}
+                    closed={closed}
+                    recorded={recorded}
+                    onSubmit={onSubmitOutcome}
+                    onStartNew={onStartNew}
+                  />
+                ) : (
+                  <NotFoundScreen kind="session" />
+                )
+              }
             />
             <Route
               path="/sessions/:id/handoff"
-              element={<HandoffScreen library={library} projection={handoff} />}
+              element={
+                session ? (
+                  <HandoffScreen library={library} projection={handoff} />
+                ) : (
+                  <NotFoundScreen kind="session" />
+                )
+              }
             />
             <Route
               path="/sessions/:id"
-              element={<InterviewScreen library={library} session={session} onAnswer={onAnswer} />}
+              element={
+                session ? (
+                  <InterviewScreen library={library} session={session} onAnswer={onAnswer} />
+                ) : (
+                  <NotFoundScreen kind="session" />
+                )
+              }
             />
             <Route path="/health" element={<HealthScreen />} />
             <Route path="/settings" element={<Navigate to="/health" replace />} />
+            <Route path="*" element={<NotFoundScreen />} />
           </Routes>
         </main>
-        {helpOpen ? <ShortcutHelp presenter={presenter.on} onClose={() => onHelp?.(false)} /> : null}
+        {helpOpen ? <ShortcutHelp onClose={() => onHelp?.(false)} /> : null}
         {confirm ? (
           <ConfirmDialog
             title={
@@ -368,7 +440,9 @@ export function AppShell({
                 ? 'This records an escalate outcome for the teller and opens the handoff.'
                 : 'This resets the live session and the simulated timeline.'
             }
-            confirmLabel={confirm.kind === 'escalate' ? 'Escalate' : 'Reset session'}
+            confirmLabel={
+              confirm.kind === 'escalate' ? 'Escalate' : confirm.kind === 'restart' ? 'Restart' : 'Reset session'
+            }
             pending={demo?.pending ?? false}
             onCancel={() => onConfirmCancel?.()}
             onConfirm={() => onConfirmAccept?.()}
@@ -394,6 +468,7 @@ function ConnectedShell() {
   const [showCase, setShowCase] = useState(false)
   const [confirmed, setConfirmed] = useState<string[]>([])
   const [dismissed, setDismissed] = useState<string[]>([])
+  const [actions, setActions] = useState<SignalAction[]>([])
   const [helpOpen, setHelpOpen] = useState(false)
   const [confirm, setConfirm] = useState<ConfirmKind>(null)
   const [elapsedMs, setElapsedMs] = useState(0)
@@ -405,6 +480,8 @@ function ConnectedShell() {
   const elapsedRef = useRef(0)
   const lock = useRef(false)
   const tellerRef = useRef(teller)
+  const actionsRef = useRef<SignalAction[]>([])
+  const dismissedSource = useRef(new Map<string, ChipSource>())
 
   useEffect(() => {
     indexRef.current = index
@@ -413,7 +490,8 @@ function ConnectedShell() {
     playingRef.current = playing
     presenterRef.current = presenter.on
     tellerRef.current = teller
-  }, [customerId, index, playing, presenter.on, speed, teller])
+    actionsRef.current = actions
+  }, [actions, customerId, index, playing, presenter.on, speed, teller])
 
   useEffect(() => {
     if (!playing) {
@@ -422,7 +500,10 @@ function ConnectedShell() {
     let last = performance.now()
     const timer = window.setInterval(() => {
       const now = performance.now()
-      elapsedRef.current += now - last
+      const customer = customerById(customerRef.current)
+      const events = customer?.events ?? []
+      const cap = simulatedCapMs(events, indexRef.current)
+      elapsedRef.current = advanceSimulatedMs(elapsedRef.current, now - last, speedRef.current, cap)
       last = now
       setElapsedMs(elapsedRef.current)
     }, 250)
@@ -437,7 +518,10 @@ function ConnectedShell() {
   }, [location.pathname, sessionId, loadHandoff])
 
   const runCurrent = useCallback(async () => {
-    if (lock.current) {
+    if (lock.current || tellerRef.current.closed) {
+      if (tellerRef.current.closed) {
+        setPlaying(false)
+      }
       return
     }
     const customer = customerById(customerRef.current)
@@ -455,7 +539,14 @@ function ConnectedShell() {
       if (event.chips.length > 0) {
         await tellerRef.current.postContext(event.chips, 'observed')
       }
-      setIndex((value) => value + 1)
+      if (tellerRef.current.closed) {
+        setPlaying(false)
+        return
+      }
+      const next = indexRef.current + 1
+      elapsedRef.current = timelineElapsedMs(customer.events, next)
+      setElapsedMs(elapsedRef.current)
+      setIndex(next)
     } finally {
       lock.current = false
       setPending(false)
@@ -494,6 +585,8 @@ function ConnectedShell() {
       setIndex(0)
       setConfirmed([])
       setDismissed([])
+      setActions([])
+      dismissedSource.current.clear()
       elapsedRef.current = 0
       setElapsedMs(0)
       setPending(true)
@@ -535,6 +628,7 @@ function ConnectedShell() {
       return
     }
     if (current.kind === 'escalate') {
+      setPlaying(false)
       setPending(true)
       void (async () => {
         try {
@@ -573,9 +667,6 @@ function ConnectedShell() {
         return
       }
       const key = event.key.toLowerCase()
-      if (presenterRef.current && key !== 'p' && key !== 'n') {
-        return
-      }
       if (key === '?') {
         event.preventDefault()
         setHelpOpen((open) => !open)
@@ -614,9 +705,15 @@ function ConnectedShell() {
         event.preventDefault()
         if (key === 'c') {
           setConfirmed((current) => (current.includes(chipId) ? current : [...current, chipId]))
+          setActions((current) => [...current, { kind: 'confirm', chipId }])
         } else {
+          const source = sourceForChip(tellerRef.current.session?.context_chips, chipId) ?? 'observed'
+          dismissedSource.current.set(chipId, source)
+          setConfirmed((current) => current.filter((id) => id !== chipId))
           setDismissed((current) => (current.includes(chipId) ? current : [...current, chipId]))
-          void tellerRef.current.dismissChip(chipId)
+          setActions((current) => [...current, { kind: 'dismiss', chipId, source }])
+          setPending(true)
+          void tellerRef.current.dismissChip(chipId).finally(() => setPending(false))
         }
         return
       }
@@ -668,10 +765,23 @@ function ConnectedShell() {
     onToggleCase: () => setShowCase((value) => !value),
     onConfirmSignal: (chipId) => {
       setConfirmed((current) => (current.includes(chipId) ? current : [...current, chipId]))
+      setActions((current) => [...current, { kind: 'confirm', chipId }])
     },
     onDismissSignal: (chipId) => {
+      const source = sourceForChip(teller.session?.context_chips, chipId) ?? 'observed'
+      dismissedSource.current.set(chipId, source)
+      setConfirmed((current) => current.filter((id) => id !== chipId))
       setDismissed((current) => (current.includes(chipId) ? current : [...current, chipId]))
-      void teller.dismissChip(chipId)
+      setActions((current) => [...current, { kind: 'dismiss', chipId, source }])
+      setPending(true)
+      void teller.dismissChip(chipId).finally(() => setPending(false))
+    },
+    onRestoreSignal: (chipId) => {
+      const source = dismissedSource.current.get(chipId) ?? sourceForChip(teller.session?.context_chips, chipId) ?? 'observed'
+      setDismissed((current) => current.filter((id) => id !== chipId))
+      setActions((current) => [...current, { kind: 'restore', chipId, source }])
+      setPending(true)
+      void teller.postContext([chipId], source).finally(() => setPending(false))
     },
     onEscalate: () => {
       if (teller.session) {
@@ -690,6 +800,11 @@ function ConnectedShell() {
       activity={teller.activity?.rows ?? null}
       httpStatus={teller.httpStatus}
       error={teller.error}
+      closed={teller.closed}
+      recorded={teller.recorded}
+      onStartNew={() => {
+        void resetSession()
+      }}
       demo={demo}
       helpOpen={helpOpen}
       confirm={confirm}
@@ -703,10 +818,33 @@ function ConnectedShell() {
         void teller.postAnswer(answer)
       }}
       onUndo={() => {
-        void teller.undo()
+        const last = actionsRef.current.at(-1)
+        if (last?.kind === 'confirm') {
+          setConfirmed((current) => current.filter((id) => id !== last.chipId))
+          setActions((current) => current.slice(0, -1))
+          return
+        }
+        if (last?.kind === 'dismiss') {
+          setDismissed((current) => current.filter((id) => id !== last.chipId))
+          setActions((current) => current.slice(0, -1))
+          setPending(true)
+          void teller.postContext([last.chipId], last.source).finally(() => setPending(false))
+          return
+        }
+        if (last?.kind === 'restore') {
+          dismissedSource.current.set(last.chipId, last.source)
+          setDismissed((current) => (current.includes(last.chipId) ? current : [...current, last.chipId]))
+          setActions((current) => current.slice(0, -1))
+          setPending(true)
+          void teller.dismissChip(last.chipId).finally(() => setPending(false))
+          return
+        }
+        setPending(true)
+        void teller.undo().finally(() => setPending(false))
       }}
       handoff={teller.handoff}
       onSubmitOutcome={(body) => {
+        setPlaying(false)
         void teller.postOutcome(body.outcome, body.actor)
       }}
     />

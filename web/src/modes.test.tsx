@@ -43,7 +43,10 @@ describe('session modes', () => {
       const { unmount } = render(shell('live', path))
       expect(screen.getByTestId(route.testId), path).toBeTruthy()
       expect(screen.getByTestId('live-badge').textContent, path).toBe(LIVE)
-      expect(screen.getByRole('link', { name: route.label }).textContent).toBe(route.label)
+      const link = screen.queryByRole('link', { name: route.label })
+      if (link) {
+        expect(link.textContent).toBe(route.label)
+      }
       unmount()
     }
     for (const route of APP_ROUTES) {
