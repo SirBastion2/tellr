@@ -2170,7 +2170,7 @@ GATE PASS (b)
 - **Decisions I made, and the section that justified each:**
   - Display uses `Intl` / local `Date` (architecture §12). Naive ISO stamps are UTC, then shown in the client zone. UTC 05:17 on America/New_York (EDT, UTC-4) renders 1:17. Live clock ticks each minute. Elapsed timer stays simulated `delayMs`.
   - Reused existing `opened_at` (optional on POST /sessions) plus IANA `timezone`. No contract schema change (WORKFLOW §5). API `local_hour` never uses `datetime.utcnow()` / naive UTC. Engine fold unchanged; web still computes no risk/level/question (§9).
-  - Merged `origin/main` `086587c` (#102, #103). `ARCHITECTURE.md` keeps local-clock files and privacy / simulation-pill rows.
+  - Merged `origin/main` `086587c` (#102, #103) then `e0a53e4` (#105). `ARCHITECTURE.md` keeps local-clock files, privacy / simulation-pill rows, and the type-scale map. Live clock type is `--tc-text-sm` from `typeScale.ts` (no raw font-size).
 - **Questions logged:** none
-- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/104. Do not merge. No contract / engine / library / golden edits. No new dependency. No screenshots.
+- **The next agent needs to know:** PR https://github.com/SirBastion2/tellr/pull/104. Do not merge. No contract / engine / library / golden edits. No new dependency. No screenshots. After #105: `scripts/gate.sh a` PASS (210 pytest); `scripts/gate.sh b` PASS (49 files, 177 tests).
 
