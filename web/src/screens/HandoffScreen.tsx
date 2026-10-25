@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { flaggedSignals } from '../feed'
+import { flaggedSignals, handoffReasonBadge } from '../feed'
 import { controlStyle, secondaryStyle } from '../theme/controls'
 import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
 import { LevelIcon } from '../ui/LevelIcon'
@@ -55,7 +55,9 @@ export function HandoffScreen({
   confirmed?: readonly string[]
   postedChipIds?: readonly string[]
 }) {
-  const signals = flaggedSignals(session, projection, library, dismissed, confirmed, postedChipIds)
+  const signals = flaggedSignals(session, projection, library, dismissed, confirmed, postedChipIds).map(
+    (signal) => ({ ...signal, status: handoffReasonBadge(signal.status) }),
+  )
   return (
     <section data-testid="handoff-screen" className="tc-card tc-screen">
       <PageTitle>{projection ? handoffTitle(projection.outcome, projection.actor) : 'Handoff'}</PageTitle>

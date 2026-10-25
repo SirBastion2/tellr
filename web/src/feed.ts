@@ -283,6 +283,21 @@ export type FlaggedSignal = {
   status: 'Observed' | 'Teller confirmed' | 'Dismissed' | null
 }
 
+/**
+ * Badge for the Handoff "Why it was flagged" list only.
+ * `factorOrigin` stays null when no context chip matches (recorded answers).
+ * Those rows still read Observed here. Teller confirmed and Dismissed stay.
+ * The explanation overlay and copilot panel do not call this; they hide Observed.
+ */
+export function handoffReasonBadge(
+  status: FlaggedSignal['status'],
+): Exclude<FlaggedSignal['status'], null> {
+  if (status === 'Teller confirmed' || status === 'Dismissed') {
+    return status
+  }
+  return 'Observed'
+}
+
 /** Display-only handoff list. Uses the merged Why this level rows when a session exists. */
 export function flaggedSignals(
   session: SessionState | null,
