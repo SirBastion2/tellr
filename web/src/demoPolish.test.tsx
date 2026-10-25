@@ -62,7 +62,8 @@ describe('demo polish', () => {
       formatElapsed(timelineElapsedMs(contractor.events, 1)),
     )
 
-    fireEvent.click(screen.getByTestId('demo-speed-4'))
+    fireEvent.click(screen.getByTestId('demo-speed-up'))
+    fireEvent.click(screen.getByTestId('demo-speed-up'))
     for (let i = 1; i < contractor.events.length; i += 1) {
       fireEvent.click(screen.getByTestId('demo-step'))
       const stamp = formatElapsed(timelineElapsedMs(contractor.events, i + 1))
@@ -104,7 +105,7 @@ describe('demo polish', () => {
       const afterFirst = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
       expect(afterFirst).toBeGreaterThanOrEqual(4)
 
-      fireEvent.click(screen.getByTestId('demo-speed-2'))
+      fireEvent.click(screen.getByTestId('demo-speed-up'))
       expect(screen.getByTestId('home-screen')).toBeTruthy()
       const onHome = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
       expect(onHome).toBeGreaterThanOrEqual(afterFirst)
@@ -197,7 +198,7 @@ describe('demo polish', () => {
       expect(release.length).toBeGreaterThan(0)
       const atStep = elapsedSeconds(screen.getByTestId('elapsed-timer').textContent)
 
-      fireEvent.click(screen.getByTestId('demo-speed-2'))
+      fireEvent.click(screen.getByTestId('demo-speed-up'))
       await act(async () => {
         window.history.pushState({}, '', '/customer')
         window.dispatchEvent(new PopStateEvent('popstate'))

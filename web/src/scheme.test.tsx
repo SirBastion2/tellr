@@ -113,16 +113,12 @@ describe('color scheme', () => {
         const { unmount } = render(<App />)
         const root = screen.getByTestId('theme-root')
         const trackEl = screen.getByTestId('color-scheme')
-        const speedEl = screen.getByTestId('speed-control')
         const trackStyle = getComputedStyle(trackEl)
-        const speedStyle = getComputedStyle(speedEl)
         expect(root.style.getPropertyValue('--tc-secondary-bg'), themeId).toBe(THEMES[themeId]?.secondaryBg)
         expect(root.style.getPropertyValue('--tc-secondary-border'), themeId).toBe(THEMES[themeId]?.secondaryBorder)
         expect(trackStyle.overflow, themeId).toBe('visible')
         expect(isPillRadius(trackStyle.borderRadius), themeId).toBe(true)
-        expect(isPillRadius(speedStyle.borderRadius), themeId).toBe(true)
-        expect(speedStyle.paddingTop, themeId).toBe(trackStyle.paddingTop)
-        expect(speedStyle.paddingRight, themeId).toBe(trackStyle.paddingRight)
+        expect(screen.queryByTestId('speed-control'), themeId).toBeNull()
 
         fireEvent.click(screen.getByTestId('scheme-light'))
         expect(root.style.getPropertyValue('--tc-secondary-bg'), `${themeId} light`).toBe(
@@ -150,22 +146,6 @@ describe('color scheme', () => {
           }
         }
 
-        for (const speed of [1, 2, 4] as const) {
-          fireEvent.click(screen.getByTestId(`demo-speed-${speed}`))
-          for (const option of [1, 2, 4]) {
-            const button = screen.getByTestId(`demo-speed-${option}`)
-            expect(button.getAttribute('aria-pressed'), `${themeId} ${speed}x ${option}`).toBe(
-              option === speed ? 'true' : 'false',
-            )
-            expect(button.textContent, `${themeId} speed ${option}`).toBe(`${option}×`)
-            expect(button.style.borderRadius, `${themeId} speed ${option} inline`).toContain('999px')
-            expect(button.style.backgroundColor, `${themeId} speed ${option}`).toBe(
-              option === speed ? 'var(--tc-button)' : 'var(--tc-secondary-bg)',
-            )
-            const painted = getComputedStyle(button)
-            expect(isPillRadius(painted.borderRadius), `${themeId} speed ${speed} ${option}`).toBe(true)
-          }
-        }
         unmount()
       }
     } finally {

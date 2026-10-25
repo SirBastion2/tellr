@@ -125,8 +125,12 @@ describe('shared theme leftovers', () => {
         expect(root.style.getPropertyValue('--tc-highlight'), `${id} ${scheme}`).toBe(painted.highlightBg)
         expect(root.style.getPropertyValue('--tc-highlight-fg'), `${id} ${scheme}`).toBe(painted.highlightFg)
         expect(suggested.getAttribute('data-highlighted'), `${id} ${scheme}`).toBe('true')
-        expect(getComputedStyle(suggested).backgroundColor, `${id} ${scheme}`).toBe(hexRgb(painted.highlightBg))
-        expect(getComputedStyle(suggested).color, `${id} ${scheme}`).toBe(hexRgb(painted.highlightFg))
+        expect(getComputedStyle(suggested).backgroundColor, `${id} ${scheme}`).toBe(hexRgb(painted.surface))
+        expect(getComputedStyle(suggested).color, `${id} ${scheme}`).toBe(hexRgb(painted.text))
+        expect(getComputedStyle(suggested).borderTopColor, `${id} ${scheme}`).toBe(hexRgb(painted.highlightBg))
+        expect(getComputedStyle(screen.getByTestId('outcome-report')).borderTopColor, `${id} ${scheme}`).not.toBe(
+          hexRgb(painted.highlightBg),
+        )
         expect(getComputedStyle(screen.getByTestId('outcome-report')).backgroundColor, `${id} ${scheme}`).not.toBe(
           hexRgb(painted.highlightBg),
         )

@@ -13,14 +13,11 @@ import { THEMES } from './theme/registry'
 import { ThemeProvider } from './theme/ThemeProvider'
 import { COLOR_STORAGE_KEY, THEME_STORAGE_KEY } from './theme/tokens'
 import type { OutcomeId, SessionState } from './types'
-import { formatUrgencyScore, URGENCY_SCORE_TERM } from './ui/urgencyScore'
-
 const fixtures = [t1, t2, t3, t4, t5, t6, t7]
-const HIGHLIGHT_BG = 'rgb(199, 210, 254)'
 const OUTCOMES: OutcomeId[] = ['proceed', 'slow_down', 'escalate', 'report']
 const LABELS: Record<OutcomeId, string> = {
   proceed: 'Proceed',
-  slow_down: 'Slow down',
+  slow_down: 'Slow Down',
   escalate: 'Escalate',
   report: 'Report',
 }
@@ -44,8 +41,10 @@ describe('Outcome screen', () => {
         const where = `${fixture.case} step ${index}`
         const { unmount } = render(<OutcomeScreen session={session} />)
 
-        expect(screen.getByText(URGENCY_SCORE_TERM), where).toBeTruthy()
-        expect(screen.getByTestId('outcome-score').textContent, where).toBe(formatUrgencyScore(session.risk.score))
+        expect(screen.getByText('Urgency'), where).toBeTruthy()
+        expect(screen.getByTestId('outcome-score').textContent, where).toContain(`${session.risk.score}%`)
+        expect(screen.getByTestId('outcome-score').textContent, where).not.toMatch(/\//)
+        expect(screen.getByTestId('outcome-answers').textContent, where).toBe(`${session.answers} Questions Answered`)
         expect(session.available_outcomes, where).toEqual(OUTCOMES)
         expect(session.suggested_outcome, where).not.toBe('report')
 
@@ -61,15 +60,18 @@ describe('Outcome screen', () => {
           expect(button.getAttribute('data-suggested'), where).toBe(highlighted ? 'true' : 'false')
           if (highlighted) {
             expect(THEMES.tellr!.highlightBg.toLowerCase(), where).not.toBe('#fef3c7')
-            expect(getComputedStyle(button).backgroundColor, where).toBe(HIGHLIGHT_BG)
+            expect(getComputedStyle(button).borderTopColor, where).toBe(hexRgb(THEMES.tellr!.highlightBg))
+            expect(getComputedStyle(button).backgroundColor, where).toBe(hexRgb(THEMES.tellr!.surface))
+            expect(getComputedStyle(button).color, where).toBe(hexRgb(THEMES.tellr!.text))
           } else {
-            expect(getComputedStyle(button).backgroundColor, where).not.toBe(HIGHLIGHT_BG)
+            expect(getComputedStyle(button).borderTopColor, where).not.toBe(hexRgb(THEMES.tellr!.highlightBg))
+            expect(getComputedStyle(button).backgroundColor, where).not.toBe(hexRgb(THEMES.tellr!.highlightBg))
           }
         }
 
         const report = screen.getByTestId('outcome-report')
         expect(report.getAttribute('data-highlighted'), where).toBe('false')
-        expect(getComputedStyle(report).backgroundColor, where).not.toBe(HIGHLIGHT_BG)
+        expect(getComputedStyle(report).borderTopColor, where).not.toBe(hexRgb(THEMES.tellr!.highlightBg))
         unmount()
       }
     }
@@ -83,7 +85,7 @@ describe('Outcome screen', () => {
       const button = screen.getByTestId(`outcome-${outcome}`)
       expect((button as HTMLButtonElement).disabled).toBe(false)
       expect(button.getAttribute('data-highlighted')).toBe('false')
-      expect(getComputedStyle(button).backgroundColor).not.toBe(HIGHLIGHT_BG)
+      expect(getComputedStyle(button).borderTopColor).not.toBe(hexRgb(THEMES.tellr!.highlightBg))
     }
   })
 
@@ -98,6 +100,8 @@ describe('Outcome screen', () => {
 
     fireEvent.click(screen.getByTestId('outcome-escalate'))
     const submit = screen.getByTestId('outcome-submit') as HTMLButtonElement
+    expect(submit.getAttribute('aria-label')).toBe('Record decision')
+    expect(screen.getByTestId('actor').getAttribute('placeholder')).toBe('Type your Name here...')
     expect(submit.disabled).toBe(true)
     fireEvent.click(submit)
     expect(onSubmit).not.toHaveBeenCalled()
@@ -118,9 +122,7 @@ describe('Outcome screen', () => {
     expect(session.suggested_outcome).toBe('slow_down')
     const { rerender } = render(<OutcomeScreen session={session} />)
 
-    expect(screen.getByTestId('outcome-help').textContent).toBe(
-      "All four choices stay available. The one marked is the copilot's recommendation; you decide.",
-    )
+    expect(screen.queryByTestId('outcome-help')).toBeNull()
 
     const suggested = screen.getByTestId('outcome-slow_down')
     const chosen = screen.getByTestId('outcome-proceed')
@@ -129,7 +131,7 @@ describe('Outcome screen', () => {
     expect(suggested.textContent).toContain(RECOMMENDATION)
     expect(suggested.getAttribute('title')).toBe(RECOMMENDATION)
     expect(suggested.querySelector('[data-testid="outcome-check"]')).toBeNull()
-    expect(chosen.style.borderRadius).toContain('999px')
+    expect(chosen.style.borderRadius).toContain('28px')
     expect(suggested.style.borderRadius).toBe(chosen.style.borderRadius)
 
     fireEvent.click(chosen)
@@ -141,8 +143,9 @@ describe('Outcome screen', () => {
     expect(suggested.getAttribute('aria-pressed')).toBe('false')
     expect(suggested.getAttribute('data-highlighted')).toBe('true')
     expect(suggested.textContent).toContain(RECOMMENDATION)
-    expect(getComputedStyle(suggested).backgroundColor).toBe(hexRgb(THEMES.tellr!.highlightBg))
-    expect(getComputedStyle(suggested).color).toBe(hexRgb(THEMES.tellr!.highlightFg))
+    expect(getComputedStyle(suggested).backgroundColor).toBe(hexRgb(THEMES.tellr!.surface))
+    expect(getComputedStyle(suggested).color).toBe(hexRgb(THEMES.tellr!.text))
+    expect(getComputedStyle(suggested).borderTopColor).toBe(hexRgb(THEMES.tellr!.highlightBg))
     for (const outcome of OUTCOMES) {
       expect((screen.getByTestId(`outcome-${outcome}`) as HTMLButtonElement).disabled).toBe(false)
     }
@@ -218,7 +221,7 @@ describe('Outcome screen', () => {
         expect(suggested.textContent, where).toContain(RECOMMENDATION)
         expect(suggested.getAttribute('title'), where).toBe(RECOMMENDATION)
         expect(other.getAttribute('title'), where).toBeNull()
-        expect(other.style.borderRadius, where).toContain('999px')
+        expect(other.style.borderRadius, where).toContain('28px')
         expect(suggested.style.borderRadius, where).toBe(other.style.borderRadius)
         expect(suggested.className, where).toBe(other.className)
         fireEvent.click(other)
@@ -227,8 +230,9 @@ describe('Outcome screen', () => {
         expect(getComputedStyle(other).backgroundColor, where).toBe(hexRgb(painted.button))
         expect(getComputedStyle(other).color, where).toBe(hexRgb(painted.buttonText))
         expect(suggested.getAttribute('aria-pressed'), where).toBe('false')
-        expect(getComputedStyle(suggested).backgroundColor, where).toBe(hexRgb(painted.highlightBg))
-        expect(getComputedStyle(suggested).color, where).toBe(hexRgb(painted.highlightFg))
+        expect(getComputedStyle(suggested).backgroundColor, where).toBe(hexRgb(painted.surface))
+        expect(getComputedStyle(suggested).color, where).toBe(hexRgb(painted.text))
+        expect(getComputedStyle(suggested).borderTopColor, where).toBe(hexRgb(painted.highlightBg))
         expect(suggested.querySelector('.tc-text-xs')?.textContent, where).toBe(RECOMMENDATION)
         unmount()
       }

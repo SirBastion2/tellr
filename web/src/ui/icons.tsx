@@ -13,7 +13,7 @@ function Svg({ size = 18, children }: { size?: number; children: ReactNode }) {
 export function PlayIcon({ size }: IconProps) {
   return (
     <Svg size={size}>
-      <path d="M8 5v14l11-7z" fill="currentColor" />
+      <path d="M9 6.5v11l9-5.5z" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
     </Svg>
   )
 }
@@ -21,7 +21,7 @@ export function PlayIcon({ size }: IconProps) {
 export function PauseIcon({ size }: IconProps) {
   return (
     <Svg size={size}>
-      <path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="currentColor" />
+      <path d="M8 6v12M16 6v12" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
     </Svg>
   )
 }
@@ -30,18 +30,46 @@ export function UndoIcon({ size }: IconProps) {
   return (
     <Svg size={size}>
       <path
-        d="M8 8H5V5"
+        d="M8.2 9.1 5 12.2l3.2 3.1"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.6"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
-        d="M5.5 8.5A7 7 0 1 1 6 16"
+        d="M6.7 12.2H14.2a3.7 3.7 0 0 1 0 7.4H10.6"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.6"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
+    </Svg>
+  )
+}
+
+/** Bar plus a left chevron. Used to speed playback up. */
+export function SpeedUpIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M7 5.5v13" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      <path d="M17 6.5L9.5 12l7.5 5.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  )
+}
+
+/** Right chevron. Used to slow playback down. */
+export function SpeedDownIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M8 6.5L15.5 12 8 17.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  )
+}
+
+export function ArrowRightIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M5 12h12M13 6.5L18.5 12 13 17.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }

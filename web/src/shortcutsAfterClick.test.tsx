@@ -54,7 +54,7 @@ describe('shortcuts after an icon click', () => {
     fireEvent.keyDown(step, { key: 't' })
     expect(themeId()).toBe('pnc')
 
-    const speed = screen.getByTestId('demo-speed-2')
+    const speed = screen.getByTestId('demo-speed-up')
     clickIcon(speed)
     fireEvent.keyDown(speed, { key: 'p' })
     expect(screen.getByTestId('demo-play').getAttribute('aria-pressed')).toBe('true')

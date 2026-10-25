@@ -67,7 +67,7 @@ export function HomeScreen({
               />
               {showPlayback ? <PlaybackBar demo={demo} /> : null}
             </div>
-            <StepCard customer={customer} fired={demo.index} presenter={demo.presenter} />
+            <StepCard customer={customer} fired={demo.index} playing={demo.playing} presenter={demo.presenter} />
             <CopilotStrip
               library={library}
               session={shownSession}

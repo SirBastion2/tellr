@@ -4,7 +4,7 @@ import { customerById } from '../demo/customers'
 import type { DemoSpeed, DemoView } from '../demo/types'
 import { controlStyle, secondaryStyle } from '../theme/controls'
 import { DENSITY } from '../theme/tokens'
-import { BackIcon, PauseIcon, PlayIcon, RestartIcon, StepIcon } from '../ui/icons'
+import { PauseIcon, PlayIcon, RestartIcon, SpeedDownIcon, SpeedUpIcon } from '../ui/icons'
 
 const controlHeight = `var(--tc-control-h, ${DENSITY.controlHeight})`
 
@@ -44,7 +44,17 @@ const iconButton: CSSProperties = {
   padding: 0,
 }
 
-const speeds = [1, 2, 4] as const
+const SPEED_STEPS = [1, 2, 4] as const
+
+function faster(speed: DemoSpeed): DemoSpeed {
+  const at = SPEED_STEPS.indexOf(speed)
+  return SPEED_STEPS[Math.min(SPEED_STEPS.length - 1, at + 1)] ?? speed
+}
+
+function slower(speed: DemoSpeed): DemoSpeed {
+  const at = SPEED_STEPS.indexOf(speed)
+  return SPEED_STEPS[Math.max(0, at - 1)] ?? speed
+}
 
 export function CaseFileLink({
   showCase,
@@ -98,17 +108,25 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
 }
 
 export function MiniTransport({ demo }: { demo: DemoView }) {
+  const atMax = demo.speed >= 4
+  const atBase = demo.speed <= 1
   return (
-    <div className="tc-mini-transport" role="group" aria-label="Playback">
+    <div className="tc-mini-transport" role="group" aria-label="Playback" data-testid="demo-transport">
       <button
         type="button"
         className="tc-btn"
-        data-testid="demo-back"
-        aria-label="Back"
-        title="Previous step"
-        onClick={() => demo.onBack?.()}
+        data-testid="demo-speed-up"
+        aria-label="Faster"
+        title="Faster"
+        disabled={atMax}
+        onClick={() => {
+          if (atMax) {
+            return
+          }
+          demo.onSpeed(faster(demo.speed))
+        }}
       >
-        <BackIcon />
+        <SpeedUpIcon />
       </button>
       <button
         type="button"
@@ -130,12 +148,26 @@ export function MiniTransport({ demo }: { demo: DemoView }) {
       <button
         type="button"
         className="tc-btn"
-        data-testid="demo-step"
-        aria-label="Step"
-        title="Step (N)"
-        onClick={() => demo.onStep()}
+        data-testid="demo-speed-down"
+        aria-label="Slower"
+        title="Slower"
+        disabled={atBase}
+        onClick={() => {
+          if (atBase) {
+            return
+          }
+          demo.onSpeed(slower(demo.speed))
+        }}
       >
-        <StepIcon />
+        <SpeedDownIcon />
+      </button>
+      {demo.speed > 1 ? (
+        <span className="tc-speed-label" data-testid="playback-speed">
+          {demo.speed}×
+        </span>
+      ) : null}
+      <button type="button" className="tc-sr" data-testid="demo-step" aria-label="Step" onClick={() => demo.onStep()}>
+        Step
       </button>
     </div>
   )
@@ -177,36 +209,6 @@ export function PlaybackBar({ demo }: { demo: DemoView }) {
         >
           <RestartIcon />
         </button>
-        <div className="tc-segment tc-h40" role="group" aria-label="Playback speed" data-testid="speed-control">
-          {speeds.map((speed) => {
-            const selected = demo.speed === speed
-            return (
-              <button
-                key={speed}
-                type="button"
-                className="tc-btn"
-                data-variant={selected ? 'primary' : 'secondary'}
-                data-testid={`demo-speed-${speed}`}
-                aria-pressed={selected}
-                style={{
-                  ...control,
-                  borderWidth: 0,
-                  alignSelf: 'stretch',
-                  height: '100%',
-                  minHeight: 0,
-                  padding: '0 var(--tc-space-control-pad-x, 12px)',
-                  minWidth: 'var(--tc-speed-min, 2.75rem)',
-                  fontVariantNumeric: 'tabular-nums',
-                  backgroundColor: selected ? 'var(--tc-button)' : 'var(--tc-secondary-bg)',
-                  color: selected ? 'var(--tc-button-text)' : 'var(--tc-secondary-fg)',
-                }}
-                onClick={() => demo.onSpeed(speed as DemoSpeed)}
-              >
-                {speed}×
-              </button>
-            )
-          })}
-        </div>
         <p data-testid="elapsed-timer" aria-label="Elapsed time" className="tc-timer">
           {formatElapsed(demo.elapsedMs)}
         </p>
