@@ -69,7 +69,7 @@ The header is one row (`flex-wrap: nowrap`). Equal `--tc-space-2` padding sits o
 
 There is no Presenter button.
 
-The toolbar is the simulated-customer select, Play/Pause, Step, Restart, speed `1` `2` `4`, the elapsed `m:ss` timer, and Show case file.
+The toolbar is the simulated-customer select, Play/Pause, Step, Restart, a Left arrow that slows playback (enabled only above 1×), a Right arrow that speeds playback up (1×, then 2×, then 4×), the current speed labeled between those arrows, the elapsed `m:ss` timer, and Show case file. There is no 1× / 2× / 4× button group.
 
 ## Screens and fields
 
@@ -216,6 +216,8 @@ Confidence stays hidden from the summary when it is null; Technical details say 
 |---|---|
 | `?` | Show or hide shortcut help. Escape closes it |
 | `P` | Play or pause |
+| `Right` | Speed playback up: 1×, then 2×, then 4× |
+| `Left` | Slow playback down. Works above 1× |
 | `N` | Step one customer event |
 | `R` | Restart. Confirm button reads Restart |
 | `C` | Confirm the latest signal |

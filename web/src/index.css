@@ -2268,15 +2268,13 @@ body {
 }
 
 .tc-speed-label {
-  position: absolute;
-  top: calc(-11 * var(--u));
-  right: 0;
   font-size: var(--tc-text-xs);
   line-height: 1;
   letter-spacing: 0.02em;
   color: var(--tc-text);
   pointer-events: none;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .tc-mini-transport .tc-play-label {

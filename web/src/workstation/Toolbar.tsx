@@ -46,12 +46,14 @@ const iconButton: CSSProperties = {
 
 const SPEED_STEPS = [1, 2, 4] as const
 
-function faster(speed: DemoSpeed): DemoSpeed {
+/** Right arrow and the Right key: 1× → 2× → 4×. */
+export function fasterPlayback(speed: DemoSpeed): DemoSpeed {
   const at = SPEED_STEPS.indexOf(speed)
   return SPEED_STEPS[Math.min(SPEED_STEPS.length - 1, at + 1)] ?? speed
 }
 
-function slower(speed: DemoSpeed): DemoSpeed {
+/** Left arrow and the Left key. Stays at 1×, where that control is disabled. */
+export function slowerPlayback(speed: DemoSpeed): DemoSpeed {
   const at = SPEED_STEPS.indexOf(speed)
   return SPEED_STEPS[Math.max(0, at - 1)] ?? speed
 }
@@ -118,15 +120,34 @@ export function MiniTransport({ demo }: { demo: DemoView }) {
       <button
         type="button"
         className="tc-btn"
+        data-testid="demo-speed-down"
+        aria-label="Slower (Left arrow)"
+        title="Slower (Left arrow)"
+        disabled={atBase}
+        onClick={() => {
+          if (atBase) {
+            return
+          }
+          demo.onSpeed(slowerPlayback(demo.speed))
+        }}
+      >
+        <SpeedDownIcon />
+      </button>
+      <span className="tc-speed-label" data-testid="playback-speed">
+        {demo.speed}×
+      </span>
+      <button
+        type="button"
+        className="tc-btn"
         data-testid="demo-speed-up"
-        aria-label="Faster"
-        title="Faster"
+        aria-label="Faster (Right arrow)"
+        title="Faster (Right arrow)"
         disabled={atMax}
         onClick={() => {
           if (atMax) {
             return
           }
-          demo.onSpeed(faster(demo.speed))
+          demo.onSpeed(fasterPlayback(demo.speed))
         }}
       >
         <SpeedUpIcon />
@@ -148,27 +169,6 @@ export function MiniTransport({ demo }: { demo: DemoView }) {
           <span data-show={demo.playing ? 'true' : 'false'}>Pause</span>
         </span>
       </button>
-      <button
-        type="button"
-        className="tc-btn"
-        data-testid="demo-speed-down"
-        aria-label="Slower"
-        title="Slower"
-        disabled={atBase}
-        onClick={() => {
-          if (atBase) {
-            return
-          }
-          demo.onSpeed(slower(demo.speed))
-        }}
-      >
-        <SpeedDownIcon />
-      </button>
-      {demo.speed > 1 ? (
-        <span className="tc-speed-label" data-testid="playback-speed">
-          {demo.speed}×
-        </span>
-      ) : null}
       <button type="button" className="tc-sr" data-testid="demo-step" aria-label="Step" onClick={() => demo.onStep()}>
         Step
       </button>

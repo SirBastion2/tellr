@@ -4,6 +4,8 @@ import { controlStyle } from '../theme/controls'
 const ROWS: readonly { keys: readonly string[]; what: string }[] = [
   { keys: ['?'], what: 'Show or hide this list' },
   { keys: ['P'], what: 'Play or pause the simulation' },
+  { keys: ['Right'], what: 'Speed playback up: 1×, then 2×, then 4×' },
+  { keys: ['Left'], what: 'Slow playback down. Works above 1×' },
   { keys: ['N'], what: 'Step one customer event' },
   { keys: ['R'], what: 'Restart the simulation' },
   { keys: ['C'], what: 'Confirm the latest signal' },

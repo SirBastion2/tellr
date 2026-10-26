@@ -69,7 +69,7 @@ The same path covered those tasks, including the one-time run on a separate set 
 
 ## The demo vs real use
 
-The page you open always loads a simulated customer, so you see a Simulated customer picker, Play, Step, Restart, a 1× / 2× / 4× speed control, an elapsed timer, the script timeline, and a header reading `Simulation: <customer title>`. The screen walk-through is in [How a teller uses it](#how-a-teller-uses-it).
+The page you open always loads a simulated customer, so you see a Simulated customer picker, Play, Step, Restart, Left and Right arrows for playback speed (1×, then 2×, then 4×, with the current speed labeled between them), an elapsed timer, the script timeline, and a header reading `Simulation: <customer title>`. The screen walk-through is in [How a teller uses it](#how-a-teller-uses-it).
 
 A scripted file plays on a timer and posts the signals a teller would tap, so the teller does not tap them. "Government impersonation", "Romance, crypto cash", and "Contractor cash, coached" also post the answer taps. "Car down payment" and "Routine Friday cash" post no signals and no answers. The demo never sends a typed note. With the server running, those posts are scored as a teller's own taps would be: the same events and the same version of the library files produce the same level, reasons, pattern, and question (`docs/architecture.md`). With no server, the page shows a saved reply and does not score it. The copilot, the score, the suggested action, and Handoff read that same session.
 
@@ -120,7 +120,7 @@ The words the teller can say live in `library/talk_tracks.yaml`. Each level has 
 Home is what a judge sees. Playback is for the demo only. A real teller would not see it. [In 30 seconds](#in-30-seconds) · [The demo vs real use](#the-demo-vs-real-use).
 
 - Header, left to right: the title Teller Copilot, then `Simulation: <customer title>`, the tabs Home, Outcome, and Handoff, then Light / Dark / System, then ? (Keyboard shortcuts).
-- Left, demo only: Simulated customer, Play (the word changes to Pause while it runs), Step and Restart (icon buttons), speed 1× / 2× / 4×, and an elapsed timer. A real teller would not see this toolbar.
+- Left, demo only: Simulated customer, Play (the word changes to Pause while it runs), Step and Restart (icon buttons), a Left arrow that slows playback (enabled only above 1×) and a Right arrow that speeds it up (1×, then 2×, then 4×), the current speed between those arrows, and an elapsed timer. The same Left and Right keys do that when you are not typing and are not holding Ctrl, Cmd, or Alt. A real teller would not see this toolbar.
 - Still on the left: Transaction, with Type, Amount, and Memo, then Timeline, the steps at the window. The scripted timeline is playback, so a real teller would not see it.
 - Right, the heading is Copilot. Before Play it says "Press play to start the simulation."
 - After Play, a badge reads Clear, Caution, or High (an icon plus the word). Clear is below 25, Caution starts at 25, and High starts at 60.
