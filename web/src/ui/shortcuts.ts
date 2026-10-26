@@ -10,6 +10,8 @@ export type DemoShortcut =
   | 'prev-customer'
   | 'next-customer'
   | 'theme'
+  | 'slower'
+  | 'faster'
 
 const KEYS: Readonly<Record<string, Exclude<DemoShortcut, 'escape'>>> = {
   '?': 'help',
@@ -22,6 +24,8 @@ const KEYS: Readonly<Record<string, Exclude<DemoShortcut, 'escape'>>> = {
   '[': 'prev-customer',
   ']': 'next-customer',
   t: 'theme',
+  ArrowLeft: 'slower',
+  ArrowRight: 'faster',
 }
 
 function contentEditableValue(el: HTMLElement): string | null {

@@ -74,21 +74,20 @@ export function SunIcon({ size }: IconProps) {
   )
 }
 
-/** Bar plus a left chevron. Used to speed playback up. */
+/** Right arrow. Speeds playback up (1×, then 2×, then 4×). */
 export function SpeedUpIcon({ size }: IconProps) {
   return (
     <Svg size={size}>
-      <path d="M7 5.5v13" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-      <path d="M17 6.5L9.5 12l7.5 5.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8 6.5L15.5 12 8 17.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
-/** Right chevron. Used to slow playback down. */
+/** Left arrow. Slows playback down. Enabled only above 1×. */
 export function SpeedDownIcon({ size }: IconProps) {
   return (
     <Svg size={size}>
-      <path d="M8 6.5L15.5 12 8 17.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16 6.5L8.5 12 16 17.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }

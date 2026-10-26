@@ -33,7 +33,7 @@ import { ShortcutHelp } from './ui/ShortcutHelp'
 import type { ActivityRow, AnswerPost, ChipSource, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import type { SchemaIssue } from './validate'
 import { suggestedAction } from './workstation/CopilotStrip'
-import { PlaybackBar } from './workstation/Toolbar'
+import { PlaybackBar, fasterPlayback, slowerPlayback } from './workstation/Toolbar'
 
 type SignalAction =
   | { kind: 'confirm'; chipId: string }
@@ -955,6 +955,12 @@ function ConnectedShell() {
     },
     onTheme: () => {
       cycleTheme()
+    },
+    onSlower: () => {
+      setSpeed((current) => slowerPlayback(current))
+    },
+    onFaster: () => {
+      setSpeed((current) => fasterPlayback(current))
     },
   })
 

@@ -188,16 +188,30 @@ describe('Home redesign', () => {
     }
   })
 
-  it('changes speed from the playback arrows and hides the 1× label', async () => {
+  it('changes speed from the playback arrows and keeps the speed label visible', async () => {
     installFetch()
     render(<App />)
+    const transport = screen.getByTestId('demo-transport')
+    const order = (id: string) =>
+      [...transport.children].findIndex((el) => el.getAttribute('data-testid') === id)
     const down = screen.getByTestId('demo-speed-down') as HTMLButtonElement
+    const up = screen.getByTestId('demo-speed-up') as HTMLButtonElement
     expect(down.disabled).toBe(true)
-    expect(screen.queryByTestId('playback-speed')).toBeNull()
+    expect(up.disabled).toBe(false)
+    expect(down.getAttribute('aria-label')).toBe('Slower (Left arrow)')
+    expect(down.getAttribute('title')).toBe('Slower (Left arrow)')
+    expect(up.getAttribute('aria-label')).toBe('Faster (Right arrow)')
+    expect(up.getAttribute('title')).toBe('Faster (Right arrow)')
+    expect(order('demo-speed-down')).toBeLessThan(order('playback-speed'))
+    expect(order('playback-speed')).toBeLessThan(order('demo-speed-up'))
+    expect(screen.getByTestId('playback-speed').textContent).toBe('1×')
     expect(screen.queryByTestId('speed-control')).toBeNull()
+    expect(screen.queryByRole('button', { name: '1×' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '2×' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '4×' })).toBeNull()
     expect(screen.getByTestId('demo-step').className).toContain('tc-sr')
 
-    fireEvent.click(screen.getByTestId('demo-speed-up'))
+    fireEvent.click(up)
     expect(screen.getByTestId('playback-speed').textContent).toBe('2×')
     expect((screen.getByTestId('demo-speed-down') as HTMLButtonElement).disabled).toBe(false)
 
@@ -208,8 +222,24 @@ describe('Home redesign', () => {
     fireEvent.click(screen.getByTestId('demo-speed-down'))
     expect(screen.getByTestId('playback-speed').textContent).toBe('2×')
     fireEvent.click(screen.getByTestId('demo-speed-down'))
-    expect(screen.queryByTestId('playback-speed')).toBeNull()
+    expect(screen.getByTestId('playback-speed').textContent).toBe('1×')
     expect((screen.getByTestId('demo-speed-down') as HTMLButtonElement).disabled).toBe(true)
+
+    fireEvent.keyDown(window, { key: 'ArrowRight' })
+    expect(screen.getByTestId('playback-speed').textContent).toBe('2×')
+    fireEvent.keyDown(window, { key: 'ArrowRight' })
+    fireEvent.keyDown(window, { key: 'ArrowRight' })
+    expect(screen.getByTestId('playback-speed').textContent).toBe('4×')
+    expect((screen.getByTestId('demo-speed-up') as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.keyDown(window, { key: 'ArrowLeft' })
+    expect(screen.getByTestId('playback-speed').textContent).toBe('2×')
+    fireEvent.keyDown(window, { key: 'ArrowLeft', ctrlKey: true })
+    fireEvent.keyDown(window, { key: 'ArrowRight', metaKey: true })
+    fireEvent.keyDown(window, { key: 'ArrowLeft', altKey: true })
+    expect(screen.getByTestId('playback-speed').textContent).toBe('2×')
+    fireEvent.keyDown(screen.getByTestId('customer-picker'), { key: 'ArrowRight' })
+    expect(screen.getByTestId('playback-speed').textContent).toBe('2×')
+
     expect(screen.getByTestId('demo-restart')).toBeTruthy()
     expect(screen.getByTestId('elapsed-timer')).toBeTruthy()
   })
