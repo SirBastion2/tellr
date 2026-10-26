@@ -69,7 +69,7 @@ The header is one row (`flex-wrap: nowrap`). Equal `--tc-space-2` padding sits o
 
 There is no Presenter button.
 
-The toolbar is the simulated-customer select, Play/Pause, Step, Restart, speed `1` `2` `4`, the elapsed `m:ss` timer, and Show case file.
+The toolbar is the simulated-customer select, Play/Pause, Step, Restart, speed `1` `2` `4` (left is slower, right is faster), the elapsed `m:ss` timer, and Show case file.
 
 ## Screens and fields
 
@@ -138,7 +138,7 @@ While it is on, which is always:
 - Context, Session, History, and Health are off the nav. The routes still exist
 - Changing the simulated customer resets the session without a confirm dialog
 - The current-event caption is the larger size
-- Keys that work: `?` help, `P` play/pause, `N` step, `R` restart, `C` confirm, `D` dismiss, `E` escalate, `[` / `]` switch customer. Escape closes help and dialogs
+- Keys that work: `?` help, `P` play/pause, `←` slow down, `→` speed up, `N` step, `R` restart, `C` confirm, `D` dismiss, `E` escalate, `[` / `]` switch customer. Escape closes help and dialogs
 - Restart confirm button reads Restart. Escalate posts `{ outcome: "escalate", actor: "teller" }` and opens handoff
 
 ## Live and sample
@@ -216,6 +216,8 @@ Confidence stays hidden from the summary when it is null; Technical details say 
 |---|---|
 | `?` | Show or hide shortcut help. Escape closes it |
 | `P` | Play or pause |
+| `←` | Slow down playback |
+| `→` | Speed up playback |
 | `N` | Step one customer event |
 | `R` | Restart. Confirm button reads Restart |
 | `C` | Confirm the latest signal |

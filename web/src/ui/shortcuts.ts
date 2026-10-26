@@ -9,6 +9,8 @@ export type DemoShortcut =
   | 'dismiss'
   | 'prev-customer'
   | 'next-customer'
+  | 'slower'
+  | 'faster'
   | 'theme'
 
 const KEYS: Readonly<Record<string, Exclude<DemoShortcut, 'escape'>>> = {
@@ -21,6 +23,8 @@ const KEYS: Readonly<Record<string, Exclude<DemoShortcut, 'escape'>>> = {
   d: 'dismiss',
   '[': 'prev-customer',
   ']': 'next-customer',
+  ArrowLeft: 'slower',
+  ArrowRight: 'faster',
   t: 'theme',
 }
 

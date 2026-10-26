@@ -24,6 +24,8 @@ describe('demo shortcut map', () => {
     expect(readDemoShortcut(keydown('e'))).toBe('escalate')
     expect(readDemoShortcut(keydown('['))).toBe('prev-customer')
     expect(readDemoShortcut(keydown(']'))).toBe('next-customer')
+    expect(readDemoShortcut(keydown('ArrowLeft'))).toBe('slower')
+    expect(readDemoShortcut(keydown('ArrowRight'))).toBe('faster')
     expect(readDemoShortcut(keydown('t'))).toBe('theme')
     expect(readDemoShortcut(keydown('T'))).toBe('theme')
     expect(readDemoShortcut(keydown('Escape'))).toBe('escape')

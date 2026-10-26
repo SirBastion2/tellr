@@ -32,6 +32,7 @@ import { ShortcutHelp } from './ui/ShortcutHelp'
 import type { ActivityRow, AnswerPost, ChipSource, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import type { SchemaIssue } from './validate'
 import { suggestedAction } from './workstation/CopilotStrip'
+import { stepPlaybackSpeed } from './workstation/Toolbar'
 
 type SignalAction =
   | { kind: 'confirm'; chipId: string }
@@ -844,6 +845,20 @@ function ConnectedShell() {
       setActions((current) => [...current, { kind: 'dismiss', chipId, source }])
       setPending(true)
       void tellerRef.current.dismissChip(chipId).finally(() => setPending(false))
+    },
+    onSlower: () => {
+      setSpeed((current) => {
+        const next = stepPlaybackSpeed(current, -1)
+        speedRef.current = next
+        return next
+      })
+    },
+    onFaster: () => {
+      setSpeed((current) => {
+        const next = stepPlaybackSpeed(current, 1)
+        speedRef.current = next
+        return next
+      })
     },
     onPrevCustomer: () => {
       const at = CUSTOMERS.findIndex((item) => item.id === customerRef.current)

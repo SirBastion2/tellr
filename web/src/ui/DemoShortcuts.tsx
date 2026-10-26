@@ -12,6 +12,8 @@ export type DemoShortcutHandlers = {
   onDismiss: () => void
   onPrevCustomer: () => void
   onNextCustomer: () => void
+  onSlower: () => void
+  onFaster: () => void
   onTheme: () => void
 }
 
@@ -26,6 +28,8 @@ const DISPATCH: Readonly<Record<DemoShortcut, keyof DemoShortcutHandlers>> = {
   dismiss: 'onDismiss',
   'prev-customer': 'onPrevCustomer',
   'next-customer': 'onNextCustomer',
+  slower: 'onSlower',
+  faster: 'onFaster',
   theme: 'onTheme',
 }
 

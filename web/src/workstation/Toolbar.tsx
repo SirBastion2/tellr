@@ -30,6 +30,27 @@ const iconButton: CSSProperties = {
 
 const speeds = [1, 2, 4] as const
 
+/** Left arrow steps toward 1×. Right arrow steps toward 4×. */
+export function stepPlaybackSpeed(current: DemoSpeed, direction: -1 | 1): DemoSpeed {
+  const index = speeds.indexOf(current)
+  const next = speeds[index + direction]
+  return next ?? current
+}
+
+function SpeedArrow({ direction }: { direction: 'left' | 'right' }) {
+  return (
+    <svg aria-hidden="true" width={14} height={14} viewBox="0 0 24 24" fill="none">
+      <path
+        d={direction === 'left' ? 'M14.5 6.5 8.5 12l6 5.5' : 'M9.5 6.5 15.5 12l-6 5.5'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export function CaseFileLink({
   showCase,
   onToggleCase,
@@ -136,9 +157,17 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
             <RestartIcon />
           </button>
         </div>
-        <div className="tc-segment tc-h40" role="group" aria-label="Playback speed" data-testid="speed-control">
+        <div
+          className="tc-segment tc-h40"
+          role="group"
+          aria-label="Playback speed. Left arrow slows down. Right arrow speeds up."
+          aria-keyshortcuts="ArrowLeft ArrowRight"
+          data-testid="speed-control"
+        >
           {speeds.map((speed) => {
             const selected = demo.speed === speed
+            const slower = speed === speeds[0]
+            const faster = speed === speeds[speeds.length - 1]
             return (
               <button
                 key={speed}
@@ -147,6 +176,8 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
                 data-variant={selected ? 'primary' : 'secondary'}
                 data-testid={`demo-speed-${speed}`}
                 aria-pressed={selected}
+                aria-label={slower ? `${speed}×, slower` : faster ? `${speed}×, faster` : `${speed}×`}
+                title={slower ? 'Slower (Left arrow)' : faster ? 'Faster (Right arrow)' : `${speed}×`}
                 style={{
                   ...control,
                   borderWidth: 0,
@@ -161,7 +192,7 @@ export function SimulationToolbar({ demo }: { demo: DemoView }) {
                 }}
                 onClick={() => demo.onSpeed(speed as DemoSpeed)}
               >
-                {speed}×
+                {slower ? <SpeedArrow direction="left" /> : null}{speed}×{faster ? <SpeedArrow direction="right" /> : null}
               </button>
             )
           })}
