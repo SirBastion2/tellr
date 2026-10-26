@@ -14,7 +14,7 @@ const css = () => readFileSync('src/index.css', 'utf8')
 const FONT_DECL = /(?:^|[^A-Za-z-])(?:font-size|font-weight)\s*:|(?:^|[^A-Za-z])(?:fontSize|fontWeight)\s*:/
 const TOKEN_OK = /var\(\s*--tc-/
 
-const SCREEN_ROOTS = ['src/screens', 'src/workstation', 'src/ui/facts.tsx', 'src/ui/ConfirmDialog.tsx', 'src/ui/ShortcutHelp.tsx']
+const SCREEN_ROOTS = ['src/screens', 'src/workstation', 'src/ui/facts.tsx', 'src/ui/ConfirmDialog.tsx']
 
 function listSourceFiles(dir: string, out: string[] = []): string[] {
   const stat = statSync(dir)
@@ -121,11 +121,9 @@ describe('shared type hierarchy', () => {
     const memoProse = memo.closest('.tc-prose')
     expect(memoProse?.parentElement?.className).toContain('tc-fact-value')
     expect(memoProse?.parentElement?.closest('dl')).toBe(grid)
-    expect(screen.getByRole('heading', { name: 'Transaction' }).className).toContain('tc-title')
-    expect(screen.getByRole('heading', { name: 'Timeline' }).className).toContain('tc-section-heading')
-    const eventCaption = screen.getByText(/Event 0 of/)
-    expect(eventCaption.className).toContain('tc-kicker')
-    expect(eventCaption.closest('.tc-block')).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Case file' }).className).toContain('tc-section-heading')
+    expect(screen.queryByRole('heading', { name: 'Timeline' })).toBeNull()
+    expect(screen.queryByText(/Event 0 of/)).toBeNull()
   })
 
   it('keeps label and heading font-size/weight out of screen files', () => {

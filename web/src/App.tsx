@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Link, BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { advanceSimulatedMs, timelineElapsedMs } from './demo/clock'
 import { CUSTOMERS, customerById } from './demo/customers'
@@ -28,10 +28,12 @@ import { ThemeWordmark } from './theme/Wordmark'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 import { useDemoShortcuts } from './ui/DemoShortcuts'
 import { LEVEL_WORD } from './ui/LevelIcon'
+import { MoonIcon, SunIcon } from './ui/icons'
 import { ShortcutHelp } from './ui/ShortcutHelp'
 import type { ActivityRow, AnswerPost, ChipSource, ErrorResponse, HandoffProjection, Library, OutcomeId, SessionState } from './types'
 import type { SchemaIssue } from './validate'
 import { suggestedAction } from './workstation/CopilotStrip'
+import { PlaybackBar } from './workstation/Toolbar'
 
 type SignalAction =
   | { kind: 'confirm'; chipId: string }
@@ -62,16 +64,35 @@ const SCHEME_OPTIONS: readonly { id: ColorChoice; label: string }[] = [
 
 function SchemeToggle() {
   const { choice, setChoice } = useColorScheme()
+  const hold = useRef<number | null>(null)
+  const held = useRef(false)
+  function startHold() {
+    held.current = false
+    hold.current = window.setTimeout(() => {
+      held.current = true
+      setChoice('system')
+    }, 550)
+  }
+  function endHold() {
+    if (hold.current != null) {
+      window.clearTimeout(hold.current)
+      hold.current = null
+    }
+  }
   return (
     <div className="tc-segment tc-scheme-full" role="group" aria-label="Color scheme" data-testid="color-scheme">
       {SCHEME_OPTIONS.map((option) => {
         const selected = choice === option.id
+        const icon = option.id === 'dark' ? <MoonIcon /> : option.id === 'light' ? <SunIcon /> : null
         return (
           <button
             key={option.id}
             type="button"
             data-testid={`scheme-${option.id}`}
+            className={option.id === 'system' ? 'tc-scheme-system' : undefined}
             aria-pressed={selected}
+            aria-label={option.label}
+            title={option.id === 'system' ? option.label : `${option.label}. Press and hold for System.`}
             style={{
               ...headerTap,
               borderWidth: 0,
@@ -81,9 +102,20 @@ function SchemeToggle() {
               backgroundColor: selected ? 'var(--tc-button)' : 'var(--tc-secondary-bg)',
               color: selected ? 'var(--tc-button-text)' : 'var(--tc-secondary-fg)',
             }}
-            onClick={() => setChoice(option.id)}
+            onPointerDown={option.id === 'system' ? undefined : startHold}
+            onPointerUp={endHold}
+            onPointerLeave={endHold}
+            onPointerCancel={endHold}
+            onClick={() => {
+              if (held.current) {
+                held.current = false
+                return
+              }
+              setChoice(option.id)
+            }}
           >
-            {option.label}
+            {icon}
+            <span className={icon ? 'tc-sr' : undefined}>{option.label}</span>
           </button>
         )
       })}
@@ -101,7 +133,10 @@ function SchemeMenu() {
         aria-label="Color scheme"
         value={choice}
         style={{ ...headerTap }}
-        onChange={(event) => setChoice(event.target.value as ColorChoice)}
+        onChange={(event) => {
+          setChoice(event.target.value as ColorChoice)
+          event.currentTarget.blur()
+        }}
       >
         {SCHEME_OPTIONS.map((option) => (
           <option key={option.id} value={option.id}>
@@ -143,6 +178,7 @@ export function AppShell({
   httpStatus = null,
   error = null,
   demo = null,
+  footer = null,
   helpOpen = false,
   confirm = null,
   onHelp,
@@ -166,6 +202,7 @@ export function AppShell({
   httpStatus?: number | null
   error?: ErrorResponse | null
   demo?: DemoView | null
+  footer?: ReactNode
   helpOpen?: boolean
   confirm?: ConfirmKind
   onHelp?: (open: boolean) => void
@@ -213,7 +250,7 @@ export function AppShell({
     : ''
 
   return (
-    <ThemeRoot>
+    <ThemeRoot footer={footer}>
       <div className="tc-shell" data-testid="app-shell" style={{ boxSizing: 'border-box', color: 'var(--tc-text, #1c1917)' }}>
         <a href="#main" className="tc-sr" style={{ minHeight: '48px', minWidth: '48px' }}>
           Skip to content
@@ -233,8 +270,10 @@ export function AppShell({
             overflow: 'visible',
             minWidth: 0,
             maxWidth: '100%',
-            background: 'var(--tc-glass-fallback)',
-            borderRadius: 'var(--tc-radius-card, 16px)',
+            background: 'transparent',
+            borderRadius: 0,
+            borderBottom: '1px solid color-mix(in srgb, var(--tc-text) 22%, transparent)',
+            boxShadow: 'none',
             paddingBlock: 'var(--tc-space-2)',
             paddingInline: 'var(--tc-space-4, 16px)',
           }}
@@ -308,8 +347,9 @@ export function AppShell({
                   style={{
                     ...tabFill,
                     textDecoration: 'none',
-                    backgroundColor: current ? 'var(--tc-input)' : 'transparent',
-                    borderBottom: current ? '3px solid var(--tc-accent)' : '3px solid transparent',
+                    backgroundColor: 'transparent',
+                    color: current ? 'var(--tc-text)' : 'var(--tc-muted)',
+                    borderBottom: '3px solid transparent',
                     fontWeight: current ? 'var(--tc-strong-weight)' : 'var(--tc-heading-weight)',
                   }}
                 >
@@ -405,6 +445,7 @@ export function AppShell({
                   activity={activity}
                   demo={demo}
                   closed={closed}
+                  showPlayback={footer == null}
                   onUndo={onUndo}
                 />
               }
@@ -527,10 +568,23 @@ function ConnectedShell() {
   const autoPlayRef = useRef(false)
   const clockOnRef = useRef(false)
   const pumpDueRef = useRef<() => void>(() => {})
+  const runCurrentRef = useRef<() => void>(() => {})
   const lock = useRef(false)
+  const postedRef = useRef(0)
+  const seekTargetRef = useRef(0)
   const tellerRef = useRef(teller)
   const actionsRef = useRef<SignalAction[]>([])
   const dismissedSource = useRef(new Map<string, ChipSource>())
+  // What the server returned at each posted step, so rewinding shows that step's own result.
+  const snapshotsRef = useRef(new Map<number, { session: typeof teller.session; posted: typeof teller.postedChipIds }>())
+
+  useEffect(() => {
+    // Skip while a step is still posting: the session then already holds the
+    // next step's chips, and saving it would overwrite the step still shown.
+    if (!lock.current && index > 0 && index === postedRef.current && teller.session) {
+      snapshotsRef.current.set(index, { session: teller.session, posted: teller.postedChipIds })
+    }
+  }, [index, pending, teller.session, teller.postedChipIds])
 
   const engageClock = useCallback((on: boolean) => {
     if (clockOnRef.current === on) {
@@ -588,7 +642,7 @@ function ConnectedShell() {
     if (!sessionId || !location.pathname.endsWith('/handoff')) {
       return
     }
-    void loadHandoff()
+    void loadHandoff().catch(() => undefined)
   }, [location.pathname, sessionId, loadHandoff])
 
   const runCurrent = useCallback(async () => {
@@ -602,7 +656,34 @@ function ConnectedShell() {
       return
     }
     const customer = customerById(customerRef.current)
-    const event = customer?.events[indexRef.current]
+    const events = customer?.events ?? []
+    if (customer && indexRef.current < postedRef.current) {
+      if (indexRef.current >= events.length) {
+        autoPlayRef.current = false
+        playingRef.current = false
+        engageClock(false)
+        setPlaying(false)
+        return
+      }
+      const next = indexRef.current + 1
+      const boundary = timelineElapsedMs(events, next)
+      if (elapsedRef.current < boundary) {
+        elapsedRef.current = boundary
+        setElapsedMs(elapsedRef.current)
+      }
+      indexRef.current = next
+      setIndex(next)
+      if (!autoPlayRef.current) {
+        engageClock(false)
+      }
+      if (seekTargetRef.current > next) {
+        runCurrentRef.current()
+      } else if (autoPlayRef.current) {
+        pumpDueRef.current()
+      }
+      return
+    }
+    const event = events[indexRef.current]
     if (!customer || !event) {
       autoPlayRef.current = false
       playingRef.current = false
@@ -636,6 +717,7 @@ function ConnectedShell() {
         setElapsedMs(elapsedRef.current)
       }
       indexRef.current = next
+      postedRef.current = next
       setIndex(next)
       if (!autoPlayRef.current) {
         engageClock(false)
@@ -644,7 +726,9 @@ function ConnectedShell() {
       lock.current = false
       setPending(false)
     }
-    if (autoPlayRef.current) {
+    if (seekTargetRef.current > indexRef.current) {
+      runCurrentRef.current()
+    } else if (autoPlayRef.current) {
       pumpDueRef.current()
     }
   }, [engageClock])
@@ -671,6 +755,12 @@ function ConnectedShell() {
   useEffect(() => {
     pumpDueRef.current = pumpDue
   }, [pumpDue])
+
+  useEffect(() => {
+    runCurrentRef.current = () => {
+      void runCurrent()
+    }
+  }, [runCurrent])
 
   useEffect(() => {
     if (!playing) {
@@ -710,11 +800,14 @@ function ConnectedShell() {
       engageClock(false)
       setPlaying(false)
       indexRef.current = 0
+      postedRef.current = 0
+      seekTargetRef.current = 0
       setIndex(0)
       setConfirmed([])
       setDismissed([])
       setActions([])
       dismissedSource.current.clear()
+      snapshotsRef.current.clear()
       elapsedRef.current = 0
       setElapsedMs(0)
       setPending(true)
@@ -800,6 +893,7 @@ function ConnectedShell() {
       setPlaying(next)
     },
     onStep: () => {
+      seekTargetRef.current = 0
       autoPlayRef.current = false
       playingRef.current = false
       engageClock(true)
@@ -864,6 +958,20 @@ function ConnectedShell() {
     },
   })
 
+  const placeStep = (next: number) => {
+    const events = customerById(customerRef.current)?.events ?? []
+    const clamped = Math.max(0, Math.min(next, events.length))
+    seekTargetRef.current = clamped
+    autoPlayRef.current = false
+    playingRef.current = false
+    engageClock(false)
+    setPlaying(false)
+    elapsedRef.current = timelineElapsedMs(events, clamped)
+    setElapsedMs(elapsedRef.current)
+    indexRef.current = clamped
+    setIndex(clamped)
+  }
+
   const demo: DemoView = {
     customers: CUSTOMERS,
     customerId,
@@ -889,6 +997,30 @@ function ConnectedShell() {
       setPlaying(false)
     },
     onStep: () => {
+      seekTargetRef.current = 0
+      autoPlayRef.current = false
+      playingRef.current = false
+      engageClock(true)
+      setPlaying(false)
+      void runCurrent()
+    },
+    onBack: () => {
+      if (lock.current || indexRef.current <= 0) {
+        return
+      }
+      placeStep(indexRef.current - 1)
+    },
+    onSeek: (target) => {
+      if (lock.current) {
+        return
+      }
+      const events = customerById(customerRef.current)?.events ?? []
+      const clamped = Math.max(0, Math.min(Math.round(target), events.length))
+      if (clamped <= postedRef.current) {
+        placeStep(clamped)
+        return
+      }
+      seekTargetRef.current = clamped
       autoPlayRef.current = false
       playingRef.current = false
       engageClock(true)
@@ -931,12 +1063,14 @@ function ConnectedShell() {
     },
   }
 
+  const snapshot = index > 0 && index < postedRef.current ? snapshotsRef.current.get(index) : undefined
+
   return (
     <AppShell
       library={teller.library}
-      session={teller.session}
+      session={snapshot?.session ?? teller.session}
       issues={import.meta.env.DEV ? teller.issues : []}
-      postedChipIds={teller.postedChipIds}
+      postedChipIds={snapshot?.posted ?? teller.postedChipIds}
       dismissed={dismissed}
       activity={teller.activity?.rows ?? null}
       httpStatus={teller.httpStatus}
@@ -947,6 +1081,7 @@ function ConnectedShell() {
         void resetSession()
       }}
       demo={demo}
+      footer={<PlaybackBar demo={demo} />}
       helpOpen={helpOpen}
       confirm={confirm}
       onHelp={setHelpOpen}
@@ -981,7 +1116,12 @@ function ConnectedShell() {
           return
         }
         setPending(true)
-        void teller.undo().finally(() => setPending(false))
+        void teller.undo().finally(() => {
+          setPending(false)
+          const next = Math.max(0, indexRef.current - 1)
+          postedRef.current = Math.min(postedRef.current, next)
+          placeStep(next)
+        })
       }}
       handoff={teller.handoff}
       onSubmitOutcome={(body) => {
@@ -989,7 +1129,22 @@ function ConnectedShell() {
         playingRef.current = false
         engageClock(false)
         setPlaying(false)
-        void teller.postOutcome(body.outcome, body.actor)
+        void (async () => {
+          try {
+            const recordedNow = await teller.postOutcome(body.outcome, body.actor)
+            if (!recordedNow) {
+              return
+            }
+            const id = tellerRef.current.session?.session_id
+            if (!id) {
+              return
+            }
+            await tellerRef.current.loadHandoff()
+            navigate(`/sessions/${id}/handoff`)
+          } catch {
+            // A failed handoff read stays on the outcome screen.
+          }
+        })()
       }}
     />
   )

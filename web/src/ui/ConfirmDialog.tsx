@@ -32,7 +32,7 @@ export function ConfirmDialog({
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0, 0, 0, 0.45)',
+        background: 'transparent',
         display: 'grid',
         placeItems: 'center',
         zIndex: 20,
@@ -41,7 +41,10 @@ export function ConfirmDialog({
     >
       <div
         style={{
-          background: 'var(--tc-glass-fallback, #1e1b4b)',
+          background: 'var(--tc-glass-fill, rgba(255, 255, 255, 0.18))',
+          border: '1px solid var(--tc-glass-border, rgba(255, 255, 255, 0.35))',
+          backdropFilter: 'blur(var(--tc-glass-blur, 20px))',
+          WebkitBackdropFilter: 'blur(var(--tc-glass-blur, 20px))',
           color: 'var(--tc-text, #fff)',
           borderRadius: 'var(--tc-radius-card, 16px)',
           padding: 16,

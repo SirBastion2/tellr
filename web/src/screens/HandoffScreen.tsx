@@ -1,42 +1,135 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { flaggedSignals, handoffReasonBadge } from '../feed'
-import { controlStyle, secondaryStyle } from '../theme/controls'
-import { Fact, FactGrid, PageTitle, SectionHeading } from '../ui/facts'
+import { Fact, FactGrid, PageTitle } from '../ui/facts'
 import { LevelIcon } from '../ui/LevelIcon'
-import { actorLabel, handoffTitle, levelLabel, modeLabel, outcomeLabel, patternValue, shortId, stopReasonLabel, suggestedLabel } from '../ui/plain'
+import { actorLabel, levelLabel, modeLabel, outcomeLabel, patternValue, shortId, stopReasonLabel, suggestedLabel } from '../ui/plain'
 import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
-import type { HandoffProjection, Library, SessionState } from '../types'
+import type { HandoffProjection, Level, Library, SessionState } from '../types'
 
 function purposeLabel(library: Library | null, id: string): string {
   return library?.purposes.find((purpose) => purpose.id === id)?.label ?? id
 }
 
-function CopyId({ id }: { id: string }) {
-  const [copied, setCopied] = useState(false)
+type SummaryRow = {
+  term: string
+  value: string
+  testId?: string
+  data?: Record<string, string | undefined>
+  node?: ReactNode
+}
+
+function levelValue(level: Level): ReactNode {
+  const word = levelLabel(level)
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-      <span data-testid="handoff-session" title={id}>
-        {shortId(id)}
-      </span>
-      <button
-        type="button"
-        className="tc-btn"
-        data-variant="secondary"
-        data-testid="copy-session-id"
-        title={id}
-        aria-label={`Copy session id ${id}`}
-        style={{ ...controlStyle, ...secondaryStyle }}
-        onClick={() => {
-          const write = navigator.clipboard?.writeText(id)
-          if (!write) {
-            return
-          }
-          void write.then(() => setCopied(true)).catch(() => undefined)
-        }}
-      >
-        {copied ? 'Copied' : 'Copy'}
-      </button>
-    </span>
+    <span data-testid="handoff-level" data-level={level} className="tc-handoff-level"><LevelIcon level={level} />{word}</span>
+  )
+}
+
+export function handoffSummaryRows(library: Library | null, projection: HandoffProjection): SummaryRow[] {
+  const rows: SummaryRow[] = [
+    { term: 'Mode', value: modeLabel(projection.mode), testId: 'handoff-mode' },
+    { term: 'Questions answered', value: String(projection.answers), testId: 'handoff-answers' },
+    { term: 'Level', value: levelLabel(projection.risk.level), node: levelValue(projection.risk.level) },
+    { term: URGENCY_SCORE_TERM, value: formatUrgencyScore(projection.risk.score), testId: 'handoff-score' },
+    { term: 'Pattern', value: patternValue(projection.risk.pattern_label), testId: 'handoff-pattern' },
+  ]
+  if (projection.stated_purpose) {
+    rows.push({
+      term: 'Stated purpose',
+      value: purposeLabel(library, projection.stated_purpose),
+      testId: 'handoff-purpose',
+    })
+  }
+  rows.push(
+    {
+      term: 'Suggested outcome',
+      value: suggestedLabel(projection.suggested_outcome),
+      testId: 'handoff-suggested',
+      data: { outcome: projection.suggested_outcome },
+    },
+    {
+      term: "Teller's decision",
+      value: projection.outcome === null ? 'Not recorded yet' : outcomeLabel(projection.outcome),
+      testId: 'handoff-outcome',
+      data: { recorded: projection.outcome === null ? 'false' : 'true' },
+    },
+    {
+      term: 'Recorded by',
+      value: actorLabel(projection.actor),
+      testId: 'handoff-actor',
+      data: { recorded: projection.actor === null ? 'false' : 'true' },
+    },
+  )
+  if (projection.stop) {
+    rows.push({
+      term: 'Stop',
+      value: stopReasonLabel(projection.stop.reason),
+      testId: 'handoff-stop',
+      data: { kind: projection.stop.kind },
+    })
+  }
+  return rows
+}
+
+export function handoffCounterpoint(projection: HandoffProjection): string | null {
+  const note = projection.risk.counterpoint
+  if (!note) {
+    return null
+  }
+  const lead = projection.risk.level === 'clear' ? 'Still noted' : 'In their favor'
+  return `${lead}: ${note.label}`
+}
+
+export function handoffDownloadText(
+  projection: HandoffProjection,
+  rows: readonly SummaryRow[],
+  flags: readonly { label: string; status: string }[],
+  counterpoint: string | null,
+): string {
+  const lines = [
+    'Handoff',
+    shortId(projection.session_id),
+    '',
+    ...rows.map((row) => `${row.term}: ${row.value}`),
+    '',
+    'Why it was flagged',
+    ...(flags.length > 0 ? flags.flatMap((flag) => [flag.label, flag.status]) : ['Nothing was flagged.']),
+  ]
+  if (counterpoint) {
+    lines.push('', counterpoint)
+  }
+  return `${lines.join('\n')}\n`
+}
+
+function downloadName(id: string): string {
+  const safe = shortId(id).replace(/[^A-Za-z0-9._-]+/g, '-')
+  return `handoff-${safe || 'case'}.txt`
+}
+
+function saveTextFile(filename: string, text: string) {
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.rel = 'noopener'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 0)
+}
+
+function SaveIcon() {
+  return (
+    <svg className="tc-handoff-save-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+      <path
+        d="M5 3.5h11.2L19.5 6.8V20a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 20V5A1.5 1.5 0 0 1 5 3.5z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
+      <path d="M8 3.5V8h7.2" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="M8 21v-6.2h8V21" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    </svg>
   )
 }
 
@@ -55,85 +148,107 @@ export function HandoffScreen({
   confirmed?: readonly string[]
   postedChipIds?: readonly string[]
 }) {
+  const [copied, setCopied] = useState(false)
+  const rows = projection ? handoffSummaryRows(library, projection) : []
   const signals = flaggedSignals(session, projection, library, dismissed, confirmed, postedChipIds).map(
     (signal) => ({ ...signal, status: handoffReasonBadge(signal.status) }),
   )
+  const counterpoint = projection ? handoffCounterpoint(projection) : null
+  const caseId = projection ? shortId(projection.session_id) : ''
+
+  function copyCaseId() {
+    if (!projection) {
+      return
+    }
+    const write = navigator.clipboard?.writeText(projection.session_id)
+    if (!write) {
+      return
+    }
+    void write.then(() => setCopied(true)).catch(() => undefined)
+  }
+
+  function saveHandoff() {
+    if (!projection) {
+      return
+    }
+    saveTextFile(
+      downloadName(projection.session_id),
+      handoffDownloadText(projection, rows, signals, counterpoint),
+    )
+  }
+
   return (
-    <section data-testid="handoff-screen" className="tc-card tc-screen">
-      <PageTitle>{projection ? handoffTitle(projection.outcome, projection.actor) : 'Handoff'}</PageTitle>
-      {projection ? (
-        <>
-          <FactGrid label="Handoff summary">
-            <Fact term="Session">
-              <CopyId id={projection.session_id} />
-            </Fact>
-            <Fact term="Mode" testId="handoff-mode">
-              {modeLabel(projection.mode)}
-            </Fact>
-            <Fact term="Questions answered" testId="handoff-answers">
-              {projection.answers}
-            </Fact>
-            <Fact term="Level">
-              <span data-testid="handoff-level" data-level={projection.risk.level} className="tc-level-badge"><LevelIcon level={projection.risk.level} />{levelLabel(projection.risk.level)}</span>
-            </Fact>
-            <Fact term={URGENCY_SCORE_TERM} testId="handoff-score">
-              {formatUrgencyScore(projection.risk.score)}
-            </Fact>
-            <Fact term="Pattern" testId="handoff-pattern">
-              {patternValue(projection.risk.pattern_label)}
-            </Fact>
-            {projection.stated_purpose ? (
-              <Fact term="Stated purpose" testId="handoff-purpose">
-                {purposeLabel(library, projection.stated_purpose)}
-              </Fact>
-            ) : null}
-            <Fact term="Suggested outcome" testId="handoff-suggested" data={{ outcome: projection.suggested_outcome }}>
-              {suggestedLabel(projection.suggested_outcome)}
-            </Fact>
-            <Fact
-              term="Teller's decision"
-              testId="handoff-outcome"
-              data={{ recorded: projection.outcome === null ? 'false' : 'true' }}
-            >
-              {projection.outcome === null ? 'Not recorded yet' : outcomeLabel(projection.outcome)}
-            </Fact>
-            <Fact term="Recorded by" testId="handoff-actor" data={{ recorded: projection.actor === null ? 'false' : 'true' }}>
-              {actorLabel(projection.actor)}
-            </Fact>
-            {projection.stop ? (
-              <Fact term="Stop" testId="handoff-stop" data={{ kind: projection.stop.kind }}>
-                {stopReasonLabel(projection.stop.reason)}
-              </Fact>
-            ) : null}
-          </FactGrid>
-          <SectionHeading>Why it was flagged</SectionHeading>
-          {signals.length > 0 ? (
-            <ul className="tc-prose" style={{ margin: 0, paddingLeft: '1.2rem', display: 'grid', gap: 'var(--tc-space-2)' }}>
-              {signals.map((signal) => (
-                <li
-                  key={signal.id}
-                  data-testid="handoff-reason"
-                  data-id={signal.id}
-                  data-status={signal.status ?? undefined}
-                  style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--tc-space-2)', alignItems: 'baseline' }}
-                >
-                  <strong>{signal.label}</strong>
-                  {signal.status ? <span className="tc-badge">{signal.status}</span> : null}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="tc-prose" style={{ margin: 0 }}>
-              Nothing was flagged.
-            </p>
-          )}
-          {projection.risk.counterpoint ? (
-            <p data-testid="handoff-counterpoint" className="tc-prose" style={{ margin: 0 }}>
-              <strong>{projection.risk.level === 'clear' ? 'Still noted' : 'In their favor'}:</strong>{' '}
-              {projection.risk.counterpoint.label}
-            </p>
+    <section data-testid="handoff-screen" className="tc-card tc-screen tc-handoff">
+      <div className="tc-handoff-head">
+        <div className="tc-handoff-heading">
+          <PageTitle>Handoff</PageTitle>
+          {projection ? (
+            <span className="tc-handoff-case" data-testid="handoff-session" title={projection.session_id}>
+              {caseId}
+            </span>
           ) : null}
-        </>
+        </div>
+        {projection ? (
+          <div className="tc-handoff-actions">
+            <button
+              type="button"
+              className="tc-btn tc-handoff-copy"
+              data-testid="copy-session-id"
+              title={projection.session_id}
+              onClick={copyCaseId}
+            >
+              {copied ? 'Copied' : 'Copy to clipboard'}
+            </button>
+            <button
+              type="button"
+              className="tc-btn tc-handoff-save"
+              data-testid="save-handoff"
+              aria-label="Save handoff"
+              title="Save handoff"
+              onClick={saveHandoff}
+            >
+              <SaveIcon />
+            </button>
+          </div>
+        ) : null}
+      </div>
+      {projection ? (
+        <div className="tc-handoff-body">
+          <FactGrid className="tc-facts tc-handoff-facts" label="Handoff summary">
+            {rows.map((row) => (
+              <Fact key={row.term} term={row.term} testId={row.testId} data={row.data}>
+                {row.node ?? row.value}
+              </Fact>
+            ))}
+          </FactGrid>
+          <div className="tc-handoff-flags">
+            <h3 className="tc-handoff-why">Why it was flagged</h3>
+            {signals.length > 0 ? (
+              <ul className="tc-handoff-chips" aria-label="Why it was flagged">
+                {signals.map((signal) => (
+                  <li
+                    key={signal.id}
+                    className="tc-handoff-chip"
+                    data-testid="handoff-reason"
+                    data-id={signal.id}
+                    data-status={signal.status}
+                  >
+                    <span className="tc-handoff-signal">{signal.label}</span>
+                    <span className="tc-badge">{signal.status}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="tc-handoff-note">Nothing was flagged.</p>
+            )}
+            {projection.risk.counterpoint ? (
+              <p data-testid="handoff-counterpoint" className="tc-handoff-note">
+                <strong>{projection.risk.level === 'clear' ? 'Still noted' : 'In their favor'}:</strong>{' '}
+                {projection.risk.counterpoint.label}
+              </p>
+            ) : null}
+          </div>
+        </div>
       ) : null}
     </section>
   )

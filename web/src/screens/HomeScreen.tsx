@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { customerById } from '../demo/customers'
 import type { DemoView } from '../demo/types'
 import { CopilotStrip } from '../workstation/CopilotStrip'
-import { SimulationToolbar } from '../workstation/Toolbar'
+import { PlaybackBar, SimulationToolbar } from '../workstation/Toolbar'
 import { TransactionPanel } from '../workstation/TransactionPanel'
 import type { ActivityRow, Library, SessionState } from '../types'
 
@@ -25,6 +25,7 @@ export function HomeScreen({
   activity = null,
   demo = null,
   closed = false,
+  showPlayback = true,
   onUndo,
 }: {
   library: Library | null
@@ -35,6 +36,7 @@ export function HomeScreen({
   activity?: readonly ActivityRow[] | null
   demo?: DemoView | null
   closed?: boolean
+  showPlayback?: boolean
   onUndo?: () => void
 }) {
   const customer = demo ? customerById(demo.customerId) : null
@@ -52,14 +54,15 @@ export function HomeScreen({
         <>
           <div className="tc-workstation">
             <div className="tc-home-column">
-              <SimulationToolbar demo={demo} />
+              <div className="tc-left-tools">
+                <SimulationToolbar demo={demo} />
+              </div>
               <TransactionPanel
                 customer={customer}
                 fired={demo.index}
-                showCase={demo.showCase}
-                presenter={demo.presenter}
-                onToggleCase={demo.onToggleCase}
+                playing={demo.playing}
               />
+              {showPlayback ? <PlaybackBar demo={demo} /> : null}
             </div>
             <CopilotStrip
               library={library}

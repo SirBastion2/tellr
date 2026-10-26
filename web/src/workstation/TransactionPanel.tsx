@@ -1,13 +1,27 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { formatElapsed, timelineElapsedMs } from '../demo/clock'
 import type { CustomerEvent, CustomerFile } from '../demo/customers'
 import { Emphasis } from '../ui/emphasis'
 import { Fact, FactGrid, SectionHeading } from '../ui/facts'
 import { displaySpeaker, personalNamesFrom, redactPersonalCopy } from '../ui/privacy'
-import { CaseFileLink } from './Toolbar'
+import { StepSwap, useStepDirection } from './StepSwap'
 
 function eventSpeaker(event: CustomerEvent, names: readonly string[]): string {
   return displaySpeaker(event.kind, event.speaker, names)
+}
+
+/** The card labels the step on screen with its real step number, counting up as the demo plays. */
+function stepStamp(customer: CustomerFile, fired: number): { stamp: string; text: string } {
+  const names = personalNamesFrom(customer.profile.name)
+  const current = customer.events[fired - 1]
+  if (!current) {
+    return { stamp: 'Customer File', text: '' }
+  }
+  const elapsed = timelineElapsedMs(customer.events, fired)
+  return {
+    stamp: `Step ${fired} · ${formatElapsed(elapsed)} · ${eventSpeaker(current, names)}`,
+    text: redactPersonalCopy(current.text, names),
+  }
 }
 
 /** Move only the timeline list so the highlighted step is fully inside it. */
@@ -29,156 +43,129 @@ export function revealCurrentStep(list: HTMLElement): void {
 export function TransactionPanel({
   customer,
   fired,
-  showCase,
-  presenter = false,
-  onToggleCase,
 }: {
   customer: CustomerFile
   fired: number
-  showCase: boolean
+  showCase?: boolean
   presenter?: boolean
-  onToggleCase: () => void
+  playing?: boolean
+  onToggleCase?: () => void
 }) {
-  const visible = customer.events.slice(0, fired)
   const current = fired > 0 ? customer.events[fired - 1] : null
-  const names = personalNamesFrom(customer.profile.name)
-  const shown = Math.min(fired, customer.events.length)
-  const total = customer.events.length
-  const pct = total === 0 ? 0 : Math.round((shown / total) * 100)
-  const timelineRef = useRef<HTMLOListElement>(null)
-
-  useEffect(() => {
-    const list = timelineRef.current
-    if (list) {
-      revealCurrentStep(list)
-    }
-  }, [fired, customer.id, showCase])
+  const direction = useStepDirection(fired, customer.id)
+  const { stamp, text } = stepStamp(customer, fired)
 
   return (
-    <section aria-label="Core banking" data-testid="transaction-panel" className="tc-transaction tc-screen" style={{ alignContent: 'start' }}>
-      <div className="tc-stack-heading">
-        <div className="tc-txn-head">
-          <h2 className="tc-title">Transaction</h2>
-          <CaseFileLink showCase={showCase} onToggleCase={onToggleCase} />
-        </div>
-      </div>
-      <p
-        data-testid="event-caption"
-        className={presenter ? 'tc-prose tc-display' : 'tc-prose tc-text-base'}
-        style={{
-          margin: 0,
-          maxWidth: '70ch',
-        }}
+    <section aria-label="Core banking" data-testid="transaction-panel" className="tc-transaction tc-screen tc-left-scroll">
+      <div
+        className={current ? 'tc-step-zone tc-step-block' : 'tc-step-zone tc-step-block tc-step-block-idle'}
+        data-testid={current ? 'demo-event' : undefined}
+        data-kind={current?.kind}
       >
-        <Emphasis text={current ? redactPersonalCopy(current.text, names) : 'Customer File'} />
-      </p>
-      <FactGrid className="tc-kv" label="Transaction">
-        <Fact term="Type">
-          <span data-testid="txn-type">{customer.transaction.type}</span>
-        </Fact>
-        <Fact term="Amount">
-          <span data-testid="txn-amount" className="tc-amount">
-            {customer.transaction.amount}
-          </span>
-        </Fact>
-        <Fact term="Memo">
-          <span className="tc-prose" style={{ display: 'block', maxWidth: '70ch' }}>
-            <Emphasis text={customer.transaction.memo} />
-          </span>
-        </Fact>
-      </FactGrid>
-      <SectionHeading>Timeline</SectionHeading>
-      <ol ref={timelineRef} data-testid="demo-timeline" className="tc-timeline" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid' }}>
-        {visible.map((event, index) => {
-          const isCurrent = index === visible.length - 1
-          const isPast = index < shown - 1
-          const last = index === visible.length - 1
-          const elapsed = timelineElapsedMs(customer.events, index + 1)
-          return (
-            <li
-              key={event.id}
-              data-testid="demo-event"
-              data-kind={event.kind}
-              data-current={isCurrent ? 'true' : 'false'}
-              data-past={isPast ? 'true' : undefined}
-              aria-current={isCurrent ? 'step' : undefined}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '16px minmax(0, 1fr)',
-                columnGap: 'var(--tc-space-3)',
-                paddingBottom: last ? 0 : 'var(--tc-timeline-gap, var(--tc-space-4))',
-              }}
-            >
-              <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <span
-                  aria-hidden="true"
-                  style={{
-                    width: 16,
-                    height: 16,
-                    marginTop: 4,
-                    boxSizing: 'border-box',
-                    borderRadius: '50%',
-                    border: '2px solid var(--tc-accent)',
-                    background: isCurrent ? 'var(--tc-accent)' : 'var(--tc-surface)',
-                  }}
-                />
-                {last ? null : (
-                  <span aria-hidden="true" style={{ width: 2, flex: 1, background: 'var(--tc-accent)', minHeight: 12 }} />
-                )}
-              </span>
-              <div
-                style={{
-                  margin: 0,
-                  maxWidth: '70ch',
-                  padding: 'var(--tc-space-1) var(--tc-space-2)',
-                  borderRadius: 'var(--tc-radius-card, 16px)',
-                  background: isCurrent ? 'var(--tc-input)' : 'transparent',
-                }}
-              >
-                <p className="tc-kicker" data-testid="event-marker" style={{ margin: 0 }}>
-                  Step {index + 1} · {formatElapsed(elapsed)} · {eventSpeaker(event, names)}
-                </p>
-                <p className="tc-prose" style={{ margin: 'var(--tc-space-1, 4px) 0 0' }}>
-                  <Emphasis text={redactPersonalCopy(event.text, names)} />
-                </p>
-              </div>
-            </li>
-          )
-        })}
-      </ol>
-      {showCase ? (
-        <section data-testid="case-file" aria-label="Synthetic case file" className="tc-stack-heading">
+        {current ? (
+          <StepSwap
+            stepKey={`${customer.id}:${fired}`}
+            direction={direction}
+            title={stamp}
+            subtitle={text}
+            titleTestId="event-caption"
+            markerTestId="event-marker"
+            titleClassName="tc-step-title"
+            subtitleClassName="tc-prose tc-step-caption"
+            testId="step-viewport"
+          />
+        ) : (
+          <p data-testid="event-caption" className="tc-step-title">
+            Customer File
+          </p>
+        )}
+      </div>
+      <div className="tc-case-half">
+        <FactGrid className="tc-kv tc-bottom-facts" label="Transaction">
+          <Fact term="Type">
+            <span data-testid="txn-type">{customer.transaction.type}</span>
+          </Fact>
+          <Fact term="Amount">
+            <span data-testid="txn-amount" className="tc-amount">
+              {customer.transaction.amount}
+            </span>
+          </Fact>
+          <Fact term="Memo">
+            <span className="tc-prose">
+              <Emphasis text={customer.transaction.memo} />
+            </span>
+          </Fact>
+        </FactGrid>
+        <section data-testid="case-file" aria-label="Synthetic case file" className="tc-case-file">
           <SectionHeading>Case file</SectionHeading>
-          <FactGrid className="tc-kv" label="Case file">
+          <FactGrid className="tc-kv tc-case-grid" label="Case file">
             <Fact term="Tenure">{customer.profile.tenure}</Fact>
             <Fact term="Typical withdrawal">{customer.profile.typicalWithdrawal}</Fact>
             <Fact term="Channels">{customer.profile.channels}</Fact>
           </FactGrid>
         </section>
-      ) : null}
-      <div className="tc-block">
-        <p className="tc-kicker" style={{ margin: 0 }}>
-          Event {shown} of {total}
-        </p>
-        <div
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={total}
-          aria-valuenow={shown}
-          aria-label={`Event ${shown} of ${total}`}
-          data-testid="event-progress"
-          style={{
-            height: 8,
-            marginTop: 'var(--tc-space-2, 8px)',
-            background: 'var(--tc-input)',
-            borderRadius: 'var(--tc-radius-control, 999px)',
-            overflow: 'hidden',
-            border: '1px solid var(--tc-accent)',
-          }}
-        >
-          <div style={{ width: `${pct}%`, height: '100%', background: 'var(--tc-accent)' }} />
-        </div>
       </div>
     </section>
+  )
+}
+
+const STEP_REVEAL_MS = 2500
+
+export function StepCard({
+  customer,
+  fired,
+  playing = false,
+}: {
+  customer: CustomerFile
+  fired: number
+  presenter?: boolean
+  playing?: boolean
+}) {
+  const current = fired > 0 ? customer.events[fired - 1] : null
+  const direction = useStepDirection(fired, customer.id)
+  const { stamp, text } = stepStamp(customer, fired)
+  const label = current ? stamp : 'Customer File'
+  const [seen, setSeen] = useState({ customer: customer.id, fired })
+  const [pulse, setPulse] = useState(false)
+  if (seen.customer !== customer.id) {
+    setSeen({ customer: customer.id, fired })
+    if (pulse) {
+      setPulse(false)
+    }
+  } else if (seen.fired !== fired) {
+    setSeen({ customer: customer.id, fired })
+    setPulse(playing && fired > 0)
+  }
+
+  useEffect(() => {
+    if (!pulse) {
+      return
+    }
+    const timer = window.setTimeout(() => setPulse(false), STEP_REVEAL_MS)
+    return () => window.clearTimeout(timer)
+  }, [pulse, fired, customer.id])
+
+  return (
+    <div
+      className="tc-step-card"
+      data-testid={current ? 'demo-event' : undefined}
+      data-kind={current?.kind}
+      data-revealed={pulse ? 'pulse' : 'idle'}
+      aria-live="polite"
+      aria-atomic="true"
+      hidden={!current}
+    >
+      <StepSwap
+        stepKey={`${customer.id}:${fired}`}
+        direction={direction}
+        title={label}
+        subtitle={text}
+        titleTestId="event-caption"
+        markerTestId={current ? 'event-marker' : undefined}
+        titleClassName="tc-kicker"
+        subtitleClassName="tc-prose tc-step-copy"
+        testId="step-viewport"
+      />
+    </div>
   )
 }

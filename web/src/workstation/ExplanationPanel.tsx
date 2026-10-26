@@ -130,12 +130,15 @@ export function ExplanationPanel({
 
   return (
     <section data-testid="explain-panel" aria-label="Why this level" className="tc-explain">
+      <div className="tc-explain-fixed">
       <h2 className="tc-title">Why this level</h2>
       {noted ? (
         <p data-testid="noted-at" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
           Noted {notedAtLocal(noted)}
         </p>
       ) : null}
+      </div>
+      <div className="tc-explain-scroll">
       <FactGrid label="Level summary">
         <Fact term="Level" testId="explain-level">
           {levelLabel(session.risk.level)}
@@ -216,6 +219,7 @@ export function ExplanationPanel({
           ) : null}
         </div>
       </details>
+      </div>
     </section>
   )
 }

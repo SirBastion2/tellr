@@ -3,7 +3,7 @@ import { ANSWER_ORIGIN, answerSignalRows } from '../answerSignals'
 import { listedChipIds, notesOnlyChip, originText, sourceForChip } from '../feed'
 import { controlStyle, primaryStyle, secondaryStyle } from '../theme/controls'
 import { DENSITY } from '../theme/tokens'
-import { CheckIcon, DismissIcon } from '../ui/icons'
+import { CheckIcon, DismissIcon, UndoIcon } from '../ui/icons'
 import { LEVEL_WORD, LevelIcon } from '../ui/LevelIcon'
 import type { ActivityRow, Library, SessionState } from '../types'
 import { Fact, FactGrid } from '../ui/facts'
@@ -11,27 +11,28 @@ import { formatUrgencyScore, URGENCY_SCORE_TERM } from '../ui/urgencyScore'
 import { ExplanationPanel } from './ExplanationPanel'
 import { readExplanation } from './explain'
 
-const controlHeight = `var(--tc-control-h, ${DENSITY.controlHeight})`
+const signalControl = `var(--tc-control-h, ${DENSITY.controlHeight})`
 
-function roundIconButton(fill: CSSProperties): CSSProperties {
+function signalIconButton(kind: 'confirm' | 'dismiss'): CSSProperties {
   return {
     ...controlStyle,
-    ...fill,
-    width: controlHeight,
-    height: controlHeight,
-    minWidth: controlHeight,
-    minHeight: controlHeight,
+    ...(kind === 'confirm' ? primaryStyle : secondaryStyle),
+    width: signalControl,
+    height: signalControl,
+    minWidth: signalControl,
+    minHeight: signalControl,
     padding: 0,
     display: 'grid',
     placeItems: 'center',
     justifyContent: 'center',
     alignContent: 'center',
     lineHeight: 1,
+    borderRadius: 'var(--tc-radius-control, 999px)',
   }
 }
 
-const confirmIconButton = roundIconButton(primaryStyle)
-const dismissIconButton = roundIconButton(secondaryStyle)
+const confirmIconButton = signalIconButton('confirm')
+const dismissIconButton = signalIconButton('dismiss')
 
 function CopilotHeading() {
   return <h2 className="tc-strip-heading">Copilot</h2>
@@ -174,9 +175,11 @@ export function CopilotStrip({
     return (
       <aside aria-label="Copilot" data-testid="copilot-strip" className="tc-strip" data-idle="true">
         <CopilotHeading />
-        <p data-testid="copilot-idle" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-          Press play to start the simulation.
-        </p>
+        <div className="tc-strip-body">
+          <p data-testid="copilot-idle" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
+            Press play to start the simulation.
+          </p>
+        </div>
       </aside>
     )
   }
@@ -191,9 +194,11 @@ export function CopilotStrip({
         data-updating={pending ? 'true' : undefined}
       >
         <CopilotHeading />
-        <p data-testid="copilot-updating" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-          Updating copilot…
-        </p>
+        <div className="tc-strip-body">
+          <p data-testid="copilot-updating" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
+            Updating copilot…
+          </p>
+        </div>
       </aside>
     )
   }
@@ -216,69 +221,62 @@ export function CopilotStrip({
       aria-busy={pending}
       data-updating={pending ? 'true' : undefined}
     >
+      <CopilotHeading />
+      <div className="tc-strip-body" data-dimmed={pending ? 'true' : 'false'}>
       {pending ? (
         <p data-testid="copilot-updating" className="tc-strip-updating">
           <span className="tc-inline-spinner" aria-hidden="true" />
           Updating copilot…
         </p>
       ) : null}
-      <div className="tc-strip-body" data-dimmed={pending ? 'true' : 'false'}>
-      <CopilotHeading />
-      <div className="tc-copilot-pin" ref={pinRef}>
-        <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0 }}>
-          <LevelIcon level={level} />{LEVEL_WORD[level]}
-        </p>
-        <FactGrid label={URGENCY_SCORE_TERM}>
-          <Fact term={URGENCY_SCORE_TERM}>
-            <span className="tc-score-line">
-              <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
-                {formatUrgencyScore(session.risk.score)}
-              </span>
-              <button
-                type="button"
-                ref={toggleRef}
-                className="tc-btn"
-                data-variant="secondary"
-                data-testid="score-explanation"
-                aria-expanded={open}
-                aria-controls="score-explanation-overlay"
-                style={{
-                  ...controlStyle,
-                  ...secondaryStyle,
-                  minHeight: 0,
-                  minWidth: 0,
-                  height: 'auto',
-                  padding: 'var(--tc-space-1, 4px) var(--tc-space-2, 8px)',
-                  whiteSpace: 'nowrap',
-                }}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  setOpen((value) => !value)
-                }}
-              >
-                Score explanation
-              </button>
-            </span>
-          </Fact>
-        </FactGrid>
-        <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
-          {reason}
-        </p>
-      </div>
-      <div
-        className="tc-block"
-        style={{
-          background: 'var(--tc-action-bg)',
-          color: 'var(--tc-action-fg)',
-          borderRadius: 'var(--tc-radius-card, 16px)',
-          padding: 'var(--tc-space-3, 12px)',
-          display: 'grid',
-          gap: 'var(--tc-space-2, 8px)',
-        }}
-      >
+      <div className="tc-copilot-head">
         <p className="tc-kicker">Suggested action</p>
+        <div className="tc-copilot-pin" ref={pinRef}>
+          <p data-testid="copilot-level" className="tc-level-badge" data-level={level} style={{ margin: 0 }}>
+            <LevelIcon level={level} />{LEVEL_WORD[level]}
+          </p>
+          <FactGrid label={URGENCY_SCORE_TERM}>
+            <Fact term={URGENCY_SCORE_TERM}>
+              <span className="tc-score-line tc-urgency-pill">
+                <span className="tc-urgency-dot" data-level={level} aria-hidden="true" />
+                <span className="tc-urgency-label">Urgency</span>
+                <span data-testid="copilot-score" title={URGENCY_SCORE_TERM}>
+                  {formatUrgencyScore(session.risk.score)}
+                </span>
+                <button
+                  type="button"
+                  ref={toggleRef}
+                  className="tc-btn tc-score-help"
+                  data-variant="secondary"
+                  data-testid="score-explanation"
+                  aria-expanded={open}
+                  aria-controls="score-explanation-overlay"
+                  aria-label="Score explanation"
+                  style={{
+                    ...controlStyle,
+                    ...secondaryStyle,
+                    minHeight: 0,
+                    minWidth: 0,
+                    height: 'auto',
+                    padding: 'var(--tc-space-1, 4px) var(--tc-space-2, 8px)',
+                    whiteSpace: 'nowrap',
+                  }}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setOpen((value) => !value)
+                  }}
+                >
+                  ?
+                </button>
+              </span>
+            </Fact>
+          </FactGrid>
+        </div>
         <p data-testid="copilot-action" className="tc-prose tc-action-copy" style={{ margin: 0, maxWidth: '70ch' }}>
           {action}
+        </p>
+        <p data-testid="copilot-reason" className="tc-prose" style={{ margin: 0, maxWidth: '70ch' }}>
+          {reason}
         </p>
       </div>
       <ul aria-label="Signals" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 'var(--tc-space-2, 8px)' }}>
@@ -356,6 +354,11 @@ export function CopilotStrip({
             </li>
           )
         })}
+        {answerRows.length > 0 ? (
+          <li className="tc-answer-label">
+            <span className="tc-kicker">{ANSWER_ORIGIN}</span>
+          </li>
+        ) : null}
         {answerRows.map((row) => (
           <li
             key={row.signal_id}
@@ -378,42 +381,35 @@ export function CopilotStrip({
         <p className="tc-prose" style={{ margin: 0 }}>
           This visit is closed.
         </p>
-      ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--tc-space-2, 8px)' }}>
-          {onUndo ? (
-            <button
-              type="button"
-              className="tc-btn"
-              data-variant="secondary"
-              data-testid="undo"
-              title="Undo the last signal"
-              style={{ ...controlStyle, ...secondaryStyle }}
-              disabled={pending}
-              onClick={() => onUndo()}
-            >
-              Undo
-            </button>
-          ) : null}
+      ) : null}
+      </div>
+      {closed ? null : (
+        <div className="tc-copilot-actions">
           <button
             type="button"
-            className="tc-btn"
-            data-variant="danger"
+            className="tc-btn tc-frost tc-escalate"
             data-testid="escalate"
             title="Escalate to supervisor (E)"
             data-loading={pending ? 'true' : 'false'}
             aria-busy={pending}
             disabled={pending}
-            style={{
-              ...controlStyle,
-              backgroundColor: 'var(--tc-risk-high-bg)',
-              color: 'var(--tc-risk-high-fg)',
-              borderColor: 'transparent',
-              flex: '1 1 12rem',
-            }}
             onClick={onEscalate}
           >
             Escalate to supervisor
           </button>
+          {onUndo ? (
+            <button
+              type="button"
+              className="tc-btn tc-frost tc-undo"
+              data-testid="undo"
+              title="Undo the last signal"
+              aria-label="Undo"
+              disabled={pending}
+              onClick={() => onUndo()}
+            >
+              <UndoIcon />
+            </button>
+          ) : null}
         </div>
       )}
       <div
@@ -423,6 +419,18 @@ export function CopilotStrip({
         hidden={!open}
         ref={overlayRef}
       >
+        <div className="tc-explain-overlay-bar">
+          <button
+            type="button"
+            className="tc-btn tc-explain-close"
+            data-variant="secondary"
+            data-testid="score-explanation-close"
+            aria-label="Close score explanation"
+            onClick={() => setOpen(false)}
+          >
+            Close
+          </button>
+        </div>
         <div className="tc-explain-overlay-body">
           <ExplanationPanel
             library={library}
@@ -431,7 +439,6 @@ export function CopilotStrip({
             activity={activity}
           />
         </div>
-      </div>
       </div>
     </aside>
   )
