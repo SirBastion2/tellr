@@ -3757,9 +3757,31 @@ body {
     font-size: 16px !important;
   }
 
+  /* One pill height: the label stays in the left column and the check / dismiss
+     buttons stay on that same row, including long labels. */
   .tc-stage .tc-signal-row {
-    flex-wrap: wrap !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
     max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .tc-stage .tc-signal-meta {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .tc-stage .tc-signal-label {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .tc-stage .tc-signal-actions {
+    flex: 0 0 auto !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
   }
 
   .tc-stage .tc-footer-row {
@@ -4004,6 +4026,14 @@ body {
   .tc-handoff-head,
   .tc-handoff-heading {
     flex-wrap: wrap !important;
+  }
+
+  .tc-handoff-head {
+    padding-top: 16px !important;
+  }
+
+  .tc-handoff-flags {
+    padding-top: 24px !important;
   }
 
   .tc-handoff .tc-title,
