@@ -1,0 +1,12 @@
+### Mobile portrait layout — B1 — 2026-10-26 18:31
+- **Status:** done
+- **Gate:** `npx vitest run src/scoreExplanation.test.tsx` → PASS (2 tests). Full `scripts/gate.sh b` was not run.
+- **Changed:** `web/src/index.css`, `web/src/screens/OutcomeScreen.tsx`, `web/src/screens/HandoffScreen.tsx`, `web/src/workstation/CopilotStrip.tsx`
+- **Decisions I made, and the section that justified each:**
+  - Phone rules live in `@media (max-width: 480px)` so the 1024/1180/1280 header and the 1280 workstation columns stay as ARCHITECTURE.md describes them.
+  - Home stacks in DOM order: case file and steps, then the copilot. The page scrolls; the timeline and the signal list scroll only after 50dvh.
+  - Outcome choices, Undo, and Escalate go full width inside their cards. Highlight and the selected check stay on the choice button.
+  - On a phone the score overlay is fixed to the viewport, the body scrolls, and a Close control stays outside that scroller. `index.html` already has the viewport meta tag.
+  - Card fill on a phone uses each bank's `--tc-glass-fallback` so text stays readable without naming a bank in the CSS.
+- **Questions logged:** none
+- **The next agent needs to know:** Desktop layout is unchanged above 480px. The new Close control is hidden there (`display: none` on `.tc-explain-overlay-bar`).

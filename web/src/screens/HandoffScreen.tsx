@@ -14,7 +14,7 @@ function purposeLabel(library: Library | null, id: string): string {
 function CopyId({ id }: { id: string }) {
   const [copied, setCopied] = useState(false)
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+    <span className="tc-id-line" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', maxWidth: '100%', minWidth: 0 }}>
       <span data-testid="handoff-session" title={id}>
         {shortId(id)}
       </span>

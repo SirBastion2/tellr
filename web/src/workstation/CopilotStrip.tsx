@@ -379,7 +379,7 @@ export function CopilotStrip({
           This visit is closed.
         </p>
       ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--tc-space-2, 8px)' }}>
+        <div className="tc-copilot-actions" style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--tc-space-2, 8px)' }}>
           {onUndo ? (
             <button
               type="button"
@@ -423,6 +423,21 @@ export function CopilotStrip({
         hidden={!open}
         ref={overlayRef}
       >
+        <div className="tc-explain-overlay-bar">
+          <button
+            type="button"
+            className="tc-btn tc-explain-close"
+            data-variant="secondary"
+            data-testid="score-explanation-close"
+            aria-label="Close score explanation"
+            onClick={(event) => {
+              event.stopPropagation()
+              setOpen(false)
+            }}
+          >
+            Close
+          </button>
+        </div>
         <div className="tc-explain-overlay-body">
           <ExplanationPanel
             library={library}

@@ -1589,3 +1589,401 @@ body {
     --tc-type-line-ui: 1.05 !important;
   }
 }
+
+/*
+  Phone portrait (about 360–430px). Desktop rules above stay as they are.
+  The page scrolls. A section scrolls inside itself only after it passes a cap.
+*/
+.tc-outcome-choices {
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tc-outcome-choices > li {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.tc-outcome-choice {
+  box-sizing: border-box;
+  max-width: 100%;
+  white-space: normal;
+}
+
+.tc-copilot-actions {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.tc-id-line {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.tc-explain-overlay-bar {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  :root {
+    --tc-root-font: 105% !important;
+  }
+
+  [data-testid='theme-root'] {
+    --tc-control-h: 48px !important;
+    --tc-header-control-h: 48px !important;
+    --tc-header-h: 48px !important;
+    --tc-help-size: 44px !important;
+    --tc-wordmark-h: 40px !important;
+  }
+
+  html,
+  body {
+    height: auto !important;
+    max-height: none !important;
+    overflow-x: clip !important;
+    overflow-y: auto !important;
+  }
+
+  #root,
+  [data-testid='theme-root'],
+  .tc-theme-page {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 100dvh;
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+  }
+
+  .tc-theme-page {
+    min-height: 100dvh !important;
+    padding-top: max(var(--tc-page-pad-y), env(safe-area-inset-top)) !important;
+    padding-right: max(var(--tc-page-pad-x), env(safe-area-inset-right)) !important;
+    padding-bottom: max(var(--tc-page-pad-bottom), env(safe-area-inset-bottom)) !important;
+    padding-left: max(var(--tc-page-pad-x), env(safe-area-inset-left)) !important;
+  }
+
+  [data-testid='theme-card'] {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: var(--tc-glass-fallback) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .tc-footer {
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    overflow-wrap: break-word;
+  }
+
+  .tc-shell,
+  .tc-shell > main,
+  .tc-home,
+  .tc-workstation,
+  .tc-home-column,
+  .tc-screen,
+  .tc-card,
+  .tc-strip {
+    height: auto !important;
+    max-height: none !important;
+    min-width: 0;
+    max-width: 100%;
+    overflow: visible !important;
+  }
+
+  .tc-workstation {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .tc-home-column {
+    order: 1;
+  }
+
+  .tc-strip {
+    order: 2;
+  }
+
+  .tc-header {
+    flex-wrap: wrap !important;
+    height: auto !important;
+    min-height: 0 !important;
+    align-items: center !important;
+    row-gap: var(--tc-space-2) !important;
+    min-width: 0 !important;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .tc-header-brand {
+    order: 1;
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .tc-header-title {
+    min-width: 0 !important;
+    height: auto !important;
+    white-space: normal !important;
+  }
+
+  .tc-header-tools {
+    order: 2;
+    flex: 0 0 auto !important;
+    margin-left: auto;
+  }
+
+  .tc-header-status {
+    order: 3;
+  }
+
+  .tc-header-nav {
+    order: 4;
+  }
+
+  .tc-header-status,
+  .tc-header-nav {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+  }
+
+  .tc-header-nav {
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+    gap: var(--tc-space-2) !important;
+  }
+
+  .tc-header-nav a,
+  .tc-header-nav .tc-nav-tab,
+  .tc-nav-hint {
+    height: auto !important;
+    min-height: 44px !important;
+  }
+
+  .tc-header-help {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  .tc-live-badge {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 44px !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .tc-live-badge-label {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .tc-toolbar {
+    align-items: stretch;
+    max-width: 100%;
+  }
+
+  .tc-toolbar-customer,
+  .tc-toolbar-controls {
+    flex: 1 1 100% !important;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0 !important;
+  }
+
+  .tc-toolbar-controls,
+  .tc-toolbar-group {
+    flex-wrap: wrap !important;
+  }
+
+  .tc-toolbar-customer select,
+  .tc-toolbar select {
+    width: 100%;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .tc-toolbar .tc-segment > button {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+
+  .tc-txn-head {
+    flex-wrap: wrap;
+    gap: var(--tc-space-2);
+    max-width: 100%;
+  }
+
+  .tc-case-link {
+    max-width: 100%;
+    margin-left: 0 !important;
+  }
+
+  .tc-transaction.tc-screen {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .tc-transaction.tc-screen > .tc-timeline {
+    flex: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 50dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .tc-strip-body {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  .tc-strip ul[aria-label='Signals'] {
+    flex: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 50dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .tc-signal-row {
+    flex-wrap: wrap !important;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .tc-signal-actions .tc-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .tc-score-line {
+    flex-wrap: wrap !important;
+    max-width: 100%;
+  }
+
+  [data-testid='score-explanation'] {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    height: auto !important;
+    white-space: normal !important;
+  }
+
+  .tc-copilot-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100%;
+  }
+
+  .tc-copilot-actions > .tc-btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    white-space: normal;
+  }
+
+  .tc-facts,
+  .tc-kv {
+    grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .tc-facts dt,
+  .tc-kv dt,
+  .tc-fact-term,
+  .tc-facts dd,
+  .tc-kv dd {
+    overflow-wrap: break-word;
+  }
+
+  [data-testid='outcome-screen'],
+  [data-testid='handoff-screen'] {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  .tc-outcome-choices {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .tc-outcome-choices > li,
+  .tc-outcome-choice,
+  [data-testid='outcome-screen'] input,
+  [data-testid='outcome-submit'],
+  [data-testid='handoff-screen'] .tc-btn {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .tc-outcome-choice,
+  .tc-outcome-choice span {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  button,
+  .tc-btn,
+  select,
+  summary,
+  input,
+  .tc-header-nav a,
+  .tc-nav-hint {
+    min-height: 44px;
+  }
+
+  .tc-explain-overlay {
+    position: fixed !important;
+    top: max(var(--tc-page-pad-y), env(safe-area-inset-top)) !important;
+    right: max(var(--tc-page-pad-x), env(safe-area-inset-right)) !important;
+    bottom: max(var(--tc-page-pad-bottom), env(safe-area-inset-bottom)) !important;
+    left: max(var(--tc-page-pad-x), env(safe-area-inset-left)) !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    z-index: 40;
+    border: var(--tc-border-width) var(--tc-border-style) var(--tc-glass-border) !important;
+    border-radius: var(--tc-radius-card) !important;
+  }
+
+  .tc-explain-overlay-bar {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    padding: var(--tc-space-2);
+    background: var(--tc-surface);
+    border-bottom: var(--tc-border-width) var(--tc-border-style) var(--tc-glass-border);
+  }
+
+  .tc-explain-close {
+    width: 100%;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .tc-explain-overlay-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+}

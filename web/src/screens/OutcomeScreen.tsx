@@ -129,7 +129,7 @@ export function OutcomeScreen({
           <p className="tc-prose" data-testid="outcome-help" style={{ margin: 0 }}>
             All four choices stay available. The one marked is the copilot's recommendation; you decide.
           </p>
-          <ul className="flex flex-wrap gap-2">
+          <ul className="tc-outcome-choices flex flex-wrap gap-2">
             {session.available_outcomes.map((outcome) => {
               const suggested = outcome !== 'report' && outcome === session.suggested_outcome
               const selected = selectedId === outcome
@@ -137,6 +137,7 @@ export function OutcomeScreen({
                 <li key={outcome}>
                   <button
                     type="button"
+                    className="tc-btn tc-outcome-choice"
                     disabled={false}
                     data-testid={`outcome-${outcome}`}
                     data-suggested={suggested ? 'true' : 'false'}
