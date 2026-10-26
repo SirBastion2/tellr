@@ -1,0 +1,11 @@
+### Portrait signal rows and handoff spacing — Agent B1 — 2026-10-26 20:23
+- **Status:** done
+- **Gate:** relevant Vitest only (`web/` `npx vitest run src/portrait.test.tsx`) → PASS (3 tests). `scripts/gate.sh` was not run; the task asked for the relevant layout test only.
+- **Changed:** `web/src/index.css`, `web/src/portrait.test.tsx`
+- **Decisions I made, and the section that justified each:**
+  - Both fixes stay inside `@media (max-width: 480px)` in `web/src/index.css`. ARCHITECTURE.md keeps the 16:9 stage above that width, so desktop rules and bank themes were not edited.
+  - Signal rows no longer use `flex-wrap: wrap` in that block. The label column shrinks (`min-width: 0`, `overflow-wrap: anywhere`) and the check / dismiss actions stay `flex: 0 0 auto` on the same row. That matches the copilot chip layout in the workstation section (teller confirm / dismiss on the signal chips).
+  - The phone handoff header had collapsed to content height with no top padding, so the title sat on the card edge. `padding-top: 16px` is only on `.tc-handoff-head` inside the phone block.
+  - The stacked phone body had no row gap, so "Why it was flagged" followed "Recorded by". `.tc-handoff-flags` gets `padding-top: 24px` (the shared space-5 step) inside the phone block. No copy, scoring, or control behavior changed.
+- **Questions logged:** none
+- **The next agent needs to know:** do not move these overrides out of the 480px block. Wider windows still use the stage grid.

@@ -47,4 +47,17 @@ describe('portrait phone layout', () => {
     expect(block).toMatch(/\.tc-explain-overlay:not\(\[hidden\]\)\s*\{[^}]*position:\s*fixed !important/)
     expect(block).toMatch(/\.tc-explain-overlay:not\(\[hidden\]\)\s*\{[^}]*height:\s*100dvh !important/)
   })
+
+  it('keeps signal buttons on one row and separates the handoff title from the flag list', () => {
+    const block = portraitCss()
+    expect(block).toMatch(/\.tc-stage \.tc-signal-row\s*\{[^}]*flex-wrap:\s*nowrap !important/)
+    expect(block).not.toMatch(/\.tc-stage \.tc-signal-row\s*\{[^}]*flex-wrap:\s*wrap !important/)
+    expect(block).toMatch(/\.tc-stage \.tc-signal-meta\s*\{[^}]*min-width:\s*0 !important/)
+    expect(block).toMatch(/\.tc-stage \.tc-signal-label\s*\{[^}]*overflow-wrap:\s*anywhere !important/)
+    expect(block).toMatch(/\.tc-stage \.tc-signal-actions\s*\{[^}]*flex:\s*0 0 auto !important/)
+    expect(block).toMatch(/\.tc-stage \.tc-signal-actions\s*\{[^}]*flex-wrap:\s*nowrap !important/)
+    expect(block).toMatch(/\.tc-handoff-head\s*\{[^}]*padding-top:\s*16px !important/)
+    expect(block).toMatch(/\.tc-handoff-flags\s*\{[^}]*padding-top:\s*24px !important/)
+    expect(block).not.toMatch(/\b(tellr|pnc|mtb|fnb)\b/)
+  })
 })
