@@ -3757,8 +3757,7 @@ body {
     font-size: 16px !important;
   }
 
-  /* One pill height: the label stays in the left column and the check / dismiss
-     buttons stay on that same row, including long labels. */
+  /* Long labels wrap in the left of the pill. Check and dismiss stay on that row. */
   .tc-stage .tc-signal-row {
     flex-wrap: nowrap !important;
     align-items: center !important;
