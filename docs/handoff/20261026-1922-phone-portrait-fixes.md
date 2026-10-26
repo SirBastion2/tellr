@@ -1,0 +1,12 @@
+### Phone portrait leftovers — Agent B1 — 2026-10-26 19:22
+- **Status:** done
+- **Gate:** relevant Vitest only (`src/portrait.test.tsx`, `src/scoreExplanation.test.tsx`) → PASS. `scripts/gate.sh` was not run; the task asked for the layout tests only.
+- **Changed:** `web/src/index.css`, `web/src/portrait.test.tsx`
+- **Decisions I made, and the section that justified each:**
+  - All four fixes stay inside `@media (max-width: 480px)` at the end of `web/src/index.css`. ARCHITECTURE.md keeps the 16:9 stage for wider windows, so nothing above 480px was edited.
+  - The previous step stays in the swap grid and was painting over Type / Amount / Memo because the phone block set that viewport to `overflow: visible`. The phone block now hides the exit slide and clips the viewport. The current step is unchanged.
+  - Suggested action is one full-width row. Clear and Urgency sit on the next row. The card still reads the same server fields.
+  - Playback is two rows: speed, play, restart, and the timer on the first; step dots on the second. Dots stay 44px and scroll sideways when they do not fit. Tap targets stay 44px.
+  - The score overlay is viewport-fixed and stacked above the sticky header and playback bar, so Close stays on screen. No copy or scoring change.
+- **Questions logged:** none
+- **The next agent needs to know:** desktop (`min-width: 481px`) still uses the stage grid. Do not move these overrides out of the 480px block.
