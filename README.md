@@ -1,5 +1,11 @@
 <p align="center"><img src="docs/assets/tellr-logo.png" alt="Tellr" width="260"></p>
 
+<p align="center">
+New here? When the demo video is posted, watch it first, then try it yourself:<br>
+<!-- TODO: link the demo video here once posted -->
+<a href="https://tellr-olive.vercel.app">Try the live demo</a>. It runs on built-in sample data, so no setup is needed.
+</p>
+
 # Tellr
 
 Tellr is a copilot beside the teller at the counter. It helps them spot a customer who may have been coached through elder fraud during a cash withdrawal.
